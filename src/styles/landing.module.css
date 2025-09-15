@@ -1,0 +1,314 @@
+@font-face {
+  font-family: "poorich";
+  src:
+    url("/fonts/PoorRichard-Regular.woff2") format("woff2"),
+    url("/fonts/PoorRichard-Regular.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.welcome {
+  background-color: var(--welcome-bckg);
+  /* border-radius: 0px 0px 20px 20px; */
+  overflow: hidden;
+}
+
+.welcomeContainer {
+  background-color: #fffbfd;
+  /* background-image: url(/assets/images/landing-page-banner.png); */
+  padding: 20px 30px 50px 30px;
+  /* border-radius: 20px; */
+}
+
+.welcomeTextContainer {
+  padding-top: 30px;
+  padding-bottom: 50px;
+}
+
+.welcomeTitle {
+  color: #141416;
+  display: block;
+  font-size: 55px;
+  font-weight: 400;
+  font-family: "poorich";
+  line-height: 60px;
+}
+
+.welcomeText {
+  color: #141416;
+  display: block;
+  font-size: 20px;
+  font-weight: 400;
+  margin-top: 50px;
+  font-family: "poorich";
+}
+
+.welcomeCreativesThumb {
+  width: 60px;
+  height: 60px;
+  border-radius: 60px;
+  border: 2px solid #ffffff30;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.navLink a {
+  color: #141416;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.navLink a:hover {
+  color: #c91a79;
+}
+
+.connectContainer {
+  padding: 30px 30px 30px 30px;
+  max-width: 1600px;
+  margin: 0 auto;
+  z-index: 9999999999;
+}
+
+.connectCont {
+  margin-inline: 30px;
+}
+
+.connectTitle {
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 50px;
+  display: block;
+  text-align: center;
+  font-family:
+    Plus Jakarta Sans,
+    sans-serif;
+  color: #141416e3;
+  line-height: 54.05px;
+  max-width: 600px;
+  margin: 0 auto;
+  margin-bottom: 20px;
+}
+
+.comingSoonContainer {
+  background-color: #fffbfd;
+}
+
+.connectBox {
+  border-radius: 8px;
+  border: 1px solid #d6ddeb80;
+  padding: 30px;
+  box-shadow: 0 21px 17px 1px rgba(0, 0, 0, 0.1);
+  max-height: 350px;
+  min-height: 350px;
+  width: 100%;
+  background-color: #fffcfe;
+  margin: 0 auto;
+}
+
+.methodContainer {
+  padding: 80px 30px 80px 30px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.methodTitle {
+  font-size: 40px;
+  font-weight: 400;
+  display: block;
+  line-height: 50px;
+  text-align: center;
+  font-family: "poorich";
+  color: #141416e3;
+  line-height: 54.05px;
+}
+
+.methodBox {
+  border-radius: 8px;
+  border: 1px solid #d6ddeb80;
+  padding: 30px;
+  box-shadow: 0 21px 17px 1px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  min-height: 300px;
+  background-color: #fffcfe;
+  margin: 0 auto;
+}
+
+.statsContainer {
+  margin: 20px 0px;
+  padding: 20px 20px;
+  border-radius: 10px;
+}
+
+.statsTitle {
+  font-size: 48px;
+  font-weight: 400;
+  display: block;
+  text-align: center;
+  margin-bottom: 30px;
+  line-height: 50px;
+  font-family: "poorich";
+}
+
+.topCreatives::-webkit-scrollbar {
+  width: 1px;
+  height: 1px;
+}
+
+/* Track */
+.topCreatives::-webkit-scrollbar-track {
+  background: #c91a7920;
+}
+
+/* Handle */
+.topCreatives::-webkit-scrollbar-thumb {
+  background: #c91a79;
+  border-radius: 2.5px;
+}
+
+/* Handle on hover */
+.topCreatives::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.partnersContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 30px 50px 30px;
+  background: #f8f5f7;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.partnersTitle {
+  font-size: 40px;
+  font-weight: 600;
+  display: block;
+  line-height: 50px;
+  text-align: center;
+}
+
+.partnersBox {
+  border-radius: 10px;
+  background-color: white;
+  padding: 30px;
+  height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.signupContainer {
+  margin: 80px 30px 50px 30px;
+  padding: 50px 30px;
+  background-image: url(/assets/images/landing/signup.png);
+  background-size: cover;
+  background-position: center;
+  border-radius: 10px;
+}
+
+.signupTitle {
+  font-size: 48px;
+  font-weight: 700;
+  font-family: "poorich";
+  display: block;
+  text-align: center;
+  line-height: 50px;
+  color: white;
+  margin-bottom: 30px;
+}
+
+.footerContainer {
+  padding: 30px 30px 50px 30px;
+  background: #2d2d2d;
+}
+
+.footerLogo {
+  margin: 0px calc(50% - 36px);
+}
+
+.infoContainer {
+  width: 50%;
+  max-width: 100%;
+  height: 100%;
+  position: fixed;
+  right: 0px;
+  top: 0px;
+  background-color: white;
+  overflow: hidden;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.overlay {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  z-index: 10;
+}
+
+.tancLine {
+  display: block;
+  padding: 10px 0px;
+}
+
+@media screen and (min-width: 1125px) {
+  .footerContainer {
+    padding: 30px 150px 50px 150px;
+  }
+
+  .footerLogo {
+    margin: 0px;
+  }
+
+  .signupContainer {
+    margin: 80px 150px 50px 150px;
+    padding: 50px 30px;
+  }
+
+  .partnersContainer {
+    padding: 80px 150px 50px 150px;
+  }
+
+  .statsContainer {
+    margin: 80px 150px 50px 150px;
+    padding: 50px 30px;
+  }
+
+  .methodContainer {
+    padding: 80px 150px 80px 150px;
+  }
+
+  .connectContainer {
+    padding: 80px 150px 50px 150px;
+  }
+
+  .welcomeContainer {
+    padding: 20px 150px 50px 150px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .infoContainer {
+    width: 75%;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .infoContainer {
+    width: 75%;
+  }
+}

@@ -1,0 +1,39 @@
+.flexLayoutContainer {
+  display: flex;
+}
+
+.leftContainer {
+  width: 30%;
+}
+
+.rightContainer {
+  width: 70%;
+}
+
+@media screen and (max-width: 992px) {
+  .flexLayoutContainer {
+    display: block;
+  }
+
+  .leftContainer {
+    width: 100%;
+  }
+
+  .rightContainer {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .flexLayoutContainer {
+    display: block;
+  }
+
+  .leftContainer {
+    width: 100%;
+  }
+
+  .rightContainer {
+    width: 100%;
+  }
+}

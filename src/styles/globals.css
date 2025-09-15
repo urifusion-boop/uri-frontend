@@ -1,0 +1,759 @@
+@import url("https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*{
+  scroll-behavior: smooth;
+  scroll-padding: 10px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Urbanist", sans-serif !important;
+
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span {
+  font-family: "Urbanist", sans-serif !important;
+}
+
+.container {
+  width: 100%;
+  max-width: 1580px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;  /* 16px */
+  padding-right: 1rem; /* 16px */
+  box-sizing: border-box;
+}
+
+
+.track-font {
+  font-family: "Urbanist", sans-serif !important;
+}
+
+.card-dragging {
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+  transform: scale(1.05);
+  opacity: 0.7;
+}
+
+.character {
+  border: 1px solid #9ea3ae;
+  border-radius: 8px;
+  font-size: 20px;
+  color: #434343;
+  width: 120px;
+  height: 60px;
+  transition: all 0.2s ease;
+}
+
+.character--inactive {
+  background: #ffffff;
+}
+
+.character--selected {
+  border: 2px solid #cd1b78;
+  background-color: "black";
+}
+@media (max-width: 768px) {
+  .board {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Preserve Material-UI button styles */
+.MuiButton-root {
+  @apply !text-inherit;
+}
+
+.MuiButton-contained {
+  @apply !bg-[#cb2a7c] !text-white hover:!bg-[#cb2a7c];
+}
+
+.MuiButton-outlined {
+  @apply !border-[#cb2a7c] !text-[#cb2a7c];
+}
+
+/* Preserve Material-UI button styles */
+.MuiButton-root {
+  @apply !text-inherit;
+}
+
+.MuiButton-contained {
+  @apply !bg-[#cb2a7c] !text-white hover:!bg-[#cb2a7c];
+}
+
+.MuiButton-outlined {
+  @apply !border-[#cb2a7c] !text-[#cb2a7c];
+}
+
+/* utility classes */
+
+.image-container {
+  width: 100%;
+  position: relative;
+}
+
+.paystack-button {
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  width: 100%;
+  outline: none !important;
+  cursor: pointer;
+  background-color: #cb2a7c;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  margin-top: 30px;
+  color: white;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.breadcrumb__tab .nav-tabs .nav-link.active::after {
+  background: #cb2a7c !important;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right !important;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.wrap {
+  flex-wrap: wrap;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.items-start {
+  align-items: flex-start;
+}
+
+.items-end {
+  align-items: flex-end;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.justify-end {
+  justify-content: flex-end;
+}
+
+.desktop-only {
+  display: block;
+}
+
+.mobile-only {
+  display: none;
+}
+
+.auth-vector {
+  transform-origin: center;
+  transform: scale(1, 1);
+}
+
+/* Hide scrollbar */
+.hide-scrollbar::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+
+/* React select styles */
+.css-1u9des2-indicatorSeparator {
+  display: none;
+}
+
+/* React responsive modal styles */
+
+@media screen and (max-width: 1100px) {
+  .react-responsive-modal-modal {
+    width: 950px !important;
+  }
+  .desktop-only {
+    display: block;
+  }
+  .mobile-only {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .react-responsive-modal-modal {
+    width: 750px !important;
+  }
+  .desktop-only {
+    display: block;
+  }
+  .mobile-only {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 780px) {
+  .react-responsive-modal-modal {
+    width: 700px !important;
+  }
+  .desktop-only {
+    display: none;
+  }
+  .mobile-only {
+    display: block;
+  }
+  .auth-vector {
+    transform-origin: center;
+    transform: scale(0.8, 0.8);
+  }
+}
+
+@media screen and (max-width: 450px) {
+  .react-responsive-modal-modal {
+    width: 350px !important;
+  }
+  .desktop-only {
+    display: none;
+  }
+  .mobile-only {
+    display: block;
+  }
+  .auth-vector {
+    transform-origin: center;
+    transform: scale(0.8, 0.8);
+  }
+}
+
+@media screen and (max-width: 350px) {
+  .react-responsive-modal-modal {
+    width: 275px !important;
+  }
+  .desktop-only {
+    display: none;
+  }
+  .mobile-only {
+    display: block;
+  }
+  .auth-vector {
+    transform-origin: center;
+    transform: scale(0.8, 0.8);
+  }
+}
+
+@media screen and (max-width: 300px) {
+  .react-responsive-modal-modal {
+    width: 250px !important;
+  }
+  .desktop-only {
+    display: none;
+  }
+  .mobile-only {
+    display: block;
+  }
+  .auth-vector {
+    transform-origin: center;
+    transform: scale(0.8, 0.8);
+  }
+}
+
+a {
+  text-decoration: none !important;
+}
+
+.Organisms_tabSelect__6_Aar::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+}
+
+button:disabled {
+  cursor: not-allowed !important;
+}
+
+.MuiPaginationItem-text {
+  color: #9ea3ae !important;
+}
+
+.Mui-selected {
+  background: #cd1b78 !important;
+  color: #ffffff !important;
+}
+
+.MuiPaginationItem-icon {
+  color: #cd1b78 !important;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 5px 10px;
+  font-size: 14px;
+  font-weight: 500;
+  /* border-radius: 3px 32px 5px 20px; */
+  width: 150px;
+  text-transform: uppercase; /* Makes the text uppercase */
+  color: white !important; /* Sets text color to white */
+  text-align: center;
+}
+
+.closed {
+  background-color: #000000; /* Example color for CLOSED */
+}
+
+.opened {
+  background-color: #000000; /* Example color for OPENED */
+}
+
+.pending {
+  background-color: #010101; /* Example color for PENDING */
+}
+
+th {
+  white-space: nowrap !important;
+}
+
+.profile-views__icon {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 20 20" fill="none"><path d="M4.00802 4.50012C4.00802 3.709 4.24262 2.93564 4.68214 2.27784C5.12167 1.62005 5.74639 1.10736 6.47729 0.804606C7.20819 0.501855 8.01246 0.422642 8.78838 0.576983C9.56431 0.731324 10.277 1.11229 10.8364 1.6717C11.3959 2.23111 11.7768 2.94384 11.9312 3.71976C12.0855 4.49569 12.0063 5.29995 11.7035 6.03086C11.4008 6.76176 10.8881 7.38648 10.2303 7.826C9.57251 8.26553 8.79915 8.50012 8.00802 8.50012C6.94716 8.50012 5.92974 8.0787 5.1796 7.32855C4.42945 6.57841 4.00802 5.56099 4.00802 4.50012ZM9.90902 18.0001C9.63903 17.5445 9.49657 17.0247 9.49657 16.4951C9.49657 15.9655 9.63903 15.4457 9.90902 14.9901C10.6747 13.6558 11.8388 12.5945 13.238 11.9551C13.2906 11.9366 13.337 11.9037 13.372 11.8603C13.407 11.8168 13.4292 11.7644 13.436 11.7091C13.4429 11.6537 13.4341 11.5975 13.4108 11.5468C13.3875 11.4961 13.3505 11.4529 13.304 11.4221C12.3235 10.782 11.1693 10.4601 9.99902 10.5001H5.99902C1.93902 10.5001 0.499023 13.4701 0.499023 16.0201C0.499023 18.3001 1.70902 19.5001 3.99902 19.5001H10.389C10.4686 19.5001 10.5449 19.4685 10.6012 19.4123C10.6574 19.356 10.689 19.2797 10.689 19.2001C10.681 19.1177 10.6458 19.0404 10.589 18.9801C10.3395 18.67 10.1122 18.3425 9.90902 18.0001ZM19.799 17.2401C19.3828 18.0332 18.7676 18.7046 18.0138 19.1885C17.26 19.6723 16.3934 19.952 15.499 20.0001C14.6046 19.952 13.738 19.6723 12.9842 19.1885C12.2304 18.7046 11.6153 18.0332 11.199 17.2401C11.0664 17.0161 10.9965 16.7605 10.9965 16.5001C10.9965 16.2398 11.0664 15.9842 11.199 15.7601C11.6153 14.967 12.2304 14.2956 12.9842 13.8118C13.738 13.328 14.6046 13.0483 15.499 13.0001C16.3934 13.0483 17.26 13.328 18.0138 13.8118C18.7676 14.2956 19.3828 14.967 19.799 15.7601C19.9316 15.9842 20.0016 16.2398 20.0016 16.5001C20.0016 16.7605 19.9316 17.0161 19.799 17.2401ZM16.749 16.5001C16.749 16.1686 16.6173 15.8507 16.3829 15.6162C16.1485 15.3818 15.8305 15.2501 15.499 15.2501H15.489C15.2422 15.2521 15.0015 15.3271 14.7973 15.4656C14.5931 15.6042 14.4344 15.8001 14.3413 16.0287C14.2482 16.2572 14.2249 16.5082 14.2743 16.7501C14.3236 16.9919 14.4435 17.2137 14.6187 17.3875C14.7939 17.5613 15.0166 17.6794 15.2588 17.7268C15.501 17.7742 15.7518 17.7489 15.9797 17.654C16.2075 17.5591 16.4021 17.3989 16.539 17.1935C16.6759 16.9882 16.749 16.7469 16.749 16.5001Z" fill="%23f7426f"/></svg>');
+  background-repeat: no-repeat;
+  width: 30px;
+  height: 30px;
+}
+
+.expovent__count-item:hover .profile-views__icon {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 20 20" fill="none"><path d="M4.00802 4.50012C4.00802 3.709 4.24262 2.93564 4.68214 2.27784C5.12167 1.62005 5.74639 1.10736 6.47729 0.804606C7.20819 0.501855 8.01246 0.422642 8.78838 0.576983C9.56431 0.731324 10.277 1.11229 10.8364 1.6717C11.3959 2.23111 11.7768 2.94384 11.9312 3.71976C12.0855 4.49569 12.0063 5.29995 11.7035 6.03086C11.4008 6.76176 10.8881 7.38648 10.2303 7.826C9.57251 8.26553 8.79915 8.50012 8.00802 8.50012C6.94716 8.50012 5.92974 8.0787 5.1796 7.32855C4.42945 6.57841 4.00802 5.56099 4.00802 4.50012ZM9.90902 18.0001C9.63903 17.5445 9.49657 17.0247 9.49657 16.4951C9.49657 15.9655 9.63903 15.4457 9.90902 14.9901C10.6747 13.6558 11.8388 12.5945 13.238 11.9551C13.2906 11.9366 13.337 11.9037 13.372 11.8603C13.407 11.8168 13.4292 11.7644 13.436 11.7091C13.4429 11.6537 13.4341 11.5975 13.4108 11.5468C13.3875 11.4961 13.3505 11.4529 13.304 11.4221C12.3235 10.782 11.1693 10.4601 9.99902 10.5001H5.99902C1.93902 10.5001 0.499023 13.4701 0.499023 16.0201C0.499023 18.3001 1.70902 19.5001 3.99902 19.5001H10.389C10.4686 19.5001 10.5449 19.4685 10.6012 19.4123C10.6574 19.356 10.689 19.2797 10.689 19.2001C10.681 19.1177 10.6458 19.0404 10.589 18.9801C10.3395 18.67 10.1122 18.3425 9.90902 18.0001ZM19.799 17.2401C19.3828 18.0332 18.7676 18.7046 18.0138 19.1885C17.26 19.6723 16.3934 19.952 15.499 20.0001C14.6046 19.952 13.738 19.6723 12.9842 19.1885C12.2304 18.7046 11.6153 18.0332 11.199 17.2401C11.0664 17.0161 10.9965 16.7605 10.9965 16.5001C10.9965 16.2398 11.0664 15.9842 11.199 15.7601C11.6153 14.967 12.2304 14.2956 12.9842 13.8118C13.738 13.328 14.6046 13.0483 15.499 13.0001C16.3934 13.0483 17.26 13.328 18.0138 13.8118C18.7676 14.2956 19.3828 14.967 19.799 15.7601C19.9316 15.9842 20.0016 16.2398 20.0016 16.5001C20.0016 16.7605 19.9316 17.0161 19.799 17.2401ZM16.749 16.5001C16.749 16.1686 16.6173 15.8507 16.3829 15.6162C16.1485 15.3818 15.8305 15.2501 15.499 15.2501H15.489C15.2422 15.2521 15.0015 15.3271 14.7973 15.4656C14.5931 15.6042 14.4344 15.8001 14.3413 16.0287C14.2482 16.2572 14.2249 16.5082 14.2743 16.7501C14.3236 16.9919 14.4435 17.2137 14.6187 17.3875C14.7939 17.5613 15.0166 17.6794 15.2588 17.7268C15.501 17.7742 15.7518 17.7489 15.9797 17.654C16.2075 17.5591 16.4021 17.3989 16.539 17.1935C16.6759 16.9882 16.749 16.7469 16.749 16.5001Z" fill="%23fff"/></svg>');
+}
+
+.all-users__icon {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M12 2C9.38 2 7.25 4.13 7.25 6.75C7.25 9.32 9.26 11.4 11.88 11.49C11.96 11.48 12.04 11.48 12.1 11.49C12.12 11.49 12.13 11.49 12.15 11.49C12.16 11.49 12.16 11.49 12.17 11.49C14.73 11.4 16.74 9.32 16.75 6.75C16.75 4.13 14.62 2 12 2Z" fill="%23f7426f"/><path d="M17.08 14.16C14.29 12.3 9.73996 12.3 6.92996 14.16C5.65996 15 4.95996 16.15 4.95996 17.38C4.95996 18.61 5.65996 19.75 6.91996 20.59C8.31996 21.53 10.16 22 12 22C13.84 22 15.68 21.53 17.08 20.59C18.34 19.74 19.04 18.6 19.04 17.36C19.03 16.14 18.34 14.99 17.08 14.16ZM14.33 16.56L11.81 19.08C11.69 19.2 11.53 19.26 11.37 19.26C11.21 19.26 11.05 19.19 10.93 19.08L9.66996 17.82C9.42996 17.58 9.42996 17.18 9.66996 16.94C9.90996 16.7 10.31 16.7 10.55 16.94L11.37 17.76L13.45 15.68C13.69 15.44 14.09 15.44 14.33 15.68C14.58 15.92 14.58 16.32 14.33 16.56Z" fill="%23f7426f"/></svg>');
+  width: 36px;
+  height: 36px;
+}
+
+.expovent__count-item:hover .all-users__icon {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M12 2C9.38 2 7.25 4.13 7.25 6.75C7.25 9.32 9.26 11.4 11.88 11.49C11.96 11.48 12.04 11.48 12.1 11.49C12.12 11.49 12.13 11.49 12.15 11.49C12.16 11.49 12.16 11.49 12.17 11.49C14.73 11.4 16.74 9.32 16.75 6.75C16.75 4.13 14.62 2 12 2Z" fill="%23fff"/><path d="M17.08 14.16C14.29 12.3 9.73996 12.3 6.92996 14.16C5.65996 15 4.95996 16.15 4.95996 17.38C4.95996 18.61 5.65996 19.75 6.91996 20.59C8.31996 21.53 10.16 22 12 22C13.84 22 15.68 21.53 17.08 20.59C18.34 19.74 19.04 18.6 19.04 17.36C19.03 16.14 18.34 14.99 17.08 14.16ZM14.33 16.56L11.81 19.08C11.69 19.2 11.53 19.26 11.37 19.26C11.21 19.26 11.05 19.19 10.93 19.08L9.66996 17.82C9.42996 17.58 9.42996 17.18 9.66996 16.94C9.90996 16.7 10.31 16.7 10.55 16.94L11.37 17.76L13.45 15.68C13.69 15.44 14.09 15.44 14.33 15.68C14.58 15.92 14.58 16.32 14.33 16.56Z" fill="%23fff"/></svg>');
+}
+
+.dropdown__item_ {
+  background: inherit !important;
+  color: inherit !important;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.label {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 20px;
+  margin-bottom: 4px;
+}
+
+.input {
+  width: 100%;
+  padding: 12px 16px 12px 16px;
+  border: 1px solid #e0def7;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #141416;
+  outline: none;
+}
+
+.textarea {
+  resize: none;
+  width: 100%;
+  padding: 12px 16px 12px 16px;
+  border: 1px solid #e0def7;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #141416;
+  outline: none;
+  height: 175px;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.scroll::-webkit-scrollbar-thumb {
+  background: #ccccd6;
+  border-radius: 20px;
+}
+
+.scroll::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.scroll {
+  scrollbar-color: #ccccd6 #f1f1f1;
+  scrollbar-width: thin;
+  scroll-behavior: smooth;
+}
+
+.MuiMultiSectionDigitalClockSection-root {
+  scrollbar-color: #ccccd6 #f1f1f1;
+  scrollbar-width: thin;
+  scroll-behavior: smooth;
+}
+
+.MuiMultiSectionDigitalClockSection-root::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.MuiMultiSectionDigitalClockSection-root::-webkit-scrollbar {
+  width: 5px;
+}
+
+.MuiMultiSectionDigitalClockSection-root::-webkit-scrollbar-thumb {
+  background: #ccccd6;
+  border-radius: 20px;
+}
+
+.css-nvch6d-MuiPaper-root-MuiPopover-paper-MuiMenu-paper {
+  box-shadow: 0px 10px 10px 0px #100a551a;
+  border: 1px solid #d6ddeb;
+}
+
+.css-1vo1ei7-MuiButtonBase-root-MuiMenuItem-root {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.css-1vo1ei7-MuiButtonBase-root-MuiMenuItem-root:hover {
+  background: #fff3e5;
+  color: #cd1b78;
+}
+
+.no-scroll {
+  scrollbar-color: transparent transparent;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+}
+
+.no-scroll::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+
+.MuiMenu-paper {
+  scrollbar-color: #d6ddeb #fffefd;
+  scrollbar-width: thin;
+  scroll-behavior: smooth;
+}
+
+.glass-blur {
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(9.6px);
+  -webkit-backdrop-filter: blur(9.6px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.creative-tag-creative-page {
+  font-size: 12px;
+  color: black;
+  display: inline-block;
+  text-transform: capitalize;
+  margin-right: 10px;
+  color: #fff;
+}
+
+.css-cpryek-MuiLinearProgress-root {
+  background: #6c727f4f;
+}
+
+.help-tutorial-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.job-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+  gap: 20px;
+}
+
+.tracker-edit:hover h6,
+.tracker-edit:hover svg {
+  color: #cd1b78;
+}
+
+.highlight {
+  background: #cd1b78;
+  padding: 0 5px;
+  color: #fff;
+}
+
+/* ================== */
+/* Print styles */
+/* ================== */
+
+@media print {
+  /* Hide only non-essential elements */
+  .no-print,
+  button.paystack-button {
+    display: none !important;
+  }
+
+  /* Preserve the layout as it appears on screen */
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background: #fff !important;
+  }
+
+  /* Keep all margins and paddings */
+  @page {
+    margin: 15mm;
+    size: auto;
+  }
+
+  /* Preserve all flex and grid layouts */
+  .d-flex,
+  .grid,
+  .job-grid,
+  .help-tutorial-grid {
+    display: inherit !important;
+  }
+
+  /* Ensure tables print properly */
+  table {
+    page-break-inside: auto;
+  }
+}
+
+.rdw-editor-wrapper {
+  border-radius: 8px;
+}
+
+.rdw-editor-toolbar {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border: none;
+  background: #f8f9fa;
+  padding: 8px;
+}
+
+.rdw-emoji-modal {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.rdw-image-modal {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.rdw-editor-main {
+  padding: 0 16px;
+}
+
+/* React Big Calender */
+
+/* Change background color of the calendar */
+.rbc-calendar {
+  background-color: #f8f9fa;
+  padding: 20px 10px;
+}
+
+/* Customize the event color */
+.rbc-event {
+  background-color: #cd1b78 !important; /* Your primary color */
+  border-radius: 8px; /* Rounded edges */
+  padding: 2px 4px;
+}
+
+/* Customize header styles */
+.rbc-header {
+  color: #333;
+  font-weight: bold;
+}
+
+/* Highlight the current day */
+.rbc-today {
+  background-color: rgba(
+    205,
+    27,
+    120,
+    0.1
+  ) !important; /* Light pink for today */
+  border-left: 4px solid #cd1b78;
+}
+
+/* Change timeslot appearance */
+.rbc-timeslot-group {
+  border-bottom: 1px solid #eee;
+}
+
+/* Customize event hover effect */
+.rbc-event:hover {
+  background-color: #a31762; /* Slightly darker color on hover */
+  cursor: pointer;
+}
+
+.rbc-toolbar button {
+  color: #373a3c;
+  display: inline-block;
+  margin: 0;
+  text-align: center;
+  vertical-align: middle;
+  background: none;
+  background-image: none;
+  border: none !important;
+  padding: 0.375rem 1rem;
+  line-height: normal;
+  white-space: nowrap;
+}
+
+.rbc-toolbar button:active,
+.rbc-toolbar button.rbc-active {
+  background-image: none;
+  box-shadow: none !important;
+  background-color: #f8f9fa !important;
+  border-color: none !important;
+  color: #cd1b78;
+}
+
+.rbc-day-bg + .rbc-day-bg {
+  border: none !important;
+}
+
+.rbc-month-view {
+  border: none !important;
+}
+
+.rbc-header + .rbc-header {
+  border-left: none !important;
+}
+
+.rbc-header {
+  border-bottom: none !important;
+}
+
+.rbc-month-row + .rbc-month-row {
+  border-top: none !important;
+}
+
+.rbc-day-bg {
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.rbc-off-range-bg {
+  background: #eee !important;
+}
+
+.rbc-row-bg {
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+div.past-date:not(.rbc-today),
+div.past-date.rbc-off-range-bg {
+  /* Your styles here */
+  background-color: #bbbbbb !important;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.verification-input {
+  width: 45px !important;
+  height: 45px !important;
+  border: 1px solid #9ea3ae;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #434343;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+@media (min-width: 768px) {
+  .verification-input {
+    width: 55px !important;
+    height: 55px !important;
+  }
+}
+
+.verification-input:focus {
+  outline: none;
+  border: 2px solid #cd1b78;
+  box-shadow: 0 0 0 2px rgba(205, 27, 120, 0.1);
+}
+
+.verification-input-selected {
+  width: 45px !important;
+  height: 45px !important;
+  border: 2px solid #cd1b78;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #434343;
+  background: white;
+  box-shadow: 0 0 0 2px rgba(205, 27, 120, 0.1);
+}
+
+@media (min-width: 768px) {
+  .verification-input-selected {
+    width: 55px !important;
+    height: 55px !important;
+  }
+}
+
+/* Payment receipts */
+
+.payment-receipt-container {
+  mask:
+    linear-gradient(0, #0000 10px, #000 0) 0 5px,
+    radial-gradient(5px, #000 calc(100% - 1px), #0000) 50%/9.25px 10px repeat
+      space;
+}

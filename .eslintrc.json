@@ -1,0 +1,16 @@
+{
+  "plugins": ["import", "react-hooks"],
+  "extends": ["next/core-web-vitals", "plugin:react-hooks/recommended"],
+  "rules": {
+    "@next/next/no-img-element": "off",
+    "react-hooks/exhaustive-deps": "off"
+    // "import/no-unused-modules": [1, { "unusedExports": true }],
+    // "no-unused-vars": ["error", { "args": "none" }]
+  },
+  "overrides": [
+    {
+      "files": ["src/pages/**/*.{js,jsx,ts,tsx}"]
+    }
+  ],
+  "ignorePatterns": ["node_modules/", ".next/", "public/*", "public/sw.js", "public/workbox-*.js"]
+}

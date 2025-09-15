@@ -1,0 +1,5 @@
+{
+  "Description": "Domain ownership verification file for Microsoft 365 - place in the website root",
+  "Domain": "uricreative.com",
+  "Id": "472d33fb-4b33-4e81-833d-e3868387abf5"
+}

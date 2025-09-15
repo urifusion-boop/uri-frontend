@@ -1,0 +1,18 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="icon-park-twotone:ticket">
+<g id="Mask group">
+<mask id="mask0_2519_36483" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="1" y="3" width="38" height="32">
+<g id="Group">
+<g id="Group_2">
+<path id="Vector" d="M7.49805 13.3333L28.3314 5L31.6647 13.3333" stroke="white" stroke-width="3.33333" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M3.33203 13.3335H36.6654V18.3335C34.1654 18.3335 31.6654 20.0002 31.6654 22.9168C31.6654 25.8335 34.1654 28.3335 36.6654 28.3335V33.3335H3.33203V28.3335C5.83203 28.3335 8.33203 26.6668 8.33203 23.3335C8.33203 20.0002 5.83203 18.3335 3.33203 18.3335V13.3335Z" fill="#555555" stroke="white" stroke-width="3.33333" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_3" d="M14.166 21.1538H19.166M14.166 26.1538H25.8327" stroke="white" stroke-width="3.33333" stroke-linecap="round"/>
+</g>
+</g>
+</mask>
+<g mask="url(#mask0_2519_36483)">
+<path id="Vector_4" d="M0 0H40V40H0V0Z" fill="#CD1B78"/>
+</g>
+</g>
+</g>
+</svg>

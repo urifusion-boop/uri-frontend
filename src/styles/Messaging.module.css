@@ -1,0 +1,21 @@
+/* width */
+.prettyScrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+/* Track */
+.prettyScrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+.prettyScrollbar::-webkit-scrollbar-thumb {
+  background: #C91A79;
+  border-radius: 2.5px;
+}
+
+/* Handle on hover */
+.prettyScrollbar::-webkit-scrollbar-thumb:hover {
+  background: #7b114b;
+}

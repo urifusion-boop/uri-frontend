@@ -1,0 +1,9 @@
+export enum SocialMediaEnum {
+  TWITTER = "TWITTER",
+  LINKEDIN = "LINKEDIN",
+  FACEBOOK = "FACEBOOK",
+  INSTAGRAM = "INSTAGRAM",
+  TIKTOK = "TIKTOK",
+  X = "X",
+  LINKEDIN_COMM_MGT = "LINKEDIN_COMM_MGT",
+}

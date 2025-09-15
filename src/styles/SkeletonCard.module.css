@@ -1,0 +1,35 @@
+.card {
+  margin: 0 auto;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  transition: 0.3s;
+  border-radius: 8px;
+  width: 100%;
+  height: 400px;
+  background-color: #eee;
+}
+
+.skeleton {
+  background-color: #eee;
+  padding: 2px 16px;
+}
+
+.skeletonName, .skeletonLocation {
+  width: 100%;
+  height: 320px;
+  background-image: linear-gradient(90deg, #ddd 0px, #e8e8e8 40px, #ddd 80px);
+  animation: animate-loader 1.6s infinite linear;
+  background-size: 300px;
+}
+
+.skeletonLocation {
+  height: 10px;
+}
+
+@keyframes animate-loader {
+  0% {
+    background-position: -100px;
+  }
+  40%, 100% {
+    background-position: 270px;
+  }
+}

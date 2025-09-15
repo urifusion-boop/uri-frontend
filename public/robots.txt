@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /admin
+Disallow: /auth
+Disallow: /dashboard
+Disallow: /uri-assistant
+Disallow: /alert
+Disallow: /keyword-tracking
+Disallow: /hashtag-tracking
