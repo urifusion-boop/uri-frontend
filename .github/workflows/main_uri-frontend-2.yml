@@ -30,9 +30,17 @@ jobs:
       - name: Zip artifact
         run: zip -r app.zip .next package.json package-lock.json node_modules public
 
-      - name: Deploy to Azure Web App
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_CE4B58B545D141BAAF5C3457DD332B58 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_8C1A038B9CF64D6C8B3255718E1540A6 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0E275EF339394B79AB6D79F3F5F0AD24 }}
+
+      - name: 'Deploy to Azure Web App'
+        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}   # set in repo secrets
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          app-name: 'uri-frontend-2'
+          slot-name: 'Production'
           package: app.zip
