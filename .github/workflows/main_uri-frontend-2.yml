@@ -20,6 +20,7 @@ jobs:
       - name: npm install and build
         run: |
           npm ci
+          export NODE_OPTIONS="--max-old-space-size=4096"
           npm run build
       - name: Create deployment package
         run: |
