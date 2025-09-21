@@ -36,8 +36,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    environment:
-      name: 'Production'
+
     permissions:
       id-token: write
       contents: read
@@ -55,6 +54,7 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_CE4B58B545D141BAAF5C3457DD332B58 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_8C1A038B9CF64D6C8B3255718E1540A6 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0E275EF339394B79AB6D79F3F5F0AD24 }}
+
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
