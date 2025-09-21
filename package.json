@@ -9,7 +9,7 @@
     "dev": "next dev",
     "prebuild": "rm -rf .next/cache",
     "build": "next build",
-    "start": "next start -p $PORT",
+    "start": "node .next/standalone/server.js",
     "prod": "npm run build && next start",
     "lint": "next lint",
     "prepare": "husky"

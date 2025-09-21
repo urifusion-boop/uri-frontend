@@ -27,7 +27,7 @@ jobs:
           # Remove dev dependencies but keep the built app
           npm prune --production
           # Create zip with all necessary files including node_modules
-          zip -r release.zip .next package.json package-lock.json public
+          zip -r release.zip . -x "*.git*" "*.github*" "*node_modules/.cache*"
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
