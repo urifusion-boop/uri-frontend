@@ -1,15 +1,15 @@
-import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
-import { STORE_KEYS } from "./store.config";
+import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
+import { STORE_KEYS } from './store.config';
 
 class UriHttpClient {
   private static client: AxiosInstance;
 
   static initialize() {
     this.client = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_URI_API_BASE_URL,
+      baseURL: 'https://api.uricreative.com:9443', //process.env.NEXT_PUBLIC_URI_API_BASE_URL,
       withCredentials: false,
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       validateStatus: (status) => status >= 200 && status < 300,
     });
@@ -56,7 +56,7 @@ class UriHttpClient {
 
   private static getStoredTokens() {
     // Replace with a secure storage mechanism if necessary
-    return JSON.parse(localStorage.getItem(STORE_KEYS.USER_TOKENS) || "{}");
+    return JSON.parse(localStorage.getItem(STORE_KEYS.USER_TOKENS) || '{}');
   }
 
   private static async handleErrorResponse(error: AxiosError) {
@@ -64,13 +64,13 @@ class UriHttpClient {
       switch (error.response.status) {
         case 402:
           // Dispatch a custom event for payment-required errors
-          window.dispatchEvent(new CustomEvent("payment-required"));
+          window.dispatchEvent(new CustomEvent('payment-required'));
 
           return await Promise.reject(error.response);
         case 401:
         case 403:
           this.clearUserData();
-          window.dispatchEvent(new CustomEvent("unauthorized"));
+          window.dispatchEvent(new CustomEvent('unauthorized'));
           return await Promise.reject(error.response);
         default:
           return await Promise.resolve(error.response);
