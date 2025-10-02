@@ -16,12 +16,10 @@ import Partners from '../components/landing/Partners';
 import Reviews from '../components/landing/Reviews';
 import SocialReach from '../components/landing/SocialReach';
 import TAndC from '../components/landing/TAndC';
-import PrivacyPolicy from './privacy-policy';
 
 export default function Home() {
   const [showTAndC, setShowTAndC] = useState(false);
   const [showFAQs] = useState(false);
-  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
 
   const router = useRouter();
   return (
@@ -59,7 +57,7 @@ export default function Home() {
 
         <UpperFooter />
 
-        <LowerFooter toggleTAndC={() => setShowTAndC(!showTAndC)} togglePAndP={() => setShowPrivacyPolicy(!showPrivacyPolicy)} />
+        <LowerFooter toggleTAndC={() => setShowTAndC(!showTAndC)} />
 
         {/* Other Components */}
         {showTAndC && <TAndC toggleTAndC={() => setShowTAndC(!showTAndC)} />}
@@ -70,7 +68,6 @@ export default function Home() {
             }}
           />
         )}
-        {showPrivacyPolicy && <PrivacyPolicy togglePandPs={() => setShowPrivacyPolicy(!showPrivacyPolicy)} />}
       </div>
     </>
   );
