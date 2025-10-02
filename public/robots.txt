@@ -6,3 +6,4 @@ Disallow: /uri-assistant
 Disallow: /alert
 Disallow: /keyword-tracking
 Disallow: /hashtag-tracking
+Allow: /privacy-policy
