@@ -3,11 +3,11 @@ name: Azure Static Web Apps CI/CD
 on:
   push:
     branches:
-      - develop
+      - main
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
-      - develop
+      - main
 
 jobs:
   build_and_deploy_job:
@@ -44,7 +44,6 @@ jobs:
           api_location: "" # Api source code path - optional
           output_location: ".next" # Built app content directory - optional
           github_id_token: ${{ steps.idtoken.outputs.result }}
-          slot: "Development"
           ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:
