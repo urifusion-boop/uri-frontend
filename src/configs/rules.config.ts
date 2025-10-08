@@ -48,6 +48,29 @@ export const isFeatureDisabled = (featureLimit: TFeatureLimit, featureName: stri
   return false;
 };
 
+export const isFeatureLocked = (featureLimit: TFeatureLimit, featureName: string, accountName?: string) => {
+  if (!featureLimit) {
+    return false;
+  }
+  if (featureName === 'accountTracking') {
+    if (!featureLimit.accountTracking.locked && featureLimit.accountTracking.accounts.limit === 0) {
+      return false;
+    }
+    if (accountName) {
+      const account = featureLimit.accountTracking[accountName as keyof Omit<TFeatureLimit['accountTracking'], 'locked'>];
+      if (account) {
+        return !!account.locked;
+      }
+    }
+    return !!featureLimit.accountTracking.locked || featureLimit.accountTracking.accounts.locked || featureLimit.accountTracking.accounts.count >= featureLimit.accountTracking.accounts.limit;
+  } else if (featureName in featureLimit) {
+    const feature = featureLimit[featureName as keyof Omit<TFeatureLimit, 'accountTracking'>];
+
+    return !!feature.locked;
+  }
+  return false;
+};
+
 export const isFeatureUnlimited = (limit: number) => {
   return limit <= 0;
 };
