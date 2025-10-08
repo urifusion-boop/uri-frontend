@@ -1,4 +1,4 @@
-import { isFeatureDisabled, isFeatureUnlimited } from '@/configs/rules.config';
+import { isFeatureDisabled, isFeatureLocked, isFeatureUnlimited } from '@/configs/rules.config';
 import { Box, Grid, Pagination } from '@mui/material';
 
 import DashboardLayout from '@/components/atoms/DashboardLayout';
@@ -59,7 +59,7 @@ const HashtagTrackingOverview = () => {
       <SeoHead title="Hashtag Tracking Overview" />
       <DashboardLayout bgColor="#f8f8f8" excludeHeader={true}>
         <GuideTour run={run} steps={steps} onFinish={handleTourFinish} onSkip={handleTourFinish} />
-        {!isFeatureDisabled(featureLimit, 'hashtag') ? (
+        {!isFeatureLocked(featureLimit, 'hashtag') ? (
           <Box px={3} pb={3} bgcolor="#f8f8f8">
             {/* Header Section */}
             <FeaturesHeader

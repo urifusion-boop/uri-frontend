@@ -18,7 +18,7 @@ import GuideTour from '@/components/guide-tour/guide-tour';
 import { ALERT_TOUR_STEPS } from '@/components/guide-tour/tour-steps/alert-tour';
 import useGuideTour from '@/components/guide-tour/useGuideTour';
 import ExportLeadsModal from '@/components/modals/ExportLeadsModal';
-import { isFeatureDisabled } from '@/configs/rules.config';
+import { isFeatureLocked } from '@/configs/rules.config';
 import { useAlertHook } from '@/hooks/alert/alert.hook';
 import { MentionDto } from '@/models/dtos/MentionInsightsDto';
 import { useFeatureLimitStore } from '@/store/useFeatureLimitStore';
@@ -110,7 +110,7 @@ const Alert = () => {
           </Box>
           {/* Tabs */}
 
-          {!isFeatureDisabled(featureLimit, 'alert') ? (
+          {!isFeatureLocked(featureLimit, 'alert') ? (
             <>
               <CustomTabs activeTab={activeTab} setActiveTab={setActiveTab} tabs={tabs} tourKey="tour-alert" />
 

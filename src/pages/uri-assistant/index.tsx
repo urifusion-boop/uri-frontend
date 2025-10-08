@@ -15,7 +15,7 @@ import useGuideTour from '@/components/guide-tour/useGuideTour';
 import Spinner from '@/components/loaders/Spinner';
 import { SingleMessage } from '@/components/messages/SingleMessage';
 import DeleteModal from '@/components/modals/DeleteModal';
-import { isFeatureDisabled } from '@/configs/rules.config';
+import { isFeatureLocked } from '@/configs/rules.config';
 import { TextHelper } from '@/helpers/TextHelper';
 import { useAiMessageHook } from '@/hooks/uri-assistant/aiMessage.hook';
 import { useUriAssistantThreadHook } from '@/hooks/uri-assistant/uriAssistantThreads.hook';
@@ -192,7 +192,7 @@ const UriAssistant = () => {
               padding: 2,
             }}
           >
-            {isFeatureDisabled(featureLimit, 'aiMessage') ? (
+            {isFeatureLocked(featureLimit, 'aiMessage') ? (
               <FeatureLimitLock />
             ) : (
               <Grid container spacing={2} sx={{ flexGrow: 1 }}>

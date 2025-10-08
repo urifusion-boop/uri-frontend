@@ -1,4 +1,4 @@
-import { isFeatureDisabled, isFeatureUnlimited } from '@/configs/rules.config';
+import { isFeatureDisabled, isFeatureLocked, isFeatureUnlimited } from '@/configs/rules.config';
 import { Autocomplete, Box, Button, Dialog, Grid, InputLabel, MenuItem, Modal, Pagination, Select, Stack, TextField, Typography } from '@mui/material';
 import { BiPlus, BiX } from 'react-icons/bi';
 
@@ -142,7 +142,7 @@ const KeywordTrackingOverview = () => {
       <DashboardLayout bgColor="#f8f8f8" excludeHeader={true}>
         <GuideTour steps={steps} run={run} onFinish={handleTourFinish} onSkip={handleTourFinish} />
 
-        {!isFeatureDisabled(featureLimit, 'keyword') ? (
+        {!isFeatureLocked(featureLimit, 'keyword') ? (
           <Box px={3} pb={3} bgcolor="#f8f8f8">
             {/* Header section */}
             <FeaturesHeader

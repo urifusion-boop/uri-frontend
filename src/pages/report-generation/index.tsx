@@ -14,7 +14,7 @@ import MultiSelectDropdown from '@/components/input/MultiSelectDropdown';
 import BaseExportModal from '@/components/modals/BaseExportModal';
 import FeatureCard from '@/components/settings/FeatureCard';
 import TitleCard from '@/components/settings/TitleCard';
-import { isFeatureDisabled } from '@/configs/rules.config';
+import { isFeatureLocked } from '@/configs/rules.config';
 import { reportGenerationData } from '@/data/sentimentOverTimeData';
 import { TextHelper } from '@/helpers/TextHelper';
 import useFeatureOptions from '@/hooks/report-generation/featuresOptions.hook';
@@ -115,7 +115,7 @@ const ReportGeneration = () => {
           {/* Header */}
           <FeaturesHeader startTour={startTour} title="Report Generation" titleIcon={<GoChecklist size={20} color="#fff" />} />
           {/* main area */}
-          {!isFeatureDisabled(featureLimit, 'reportGeneration') ? (
+          {!isFeatureLocked(featureLimit, 'reportGeneration') ? (
             <Box
               sx={{
                 boxShadow: '-1px -1px 4px 3px #0000000D',
