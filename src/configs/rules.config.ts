@@ -62,7 +62,7 @@ export const isFeatureLocked = (featureLimit: TFeatureLimit, featureName: string
         return !!account.locked;
       }
     }
-    return !!featureLimit.accountTracking.locked || featureLimit.accountTracking.accounts.locked || featureLimit.accountTracking.accounts.count >= featureLimit.accountTracking.accounts.limit;
+    return !!featureLimit.accountTracking.locked || featureLimit.accountTracking.accounts.locked;
   } else if (featureName in featureLimit) {
     const feature = featureLimit[featureName as keyof Omit<TFeatureLimit, 'accountTracking'>];
 
