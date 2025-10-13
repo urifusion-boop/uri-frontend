@@ -197,6 +197,19 @@ export interface ConversationalSearchFormDto {
   add_to_history: boolean;
   auto_generate: boolean;
   form_type: string;
+  // V2 fields for real-time monitoring
+  enable_realtime?: boolean;
+  monitoring_platforms?: string[];
+  platform_configs?: PlatformConfigFormDto[];
+}
+
+export interface PlatformConfigFormDto {
+  platform: string;
+  enabled: boolean;
+  min_followers?: number;
+  exclude_retweets?: boolean;
+  verified_only?: boolean;
+  content_types?: string[];
 }
 
 export interface Settings {

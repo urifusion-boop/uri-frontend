@@ -6,23 +6,21 @@ import ListValuesInput from '@/components/input/ListValuesInput';
 import SingleFieldInput from '@/components/input/SingleFieldInput';
 import SmartModal from '@/components/modals/SmartModal';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
-import { ConversationalSearchFormDto, PlatformConfigFormDto } from '@/models/dtos/LeadFormDto';
+import { ConversationalSearchFormDto } from '@/models/dtos/LeadFormDto';
 import { FormTypeEnum } from '@/models/enum-models/FormTypeEnum';
 import { useAuth } from '@/providers/AuthProvider';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
-import BoltIcon from '@mui/icons-material/Bolt';
-import { Box, IconButton, Tooltip, Typography, Switch, FormControlLabel, Chip, Alert } from '@mui/material';
+import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import Image from 'next/image';
 import router from 'next/router';
 import { useEffect, useState } from 'react';
 import { HiPencil } from 'react-icons/hi';
-import PlatformSelector from '../PlatformSelector';
 
-const ConversationLeadFormV2 = () => {
+const ConversationLeadForm = () => {
   const [form, setForm] = useState<ConversationalSearchFormDto>({
     user_id: '',
-    form_title: 'Conversational Lead Form V2',
+    form_title: 'Conversational Lead Form',
     ai_response_guide: '',
     keywords: [],
     competitors: [],
@@ -32,9 +30,6 @@ const ConversationLeadFormV2 = () => {
     add_to_history: false,
     auto_generate: false,
     form_type: '',
-    enable_realtime: true, // V2 default
-    monitoring_platforms: [],
-    platform_configs: [],
   });
 
   const [existingFormId, setExistingFormId] = useState<string | null>(null);
@@ -56,19 +51,7 @@ const ConversationLeadFormV2 = () => {
   useEffect(() => {
     console.log('existingForm', existingForm);
     if (existingForm && isSuccess && userId) {
-      const {
-        form_title,
-        intent_type,
-        buying_signals,
-        excluded_keywords,
-        ai_response_guide,
-        keywords,
-        competitors,
-        lead_form_id,
-        add_to_history,
-        auto_generate,
-        form_type,
-      } = existingForm;
+      const { form_title, intent_type, buying_signals, excluded_keywords, ai_response_guide, keywords, competitors, lead_form_id, add_to_history, auto_generate, form_type } = existingForm;
 
       setForm({
         user_id: userId,
@@ -82,9 +65,6 @@ const ConversationLeadFormV2 = () => {
         add_to_history,
         auto_generate,
         form_type,
-        enable_realtime: (existingForm as any).enable_realtime ?? true,
-        monitoring_platforms: (existingForm as any).monitoring_platforms || [],
-        platform_configs: (existingForm as any).platform_configs || [],
       });
 
       setExistingFormId(lead_form_id);
@@ -101,19 +81,9 @@ const ConversationLeadFormV2 = () => {
       return;
     }
 
-    // Validate V2 fields
-    if (form.enable_realtime && (!form.platform_configs || form.platform_configs.length === 0)) {
-      triggerToast('error', 'Please select at least one platform for real-time monitoring');
-      return;
-    }
-
-    // Extract enabled platforms
-    const enabledPlatforms = form.platform_configs?.filter((c) => c.enabled).map((c) => c.platform) || [];
-
     const payload: ConversationalSearchFormDto = {
       ...form,
       user_id: userId,
-      monitoring_platforms: enabledPlatforms,
     };
 
     if (existingFormId) {
@@ -129,9 +99,6 @@ const ConversationLeadFormV2 = () => {
         add_to_history: payload.add_to_history || false,
         auto_generate: payload.auto_generate || false,
         form_type: FormTypeEnum.CONVERSATIONAL,
-        enable_realtime: payload.enable_realtime || false,
-        monitoring_platforms: payload.monitoring_platforms || [],
-        platform_configs: payload.platform_configs || [],
       };
 
       updateConversationalSearchLeadForm.mutate(
@@ -185,59 +152,17 @@ const ConversationLeadFormV2 = () => {
     });
   };
 
-  const enabledPlatformsCount = form.platform_configs?.filter((c) => c.enabled).length || 0;
-
   return (
     <Box sx={{ maxWidth: '950px', mx: 'auto', mt: 4 }}>
       <Box sx={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e5e7eb', p: { xs: 3, md: 5 }, boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)' }}>
-        {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1 }}>
-          <Typography variant="h6" sx={{ textAlign: 'center', fontWeight: 600, color: '#1f2937' }}>
-            Conversational Lead Form
-          </Typography>
-          <Chip
-            label="V2"
-            size="small"
-            icon={<BoltIcon sx={{ fontSize: 16 }} />}
-            sx={{
-              backgroundColor: '#fef3c7',
-              color: '#92400e',
-              fontWeight: 600,
-              fontSize: '11px',
-            }}
-          />
-        </Box>
-
-        <Typography variant="body2" sx={{ textAlign: 'center', color: '#6b7280', mb: 3 }}>
-          {existingFormId ? 'Edit your existing form with real-time monitoring' : 'Create a real-time lead generation form'}
+        <Typography variant="h6" sx={{ textAlign: 'center', fontWeight: 600, mb: 1, color: '#1f2937' }}>
+          Conversational Lead Form
+        </Typography>
+        <Typography variant="body2" sx={{ textAlign: 'center', color: '#6b7280', mb: 4 }}>
+          {existingFormId ? 'Edit your existing form' : 'What would you like to generate leads for?'}
           <EditOutlinedIcon sx={{ fontSize: 16, ml: 1, verticalAlign: 'middle', color: '#9ca3af' }} />
         </Typography>
 
-        {/* Real-time Toggle */}
-        <Alert severity="info" sx={{ mb: 3, backgroundColor: '#eff6ff', border: '1px solid #bfdbfe' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Box>
-              <Typography variant="body2" sx={{ fontWeight: 500, color: '#1e40af', mb: 0.5 }}>
-                Real-time Lead Detection (V2)
-              </Typography>
-              <Typography variant="caption" sx={{ color: '#3b82f6' }}>
-                Get instant notifications when leads appear across social platforms. No more 10-12 hour delays!
-              </Typography>
-            </Box>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={form.enable_realtime || false}
-                  onChange={(e) => handleChange('enable_realtime', e.target.checked)}
-                  color="primary"
-                />
-              }
-              label=""
-            />
-          </Box>
-        </Alert>
-
-        {/* Form Title */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
           <SingleFieldInput
             label="Form Title"
@@ -259,7 +184,7 @@ const ConversationLeadFormV2 = () => {
           </Box>
 
           <Typography variant="caption" sx={{ color: '#6b7280', mb: 1, display: 'block' }}>
-            Type what you're trying to achieve and let AI auto-fill the form. Example: "Find startup founders in Berlin working in fintech."
+            Type what you’re trying to achieve and let AI auto-fill the form. Example: “Find startup founders in Berlin working in fintech.”
           </Typography>
 
           {!isEditingAIInput && (
@@ -286,26 +211,10 @@ const ConversationLeadFormV2 = () => {
             onChange={setAutoPopulateData}
             onSend={handleAutoPopulate}
             loading={isAutoPopulating}
-            placeholder="Describe the kind of individuals you're looking for..."
+            placeholder="Describe the kind of individuals you’re looking for..."
           />
         </Box>
 
-        {/* Platform Selection (V2) */}
-        {form.enable_realtime && (
-          <Box sx={{ mb: 4 }}>
-            <PlatformSelector
-              platformConfigs={form.platform_configs || []}
-              setPlatformConfigs={(configs) => handleChange('platform_configs', configs)}
-            />
-            {enabledPlatformsCount > 0 && (
-              <Typography variant="caption" sx={{ color: '#10b981', mt: 1, display: 'block', fontWeight: 500 }}>
-                {enabledPlatformsCount} platform{enabledPlatformsCount > 1 ? 's' : ''} selected for real-time monitoring
-              </Typography>
-            )}
-          </Box>
-        )}
-
-        {/* Keywords and Excluded Keywords */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
             <ListValuesInput
@@ -328,7 +237,6 @@ const ConversationLeadFormV2 = () => {
           </Box>
         </Box>
 
-        {/* Competitors and Buying Signals */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
             <ListValuesInput
@@ -351,7 +259,6 @@ const ConversationLeadFormV2 = () => {
           </Box>
         </Box>
 
-        {/* Intent Type and AI Response Guide */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
             <SingleFieldInput
@@ -376,7 +283,6 @@ const ConversationLeadFormV2 = () => {
           </Box>
         </Box>
 
-        {/* Checkboxes */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr' }, gap: 3, mb: 3 }}>
           <Box mt={3.5} sx={{ display: 'flex', alignItems: 'center' }}>
             <CustomCheckbox
@@ -397,21 +303,16 @@ const ConversationLeadFormV2 = () => {
           </Box>
         </Box>
 
-        {/* Submit Button */}
         <Box sx={{ textAlign: 'center', pt: 3, borderTop: '1px solid #e5e7eb' }}>
           <LoadingButton
             onClick={handleSubmit}
             loading={createConversationalSearchLeadForm.isLoading || updateConversationalSearchLeadForm.isLoading}
-            text={existingFormId ? 'Update Form' : 'Start Real-time Monitoring'}
+            text={existingFormId ? 'Update Form' : 'Generate Leads'}
             loadingText="Saving..."
           />
 
           <Typography variant="caption" sx={{ color: '#6b7280', mt: 2, display: 'block' }}>
-            {existingFormId
-              ? 'Update your saved form details'
-              : form.enable_realtime
-              ? 'Start monitoring for leads in real-time across selected platforms'
-              : 'Click to start searching for candidates matching your criteria'}
+            {existingFormId ? 'Update your saved form details' : 'Click to start searching for candidates matching your criteria'}
           </Typography>
         </Box>
       </Box>
@@ -421,11 +322,7 @@ const ConversationLeadFormV2 = () => {
         open={openSuccessModal}
         image={<Image src="/assets/images/success.png" alt="Success" width={64} height={64} />}
         mainText="Success! 🎉"
-        subText={
-          form.enable_realtime
-            ? 'Your real-time monitoring is now active. You will receive instant notifications when new leads are detected.'
-            : 'Your form was successfully saved. Your form is now setup and ready to generate leads.'
-        }
+        subText="Your form was successfully saved. Your form is now setup and ready to generate leads."
         buttonText="View Leads"
         onClick={() => {
           setOpenSuccessModal(false);
@@ -438,4 +335,4 @@ const ConversationLeadFormV2 = () => {
   );
 };
 
-export default ConversationLeadFormV2;
+export default ConversationLeadForm;

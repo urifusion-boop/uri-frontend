@@ -1,12 +1,14 @@
 import { GetByFiltersLeadsDto, LeadDto } from '@/models/dtos/LeadsDto';
 import { ViewColumn, ViewModule } from '@mui/icons-material';
-import { Box, IconButton, Skeleton, Typography } from '@mui/material';
+import { Box, IconButton, Skeleton, Typography, Tooltip, Chip } from '@mui/material';
 
 import { LightThemeColors } from '@/configs/colors.config';
 import { LeadStatusEnum } from '@/models/enum-models/LeadStatusEnum';
 import { LeadTypeEnum } from '@/models/enum-models/LeadTypeEnum';
 import { useLeadTrackingStore } from '@/store/leads-tracking/useLeadTrackingStore';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import BoltIcon from '@mui/icons-material/Bolt';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import { UseQueryResult } from '@tanstack/react-query';
 import Select from '../atoms/Select';
 import LeadKanban from '../features/alert/LeadKanban';
@@ -15,6 +17,8 @@ import BusinessTableCard from './BusinessTableCard';
 import ConversationalTableCard from './ConversationalTableCard';
 import IndividualTableCard from './IndividualTableCard';
 import OrganizationTableCard from './OrganizationTableCard';
+import RealtimeLeadsDashboard from './RealtimeLeadsDashboard';
+import { useRouter } from 'next/router';
 
 interface LeadsTabProps {
   setLayout: (value: string) => void;
@@ -35,11 +39,30 @@ interface LeadsTabProps {
 
 const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, page, pageSize, setPage, setPageSize, search, setSearch, layout, setLayout, leadType, refresh }: LeadsTabProps) => {
   const filtersStore = useLeadTrackingStore((state) => state);
+  const router = useRouter();
+
+  // Check if conversational type for real-time option
+  const isConversationalType = leadType === LeadTypeEnum.CONVERSATIONAL;
 
   return (
     <Box className="bg-white h-full p-4 border-l">
       <Box className="flex items-center justify-between">
-        <Typography className="text-2xl font-medium">{leadsData?.data?.total} Leads</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography className="text-2xl font-medium">{leadsData?.data?.total} Leads</Typography>
+          {isConversationalType && layout === 'realtime' && (
+            <Chip
+              icon={<BoltIcon sx={{ fontSize: 14 }} />}
+              label="Real-time V2"
+              size="small"
+              sx={{
+                backgroundColor: '#fef3c7',
+                color: '#92400e',
+                fontWeight: 600,
+                fontSize: '11px',
+              }}
+            />
+          )}
+        </Box>
       </Box>
       <Box
         sx={{
@@ -107,13 +130,20 @@ const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, 
                 <button onClick={() => setLayout('row')} className={`p-2 transition-all ${layout === 'row' ? 'bg-gray-100 text-primary-600' : 'hover:bg-gray-50'}`}>
                   <ViewModule />
                 </button>
+                {isConversationalType && (
+                  <Tooltip title="Real-time View (V2)">
+                    <button onClick={() => setLayout('realtime')} className={`p-2 transition-all ${layout === 'realtime' ? 'bg-gray-100 text-primary-600' : 'hover:bg-gray-50'}`}>
+                      <NotificationsActiveIcon />
+                    </button>
+                  </Tooltip>
+                )}
               </Box>
             </Box>
           </Box>
         </Box>
       </Box>
 
-      {isGettingLeads ? (
+      {isGettingLeads && layout !== 'realtime' ? (
         <Box
           sx={{
             height: '60vh',
@@ -124,7 +154,13 @@ const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, 
         </Box>
       ) : (
         <Box className="transition-all duration-300 ease-in-out">
-          {layout === 'column' ? (
+          {layout === 'realtime' && isConversationalType ? (
+            <RealtimeLeadsDashboard
+              onViewLeadDetails={(lead) => {
+                router.push(`/leads-tracking/lead/${lead.lead_id}`);
+              }}
+            />
+          ) : layout === 'column' ? (
             <LeadKanban leads={(allLeads ?? []) as LeadDto[]} getPaginationFunction={getPaginationFunction} />
           ) : leadType === LeadTypeEnum.PERSON ? (
             <IndividualTableCard
