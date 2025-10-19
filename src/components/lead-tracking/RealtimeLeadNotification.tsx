@@ -17,7 +17,7 @@ interface RealtimeLeadNotificationProps {
   onViewDetails?: (lead: RealtimeLeadDto) => void;
 }
 
-const PlatformIcons: Record<BrowsercloudPlatformEnum, React.ReactNode> = {
+const PlatformIcons: Record<BrowsercloudPlatformEnum, React.ReactElement> = {
   [BrowsercloudPlatformEnum.TWITTER]: <TwitterIcon sx={{ fontSize: 16 }} />,
   [BrowsercloudPlatformEnum.LINKEDIN]: <LinkedInIcon sx={{ fontSize: 16 }} />,
   [BrowsercloudPlatformEnum.FACEBOOK]: <FacebookIcon sx={{ fontSize: 16 }} />,
@@ -77,7 +77,7 @@ const RealtimeLeadNotification: React.FC<RealtimeLeadNotificationProps> = ({
                 {source.author_name}
               </Typography>
               <Chip
-                icon={PlatformIcons[source.platform]}
+                icon={PlatformIcons[source.platform] as React.ReactElement}
                 label={PlatformDisplayNames[source.platform]}
                 size="small"
                 sx={{
