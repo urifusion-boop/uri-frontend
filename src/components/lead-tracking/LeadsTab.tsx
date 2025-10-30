@@ -168,7 +168,7 @@ const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, 
                   <ViewModule />
                 </button>
                 {isConversationalType && (
-                  <Tooltip title="Real-time View (V2)">
+                  <Tooltip title="Real-time View (VTweet)">
                     <button onClick={() => setLayout('realtime')} className={`p-2 transition-all ${layout === 'realtime' ? 'bg-gray-100 text-primary-600' : 'hover:bg-gray-50'}`}>
                       <NotificationsActiveIcon />
                     </button>
