@@ -7,6 +7,9 @@ import SingleFieldInput from '@/components/input/SingleFieldInput';
 import SmartModal from '@/components/modals/SmartModal';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
 import { ConversationalSearchFormDto, PlatformConfigFormDto } from '@/models/dtos/LeadFormDto';
+import { TwitterService } from '@/api/TwitterService';
+import { TwitterFetchResponseDto } from '@/models/dtos/TwitterDto';
+import { BrowsercloudPlatformEnum } from '@/models/enum-models/BrowsercloudPlatformEnum';
 import { FormTypeEnum } from '@/models/enum-models/FormTypeEnum';
 import { useAuth } from '@/providers/AuthProvider';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
@@ -38,6 +41,8 @@ const ConversationLeadFormV2 = () => {
   });
 
   const [existingFormId, setExistingFormId] = useState<string | null>(null);
+  const [twitterResults, setTwitterResults] = useState<TwitterFetchResponseDto | null>(null);
+  const [isLoadingTwitter, setIsLoadingTwitter] = useState(false);
 
   const { autoPopulateLeadForm, isAutoPopulating } = useLeadFormHooks();
   const [autoPopulateData, setAutoPopulateData] = useState('');
@@ -95,12 +100,49 @@ const ConversationLeadFormV2 = () => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!userId) {
       triggerToast('error', 'You must be logged in to create or update a lead form');
       return;
     }
 
+    // Check if Twitter is enabled and keywords exist
+    const twitterEnabled = form.platform_configs?.some(
+      (config) => config.platform === BrowsercloudPlatformEnum.TWITTER && config.enabled
+    );
+    
+    if (twitterEnabled && (!form.keywords || form.keywords.length === 0)) {
+      triggerToast('error', 'Please add at least one keyword to fetch Twitter data');
+      return;
+    }
+
+    // If Twitter is enabled, fetch Twitter data first
+    if (twitterEnabled && form.keywords && form.keywords.length > 0) {
+      setIsLoadingTwitter(true);
+      try {
+        const keyword = form.keywords[0]; // Use the first keyword
+        const twitterResponse = await TwitterService.fetchTweets(keyword, 10);
+        setTwitterResults(twitterResponse);
+        
+        // Store Twitter results in localStorage to pass to the table
+        localStorage.setItem('twitterResults', JSON.stringify(twitterResponse));
+        
+        triggerToast('success', `Successfully fetched ${twitterResponse.responseData.total_tweets} tweets for "${keyword}"`);
+        
+        // Navigate directly to leads page with Twitter results
+        router.push('/leads-tracking/forms/leads?type=conversational&active_tab=leads&page=1&source=twitter');
+        return;
+        
+      } catch (error) {
+        console.error('Twitter API error:', error);
+        triggerToast('error', 'Failed to fetch Twitter data. Please try again.');
+        return;
+      } finally {
+        setIsLoadingTwitter(false);
+      }
+    }
+
+    // Original form submission logic for non-Twitter cases
     // Validate V2 fields
     if (form.enable_realtime && (!form.platform_configs || form.platform_configs.length === 0)) {
       triggerToast('error', 'Please select at least one platform for real-time monitoring');
@@ -401,9 +443,15 @@ const ConversationLeadFormV2 = () => {
         <Box sx={{ textAlign: 'center', pt: 3, borderTop: '1px solid #e5e7eb' }}>
           <LoadingButton
             onClick={handleSubmit}
-            loading={createConversationalSearchLeadForm.isLoading || updateConversationalSearchLeadForm.isLoading}
-            text={existingFormId ? 'Update Form' : 'Start Real-time Monitoring'}
-            loadingText="Saving..."
+            loading={createConversationalSearchLeadForm.isLoading || updateConversationalSearchLeadForm.isLoading || isLoadingTwitter}
+            text={
+              isLoadingTwitter 
+                ? 'Fetching Twitter Data...' 
+                : existingFormId 
+                ? 'Update Form' 
+                : 'Start Real-time Monitoring'
+            }
+            loadingText={isLoadingTwitter ? 'Fetching tweets...' : 'Saving...'}
           />
 
           <Typography variant="caption" sx={{ color: '#6b7280', mt: 2, display: 'block' }}>

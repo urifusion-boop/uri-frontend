@@ -8,7 +8,8 @@ type ITwitterApi =
   | "getAccessToken"
   | "getUserData"
   | "connect"
-  | "disconnect";
+  | "disconnect"
+  | "fetchTweets";
 
 const rawTwitterApiRoutes: Record<ITwitterApi, string> = {
   getAuthUrl: "/twitter/getAuthUrl",
@@ -16,6 +17,7 @@ const rawTwitterApiRoutes: Record<ITwitterApi, string> = {
   getUserData: "/twitter/getUserData",
   connect: "/twitter/connect",
   disconnect: "/twitter/disconnect",
+  fetchTweets: "/openai-apify-twitter/fetch-tweets",
 };
 
 export const twitterApiRoutes: Record<ITwitterApi, string> =

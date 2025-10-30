@@ -1,6 +1,8 @@
 import { GetByFiltersLeadsDto, LeadDto } from '@/models/dtos/LeadsDto';
 import { ViewColumn, ViewModule } from '@mui/icons-material';
 import { Box, IconButton, Skeleton, Typography, Tooltip, Chip } from '@mui/material';
+import { TwitterFetchResponseDto } from '@/models/dtos/TwitterDto';
+import { useEffect, useState } from 'react';
 
 import { LightThemeColors } from '@/configs/colors.config';
 import { LeadStatusEnum } from '@/models/enum-models/LeadStatusEnum';
@@ -40,15 +42,38 @@ interface LeadsTabProps {
 const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, page, pageSize, setPage, setPageSize, search, setSearch, layout, setLayout, leadType, refresh }: LeadsTabProps) => {
   const filtersStore = useLeadTrackingStore((state) => state);
   const router = useRouter();
+  const [twitterData, setTwitterData] = useState<TwitterFetchResponseDto | null>(null);
 
   // Check if conversational type for real-time option
   const isConversationalType = leadType === LeadTypeEnum.CONVERSATIONAL;
+  
+  // Check if we're coming from Twitter source
+  const isTwitterSource = router.query.source === 'twitter';
+
+  // Load Twitter data from localStorage when coming from Twitter source
+  useEffect(() => {
+    if (isTwitterSource && isConversationalType) {
+      const storedTwitterData = localStorage.getItem('twitterResults');
+      if (storedTwitterData) {
+        try {
+          const parsedData = JSON.parse(storedTwitterData);
+          setTwitterData(parsedData);
+        } catch (error) {
+          console.error('Error parsing Twitter data:', error);
+        }
+      }
+    }
+  }, [isTwitterSource, isConversationalType]);
 
   return (
     <Box className="bg-white h-full p-4 border-l">
       <Box className="flex items-center justify-between">
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Typography className="text-2xl font-medium">{leadsData?.data?.total} Leads</Typography>
+          <Typography className="text-2xl font-medium">
+            {isTwitterSource && twitterData 
+              ? `${twitterData.responseData.total_tweets} Twitter Results` 
+              : `${leadsData?.data?.total} Leads`}
+          </Typography>
           {isConversationalType && layout === 'realtime' && (
             <Chip
               icon={<BoltIcon sx={{ fontSize: 14 }} />}
@@ -57,6 +82,18 @@ const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, 
               sx={{
                 backgroundColor: '#fef3c7',
                 color: '#92400e',
+                fontWeight: 600,
+                fontSize: '11px',
+              }}
+            />
+          )}
+          {isTwitterSource && twitterData && (
+            <Chip
+              label="Twitter Data"
+              size="small"
+              sx={{
+                backgroundColor: '#dbeafe',
+                color: '#1e40af',
                 fontWeight: 600,
                 fontSize: '11px',
               }}
@@ -205,6 +242,7 @@ const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, 
               search={search}
               setSearch={setSearch}
               total={leadsData?.data?.total ?? 0}
+              twitterData={isTwitterSource ? twitterData : null}
             />
           ) : null}
         </Box>
