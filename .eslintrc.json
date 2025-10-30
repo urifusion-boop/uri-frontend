@@ -3,7 +3,8 @@
   "extends": ["next/core-web-vitals", "plugin:react-hooks/recommended"],
   "rules": {
     "@next/next/no-img-element": "off",
-    "react-hooks/exhaustive-deps": "off"
+    "react-hooks/exhaustive-deps": "off",
+    "react/no-unescaped-entities": "off"
     // "import/no-unused-modules": [1, { "unusedExports": true }],
     // "no-unused-vars": ["error", { "args": "none" }]
   },

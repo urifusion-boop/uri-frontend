@@ -3,6 +3,7 @@ import { accountIcons } from '@/constants/accountIcons';
 import { PlatformHelper } from '@/helpers/PlatformHelper';
 import useClipboard from '@/hooks/clipboard';
 import { LeadDto } from '@/models/dtos/LeadsDto';
+import { TwitterFetchResponseDto } from '@/models/dtos/TwitterDto';
 import { LeadOpportunityTypeEnum } from '@/models/enum-models/LeadOpportunityTypeEnum';
 import { LeadStatusEnum } from '@/models/enum-models/LeadStatusEnum';
 import { CampaignPlatformEnum } from '@/models/enum-models/PlatformEnum';
@@ -19,10 +20,45 @@ interface ConversationalTableColumnProps {
   pageSize: number;
   setPage: (value: number) => void;
   setPageSize: (value: number) => void;
+  twitterData?: TwitterFetchResponseDto | null;
 }
 
-const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage, setPageSize, setSearch }: ConversationalTableColumnProps) => {
+const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage, setPageSize, setSearch, twitterData }: ConversationalTableColumnProps) => {
   const { copyToClipboard } = useClipboard();
+
+  // Convert Twitter data to LeadDto format for display
+  const convertTwitterDataToLeads = (twitterData: TwitterFetchResponseDto): LeadDto[] => {
+    return twitterData.responseData.tweets.map((tweet, index) => ({
+      id: `twitter-${index}`,
+      first_name: tweet.author || 'Twitter User',
+      last_name: '',
+      username: tweet.author || '',
+      lead_reason: tweet.text.substring(0, 100) + (tweet.text.length > 100 ? '...' : ''),
+      lead_status: LeadStatusEnum.NEW,
+      opportunity_type: LeadOpportunityTypeEnum.Other,
+      tags: [],
+      twitter_url: `https://twitter.com/${tweet.author}`,
+      lead_link: tweet.url,
+      picture_url: '',
+      created_date: tweet.created_at,
+      lead_type: 'CONVERSATIONAL',
+      website_url: tweet.url,
+      // Optional fields can be undefined
+      email: undefined,
+      phone: undefined,
+      company_name: undefined,
+      job_title: undefined,
+      industry: undefined,
+      linkedin_url: undefined,
+      facebook_url: undefined,
+      github_url: undefined,
+      location: undefined,
+    }));
+  };
+
+  // Use Twitter data if available, otherwise use regular lead data
+  const displayData = twitterData ? convertTwitterDataToLeads(twitterData) : data;
+  const displayTotal = twitterData ? twitterData.responseData.total_tweets : total;
 
   const getCompanyOrJobOrIndustry = (row: LeadDto) => {
     if (row.job_title && row.job_title !== '' && row.job_title.length > 1) return row.job_title;
@@ -125,7 +161,7 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
         <Table<any>
           columns={columns}
           data={
-            data.map((lead) => ({
+            displayData.map((lead) => ({
               ...lead,
               id: lead.username?.trim() ?? `${lead.first_name ?? ''} ${lead.last_name ?? ''}`.trim() ?? '-',
             })) ?? []
@@ -149,7 +185,7 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
           </FormControl>
         </Box>
 
-        <Pagination count={Math.ceil(Number(total || 1) / pageSize)} shape="rounded" size="small" page={Number(page)} onChange={(_, p) => setPage(p)} />
+        <Pagination count={Math.ceil(Number(displayTotal || 1) / pageSize)} shape="rounded" size="small" page={Number(page)} onChange={(_, p) => setPage(p)} />
       </Box>
     </Box>
   );
