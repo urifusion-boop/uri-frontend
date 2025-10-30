@@ -33,6 +33,7 @@ jobs:
           output_location: ".next" # Built app content directory - optional
           ###### End of Repository/Build Configurations ######
         env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
           NEXT_PUBLIC_URI_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_URI_API_BASE_URL_DEV }}
           URI_DEV_URL: ${{ secrets.URI_DEV_URL }}
           URI_PROD_URL: ${{ secrets.URI_PROD_URL }}
