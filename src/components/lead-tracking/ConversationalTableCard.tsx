@@ -11,6 +11,8 @@ import TurnedInIcon from '@mui/icons-material/TurnedIn';
 import { Box, FormControl, MenuItem, Pagination, Select, Typography } from '@mui/material';
 import IconContentBox from '../boxes/IconContentBox';
 import IdentityBox from '../boxes/IdentityBox';
+import TwitterDetailsModal from '../modals/TwitterDetailsModal';
+import { useState } from 'react';
 interface ConversationalTableColumnProps {
   data: LeadDto[];
   total: number;
@@ -25,6 +27,8 @@ interface ConversationalTableColumnProps {
 
 const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage, setPageSize, setSearch, twitterData }: ConversationalTableColumnProps) => {
   const { copyToClipboard } = useClipboard();
+  const [selectedLead, setSelectedLead] = useState<LeadDto | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Convert Twitter data to LeadDto format for display
   const convertTwitterDataToLeads = (twitterData: TwitterFetchResponseDto): LeadDto[] => {
@@ -33,7 +37,7 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
       first_name: tweet.author || 'Twitter User',
       last_name: '',
       username: tweet.author || '',
-      lead_reason: tweet.text.substring(0, 100) + (tweet.text.length > 100 ? '...' : ''),
+      lead_reason: tweet.text,
       lead_status: LeadStatusEnum.NEW,
       opportunity_type: LeadOpportunityTypeEnum.Other,
       tags: [],
@@ -43,8 +47,10 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
       created_date: tweet.created_at,
       lead_type: 'CONVERSATIONAL',
       website_url: tweet.url,
+      sentiment: tweet.sentiment,
+      confidence: tweet.confidence,
       // Optional fields can be undefined
-      email: undefined,
+      lead_email: undefined,
       phone: undefined,
       company_name: undefined,
       job_title: undefined,
@@ -53,7 +59,17 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
       facebook_url: undefined,
       github_url: undefined,
       location: undefined,
-    }));
+    } as LeadDto));
+  };
+
+  const handleRowClick = (lead: LeadDto) => {
+    setSelectedLead(lead);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedLead(null);
   };
 
   // Use Twitter data if available, otherwise use regular lead data
@@ -166,8 +182,12 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
               id: lead.username?.trim() ?? `${lead.first_name ?? ''} ${lead.last_name ?? ''}`.trim() ?? '-',
             })) ?? []
           }
+          onRowClick={handleRowClick}
         />
       </div>
+
+      {/* Twitter Details Modal */}
+      <TwitterDetailsModal open={isModalOpen} onClose={handleCloseModal} lead={selectedLead} />
 
       {/* Pagination Controls */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mx: 3, my: 2 }}>

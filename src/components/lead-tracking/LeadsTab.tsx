@@ -1,6 +1,6 @@
 import { GetByFiltersLeadsDto, LeadDto } from '@/models/dtos/LeadsDto';
 import { ViewColumn, ViewModule } from '@mui/icons-material';
-import { Box, IconButton, Skeleton, Typography, Tooltip, Chip } from '@mui/material';
+import { Box, IconButton, Skeleton, Typography, Tooltip, Chip, Button } from '@mui/material';
 import { TwitterFetchResponseDto } from '@/models/dtos/TwitterDto';
 import { useEffect, useState } from 'react';
 
@@ -99,6 +99,16 @@ const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, 
               }}
             />
           )}
+          {isConversationalType && !isTwitterSource && (
+            <Button
+              variant="outlined"
+              size="small"
+              sx={{ ml: 1, textTransform: 'none', borderRadius: 2 }}
+              onClick={() => router.push('/leads-tracking/forms/leads?type=conversational&source=twitter')}
+            >
+              Open Twitter View
+            </Button>
+          )}
         </Box>
       </Box>
       <Box
@@ -168,8 +178,11 @@ const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, 
                   <ViewModule />
                 </button>
                 {isConversationalType && (
-                  <Tooltip title="Real-time View (VTweet)">
-                    <button onClick={() => setLayout('realtime')} className={`p-2 transition-all ${layout === 'realtime' ? 'bg-gray-100 text-primary-600' : 'hover:bg-gray-50'}`}>
+                  <Tooltip title="Real-time View (VTweet) (disabled)">
+                    <button
+                      disabled
+                      className={`p-2 transition-all opacity-50 cursor-not-allowed ${layout === 'realtime' ? 'bg-gray-100 text-primary-600' : ''}`}
+                    >
                       <NotificationsActiveIcon />
                     </button>
                   </Tooltip>

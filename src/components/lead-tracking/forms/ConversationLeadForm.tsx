@@ -15,7 +15,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import BoltIcon from '@mui/icons-material/Bolt';
-import { Box, IconButton, Tooltip, Typography, Switch, FormControlLabel, Chip, Alert } from '@mui/material';
+import { Box, IconButton, Tooltip, Typography, Switch, FormControlLabel, Chip, Alert, Button } from '@mui/material';
 import Image from 'next/image';
 import router from 'next/router';
 import { useEffect, useState } from 'react';
@@ -150,7 +150,15 @@ const ConversationLeadFormV2 = () => {
     }
 
     // Extract enabled platforms
-    const enabledPlatforms = form.platform_configs?.filter((c) => c.enabled).map((c) => c.platform) || [];
+    const disabledPlatforms = new Set([
+      BrowsercloudPlatformEnum.LINKEDIN,
+      BrowsercloudPlatformEnum.THREADS,
+      BrowsercloudPlatformEnum.FACEBOOK,
+    ]);
+    const enabledPlatforms =
+      form.platform_configs?.
+        filter((c) => c.enabled && !disabledPlatforms.has(c.platform as any))
+        .map((c) => c.platform) || [];
 
     const payload: ConversationalSearchFormDto = {
       ...form,
@@ -227,7 +235,13 @@ const ConversationLeadFormV2 = () => {
     });
   };
 
-  const enabledPlatformsCount = form.platform_configs?.filter((c) => c.enabled).length || 0;
+  const disabledPlatforms = new Set([
+    BrowsercloudPlatformEnum.LINKEDIN,
+    BrowsercloudPlatformEnum.THREADS,
+    BrowsercloudPlatformEnum.FACEBOOK,
+  ]);
+  const enabledPlatformsCount =
+    form.platform_configs?.filter((c) => c.enabled && !disabledPlatforms.has(c.platform as any)).length || 0;
 
   return (
     <Box sx={{ maxWidth: '950px', mx: 'auto', mt: 4 }}>
@@ -328,7 +342,7 @@ const ConversationLeadFormV2 = () => {
             onChange={setAutoPopulateData}
             onSend={handleAutoPopulate}
             loading={isAutoPopulating}
-            placeholder="Describe the kind of individuals you're looking for..."
+            placeholder="Describe what you want to find or monitor across platforms..."
           />
         </Box>
 
@@ -453,6 +467,14 @@ const ConversationLeadFormV2 = () => {
             }
             loadingText={isLoadingTwitter ? 'Fetching tweets...' : 'Saving...'}
           />
+
+          <Button
+            variant="outlined"
+            sx={{ ml: 2, borderRadius: 3, textTransform: 'none' }}
+            onClick={() => router.push('/leads-tracking/forms/leads?type=conversational&source=twitter')}
+          >
+            Open Twitter Leads View
+          </Button>
 
           <Typography variant="caption" sx={{ color: '#6b7280', mt: 2, display: 'block' }}>
             {existingFormId

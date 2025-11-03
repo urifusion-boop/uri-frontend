@@ -24,6 +24,13 @@ const PlatformIcons: Record<BrowsercloudPlatformEnum, React.ReactNode> = {
 const PlatformSelector: React.FC<PlatformSelectorProps> = ({ platformConfigs, setPlatformConfigs }) => {
   const [expandedPlatform, setExpandedPlatform] = useState<string | null>(null);
 
+  // Temporarily disable specific platforms in the form UI
+  const disabledPlatforms = new Set<BrowsercloudPlatformEnum>([
+    BrowsercloudPlatformEnum.LINKEDIN,
+    BrowsercloudPlatformEnum.THREADS,
+    BrowsercloudPlatformEnum.FACEBOOK,
+  ]);
+
   const togglePlatform = (platform: BrowsercloudPlatformEnum) => {
     const existingConfig = platformConfigs.find((c) => c.platform === platform);
 
@@ -59,6 +66,7 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({ platformConfigs, se
   };
 
   const isPlatformEnabled = (platform: BrowsercloudPlatformEnum): boolean => {
+    if (disabledPlatforms.has(platform)) return false;
     return platformConfigs.find((c) => c.platform === platform)?.enabled || false;
   };
 
@@ -88,6 +96,7 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({ platformConfigs, se
           const isEnabled = isPlatformEnabled(platform);
           const config = getPlatformConfig(platform);
           const isExpanded = expandedPlatform === platform;
+          const isDisabled = disabledPlatforms.has(platform);
 
           return (
             <Box
@@ -109,7 +118,8 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({ platformConfigs, se
                 control={
                   <Checkbox
                     checked={isEnabled}
-                    onChange={() => togglePlatform(platform)}
+                    onChange={() => !isDisabled && togglePlatform(platform)}
+                    disabled={isDisabled}
                     sx={{
                       color: '#6b7280',
                       '&.Mui-checked': {
@@ -124,6 +134,11 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({ platformConfigs, se
                     <Typography variant="body2" sx={{ fontWeight: 500 }}>
                       {PlatformDisplayNames[platform]}
                     </Typography>
+                    {isDisabled && (
+                      <Typography variant="caption" sx={{ color: '#9ca3af', ml: 1 }}>
+                        (disabled for now)
+                      </Typography>
+                    )}
                   </Box>
                 }
               />
@@ -157,6 +172,7 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({ platformConfigs, se
                         onChange={(e) =>
                           updatePlatformConfig(platform, 'verified_only', e.target.checked)
                         }
+                        disabled={isDisabled}
                       />
                     }
                     label={
