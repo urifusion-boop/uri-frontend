@@ -136,7 +136,7 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({ platformConfigs, se
                     </Typography>
                     {isDisabled && (
                       <Typography variant="caption" sx={{ color: '#9ca3af', ml: 1 }}>
-                        (disabled for now)
+                        (Coming soon)
                       </Typography>
                     )}
                   </Box>

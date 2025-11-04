@@ -250,9 +250,15 @@ const MentionCard = ({ lead, deleteSelection, selectedLeadForDelete, setSelected
                   // Update local state optimistically
                   setLeadStatus(newStatus);
 
+                  // Guard against items without a backend ID (e.g., Twitter results)
+                  if (!lead.lead_id) {
+                    triggerToast('error', 'Lead ID not found', 'top-right');
+                    return;
+                  }
+
                   // Send mutation to backend
                   updateLeadStatus.mutate({
-                    lead_id: lead.lead_id ?? '',
+                    lead_id: lead.lead_id,
                     lead_status: newStatus,
                   });
                 }}
