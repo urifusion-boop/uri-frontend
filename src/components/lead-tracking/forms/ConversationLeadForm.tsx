@@ -96,6 +96,34 @@ const ConversationLeadFormV2 = () => {
     }
   }, [existingForm, isSuccess, userId]);
 
+  // Merge newly fetched Twitter results with previously cached ones
+  const mergeTwitterResults = (
+    prev: TwitterFetchResponseDto | null,
+    next: TwitterFetchResponseDto
+  ): TwitterFetchResponseDto => {
+    const prevTweets = prev?.responseData?.tweets ?? [];
+    const nextTweets = next?.responseData?.tweets ?? [];
+
+    // Deduplicate by URL if available, otherwise by text + created_at
+    const seen = new Set<string>();
+    const mergedTweets = [...prevTweets, ...nextTweets].filter((tweet) => {
+      const key = tweet.url || `${tweet.text}-${tweet.created_at}`;
+      if (!key) return true;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    return {
+      ...next,
+      responseData: {
+        ...next.responseData,
+        tweets: mergedTweets,
+        total_tweets: mergedTweets.length,
+      },
+    };
+  };
+
   const handleChange = (field: keyof ConversationalSearchFormDto, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -122,12 +150,24 @@ const ConversationLeadFormV2 = () => {
       try {
         const keyword = form.keywords[0]; // Use the first keyword
         const twitterResponse = await TwitterService.fetchTweets(keyword, 10);
-        setTwitterResults(twitterResponse);
         
-        // Store Twitter results in localStorage to pass to the table
-        localStorage.setItem('twitterResults', JSON.stringify(twitterResponse));
+        // Load any existing cached results
+        const cachedRaw = localStorage.getItem('twitterResults');
+        let cached: TwitterFetchResponseDto | null = null;
+        if (cachedRaw) {
+          try {
+            cached = JSON.parse(cachedRaw);
+          } catch (e) {
+            console.error('Error parsing cached twitterResults:', e);
+          }
+        }
+
+        // Merge new results with cached ones and persist
+        const merged = mergeTwitterResults(cached, twitterResponse);
+        setTwitterResults(merged);
+        localStorage.setItem('twitterResults', JSON.stringify(merged));
         
-        triggerToast('success', `Successfully fetched ${twitterResponse.responseData.total_tweets} tweets for "${keyword}"`);
+        triggerToast('success', `Fetched ${twitterResponse.responseData.total_tweets} new tweets for "${keyword}". Total: ${merged.responseData.total_tweets}.`);
         
         // Navigate directly to leads page with Twitter results
         router.push('/leads-tracking/forms/leads?type=conversational&active_tab=leads&page=1&source=twitter');
