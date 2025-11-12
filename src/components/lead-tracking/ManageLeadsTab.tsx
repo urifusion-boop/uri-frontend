@@ -104,6 +104,12 @@ const ManageLeadsTab = ({ leadsData, loading, page, pageSize, setPage, setPageSi
   };
 
   const displayLeads: LeadDto[] = isTwitterSource && twitterData ? convertTwitterDataToLeads(twitterData) : (leadsData?.data ?? []);
+  // Sort by newest first
+  const sortedLeads: LeadDto[] = [...(displayLeads ?? [])].sort((a, b) => {
+    const aTime = a?.created_date ? new Date(a.created_date).getTime() : 0;
+    const bTime = b?.created_date ? new Date(b.created_date).getTime() : 0;
+    return bTime - aTime;
+  });
   const displayTotal: number = isTwitterSource && twitterData ? Number(twitterData.responseData.total_tweets || 0) : Number(leadsData?.total || 0);
 
   const filters = [
@@ -408,7 +414,7 @@ const ManageLeadsTab = ({ leadsData, loading, page, pageSize, setPage, setPageSi
               flexDirection: 'column',
             }}
           >
-            {displayLeads?.map((lead) => (
+            {sortedLeads?.map((lead) => (
               <MentionCard
                 disabledCheckbox={isTwitterSource || deleteManyLeadsMutation.isLoading}
                 key={lead.lead_id}

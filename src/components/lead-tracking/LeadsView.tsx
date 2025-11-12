@@ -32,14 +32,17 @@ type LeadsViewProps = {
   leadType: LeadTypeEnum;
   label: string;
   icon: React.ReactElement;
+  excludeTabs?: string[]; // optional list of tabs to hide
 };
 
-const LeadsView = ({ leadType, label, icon }: LeadsViewProps) => {
+const LeadsView = ({ leadType, label, icon, excludeTabs = [] }: LeadsViewProps) => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const isMobile = useMediaQuery('(max-width:800px)');
   const tabs = ['leads', 'manage', 'snapshots', 'analytics'] as string[];
+  const filteredTabs = useMemo(() => tabs.filter((t) => !excludeTabs.includes(t)), [excludeTabs]);
 
-  const [activeTab, setActiveTab] = useQueryState('active_tab', parseAsStringLiteral(tabs).withDefault('leads'));
+  const defaultTab = filteredTabs.includes('leads') ? 'leads' : filteredTabs[0];
+  const [activeTab, setActiveTab] = useQueryState('active_tab', parseAsStringLiteral(filteredTabs).withDefault(defaultTab as (typeof filteredTabs)[number]));
 
   const leadsHookData = useLeadTrackingHook(activeTab, leadType);
 
@@ -142,10 +145,10 @@ const LeadsView = ({ leadType, label, icon }: LeadsViewProps) => {
       <CustomTabs
         activeTab={activeTab}
         setActiveTab={(tab) => {
-          setActiveTab(tab as (typeof tabs)[number]);
+          setActiveTab(tab as (typeof filteredTabs)[number]);
           leadsHookData.setPage(1);
         }}
-        tabs={tabs}
+        tabs={filteredTabs}
         tourKey="tour-lead"
       />
 

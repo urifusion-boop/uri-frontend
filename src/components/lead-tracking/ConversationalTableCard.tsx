@@ -74,6 +74,13 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
 
   // Use Twitter data if available, otherwise use regular lead data
   const displayData = twitterData ? convertTwitterDataToLeads(twitterData) : data;
+  
+  // Sort by newest first using created_date
+  const sortedDisplayData = [...(displayData ?? [])].sort((a, b) => {
+    const aTime = a?.created_date ? new Date(a.created_date).getTime() : 0;
+    const bTime = b?.created_date ? new Date(b.created_date).getTime() : 0;
+    return bTime - aTime;
+  });
   const displayTotal = twitterData ? twitterData.responseData.total_tweets : total;
 
   const getCompanyOrJobOrIndustry = (row: LeadDto) => {
@@ -177,7 +184,7 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
         <Table<any>
           columns={columns}
           data={
-            displayData.map((lead) => ({
+            sortedDisplayData.map((lead) => ({
               ...lead,
               id: lead.username?.trim() ?? `${lead.first_name ?? ''} ${lead.last_name ?? ''}`.trim() ?? '-',
             })) ?? []

@@ -27,12 +27,6 @@ const formTypes: FormType[] = [
     icon: Handshake,
   },
   {
-    id: 'business',
-    title: 'Business Lead Form',
-    description: 'Find people or companies that may be interested in your products or services, open to collaboration or partnership opportunities based on social media conversations.',
-    icon: Handshake,
-  },
-  {
     id: 'conversational',
     title: 'Conversation Lead Form',
     description: 'Capture social media conversations that may indicate interest in your products or services.',

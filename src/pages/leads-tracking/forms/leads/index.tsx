@@ -16,7 +16,12 @@ const FormLeads = () => {
   return (
     <DashboardLayout excludeHeader bgColor="#fff">
       <SeoHead title={`${label} Leads`} />
-      <LeadsView leadType={selectedEnum} label={label} icon={icon} />
+      <LeadsView
+        leadType={selectedEnum}
+        label={label}
+        icon={icon}
+        excludeTabs={["snapshots", "analytics"]}
+      />
     </DashboardLayout>
   );
 };
