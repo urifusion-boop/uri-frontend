@@ -129,6 +129,19 @@ const ConversationLeadFormV2 = () => {
     };
   };
 
+  const convertTwitterDateToISO = (twitterDate: string): string => {
+    try {
+      // Twitter format: "Sun Nov 09 17:51:05 +0000 2025"
+      // Convert to ISO format
+      const date = new Date(twitterDate);
+      return date.toISOString();
+    } catch (error) {
+      console.error('Error converting date:', error);
+      // Fallback to current date if conversion fails
+      return new Date().toISOString();
+    }
+  };
+
   const mapTweetsToLeadPayload = (tw: TwitterFetchResponseDto, assignedTo: string): LeadDto[] => {
     return (tw.responseData?.tweets ?? []).map((tweet) => ({
       first_name: tweet.author || 'Twitter User',
@@ -143,8 +156,8 @@ const ConversationLeadFormV2 = () => {
       lead_link: tweet.url,
       social_profile_link: tweet.url,
       picture_url: '',
-      created_date: tweet.created_at,
-      last_updated: tweet.created_at,
+      created_date: convertTwitterDateToISO(tweet.created_at),
+      last_updated: convertTwitterDateToISO(tweet.created_at),
       lead_type: LeadTypeEnum.CONVERSATIONAL,
       website_url: tweet.url ?? '',
       sentiment: tweet.sentiment,
