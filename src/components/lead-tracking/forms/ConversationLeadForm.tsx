@@ -194,29 +194,14 @@ const ConversationLeadFormV2 = () => {
       try {
         const keyword = form.keywords[0]; // Use the first keyword
         const twitterResponse = await TwitterService.fetchTweets(keyword, 10);
-        
-        // Load any existing cached results
-        const cachedRaw = localStorage.getItem('twitterResults');
-        let cached: TwitterFetchResponseDto | null = null;
-        if (cachedRaw) {
-          try {
-            cached = JSON.parse(cachedRaw);
-          } catch (e) {
-            console.error('Error parsing cached twitterResults:', e);
-          }
-        }
 
-        // Merge new results with cached ones
-        const merged = mergeTwitterResults(cached, twitterResponse);
-        setTwitterResults(merged);
-        
-        // Immediately persist tweets as leads for this user
-        const leadsPayload = mapTweetsToLeadPayload(merged, userId);
+        setTwitterResults(twitterResponse);
+
+        // Immediately persist tweets as leads for this user (only the 10 fetched)
+        const leadsPayload = mapTweetsToLeadPayload(twitterResponse, userId);
         if (leadsPayload.length > 0) {
           const saveResponse = await LeadsService.multipleCreate(leadsPayload);
           if (saveResponse.status) {
-            // Clean up any cached results since we've saved to DB
-            localStorage.removeItem('twitterResults');
             triggerToast('success', `Fetched and saved ${leadsPayload.length} Twitter leads.`);
             // Navigate to the standard conversational leads view
             router.push('/leads-tracking/forms/leads?type=conversational');
