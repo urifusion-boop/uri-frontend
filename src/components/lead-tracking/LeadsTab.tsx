@@ -21,6 +21,7 @@ import IndividualTableCard from './IndividualTableCard';
 import OrganizationTableCard from './OrganizationTableCard';
 import RealtimeLeadsDashboard from './RealtimeLeadsDashboard';
 import { useRouter } from 'next/router';
+// Removed manual Save Twitter Leads functionality; auto-save now handled in fetch flow
 
 interface LeadsTabProps {
   setLayout: (value: string) => void;
@@ -43,6 +44,7 @@ const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, 
   const filtersStore = useLeadTrackingStore((state) => state);
   const router = useRouter();
   const [twitterData, setTwitterData] = useState<TwitterFetchResponseDto | null>(null);
+  
 
   // Check if conversational type for real-time option
   const isConversationalType = leadType === LeadTypeEnum.CONVERSATIONAL;
@@ -64,6 +66,8 @@ const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, 
       }
     }
   }, [isTwitterSource, isConversationalType]);
+
+  
 
   return (
     <Box className="bg-white h-full p-4 border-l">
@@ -99,6 +103,7 @@ const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, 
               }}
             />
           )}
+          {/* Save Twitter Leads button removed: auto-save now occurs on fetch */}
           {isConversationalType && !isTwitterSource && (
             <Button
               variant="outlined"

@@ -19,6 +19,16 @@ import { UriResponse } from '@/models/responses/UriResponse';
 import { AxiosResponse } from 'axios';
 
 export class LeadsService {
+  static async create(data: LeadDto): Promise<UriResponse<LeadDto>> {
+    const response: Awaited<AxiosResponse<UriResponse<LeadDto>>> = await UriHttpClient.getClient().post(leadsApiRoutes.create, data);
+    return response.data;
+  }
+
+  static async multipleCreate(leads: LeadDto[]): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post(leadsApiRoutes.multipleCreate, leads);
+    return response.data;
+  }
+
   static async getByFilters(data: GetByFiltersLeadsDtoParameters): Promise<UriResponse<GetByFiltersLeadsDto>> {
     const queryString = ObjectHelper.filterMap(data);
 

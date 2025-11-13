@@ -12,6 +12,11 @@ import { TwitterFetchResponseDto } from '@/models/dtos/TwitterDto';
 import { BrowsercloudPlatformEnum } from '@/models/enum-models/BrowsercloudPlatformEnum';
 import { FormTypeEnum } from '@/models/enum-models/FormTypeEnum';
 import { useAuth } from '@/providers/AuthProvider';
+import { LeadsService } from '@/api/LeadsService';
+import { LeadDto } from '@/models/dtos/LeadsDto';
+import { LeadStatusEnum } from '@/models/enum-models/LeadStatusEnum';
+import { LeadTypeEnum } from '@/models/enum-models/LeadTypeEnum';
+import { LeadSourceEnum } from '@/models/enum-models/LeadSourceEnum';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import BoltIcon from '@mui/icons-material/Bolt';
@@ -124,6 +129,32 @@ const ConversationLeadFormV2 = () => {
     };
   };
 
+  const mapTweetsToLeadPayload = (tw: TwitterFetchResponseDto, assignedTo: string): LeadDto[] => {
+    return (tw.responseData?.tweets ?? []).map((tweet) => ({
+      first_name: tweet.author || 'Twitter User',
+      last_name: '',
+      username: tweet.author || '',
+      mention: tweet.text,
+      lead_reason: tweet.text,
+      lead_status: LeadStatusEnum.NEW,
+      opportunity_type: 'Other',
+      tags: [],
+      twitter_url: tweet.url,
+      lead_link: tweet.url,
+      social_profile_link: tweet.url,
+      picture_url: '',
+      created_date: tweet.created_at,
+      last_updated: tweet.created_at,
+      lead_type: LeadTypeEnum.CONVERSATIONAL,
+      website_url: tweet.url ?? '',
+      sentiment: tweet.sentiment,
+      confidence: tweet.confidence,
+      lead_source: LeadSourceEnum.X,
+      assigned_to: assignedTo,
+      starred: false,
+    }));
+  };
+
   const handleChange = (field: keyof ConversationalSearchFormDto, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -144,7 +175,7 @@ const ConversationLeadFormV2 = () => {
       return;
     }
 
-    // If Twitter is enabled, fetch Twitter data first
+    // If Twitter is enabled, fetch Twitter data first and auto-save
     if (twitterEnabled && form.keywords && form.keywords.length > 0) {
       setIsLoadingTwitter(true);
       try {
@@ -162,16 +193,29 @@ const ConversationLeadFormV2 = () => {
           }
         }
 
-        // Merge new results with cached ones and persist
+        // Merge new results with cached ones
         const merged = mergeTwitterResults(cached, twitterResponse);
         setTwitterResults(merged);
-        localStorage.setItem('twitterResults', JSON.stringify(merged));
         
-        triggerToast('success', `Fetched ${twitterResponse.responseData.total_tweets} new tweets for "${keyword}". Total: ${merged.responseData.total_tweets}.`);
-        
-        // Navigate directly to leads page with Twitter results
-        router.push('/leads-tracking/forms/leads?type=conversational&active_tab=leads&page=1&source=twitter');
-        return;
+        // Immediately persist tweets as leads for this user
+        const leadsPayload = mapTweetsToLeadPayload(merged, userId);
+        if (leadsPayload.length > 0) {
+          const saveResponse = await LeadsService.multipleCreate(leadsPayload);
+          if (saveResponse.status) {
+            // Clean up any cached results since we've saved to DB
+            localStorage.removeItem('twitterResults');
+            triggerToast('success', `Fetched and saved ${leadsPayload.length} Twitter leads.`);
+            // Navigate to the standard conversational leads view
+            router.push('/leads-tracking/forms/leads?type=conversational');
+            return;
+          } else {
+            triggerToast('error', saveResponse.responseMessage ?? 'Failed to save Twitter leads');
+            return;
+          }
+        } else {
+          triggerToast('error', 'No tweets to save as leads');
+          return;
+        }
         
       } catch (error) {
         console.error('Twitter API error:', error);
