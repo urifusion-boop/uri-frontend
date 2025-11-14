@@ -1,6 +1,6 @@
 import { BrowsercloudPlatformEnum, PlatformDisplayNames } from '@/models/enum-models/BrowsercloudPlatformEnum';
 import { PlatformConfigFormDto } from '@/models/dtos/LeadFormDto';
-import { Box, Typography, Checkbox, FormControlLabel, Collapse, TextField, Tooltip, IconButton } from '@mui/material';
+import { Box, Typography, Checkbox, FormControlLabel, Tooltip, IconButton } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
@@ -143,66 +143,7 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({ platformConfigs, se
                 }
               />
 
-              <Collapse in={isEnabled}>
-                <Box sx={{ mt: 2, pl: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  {/* Min Followers */}
-                  <TextField
-                    label="Min. Followers"
-                    type="number"
-                    size="small"
-                    value={config?.min_followers || ''}
-                    onChange={(e) =>
-                      updatePlatformConfig(platform, 'min_followers', e.target.value ? parseInt(e.target.value) : undefined)
-                    }
-                    placeholder="e.g. 100"
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        fontSize: '14px',
-                      },
-                    }}
-                    helperText="Filter by minimum follower count"
-                  />
-
-                  {/* Verified Only */}
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        size="small"
-                        checked={config?.verified_only || false}
-                        onChange={(e) =>
-                          updatePlatformConfig(platform, 'verified_only', e.target.checked)
-                        }
-                        disabled={isDisabled}
-                      />
-                    }
-                    label={
-                      <Typography variant="caption" sx={{ color: '#6b7280' }}>
-                        Verified accounts only
-                      </Typography>
-                    }
-                  />
-
-                  {/* Twitter-specific: Exclude Retweets */}
-                  {platform === BrowsercloudPlatformEnum.TWITTER && (
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          size="small"
-                          checked={config?.exclude_retweets || false}
-                          onChange={(e) =>
-                            updatePlatformConfig(platform, 'exclude_retweets', e.target.checked)
-                          }
-                        />
-                      }
-                      label={
-                        <Typography variant="caption" sx={{ color: '#6b7280' }}>
-                          Exclude retweets
-                        </Typography>
-                      }
-                    />
-                  )}
-                </Box>
-              </Collapse>
+              
             </Box>
           );
         })}

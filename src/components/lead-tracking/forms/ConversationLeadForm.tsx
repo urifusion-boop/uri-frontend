@@ -21,6 +21,7 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import BoltIcon from '@mui/icons-material/Bolt';
 import { Box, IconButton, Tooltip, Typography, Switch, FormControlLabel, Chip, Alert, Button } from '@mui/material';
+import SaveIcon from '@mui/icons-material/Save';
 import Image from 'next/image';
 import router from 'next/router';
 import { useEffect, useState } from 'react';
@@ -92,7 +93,7 @@ const ConversationLeadFormV2 = () => {
         add_to_history,
         auto_generate,
         form_type,
-        enable_realtime: (existingForm as any).enable_realtime ?? true,
+        enable_realtime: true,
         monitoring_platforms: (existingForm as any).monitoring_platforms || [],
         platform_configs: (existingForm as any).platform_configs || [],
       });
@@ -224,14 +225,6 @@ const ConversationLeadFormV2 = () => {
       }
     }
 
-    // Original form submission logic for non-Twitter cases
-    // Validate V2 fields
-    if (form.enable_realtime && (!form.platform_configs || form.platform_configs.length === 0)) {
-      triggerToast('error', 'Please select at least one platform for real-time monitoring');
-      return;
-    }
-
-    // Extract enabled platforms
     const disabledPlatforms = new Set([
       BrowsercloudPlatformEnum.LINKEDIN,
       BrowsercloudPlatformEnum.THREADS,
@@ -242,8 +235,14 @@ const ConversationLeadFormV2 = () => {
         filter((c) => c.enabled && !disabledPlatforms.has(c.platform as any))
         .map((c) => c.platform) || [];
 
+    if (form.enable_realtime && enabledPlatforms.length === 0) {
+      triggerToast('error', 'Please select at least one platform for real-time monitoring');
+      return;
+    }
+
     const payload: ConversationalSearchFormDto = {
       ...form,
+      enable_realtime: true,
       user_id: userId,
       monitoring_platforms: enabledPlatforms,
     };
@@ -261,7 +260,7 @@ const ConversationLeadFormV2 = () => {
         add_to_history: payload.add_to_history || false,
         auto_generate: payload.auto_generate || false,
         form_type: FormTypeEnum.CONVERSATIONAL,
-        enable_realtime: payload.enable_realtime || false,
+        enable_realtime: true,
         monitoring_platforms: payload.monitoring_platforms || [],
         platform_configs: payload.platform_configs || [],
       };
@@ -359,17 +358,11 @@ const ConversationLeadFormV2 = () => {
                 Real-time Lead Detection (V2)
               </Typography>
               <Typography variant="caption" sx={{ color: '#3b82f6' }}>
-                Get instant notifications when leads appear across social platforms. No more 10-12 hour delays!
+                Get instant notifications when leads appear across social platforms.
               </Typography>
             </Box>
             <FormControlLabel
-              control={
-                <Switch
-                  checked={form.enable_realtime || false}
-                  onChange={(e) => handleChange('enable_realtime', e.target.checked)}
-                  color="primary"
-                />
-              }
+              control={<Switch checked color="primary" disabled />}
               label=""
             />
           </Box>
@@ -435,11 +428,6 @@ const ConversationLeadFormV2 = () => {
               platformConfigs={form.platform_configs || []}
               setPlatformConfigs={(configs) => handleChange('platform_configs', configs)}
             />
-            {enabledPlatformsCount > 0 && (
-              <Typography variant="caption" sx={{ color: '#10b981', mt: 1, display: 'block', fontWeight: 500 }}>
-                {enabledPlatformsCount} platform{enabledPlatformsCount > 1 ? 's' : ''} selected for real-time monitoring
-              </Typography>
-            )}
           </Box>
         )}
 
@@ -541,22 +529,15 @@ const ConversationLeadFormV2 = () => {
             onClick={handleSubmit}
             loading={createConversationalSearchLeadForm.isLoading || updateConversationalSearchLeadForm.isLoading || isLoadingTwitter}
             text={
-              isLoadingTwitter 
-                ? 'Fetching Twitter Data...' 
-                : existingFormId 
-                ? 'Update Form' 
-                : 'Start Real-time Monitoring'
+              isLoadingTwitter
+                ? 'Fetching Twitter Data...'
+                : existingFormId
+                ? 'Save Update'
+                : 'Save'
             }
             loadingText={isLoadingTwitter ? 'Fetching tweets...' : 'Saving...'}
+            startIcon={<SaveIcon />}
           />
-
-          <Button
-            variant="outlined"
-            sx={{ ml: 2, borderRadius: 3, textTransform: 'none' }}
-            onClick={() => router.push('/leads-tracking/forms/leads?type=conversational&source=twitter')}
-          >
-            Open Twitter Leads View
-          </Button>
 
           <Typography variant="caption" sx={{ color: '#6b7280', mt: 2, display: 'block' }}>
             {existingFormId
