@@ -76,10 +76,10 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
   const displayData = twitterData ? convertTwitterDataToLeads(twitterData) : data;
   
   // Sort by newest first using created_date
-  const sortedDisplayData = [...(displayData ?? [])].sort((a, b) => {
+  const sortedDisplayData = [...(displayData ?? [])].map((lead, index) => ({ ...lead, originalIndex: index })).sort((a, b) => {
     const aTime = a?.created_date ? new Date(a.created_date).getTime() : 0;
     const bTime = b?.created_date ? new Date(b.created_date).getTime() : 0;
-    return bTime - aTime;
+    return aTime === bTime ? a.originalIndex - b.originalIndex : bTime - aTime;
   });
   const displayTotal = twitterData ? twitterData.responseData.total_tweets : total;
 
