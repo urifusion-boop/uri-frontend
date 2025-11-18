@@ -8,7 +8,7 @@ import SmartModal from '@/components/modals/SmartModal';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
 import { ConversationalSearchFormDto, PlatformConfigFormDto } from '@/models/dtos/LeadFormDto';
 import { TwitterService } from '@/api/TwitterService';
-import { LinkedinService } from '@/api/LinkedinService';
+import { TiktokService } from '@/api/TiktokService';
 import { TwitterFetchResponseDto } from '@/models/dtos/TwitterDto';
 import { BrowsercloudPlatformEnum } from '@/models/enum-models/BrowsercloudPlatformEnum';
 import { FormTypeEnum } from '@/models/enum-models/FormTypeEnum';
@@ -50,7 +50,7 @@ const ConversationLeadFormV2 = () => {
   const [existingFormId, setExistingFormId] = useState<string | null>(null);
   const [twitterResults, setTwitterResults] = useState<TwitterFetchResponseDto | null>(null);
   const [isLoadingTwitter, setIsLoadingTwitter] = useState(false);
-  const [isLoadingLinkedIn, setIsLoadingLinkedIn] = useState(false);
+  const [isLoadingTiktok, setIsLoadingTiktok] = useState(false);
 
   const { autoPopulateLeadForm, isAutoPopulating } = useLeadFormHooks();
   const [autoPopulateData, setAutoPopulateData] = useState('');
@@ -184,11 +184,12 @@ const ConversationLeadFormV2 = () => {
     const twitterEnabled = form.platform_configs?.some(
       (config) => config.platform === BrowsercloudPlatformEnum.TWITTER && config.enabled
     );
-    const linkedinEnabled = form.platform_configs?.some(
-      (config) => config.platform === BrowsercloudPlatformEnum.LINKEDIN && config.enabled
+    const linkedinEnabled = false;
+    const tiktokEnabled = form.platform_configs?.some(
+      (config) => config.platform === BrowsercloudPlatformEnum.TIKTOK && config.enabled
     );
 
-    if ((twitterEnabled || linkedinEnabled) && (!form.keywords || form.keywords.length === 0)) {
+    if ((twitterEnabled || linkedinEnabled || tiktokEnabled) && (!form.keywords || form.keywords.length === 0)) {
       triggerToast('error', 'Please add at least one keyword to fetch data');
       return;
     }
@@ -229,9 +230,62 @@ const ConversationLeadFormV2 = () => {
       }
     }
 
-    const disabledPlatforms = new Set([
+    // If TikTok is enabled, fetch TikTok data and auto-save
+    if (tiktokEnabled && form.keywords && form.keywords.length > 0) {
+      setIsLoadingTiktok(true);
+      try {
+        const keyword = form.keywords[0];
+        const tkResponse: any = await TiktokService.fetchPosts(keyword, 10);
+        const posts = tkResponse?.responseData?.posts ?? tkResponse?.responseData?.data?.posts ?? [];
+        const leadsPayload: LeadDto[] = posts.map((p: any) => ({
+          first_name: p.author || p.username || 'TikTok User',
+          last_name: '',
+          username: p.author || p.username || '',
+          mention: p.text || p.desc || '',
+          lead_reason: p.text || p.desc || '',
+          lead_status: LeadStatusEnum.NEW,
+          opportunity_type: 'Other',
+          tags: [],
+          lead_link: p.url || p.webVideoUrl || p.video_url || '',
+          social_profile_link: p.url || p.webVideoUrl || p.video_url || '',
+          picture_url: '',
+          created_date: typeof p.createTime === 'number' ? new Date(p.createTime * 1000).toISOString() : (p.created_at ? new Date(p.created_at).toISOString() : new Date().toISOString()),
+          last_updated: typeof p.createTime === 'number' ? new Date(p.createTime * 1000).toISOString() : (p.created_at ? new Date(p.created_at).toISOString() : new Date().toISOString()),
+          lead_type: LeadTypeEnum.CONVERSATIONAL,
+          website_url: p.url || p.webVideoUrl || p.video_url || '',
+          sentiment: p.sentiment,
+          confidence: p.confidence,
+          lead_source: LeadSourceEnum.TIKTOK,
+          assigned_to: userId,
+          starred: false,
+        }));
+        if (leadsPayload.length > 0) {
+          const saveResponse = await LeadsService.multipleCreate(leadsPayload);
+          if (saveResponse.status) {
+            triggerToast('success', `Fetched and saved ${leadsPayload.length} TikTok leads.`);
+            router.push('/leads-tracking/forms/leads?type=conversational');
+            return;
+          } else {
+            triggerToast('error', saveResponse.responseMessage ?? 'Failed to save TikTok leads');
+            return;
+          }
+        } else {
+          triggerToast('error', 'No TikTok posts to save as leads');
+          return;
+        }
+      } catch (error) {
+        console.error('TikTok API error:', error);
+        triggerToast('error', 'Failed to fetch TikTok data. Please try again.');
+        return;
+      } finally {
+        setIsLoadingTiktok(false);
+      }
+    }
+
+  const disabledPlatforms = new Set([
       BrowsercloudPlatformEnum.THREADS,
       BrowsercloudPlatformEnum.FACEBOOK,
+      BrowsercloudPlatformEnum.LINKEDIN,
     ]);
     const enabledPlatforms =
       form.platform_configs?.
@@ -243,58 +297,6 @@ const ConversationLeadFormV2 = () => {
       return;
     }
 
-    if (linkedinEnabled && form.keywords && form.keywords.length > 0) {
-      setIsLoadingLinkedIn(true);
-      try {
-        const keyword = form.keywords[0];
-        const linkedinResponse = await LinkedinService.fetchPosts(keyword, 10);
-
-        const leadsPayload = (linkedinResponse.responseData?.posts ?? []).map((post) => ({
-          first_name: post.author || 'LinkedIn User',
-          last_name: '',
-          username: post.author || '',
-          mention: post.text,
-          lead_reason: post.text,
-          lead_status: LeadStatusEnum.NEW,
-          opportunity_type: 'Other',
-          tags: [],
-          linkedin_url: post.author_profile,
-          lead_link: post.url,
-          social_profile_link: post.author_profile || post.url,
-          picture_url: '',
-          created_date: new Date(post.created_at).toISOString(),
-          last_updated: new Date(post.created_at).toISOString(),
-          lead_type: LeadTypeEnum.CONVERSATIONAL,
-          website_url: post.url ?? '',
-          sentiment: post.sentiment,
-          confidence: post.confidence,
-          lead_source: LeadSourceEnum.LINKEDIN,
-          assigned_to: userId,
-          starred: false,
-        }));
-
-        if (leadsPayload.length > 0) {
-          const saveResponse = await LeadsService.multipleCreate(leadsPayload);
-          if (saveResponse.status) {
-            triggerToast('success', `Fetched and saved ${leadsPayload.length} LinkedIn leads.`);
-            router.push('/leads-tracking/forms/leads?type=conversational');
-            return;
-          } else {
-            triggerToast('error', saveResponse.responseMessage ?? 'Failed to save LinkedIn leads');
-            return;
-          }
-        } else {
-          triggerToast('error', 'No LinkedIn posts to save as leads');
-          return;
-        }
-      } catch (error) {
-        console.error('LinkedIn API error:', error);
-        triggerToast('error', 'Failed to fetch LinkedIn data. Please try again.');
-        return;
-      } finally {
-        setIsLoadingLinkedIn(false);
-      }
-    }
 
     const payload: ConversationalSearchFormDto = {
       ...form,
@@ -582,17 +584,17 @@ const ConversationLeadFormV2 = () => {
         <Box sx={{ textAlign: 'center', pt: 3, borderTop: '1px solid #e5e7eb' }}>
           <LoadingButton
             onClick={handleSubmit}
-            loading={createConversationalSearchLeadForm.isLoading || updateConversationalSearchLeadForm.isLoading || isLoadingTwitter || isLoadingLinkedIn}
+            loading={createConversationalSearchLeadForm.isLoading || updateConversationalSearchLeadForm.isLoading || isLoadingTwitter || isLoadingTiktok}
             text={
               isLoadingTwitter
                 ? 'Fetching Twitter Data...'
-                : isLoadingLinkedIn
-                ? 'Fetching LinkedIn Data...'
+                : isLoadingTiktok
+                ? 'Fetching TikTok Data...'
                 : existingFormId
                 ? 'Save Update'
                 : 'Save'
             }
-            loadingText={isLoadingTwitter || isLoadingLinkedIn ? 'Fetching posts...' : 'Saving...'}
+            loadingText={isLoadingTwitter || isLoadingTiktok ? 'Fetching posts...' : 'Saving...'}
             startIcon={<SaveIcon />}
           />
 
