@@ -1,5 +1,6 @@
 import { LeadDto } from '@/models/dtos/LeadsDto';
 import { LeadTypeEnum } from '@/models/enum-models/LeadTypeEnum';
+import { FormTypeEnum } from '@/models/enum-models/FormTypeEnum';
 
 export class LeadHelper {
   static getLeadFormType(leadType: LeadTypeEnum) {
@@ -14,6 +15,21 @@ export class LeadHelper {
         return 'conversational';
       default:
         return '';
+    }
+  }
+
+  static getFormTypeFromLeadType(leadType: LeadTypeEnum): FormTypeEnum {
+    switch (leadType) {
+      case LeadTypeEnum.PERSON:
+        return FormTypeEnum.PERSON;
+      case LeadTypeEnum.ORGANIZATION:
+        return FormTypeEnum.ORGANIZATION;
+      case LeadTypeEnum.BUSINESS:
+        return FormTypeEnum.BUSINESS;
+      case LeadTypeEnum.CONVERSATIONAL:
+        return FormTypeEnum.CONVERSATIONAL;
+      default:
+        return FormTypeEnum.PERSON;
     }
   }
 

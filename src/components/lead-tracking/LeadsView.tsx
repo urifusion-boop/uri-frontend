@@ -47,7 +47,7 @@ const LeadsView = ({ leadType, label, icon, excludeTabs = [] }: LeadsViewProps) 
   const leadsHookData = useLeadTrackingHook(activeTab, leadType);
 
   const toggleExportModal = useCallback(() => setIsExportModalOpen((prev) => !prev), []);
-  const generateButtonText = useMemo(() => (leadsHookData.businessInfoData ? `Update ${label} Form` : `Generate ${label} Form`), [leadsHookData.businessInfoData]);
+  const generateButtonText = useMemo(() => (leadsHookData.existingLeadForm ? `Update ${label} Form` : `Generate ${label} Form`), [leadsHookData.existingLeadForm, label]);
 
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const toggleImportModal = useCallback(() => setIsImportModalOpen((prev) => !prev), []);
@@ -100,7 +100,7 @@ const LeadsView = ({ leadType, label, icon, excludeTabs = [] }: LeadsViewProps) 
       <FeatureHeader
         isMobile={isMobile}
         onClick={() => router.push(`/leads-tracking/forms/manage?type=${LeadHelper.getLeadFormType(leadType)}`)}
-        loading={leadsHookData.isLoadingBusinessInfo}
+        loading={leadsHookData.isLoadingLeadForm}
         buttonText={generateButtonText}
         onExportClick={toggleExportModal}
         //onImportClick={toggleImportModal}
