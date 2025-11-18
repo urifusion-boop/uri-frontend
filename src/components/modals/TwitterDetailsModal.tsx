@@ -6,6 +6,7 @@ import LinkIcon from '@mui/icons-material/Link';
 import PersonIcon from '@mui/icons-material/Person';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
+import { SvgIconComponent } from '@mui/icons-material';
 
 interface TwitterDetailsModalProps {
   open: boolean;
@@ -13,8 +14,41 @@ interface TwitterDetailsModalProps {
   lead: LeadDto | null;
 }
 
+// Platform configuration
+interface PlatformConfig {
+  name: string;
+  icon: SvgIconComponent;
+  color: string;
+  contentLabel: string;
+  urlLabel: string;
+  profileUrlField?: keyof LeadDto;
+}
+
+const platformConfigs: Record<string, PlatformConfig> = {
+  twitter: {
+    name: 'Twitter',
+    icon: TwitterIcon,
+    color: '#1DA1F2',
+    contentLabel: 'Tweet Content',
+    urlLabel: 'Tweet URL',
+    profileUrlField: 'twitter_url',
+  },
+  tiktok: {
+    name: 'TikTok',
+    icon: TwitterIcon, // Will need to add a TikTok icon component
+    color: '#000000',
+    contentLabel: 'TikTok Content',
+    urlLabel: 'TikTok URL',
+  },
+};
+
 const TwitterDetailsModal = ({ open, onClose, lead }: TwitterDetailsModalProps) => {
   if (!lead) return null;
+
+  // Determine platform from lead_source
+  const leadSource = lead.lead_source?.toLowerCase() || 'twitter';
+  const platformConfig = platformConfigs[leadSource] || platformConfigs.twitter;
+  const PlatformIcon = platformConfig.icon;
 
   const getSentimentColor = (sentiment: string | undefined) => {
     if (!sentiment) return 'default';
@@ -34,9 +68,9 @@ const TwitterDetailsModal = ({ open, onClose, lead }: TwitterDetailsModalProps) 
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <TwitterIcon sx={{ color: '#1DA1F2' }} />
+          <PlatformIcon sx={{ color: platformConfig.color }} />
           <Typography variant="h6" fontWeight={600}>
-            Twitter Lead Details
+            {platformConfig.name} Lead Details
           </Typography>
         </Box>
         <IconButton onClick={onClose} size="small">
@@ -60,10 +94,10 @@ const TwitterDetailsModal = ({ open, onClose, lead }: TwitterDetailsModalProps) 
           </Typography>
         </Box>
 
-        {/* Tweet Content */}
+        {/* Content */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" fontWeight={600} color="text.secondary" sx={{ mb: 1 }}>
-            Tweet Content
+            {platformConfig.contentLabel}
           </Typography>
           <Box
             sx={{
@@ -104,12 +138,12 @@ const TwitterDetailsModal = ({ open, onClose, lead }: TwitterDetailsModalProps) 
           </Box>
         )}
 
-        {/* Twitter URL */}
+        {/* Post URL */}
         <Box sx={{ mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
             <LinkIcon sx={{ color: '#6b7280', fontSize: 20 }} />
             <Typography variant="subtitle2" fontWeight={600} color="text.secondary">
-              Tweet URL
+              {platformConfig.urlLabel}
             </Typography>
           </Box>
           <Link
@@ -119,7 +153,7 @@ const TwitterDetailsModal = ({ open, onClose, lead }: TwitterDetailsModalProps) 
             sx={{
               ml: 3.5,
               display: 'block',
-              color: '#1DA1F2',
+              color: platformConfig.color,
               textDecoration: 'none',
               '&:hover': { textDecoration: 'underline' },
               wordBreak: 'break-all',
@@ -129,29 +163,29 @@ const TwitterDetailsModal = ({ open, onClose, lead }: TwitterDetailsModalProps) 
           </Link>
         </Box>
 
-        {/* Twitter Profile URL */}
-        {lead.twitter_url && (
+        {/* Profile URL */}
+        {platformConfig.profileUrlField && lead[platformConfig.profileUrlField] && (
           <Box sx={{ mb: 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              <TwitterIcon sx={{ color: '#6b7280', fontSize: 20 }} />
+              <PlatformIcon sx={{ color: '#6b7280', fontSize: 20 }} />
               <Typography variant="subtitle2" fontWeight={600} color="text.secondary">
-                Twitter Profile
+                {platformConfig.name} Profile
               </Typography>
             </Box>
             <Link
-              href={lead.twitter_url}
+              href={lead[platformConfig.profileUrlField] as string}
               target="_blank"
               rel="noopener noreferrer"
               sx={{
                 ml: 3.5,
                 display: 'block',
-                color: '#1DA1F2',
+                color: platformConfig.color,
                 textDecoration: 'none',
                 '&:hover': { textDecoration: 'underline' },
                 wordBreak: 'break-all',
               }}
             >
-              {lead.twitter_url}
+              {lead[platformConfig.profileUrlField] as string}
             </Link>
           </Box>
         )}

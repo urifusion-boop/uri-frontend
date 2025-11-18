@@ -6,8 +6,6 @@ import { useEffect, useState } from 'react';
 import { FacebookService } from '@/api/FacebookService';
 import { InfluencerService } from '@/api/InfluencerService';
 import { InstagramService } from '@/api/InstagramService';
-import { LinkedInInsightsService } from '@/api/LinkedInInsights';
-import { LinkedInService } from '@/api/LinkedInService';
 import { TiktokService } from '@/api/TiktokService';
 import { TwitterService } from '@/api/TwitterService';
 import { UserService } from '@/api/UserService';
@@ -38,7 +36,7 @@ export const useInfluencersTrackingOverview = () => {
   const [hasConnectedFacebook, setHasConnectedFacebook] = useState(false);
   const [hasConnectedTiktok, setHasConnectedTiktok] = useState(false);
   const [hasConnectedTwitter, setHasConnectedTwitter] = useState(false);
-  const [hasConnectedLinkedIn, setHasConnectedLinkedIn] = useState(false);
+  
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
   const code = router?.query?.code as string;
@@ -89,19 +87,7 @@ export const useInfluencersTrackingOverview = () => {
     },
   });
 
-  // Linkedin Authentication
-  const { mutate: getLinkedInUrl, isLoading: gettingLinkedInUrl } = useMutation({
-    mutationFn: async () => {
-      const response = await LinkedInService.getCommMgtAuthUrl(ApiScopeEnum.LinkedInAccountTrackingScope);
-      setLocalStorageItem(STORE_KEYS.TEMP_CONNECT_ACCOUNT_NAME, 'linkedIn');
-
-      if (response.status) {
-        router.push(response.responseData ?? '');
-      } else {
-        toast.error(response.responseMessage);
-      }
-    },
-  });
+  
 
   // Query to connect the facebook account
   const { isLoading: facebookConnecting } = useQuery({
@@ -303,62 +289,7 @@ export const useInfluencersTrackingOverview = () => {
     },
   });
 
-  // Query to connect the linkedin account
-  const { isLoading: linkedInConnecting } = useQuery({
-    queryKey: ['connect-linkedIn', code],
-    queryFn: async () => {
-      if (hasConnectedLinkedIn) {
-        return null;
-      }
-
-      if (platform !== 'linkedIn') {
-        return null;
-      }
-
-      if (!code) {
-        return null;
-      }
-
-      setHasConnectedLinkedIn(true);
-
-      const response = await LinkedInService.connectCommMgtApi(userDetails?.userId ?? '', code ?? '');
-
-      if (!response.status) {
-        toast.error(response.responseMessage);
-        return;
-      }
-
-      const userDetailResponse = await UserService.getByUserIdApi(userDetails?.userId);
-
-      if (!userDetailResponse.status) {
-        triggerToast('error', userDetailResponse.responseMessage);
-        return;
-      }
-
-      if (userDetailResponse.responseData) {
-        saveUserDetails(userDetailResponse.responseData);
-      }
-
-      const saveLinkedInAccountResponse = await LinkedInInsightsService.saveLinkedInAccount(
-        userDetails?.userId ?? '',
-        TokenScopeEnum.ACCOUNT_TRACKING,
-        AppTokenHelper.getProvider(userDetailResponse.responseData?.appTokens ?? [], SocialMediaEnum.LINKEDIN_COMM_MGT)?.token ?? ''
-      );
-
-      if (!saveLinkedInAccountResponse.status) {
-        triggerToast('error', saveLinkedInAccountResponse.responseMessage);
-        return;
-      }
-
-      triggerToast('success', 'LinkedIn account connected successfully');
-      queryClient.invalidateQueries({
-        queryKey: ['influencers'],
-      });
-      queryClient.invalidateQueries({ queryKey: ['feature-limit'] });
-
-      router.push('/account-tracking');
-    },
-  });
+  
 
   // Mutation to unbind the account
   const { mutate: unbindAccount, isLoading: unbindingAccount } = useMutation({
@@ -408,13 +339,13 @@ export const useInfluencersTrackingOverview = () => {
     disconnectModalOpen,
     setDisconnectModalOpen,
     getFacebookUrl,
-    gettingUrl: gettingFacebookUrl || gettingTwitterUrl || gettingLinkedInUrl,
+    gettingUrl: gettingFacebookUrl || gettingTwitterUrl,
     getTiktokUrl,
     gettingTiktokUrl,
     unbindAccount,
     unbindingAccount,
     getTwitterUrl,
-    getLinkedInUrl,
-    connectingAccount: facebookConnecting || tiktokConnecting || twitterConnecting || linkedInConnecting,
+    
+    connectingAccount: facebookConnecting || tiktokConnecting || twitterConnecting,
   };
 };

@@ -5,7 +5,6 @@ import { useRouter } from 'next/router';
 import { MdErrorOutline } from 'react-icons/md';
 import FacebookAccountTracking from './facebook';
 import InstagramInfluencerAnalytics from './instagram';
-import LinkedinAccountTracking from './linkedin';
 import TiktokInfluencerAnalytics from './tiktok';
 import TwitterInfluencerAnalytics from './twitter';
 
@@ -24,7 +23,18 @@ const PlatformAnalysis = () => {
     case 'facebook':
       return <FacebookAccountTracking />;
     case 'linkedin':
-      return <LinkedinAccountTracking />;
+      return (
+        <DashboardLayout>
+          <EmptyState
+            actionRequired
+            buttonText="Back to Overview"
+            heading="Unsupported Platform"
+            subtitle="LinkedIn tracking is no longer available on the frontend."
+            onAction={() => router.push('/account-tracking')}
+            icon={<MdErrorOutline color={LightThemeColors.uriColor} size={150} />}
+          />
+        </DashboardLayout>
+      );
     default:
       return (
         <DashboardLayout>

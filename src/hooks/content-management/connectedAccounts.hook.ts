@@ -6,8 +6,6 @@ import { useEffect, useState } from 'react';
 import { FacebookService } from '@/api/FacebookService';
 import { InfluencerService } from '@/api/InfluencerService';
 import { InstagramService } from '@/api/InstagramService';
-import { LinkedInInsightsService } from '@/api/LinkedInInsights';
-import { LinkedInService } from '@/api/LinkedInService';
 import { TiktokService } from '@/api/TiktokService';
 import { TwitterService } from '@/api/TwitterService';
 import { UserService } from '@/api/UserService';
@@ -19,7 +17,6 @@ import { AppTokenHelper } from '@/helpers/AppTokenHelper';
 import { TextHelper } from '@/helpers/TextHelper';
 import { ApiScopeEnum } from '@/models/enum-models/ApiScopeEnum';
 import { SocialMediaEnum } from '@/models/enum-models/SocialMediaEnum';
-import { TokenScopeEnum } from '@/models/enum-models/TokenScopeEnum';
 import { useAuth } from '@/providers/AuthProvider';
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
@@ -34,7 +31,7 @@ export const useConnectedAccountsHook = (closeDeleteModal?: () => void, redirect
   const { userDetails, saveUserDetails } = useAuth();
 
   const [hasConnectedTwitter, setHasConnectedTwitter] = useState(false);
-  const [hasConnectedLinkedIn, setHasConnectedLinkedIn] = useState(false);
+  
   const [hasConnectedFacebook, setHasConnectedFacebook] = useState(false);
   const [hasConnectedTiktok, setHasConnectedTiktok] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -73,20 +70,7 @@ export const useConnectedAccountsHook = (closeDeleteModal?: () => void, redirect
     },
   });
 
-  // Linkedin Authentication
-  const { mutate: getLinkedInUrl, isLoading: gettingLinkedInUrl } = useMutation({
-    mutationFn: async () => {
-      const response = await LinkedInService.getAuthUrl(ApiScopeEnum.LinkedInContentManagementScope, redirectUrl || '');
-
-      setLocalStorageItem(STORE_KEYS.TEMP_CONNECT_ACCOUNT_NAME, 'linkedIn');
-
-      if (response.status) {
-        router.push(response.responseData ?? '');
-      } else {
-        toast.error(response.responseMessage);
-      }
-    },
-  });
+  
 
   // Facebook Authentication
   const { mutate: getFacebookUrl, isLoading: gettingFacebookUrl } = useMutation({
@@ -334,62 +318,7 @@ export const useConnectedAccountsHook = (closeDeleteModal?: () => void, redirect
     },
   });
 
-  // Query to connect the linkedin account
-  const { isLoading: linkedInConnecting } = useQuery({
-    queryKey: ['connect-linkedIn', code],
-    queryFn: async () => {
-      if (hasConnectedLinkedIn) {
-        return null;
-      }
-
-      if (platform !== 'linkedIn') {
-        return null;
-      }
-
-      if (!code) {
-        return null;
-      }
-
-      setHasConnectedLinkedIn(true);
-
-      const response = await LinkedInService.connectLinkedIn(userDetails?.userId ?? '', code ?? '', redirectUrl);
-
-      if (!response.status) {
-        toast.error(response.responseMessage);
-        return;
-      }
-
-      const userDetailResponse = await UserService.getByUserIdApi(userDetails?.userId);
-
-      if (!userDetailResponse.status) {
-        triggerToast('error', userDetailResponse.responseMessage);
-        return;
-      }
-
-      if (userDetailResponse.responseData) {
-        saveUserDetails(userDetailResponse.responseData);
-      }
-
-      const saveLinkedInAccountResponse = await LinkedInInsightsService.saveLinkedInAccount(
-        userDetails?.userId ?? '',
-        TokenScopeEnum.CONTENT_MANAGEMENT,
-        AppTokenHelper.getProviderByTokenUsage(userDetailResponse.responseData?.appTokens ?? [], TokenUsageTypeEnum.LINKEDIN_ACCESS_TOKEN)?.token ?? ''
-      );
-
-      if (!saveLinkedInAccountResponse.status) {
-        triggerToast('error', saveLinkedInAccountResponse.responseMessage);
-        return;
-      }
-
-      triggerToast('success', 'LinkedIn account connected successfully');
-      queryClient.invalidateQueries({
-        queryKey: ['influencers'],
-      });
-      queryClient.invalidateQueries({ queryKey: ['feature-limit'] });
-
-      router.push(successRedirectUrl ?? '/content-management/create?active_tab=platforms');
-    },
-  });
+  
 
   const getAuthUrlFunction = (platform: string, username?: string) => {
     switch (platform) {
@@ -397,7 +326,6 @@ export const useConnectedAccountsHook = (closeDeleteModal?: () => void, redirect
         getTwitterUrl();
         break;
       case SocialMediaEnum.LINKEDIN:
-        getLinkedInUrl();
         break;
       case SocialMediaEnum.FACEBOOK:
         getFacebookUrl();
@@ -450,9 +378,9 @@ export const useConnectedAccountsHook = (closeDeleteModal?: () => void, redirect
 
   return {
     connectedAccounts: connectedAccountsWithTokens?.data ?? [],
-    isConnecting: gettingTwitterUrl || gettingLinkedInUrl || gettingFacebookUrl || gettingTiktokUrl,
+    isConnecting: gettingTwitterUrl || gettingFacebookUrl || gettingTiktokUrl,
     getAuthUrlFunction,
-    connectingAccount: facebookConnecting || tiktokConnecting || linkedInConnecting || twitterConnecting,
+    connectingAccount: facebookConnecting || tiktokConnecting || twitterConnecting,
     gettingConnectedAccounts,
     disconnectAccount,
     selectedPlatformForDisConnect,
