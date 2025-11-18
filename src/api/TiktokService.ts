@@ -13,6 +13,13 @@ export class TiktokService {
     return response.data;
   }
 
+  static async fetchPosts(keyword: string, maxPosts: number = 3): Promise<any> {
+    const response: Awaited<AxiosResponse<any>> = await UriHttpClient.getClient().get(
+      `${tiktokInsightsApiRoutes.getTiktokPosts}?keyword=${encodeURIComponent(keyword)}&max_posts=${maxPosts}`
+    );
+    return response.data;
+  }
+
   static async getAccessToken(code: string): Promise<UriResponse<string>> {
     const response: Awaited<AxiosResponse<UriResponse<string>>> = await UriHttpClient.getClient().get(`${tiktokApiRoutes.getAccessToken}/${code}`);
     return response.data;

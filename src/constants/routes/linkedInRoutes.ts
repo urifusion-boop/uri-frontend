@@ -1,26 +1,15 @@
 import { BackendUrlEnum } from "@/models/enum-models/BackendUrlEnum";
 import { RouteHelper } from "../../helpers/RouteHelper";
 
-const URI_BACKEND_SVC_PATH = BackendUrlEnum.BACKEND;
+const URI_INSIGHTS_SVC_PATH = BackendUrlEnum.INSIGHTS;
 
-type ILinkedInApi =
-  | "getAuthUrl"
-  | "getAccessToken"
-  | "getUserData"
-  | "connect"
-  | "disconnect"
-  | "getCommMgtAuthUrl"
-  | "connectCommMgt";
+type ILinkedInApi = "fetchPosts";
 
 const rawLinkedInApiRoutes: Record<ILinkedInApi, string> = {
-  getAuthUrl: "/linkedIn/getAuthUrl",
-  getAccessToken: "/linkedIn/getAccessToken",
-  getUserData: "/linkedIn/getUserData",
-  connect: "/linkedIn/connect",
-  disconnect: "/linkedIn/disconnect",
-  getCommMgtAuthUrl: "/linkedInCommMgt/getAuthUrl",
-  connectCommMgt: "/linkedInCommMgt/connect",
+  fetchPosts: "/openai-apify-linkedin/fetch-posts",
 };
 
-export const linkedInApiRoutes: Record<ILinkedInApi, string> =
-  RouteHelper.createRoutes(URI_BACKEND_SVC_PATH, rawLinkedInApiRoutes);
+export const linkedinApiRoutes = RouteHelper.createRoutes(
+  URI_INSIGHTS_SVC_PATH,
+  rawLinkedInApiRoutes
+) as Record<ILinkedInApi, string>;

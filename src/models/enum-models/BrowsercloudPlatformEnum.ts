@@ -3,6 +3,7 @@ export enum BrowsercloudPlatformEnum {
   LINKEDIN = 'LINKEDIN',
   FACEBOOK = 'FACEBOOK',
   THREADS = 'THREADS',
+  TIKTOK = 'TIKTOK',
 }
 
 export const PlatformDisplayNames: Record<BrowsercloudPlatformEnum, string> = {
@@ -10,4 +11,5 @@ export const PlatformDisplayNames: Record<BrowsercloudPlatformEnum, string> = {
   [BrowsercloudPlatformEnum.LINKEDIN]: 'LinkedIn',
   [BrowsercloudPlatformEnum.FACEBOOK]: 'Facebook',
   [BrowsercloudPlatformEnum.THREADS]: 'Threads',
+  [BrowsercloudPlatformEnum.TIKTOK]: 'TikTok',
 };
