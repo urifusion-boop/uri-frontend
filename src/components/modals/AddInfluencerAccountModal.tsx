@@ -57,7 +57,7 @@ interface AddInfluencerAccountModalProps {
   authenticateFaceBook: () => void;
   authenticateX: () => void;
   gettingUrl?: boolean;
-  authenticateLinkedIn: () => void;
+  authenticateLinkedIn?: () => void;
 }
 
 const AddInfluencerAccountModal = ({ open, onClose, onSubmit, initialData, authenticateFaceBook, gettingUrl, authenticateX, authenticateLinkedIn }: AddInfluencerAccountModalProps) => {
@@ -156,7 +156,7 @@ const AddInfluencerAccountModal = ({ open, onClose, onSubmit, initialData, authe
         authenticateX();
         break;
       case CampaignPlatformEnum.LINKEDIN:
-        authenticateLinkedIn();
+        authenticateLinkedIn && authenticateLinkedIn();
         break;
       default:
         break;

@@ -23,13 +23,7 @@ export const platformOptions = [
     tooltip:
       "You may not be able to view full insights with this option, If you need to view full insights for your business, consider using the recommended Facebook option.",
   },
-  {
-    name: "LinkedIn",
-    value: CampaignPlatformEnum.LINKEDIN,
-    icon: "/assets/icons/linkedin.svg",
-    text: "Track LinkedIn account",
-    infoWithIcon: false,
-  },
+  
   {
     name: "TikTok",
     value: CampaignPlatformEnum.TIKTOK,
@@ -65,14 +59,7 @@ export const availablePlatforms = [
     text: "Connect your facebook account to share posts.",
     tokenProvider: SocialMediaEnum.FACEBOOK,
   },
-  {
-    name: "LinkedIn",
-    value: CampaignPlatformEnum.LINKEDIN,
-    icon: "/assets/icons/linkedin.svg",
-    text: "Connect your LinkedIn account to network professionally.",
-    tokenProvider: SocialMediaEnum.LINKEDIN,
-    // disable: true,
-  },
+  
   {
     name: "X",
     value: CampaignPlatformEnum.TWITTER,
