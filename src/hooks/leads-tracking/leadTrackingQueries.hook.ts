@@ -1,8 +1,10 @@
 import { LeadsService } from '@/api/LeadsService';
+import { LeadsService as LeadFormService } from '@/api/LeadFormService';
 import { triggerToast } from '@/components/atoms/CustomToast';
 import { FIVE_MINUTES, THREE_MINUTES } from '@/data/time';
 import { EnrichLeadsDto, ExportLeadDto, LeadBusinessInfoDto } from '@/models/dtos/LeadsDto';
 import { LeadTypeEnum } from '@/models/enum-models/LeadTypeEnum';
+import { LeadHelper } from '@/helpers/LeadHelper';
 import { useAuth } from '@/providers/AuthProvider';
 import { useLeadTrackingStore } from '@/store/leads-tracking/useLeadTrackingStore';
 import { QueryClient, useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
@@ -91,6 +93,18 @@ export const useLeadQueries = (
 
       return result.responseData;
     },
+  });
+
+  // Query to check if a lead form exists for the current lead type
+  const existingLeadFormQuery = useQuery({
+    queryKey: ['lead-form-exists', userId, leadType],
+    queryFn: async () => {
+      if (!leadType || !userId) return null;
+      const formType = LeadHelper.getFormTypeFromLeadType(leadType);
+      const result = await LeadFormService.getByFilters({ user_id: userId, form_type: formType });
+      return result.responseData?.[0] || null;
+    },
+    enabled: !!userId && !!leadType,
   });
 
   // Mutation to update lead status
@@ -190,6 +204,7 @@ export const useLeadQueries = (
     leadsQuery,
     leadAnalyticsQuery,
     businessInfoQuery,
+    existingLeadFormQuery,
     updateStatusMutation,
     leadGenerationMutation,
     statusQueries,
