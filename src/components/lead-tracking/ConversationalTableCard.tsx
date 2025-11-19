@@ -3,6 +3,7 @@ import { accountIcons } from '@/constants/accountIcons';
 import { PlatformHelper } from '@/helpers/PlatformHelper';
 import useClipboard from '@/hooks/clipboard';
 import { LeadDto } from '@/models/dtos/LeadsDto';
+import { TwitterFetchResponseDto } from '@/models/dtos/TwitterDto';
 import { LeadOpportunityTypeEnum } from '@/models/enum-models/LeadOpportunityTypeEnum';
 import { LeadStatusEnum } from '@/models/enum-models/LeadStatusEnum';
 import { CampaignPlatformEnum } from '@/models/enum-models/PlatformEnum';
@@ -10,6 +11,8 @@ import TurnedInIcon from '@mui/icons-material/TurnedIn';
 import { Box, FormControl, MenuItem, Pagination, Select, Typography } from '@mui/material';
 import IconContentBox from '../boxes/IconContentBox';
 import IdentityBox from '../boxes/IdentityBox';
+import TwitterDetailsModal from '../modals/TwitterDetailsModal';
+import { useState } from 'react';
 interface ConversationalTableColumnProps {
   data: LeadDto[];
   total: number;
@@ -19,10 +22,66 @@ interface ConversationalTableColumnProps {
   pageSize: number;
   setPage: (value: number) => void;
   setPageSize: (value: number) => void;
+  twitterData?: TwitterFetchResponseDto | null;
 }
 
-const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage, setPageSize, setSearch }: ConversationalTableColumnProps) => {
+const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage, setPageSize, setSearch, twitterData }: ConversationalTableColumnProps) => {
   const { copyToClipboard } = useClipboard();
+  const [selectedLead, setSelectedLead] = useState<LeadDto | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Convert Twitter data to LeadDto format for display
+  const convertTwitterDataToLeads = (twitterData: TwitterFetchResponseDto): LeadDto[] => {
+    return twitterData.responseData.tweets.map((tweet, index) => ({
+      id: `twitter-${index}`,
+      first_name: tweet.author || 'Twitter User',
+      last_name: '',
+      username: tweet.author || '',
+      lead_reason: tweet.text,
+      lead_status: LeadStatusEnum.NEW,
+      opportunity_type: LeadOpportunityTypeEnum.Other,
+      tags: [],
+      twitter_url: `https://twitter.com/${tweet.author}`,
+      lead_link: tweet.url,
+      picture_url: '',
+      created_date: tweet.created_at,
+      lead_type: 'CONVERSATIONAL',
+      website_url: tweet.url,
+      sentiment: tweet.sentiment,
+      confidence: tweet.confidence,
+      // Optional fields can be undefined
+      lead_email: undefined,
+      phone: undefined,
+      company_name: undefined,
+      job_title: undefined,
+      industry: undefined,
+      linkedin_url: undefined,
+      facebook_url: undefined,
+      github_url: undefined,
+      location: undefined,
+    } as LeadDto));
+  };
+
+  const handleRowClick = (lead: LeadDto) => {
+    setSelectedLead(lead);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedLead(null);
+  };
+
+  // Use Twitter data if available, otherwise use regular lead data
+  const displayData = twitterData ? convertTwitterDataToLeads(twitterData) : data;
+  
+  // Sort by newest first using created_date
+  const sortedDisplayData = [...(displayData ?? [])].map((lead, index) => ({ ...lead, originalIndex: index })).sort((a, b) => {
+    const aTime = a?.created_date ? new Date(a.created_date).getTime() : 0;
+    const bTime = b?.created_date ? new Date(b.created_date).getTime() : 0;
+    return aTime === bTime ? a.originalIndex - b.originalIndex : bTime - aTime;
+  });
+  const displayTotal = twitterData ? twitterData.responseData.total_tweets : total;
 
   const getCompanyOrJobOrIndustry = (row: LeadDto) => {
     if (row.job_title && row.job_title !== '' && row.job_title.length > 1) return row.job_title;
@@ -125,13 +184,17 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
         <Table<any>
           columns={columns}
           data={
-            data.map((lead) => ({
+            sortedDisplayData.map((lead) => ({
               ...lead,
               id: lead.username?.trim() ?? `${lead.first_name ?? ''} ${lead.last_name ?? ''}`.trim() ?? '-',
             })) ?? []
           }
+          onRowClick={handleRowClick}
         />
       </div>
+
+      {/* Twitter Details Modal */}
+      <TwitterDetailsModal open={isModalOpen} onClose={handleCloseModal} lead={selectedLead} />
 
       {/* Pagination Controls */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mx: 3, my: 2 }}>
@@ -149,7 +212,7 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
           </FormControl>
         </Box>
 
-        <Pagination count={Math.ceil(Number(total || 1) / pageSize)} shape="rounded" size="small" page={Number(page)} onChange={(_, p) => setPage(p)} />
+        <Pagination count={Math.ceil(Number(displayTotal || 1) / pageSize)} shape="rounded" size="small" page={Number(page)} onChange={(_, p) => setPage(p)} />
       </Box>
     </Box>
   );

@@ -6,21 +6,33 @@ import ListValuesInput from '@/components/input/ListValuesInput';
 import SingleFieldInput from '@/components/input/SingleFieldInput';
 import SmartModal from '@/components/modals/SmartModal';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
-import { ConversationalSearchFormDto } from '@/models/dtos/LeadFormDto';
+import { ConversationalSearchFormDto, PlatformConfigFormDto } from '@/models/dtos/LeadFormDto';
+import { TwitterService } from '@/api/TwitterService';
+import { TiktokService } from '@/api/TiktokService';
+import { TwitterFetchResponseDto } from '@/models/dtos/TwitterDto';
+import { BrowsercloudPlatformEnum } from '@/models/enum-models/BrowsercloudPlatformEnum';
 import { FormTypeEnum } from '@/models/enum-models/FormTypeEnum';
 import { useAuth } from '@/providers/AuthProvider';
+import { LeadsService } from '@/api/LeadsService';
+import { LeadDto } from '@/models/dtos/LeadsDto';
+import { LeadStatusEnum } from '@/models/enum-models/LeadStatusEnum';
+import { LeadTypeEnum } from '@/models/enum-models/LeadTypeEnum';
+import { LeadSourceEnum } from '@/models/enum-models/LeadSourceEnum';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
-import { Box, IconButton, Tooltip, Typography } from '@mui/material';
+import BoltIcon from '@mui/icons-material/Bolt';
+import { Box, IconButton, Tooltip, Typography, Switch, FormControlLabel, Chip, Alert, Button } from '@mui/material';
+import SaveIcon from '@mui/icons-material/Save';
 import Image from 'next/image';
 import router from 'next/router';
 import { useEffect, useState } from 'react';
 import { HiPencil } from 'react-icons/hi';
+import PlatformSelector from '../PlatformSelector';
 
-const ConversationLeadForm = () => {
+const ConversationLeadFormV2 = () => {
   const [form, setForm] = useState<ConversationalSearchFormDto>({
     user_id: '',
-    form_title: 'Conversational Lead Form',
+    form_title: 'Conversational Lead Form V2',
     ai_response_guide: '',
     keywords: [],
     competitors: [],
@@ -30,9 +42,15 @@ const ConversationLeadForm = () => {
     add_to_history: false,
     auto_generate: false,
     form_type: '',
+    enable_realtime: true, // V2 default
+    monitoring_platforms: [],
+    platform_configs: [],
   });
 
   const [existingFormId, setExistingFormId] = useState<string | null>(null);
+  const [twitterResults, setTwitterResults] = useState<TwitterFetchResponseDto | null>(null);
+  const [isLoadingTwitter, setIsLoadingTwitter] = useState(false);
+  const [isLoadingTiktok, setIsLoadingTiktok] = useState(false);
 
   const { autoPopulateLeadForm, isAutoPopulating } = useLeadFormHooks();
   const [autoPopulateData, setAutoPopulateData] = useState('');
@@ -51,7 +69,19 @@ const ConversationLeadForm = () => {
   useEffect(() => {
     console.log('existingForm', existingForm);
     if (existingForm && isSuccess && userId) {
-      const { form_title, intent_type, buying_signals, excluded_keywords, ai_response_guide, keywords, competitors, lead_form_id, add_to_history, auto_generate, form_type } = existingForm;
+      const {
+        form_title,
+        intent_type,
+        buying_signals,
+        excluded_keywords,
+        ai_response_guide,
+        keywords,
+        competitors,
+        lead_form_id,
+        add_to_history,
+        auto_generate,
+        form_type,
+      } = existingForm;
 
       setForm({
         user_id: userId,
@@ -65,25 +95,214 @@ const ConversationLeadForm = () => {
         add_to_history,
         auto_generate,
         form_type,
+        enable_realtime: true,
+        monitoring_platforms: (existingForm as any).monitoring_platforms || [],
+        platform_configs: (existingForm as any).platform_configs || [],
       });
 
       setExistingFormId(lead_form_id);
     }
   }, [existingForm, isSuccess, userId]);
 
+  // Merge newly fetched Twitter results with previously cached ones
+  const mergeTwitterResults = (
+    prev: TwitterFetchResponseDto | null,
+    next: TwitterFetchResponseDto
+  ): TwitterFetchResponseDto => {
+    const prevTweets = prev?.responseData?.tweets ?? [];
+    const nextTweets = next?.responseData?.tweets ?? [];
+
+    // Deduplicate by URL if available, otherwise by text + created_at
+    const seen = new Set<string>();
+    const mergedTweets = [...prevTweets, ...nextTweets].filter((tweet) => {
+      const key = tweet.url || `${tweet.text}-${tweet.created_at}`;
+      if (!key) return true;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    return {
+      ...next,
+      responseData: {
+        ...next.responseData,
+        tweets: mergedTweets,
+        total_tweets: mergedTweets.length,
+      },
+    };
+  };
+
+  const convertTwitterDateToISO = (twitterDate: string): string => {
+    try {
+      // Twitter format: "Sun Nov 09 17:51:05 +0000 2025"
+      // Convert to ISO format
+      const date = new Date(twitterDate);
+      return date.toISOString();
+    } catch (error) {
+      console.error('Error converting date:', error);
+      // Fallback to current date if conversion fails
+      return new Date().toISOString();
+    }
+  };
+
+  const mapTweetsToLeadPayload = (tw: TwitterFetchResponseDto, assignedTo: string): LeadDto[] => {
+    return (tw.responseData?.tweets ?? []).map((tweet) => ({
+      first_name: tweet.author || 'Twitter User',
+      last_name: '',
+      username: tweet.author || '',
+      mention: tweet.text,
+      lead_reason: tweet.text,
+      lead_status: LeadStatusEnum.NEW,
+      opportunity_type: 'Other',
+      tags: [],
+      twitter_url: tweet.url,
+      lead_link: tweet.url,
+      social_profile_link: tweet.url,
+      picture_url: '',
+      created_date: convertTwitterDateToISO(tweet.created_at),
+      last_updated: convertTwitterDateToISO(tweet.created_at),
+      lead_type: LeadTypeEnum.CONVERSATIONAL,
+      website_url: tweet.url ?? '',
+      sentiment: tweet.sentiment,
+      confidence: tweet.confidence,
+      lead_source: LeadSourceEnum.X,
+      assigned_to: assignedTo,
+      starred: false,
+    }));
+  };
+
   const handleChange = (field: keyof ConversationalSearchFormDto, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!userId) {
       triggerToast('error', 'You must be logged in to create or update a lead form');
       return;
     }
 
+    const twitterEnabled = form.platform_configs?.some(
+      (config) => config.platform === BrowsercloudPlatformEnum.TWITTER && config.enabled
+    );
+    const linkedinEnabled = false;
+    const tiktokEnabled = form.platform_configs?.some(
+      (config) => config.platform === BrowsercloudPlatformEnum.TIKTOK && config.enabled
+    );
+
+    if ((twitterEnabled || linkedinEnabled || tiktokEnabled) && (!form.keywords || form.keywords.length === 0)) {
+      triggerToast('error', 'Please add at least one keyword to fetch data');
+      return;
+    }
+
+    // If Twitter is enabled, fetch Twitter data first and auto-save
+    if (twitterEnabled && form.keywords && form.keywords.length > 0) {
+      setIsLoadingTwitter(true);
+      try {
+        const keyword = form.keywords[0]; // Use the first keyword
+        const twitterResponse = await TwitterService.fetchTweets(keyword, 10);
+
+        setTwitterResults(twitterResponse);
+
+        // Immediately persist tweets as leads for this user (only the 10 fetched)
+        const leadsPayload = mapTweetsToLeadPayload(twitterResponse, userId);
+        if (leadsPayload.length > 0) {
+          const saveResponse = await LeadsService.multipleCreate(leadsPayload);
+          if (saveResponse.status) {
+            triggerToast('success', `Fetched and saved ${leadsPayload.length} Twitter leads.`);
+            // Navigate to the standard conversational leads view
+            router.push('/leads-tracking/forms/leads?type=conversational');
+            return;
+          } else {
+            triggerToast('error', saveResponse.responseMessage ?? 'Failed to save Twitter leads');
+            return;
+          }
+        } else {
+          triggerToast('error', 'No tweets to save as leads');
+          return;
+        }
+        
+      } catch (error) {
+        console.error('Twitter API error:', error);
+        triggerToast('error', 'Failed to fetch Twitter data. Please try again.');
+        return;
+      } finally {
+        setIsLoadingTwitter(false);
+      }
+    }
+
+    // If TikTok is enabled, fetch TikTok data and auto-save
+    if (tiktokEnabled && form.keywords && form.keywords.length > 0) {
+      setIsLoadingTiktok(true);
+      try {
+        const keyword = form.keywords[0];
+        const tkResponse: any = await TiktokService.fetchPosts(keyword, 10);
+        const posts = tkResponse?.responseData?.posts ?? tkResponse?.responseData?.data?.posts ?? [];
+        const leadsPayload: LeadDto[] = posts.map((p: any) => ({
+          first_name: p.author || p.username || 'TikTok User',
+          last_name: '',
+          username: p.author || p.username || '',
+          mention: p.text || p.desc || '',
+          lead_reason: p.text || p.desc || '',
+          lead_status: LeadStatusEnum.NEW,
+          opportunity_type: 'Other',
+          tags: [],
+          lead_link: p.url || p.webVideoUrl || p.video_url || '',
+          social_profile_link: p.url || p.webVideoUrl || p.video_url || '',
+          picture_url: '',
+          created_date: typeof p.createTime === 'number' ? new Date(p.createTime * 1000).toISOString() : (p.created_at ? new Date(p.created_at).toISOString() : new Date().toISOString()),
+          last_updated: typeof p.createTime === 'number' ? new Date(p.createTime * 1000).toISOString() : (p.created_at ? new Date(p.created_at).toISOString() : new Date().toISOString()),
+          lead_type: LeadTypeEnum.CONVERSATIONAL,
+          website_url: p.url || p.webVideoUrl || p.video_url || '',
+          sentiment: p.sentiment,
+          confidence: p.confidence,
+          lead_source: LeadSourceEnum.TIKTOK,
+          assigned_to: userId,
+          starred: false,
+        }));
+        if (leadsPayload.length > 0) {
+          const saveResponse = await LeadsService.multipleCreate(leadsPayload);
+          if (saveResponse.status) {
+            triggerToast('success', `Fetched and saved ${leadsPayload.length} TikTok leads.`);
+            router.push('/leads-tracking/forms/leads?type=conversational');
+            return;
+          } else {
+            triggerToast('error', saveResponse.responseMessage ?? 'Failed to save TikTok leads');
+            return;
+          }
+        } else {
+          triggerToast('error', 'No TikTok posts to save as leads');
+          return;
+        }
+      } catch (error) {
+        console.error('TikTok API error:', error);
+        triggerToast('error', 'Failed to fetch TikTok data. Please try again.');
+        return;
+      } finally {
+        setIsLoadingTiktok(false);
+      }
+    }
+
+  const disabledPlatforms = new Set([
+      BrowsercloudPlatformEnum.THREADS,
+      BrowsercloudPlatformEnum.FACEBOOK,
+      BrowsercloudPlatformEnum.LINKEDIN,
+    ]);
+    const enabledPlatforms =
+      form.platform_configs?.
+        filter((c) => c.enabled && !disabledPlatforms.has(c.platform as any))
+        .map((c) => c.platform) || [];
+
+    if (form.enable_realtime && enabledPlatforms.length === 0) {
+      triggerToast('error', 'Please select at least one platform for real-time monitoring');
+      return;
+    }
+
+
     const payload: ConversationalSearchFormDto = {
       ...form,
+      enable_realtime: true,
       user_id: userId,
+      monitoring_platforms: enabledPlatforms,
     };
 
     if (existingFormId) {
@@ -99,6 +318,9 @@ const ConversationLeadForm = () => {
         add_to_history: payload.add_to_history || false,
         auto_generate: payload.auto_generate || false,
         form_type: FormTypeEnum.CONVERSATIONAL,
+        enable_realtime: true,
+        monitoring_platforms: payload.monitoring_platforms || [],
+        platform_configs: payload.platform_configs || [],
       };
 
       updateConversationalSearchLeadForm.mutate(
@@ -152,17 +374,58 @@ const ConversationLeadForm = () => {
     });
   };
 
+  const disabledPlatforms = new Set([
+    BrowsercloudPlatformEnum.THREADS,
+    BrowsercloudPlatformEnum.FACEBOOK,
+  ]);
+  const enabledPlatformsCount =
+    form.platform_configs?.filter((c) => c.enabled && !disabledPlatforms.has(c.platform as any)).length || 0;
+
   return (
     <Box sx={{ maxWidth: '950px', mx: 'auto', mt: 4 }}>
       <Box sx={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e5e7eb', p: { xs: 3, md: 5 }, boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)' }}>
-        <Typography variant="h6" sx={{ textAlign: 'center', fontWeight: 600, mb: 1, color: '#1f2937' }}>
-          Conversational Lead Form
-        </Typography>
-        <Typography variant="body2" sx={{ textAlign: 'center', color: '#6b7280', mb: 4 }}>
-          {existingFormId ? 'Edit your existing form' : 'What would you like to generate leads for?'}
+        {/* Header */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1 }}>
+          <Typography variant="h6" sx={{ textAlign: 'center', fontWeight: 600, color: '#1f2937' }}>
+            Conversational Lead Form
+          </Typography>
+          <Chip
+            label="V2"
+            size="small"
+            icon={<BoltIcon sx={{ fontSize: 16 }} />}
+            sx={{
+              backgroundColor: '#fef3c7',
+              color: '#92400e',
+              fontWeight: 600,
+              fontSize: '11px',
+            }}
+          />
+        </Box>
+
+        <Typography variant="body2" sx={{ textAlign: 'center', color: '#6b7280', mb: 3 }}>
+          {existingFormId ? 'Edit your existing form with real-time monitoring' : 'Create a real-time lead generation form'}
           <EditOutlinedIcon sx={{ fontSize: 16, ml: 1, verticalAlign: 'middle', color: '#9ca3af' }} />
         </Typography>
 
+        {/* Real-time Toggle */}
+        <Alert severity="info" sx={{ mb: 3, backgroundColor: '#eff6ff', border: '1px solid #bfdbfe' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 500, color: '#1e40af', mb: 0.5 }}>
+                Real-time Lead Detection (V2)
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#3b82f6' }}>
+                Get instant notifications when leads appear across social platforms.
+              </Typography>
+            </Box>
+            <FormControlLabel
+              control={<Switch checked color="primary" disabled />}
+              label=""
+            />
+          </Box>
+        </Alert>
+
+        {/* Form Title */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
           <SingleFieldInput
             label="Form Title"
@@ -184,7 +447,7 @@ const ConversationLeadForm = () => {
           </Box>
 
           <Typography variant="caption" sx={{ color: '#6b7280', mb: 1, display: 'block' }}>
-            Type what you’re trying to achieve and let AI auto-fill the form. Example: “Find startup founders in Berlin working in fintech.”
+            Type what you're trying to achieve and let AI auto-fill the form. Example: "Find startup founders in Berlin working in fintech."
           </Typography>
 
           {!isEditingAIInput && (
@@ -211,10 +474,21 @@ const ConversationLeadForm = () => {
             onChange={setAutoPopulateData}
             onSend={handleAutoPopulate}
             loading={isAutoPopulating}
-            placeholder="Describe the kind of individuals you’re looking for..."
+            placeholder="Describe what you want to find or monitor across platforms..."
           />
         </Box>
 
+        {/* Platform Selection (V2) */}
+        {form.enable_realtime && (
+          <Box sx={{ mb: 4 }}>
+            <PlatformSelector
+              platformConfigs={form.platform_configs || []}
+              setPlatformConfigs={(configs) => handleChange('platform_configs', configs)}
+            />
+          </Box>
+        )}
+
+        {/* Keywords and Excluded Keywords */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
             <ListValuesInput
@@ -237,6 +511,7 @@ const ConversationLeadForm = () => {
           </Box>
         </Box>
 
+        {/* Competitors and Buying Signals */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
             <ListValuesInput
@@ -259,6 +534,7 @@ const ConversationLeadForm = () => {
           </Box>
         </Box>
 
+        {/* Intent Type and AI Response Guide */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
             <SingleFieldInput
@@ -283,6 +559,7 @@ const ConversationLeadForm = () => {
           </Box>
         </Box>
 
+        {/* Checkboxes */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr' }, gap: 3, mb: 3 }}>
           <Box mt={3.5} sx={{ display: 'flex', alignItems: 'center' }}>
             <CustomCheckbox
@@ -303,16 +580,30 @@ const ConversationLeadForm = () => {
           </Box>
         </Box>
 
+        {/* Submit Button */}
         <Box sx={{ textAlign: 'center', pt: 3, borderTop: '1px solid #e5e7eb' }}>
           <LoadingButton
             onClick={handleSubmit}
-            loading={createConversationalSearchLeadForm.isLoading || updateConversationalSearchLeadForm.isLoading}
-            text={existingFormId ? 'Update Form' : 'Generate Leads'}
-            loadingText="Saving..."
+            loading={createConversationalSearchLeadForm.isLoading || updateConversationalSearchLeadForm.isLoading || isLoadingTwitter || isLoadingTiktok}
+            text={
+              isLoadingTwitter
+                ? 'Fetching Twitter Data...'
+                : isLoadingTiktok
+                ? 'Fetching TikTok Data...'
+                : existingFormId
+                ? 'Save Update'
+                : 'Save'
+            }
+            loadingText={isLoadingTwitter || isLoadingTiktok ? 'Fetching posts...' : 'Saving...'}
+            startIcon={<SaveIcon />}
           />
 
           <Typography variant="caption" sx={{ color: '#6b7280', mt: 2, display: 'block' }}>
-            {existingFormId ? 'Update your saved form details' : 'Click to start searching for candidates matching your criteria'}
+            {existingFormId
+              ? 'Update your saved form details'
+              : form.enable_realtime
+              ? 'Start monitoring for leads in real-time across selected platforms'
+              : 'Click to start searching for candidates matching your criteria'}
           </Typography>
         </Box>
       </Box>
@@ -322,7 +613,11 @@ const ConversationLeadForm = () => {
         open={openSuccessModal}
         image={<Image src="/assets/images/success.png" alt="Success" width={64} height={64} />}
         mainText="Success! 🎉"
-        subText="Your form was successfully saved. Your form is now setup and ready to generate leads."
+        subText={
+          form.enable_realtime
+            ? 'Your real-time monitoring is now active. You will receive instant notifications when new leads are detected.'
+            : 'Your form was successfully saved. Your form is now setup and ready to generate leads.'
+        }
         buttonText="View Leads"
         onClick={() => {
           setOpenSuccessModal(false);
@@ -335,4 +630,4 @@ const ConversationLeadForm = () => {
   );
 };
 
-export default ConversationLeadForm;
+export default ConversationLeadFormV2;

@@ -10,6 +10,7 @@ export interface TableProps<T> {
   columns: TableColumn<T>[];
   onSelect?: (selectedRows: T[]) => void;
   onSort?: (key: keyof T, direction: 'asc' | 'desc') => void;
+  onRowClick?: (row: T) => void;
 }
 
 // Table.tsx
@@ -18,7 +19,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Typography } from '@mui/material';
 import React, { useState } from 'react';
 
-export function Table<T extends { id: string | number }>({ data, columns, onSelect, onSort }: Readonly<TableProps<T>>) {
+export function Table<T extends { id: string | number }>({ data, columns, onSelect, onSort, onRowClick }: Readonly<TableProps<T>>) {
   const [selectedRows, setSelectedRows] = useState<Set<string | number>>(new Set());
   const [sortConfig, setSortConfig] = useState<{
     key: keyof T;
@@ -92,12 +93,12 @@ export function Table<T extends { id: string | number }>({ data, columns, onSele
             </tr>
           ) : (
             data.map((row, index) => (
-              <tr key={`${row.id}+${index}`} className="hover:bg-gray-50">
-                <td className="w-12 px-6 py-4">
+              <tr key={`${row.id}+${index}`} className={`hover:bg-gray-50 ${onRowClick ? 'cursor-pointer' : ''}`}>
+                <td className="w-12 px-6 py-4" onClick={(e) => e.stopPropagation()}>
                   <input type="checkbox" className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" checked={selectedRows.has(row.id)} onChange={() => handleSelectRow(row)} />
                 </td>
                 {columns.map((column, index) => (
-                  <td key={`${String(column.key)}+${index}`} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td key={`${String(column.key)}+${index}`} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" onClick={() => onRowClick?.(row)}>
                     <Typography className="text-xs">{column.render ? column.render(row[column.key], row) : String(row[column.key])}</Typography>
                   </td>
                 ))}

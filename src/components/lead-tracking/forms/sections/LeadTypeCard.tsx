@@ -66,14 +66,14 @@ const LeadTypeCard = ({ colorMap }: LeadTypeCardProps) => {
       total_leads: 0,
       total_new_leads: 0,
     },
-    {
-      form_type: 'Business',
-      typeKey: 'business',
-      description: 'People that may be interested in your business based on social media conversations.',
-      created_date: '',
-      total_leads: 0,
-      total_new_leads: 0,
-    },
+    // {
+    //   form_type: 'Business',
+    //   typeKey: 'business',
+    //   description: 'People that may be interested in your business based on social media conversations.',
+    //   created_date: '',
+    //   total_leads: 0,
+    //   total_new_leads: 0,
+    // },
     {
       form_type: 'Conversational',
       typeKey: 'conversational',
@@ -109,7 +109,7 @@ const LeadTypeCard = ({ colorMap }: LeadTypeCardProps) => {
       {isLoading ? (
         <>
           {Array.from({ length: 4 }).map((_, index) => (
-            <Grid item key={index} xs={12} sm={6} lg={4} xl={4}>
+            <Grid item key={index} xs={12} sm={6} lg={3} xl={3}>
               <Skeleton variant="rectangular" height={200} sx={{ borderRadius: '12px' }} />
             </Grid>
           ))}
@@ -120,7 +120,7 @@ const LeadTypeCard = ({ colorMap }: LeadTypeCardProps) => {
           const color = colorMap[typeKey] || '#CD1B78';
 
           return (
-            <Grid item xs={12} sm={6} lg={3} xl={6} key={typeKey}>
+            <Grid item xs={12} sm={6} lg={3.5} xl={6} key={typeKey}>
               <Box
                 sx={{
                   border: `3px solid ${color}`,

@@ -14,6 +14,8 @@ interface FormTypeSelectorProps {
 }
 
 const formTypes: FormType[] = [
+  // Temporarily hide the Organization Lead Form
+  // { id: 'organization', title: 'Organization Lead Form', description: 'Find businesses or companies that may be interested in your products or services, open to collaboration or partnership opportunities.', icon: Handshake },
   {
     id: 'individual',
     title: 'Individual Lead Form',
@@ -24,12 +26,6 @@ const formTypes: FormType[] = [
     id: 'organization',
     title: 'Organization Lead Form',
     description: 'Find businesses or companies that may be interested in your products or services, open to collaboration or partnership opportunities.',
-    icon: Handshake,
-  },
-  {
-    id: 'business',
-    title: 'Business Lead Form',
-    description: 'Find people or companies that may be interested in your products or services, open to collaboration or partnership opportunities based on social media conversations.',
     icon: Handshake,
   },
   {

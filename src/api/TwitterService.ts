@@ -1,6 +1,7 @@
 import { UriHttpClient } from '@/configs/http.config';
 import { twitterApiRoutes } from '@/constants/routes/twitterRoutes';
 import { UserDto } from '@/models/dtos/UserDto';
+import { TwitterFetchResponseDto } from '@/models/dtos/TwitterDto';
 import { ApiScopeEnum } from '@/models/enum-models/ApiScopeEnum';
 import { UriResponse } from '@/models/responses/UriResponse';
 import { AxiosResponse } from 'axios';
@@ -41,6 +42,13 @@ export class TwitterService {
 
   static async disConnectTwitter(userId: string): Promise<UriResponse<string>> {
     const response: Awaited<AxiosResponse<UriResponse<string>>> = await UriHttpClient.getClient().get(`${twitterApiRoutes.disconnect}/${userId}`);
+    return response.data;
+  }
+
+  static async fetchTweets(keyword: string, maxTweets: number = 3): Promise<TwitterFetchResponseDto> {
+    const response: Awaited<AxiosResponse<TwitterFetchResponseDto>> = await UriHttpClient.getClient().get(
+      `${twitterApiRoutes.fetchTweets}?keyword=${encodeURIComponent(keyword)}&max_tweets=${maxTweets}`
+    );
     return response.data;
   }
 }

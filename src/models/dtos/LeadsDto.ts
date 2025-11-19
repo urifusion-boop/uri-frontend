@@ -58,6 +58,8 @@ export interface LeadDto {
   company_size_printed?: string;
   company_size_range_printed?: string;
   company_size_range?: string;
+  sentiment?: string;
+  confidence?: number;
 }
 
 export interface GetByFiltersLeadsDtoParameters {

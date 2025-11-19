@@ -1,3 +1,4 @@
+import { LeadsService } from '@/api/LeadsService';
 import { LightThemeColors } from '@/configs/colors.config';
 import { SocialMessagingHelper } from '@/helpers/SocialMessagingHelper';
 import { TextHelper } from '@/helpers/TextHelper';
@@ -87,6 +88,7 @@ const RoundedTextField = styled(TextField)(({ theme }) => ({
 
 const MentionCard = ({ lead, deleteSelection, selectedLeadForDelete, setSelectedLeadForDelete, disabledCheckbox }: MentionCardProps) => {
   const [showAiReply, setShowAiReply] = useState(false);
+  const [isGeneratingReply, setIsGeneratingReply] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -250,9 +252,15 @@ const MentionCard = ({ lead, deleteSelection, selectedLeadForDelete, setSelected
                   // Update local state optimistically
                   setLeadStatus(newStatus);
 
+                  // Guard against items without a backend ID (e.g., Twitter results)
+                  if (!lead.lead_id) {
+                    triggerToast('error', 'Lead ID not found', 'top-right');
+                    return;
+                  }
+
                   // Send mutation to backend
                   updateLeadStatus.mutate({
-                    lead_id: lead.lead_id ?? '',
+                    lead_id: lead.lead_id,
                     lead_status: newStatus,
                   });
                 }}
@@ -309,7 +317,33 @@ const MentionCard = ({ lead, deleteSelection, selectedLeadForDelete, setSelected
               }}
               title="Show AI generated reply"
             >
-              <Button variant="contained" color="primary" onClick={() => setShowAiReply(!showAiReply)}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={async () => {
+                  setShowAiReply(!showAiReply);
+
+                  setIsGeneratingReply(true);
+                  if (!lead.follow_up_message) {
+                    try {
+                      const response = await LeadsService.regenerateLeadFollowUpMessage(lead.lead_id ?? '', '');
+                      setIsGeneratingReply(false);
+
+                      if (response?.responseData?.follow_up_message) {
+                        lead.follow_up_message = response.responseData.follow_up_message;
+                        triggerToast('success', 'AI reply generated successfully!', 'top-right');
+                      } else {
+                        triggerToast('error', 'Failed to generate AI reply.', 'top-right');
+                      }
+                    } catch (error) {
+                      console.error('Error generating AI reply:', error);
+                      triggerToast('error', 'An error occurred while generating AI reply.', 'top-right');
+                      setIsGeneratingReply(false);
+                    }
+                  } else {
+                  }
+                }}
+              >
                 AI reply
               </Button>
             </StyledTooltip>
@@ -644,7 +678,7 @@ const MentionCard = ({ lead, deleteSelection, selectedLeadForDelete, setSelected
               AI reply:
             </Typography>
 
-            {regenerateLeadFollowUpMessage.isLoading ? (
+            {isGeneratingReply || regenerateLeadFollowUpMessage.isLoading ? (
               <Box
                 sx={{
                   backgroundColor: '#EEEEEE',

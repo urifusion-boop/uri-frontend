@@ -8,7 +8,11 @@ import { useLeadTrackingStore } from '@/store/leads-tracking/useLeadTrackingStor
 import LeadStatusIcon from '@/utils/icon/LeadStatusIcon';
 import ServiceLevelIcon from '@/utils/icon/ServiceLevelIcon';
 import { Box, Checkbox, FormControl, IconButton, ListItemText, MenuItem, Pagination, Select, Typography } from '@mui/material';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import { TwitterFetchResponseDto } from '@/models/dtos/TwitterDto';
+import { LeadDto } from '@/models/dtos/LeadsDto';
+import { LeadOpportunityTypeEnum } from '@/models/enum-models/LeadOpportunityTypeEnum';
 import { BiSolidCalendar, BiX } from 'react-icons/bi';
 import { BsStack } from 'react-icons/bs';
 import { FaCalendarAlt, FaListUl } from 'react-icons/fa';
@@ -34,6 +38,79 @@ const ManageLeadsTab = ({ leadsData, loading, page, pageSize, setPage, setPageSi
   const [selectAllLeads, setSelectAllLeads] = useState(false);
 
   const filtersStore = useLeadTrackingStore((state) => state);
+
+  // Detect Twitter source via query and load cached results
+  const router = useRouter();
+  const isTwitterSource = router.query.source === 'twitter';
+  const [twitterData, setTwitterData] = useState<TwitterFetchResponseDto | null>(null);
+
+  useEffect(() => {
+    if (isTwitterSource) {
+      const storedTwitterData = localStorage.getItem('twitterResults');
+      if (storedTwitterData) {
+        try {
+          const parsed = JSON.parse(storedTwitterData) as TwitterFetchResponseDto;
+          setTwitterData(parsed);
+        } catch (err) {
+          console.error('Error parsing Twitter data:', err);
+        }
+      }
+    }
+  }, [isTwitterSource]);
+
+  // Map Twitter data into LeadDto for Manage tab view
+  const convertTwitterDataToLeads = (tw: TwitterFetchResponseDto): LeadDto[] => {
+    return tw.responseData.tweets.map((tweet, index) => ({
+      // No backend ID; keep lead_id undefined so actions are read-only
+      id: `twitter-${index}`,
+      lead_id: undefined,
+      first_name: tweet.author || 'Twitter User',
+      last_name: '',
+      username: tweet.author || '',
+      // Main content and reason
+      mention: tweet.text,
+      lead_reason: tweet.text,
+      lead_status: LeadStatusEnum.NEW,
+      opportunity_type: LeadOpportunityTypeEnum.Other,
+      tags: [],
+      // Links
+      twitter_url: tweet.author ? `https://twitter.com/${tweet.author}` : undefined,
+      lead_link: tweet.url,
+      social_profile_link: tweet.url,
+      picture_url: '',
+      // Dates
+      created_date: tweet.created_at,
+      last_updated: tweet.created_at,
+      // Types
+      lead_type: 'CONVERSATIONAL',
+      website_url: tweet.url,
+      // Sentiment
+      sentiment: tweet.sentiment,
+      confidence: tweet.confidence,
+      // Optional fields left undefined
+      lead_email: undefined,
+      phone: undefined,
+      company_name: undefined,
+      job_title: undefined,
+      industry: undefined,
+      linkedin_url: undefined,
+      facebook_url: undefined,
+      github_url: undefined,
+      location: undefined,
+      interest_level: undefined,
+      follow_up_message: undefined,
+      starred: false,
+    }));
+  };
+
+  const displayLeads: LeadDto[] = isTwitterSource && twitterData ? convertTwitterDataToLeads(twitterData) : (leadsData?.data ?? []);
+  // Sort by newest first
+  const sortedLeads: LeadDto[] = [...(displayLeads ?? [])].map((lead, index) => ({ ...lead, originalIndex: index })).sort((a, b) => {
+    const aTime = a?.created_date ? new Date(a.created_date).getTime() : 0;
+    const bTime = b?.created_date ? new Date(b.created_date).getTime() : 0;
+    return aTime === bTime ? a.originalIndex - b.originalIndex : bTime - aTime;
+  });
+  const displayTotal: number = isTwitterSource && twitterData ? Number(twitterData.responseData.total_tweets || 0) : Number(leadsData?.total || 0);
 
   const filters = [
     {
@@ -259,10 +336,14 @@ const ManageLeadsTab = ({ leadsData, loading, page, pageSize, setPage, setPageSi
             </Box>
           </Box>
         </Box>
-        <IconButton onClick={() => setDeleteSelection(!deleteSelection)}>{deleteSelection ? <IoMdCloseCircle size={28} color="#B01717" /> : <FaTrashCan size={28} color="#B01717" />}</IconButton>
+        {!isTwitterSource && (
+          <IconButton onClick={() => setDeleteSelection(!deleteSelection)}>
+            {deleteSelection ? <IoMdCloseCircle size={28} color="#B01717" /> : <FaTrashCan size={28} color="#B01717" />}
+          </IconButton>
+        )}
       </Box>
 
-      {deleteSelection && (
+      {deleteSelection && !isTwitterSource && (
         <Box
           sx={{
             display: 'flex',
@@ -325,7 +406,7 @@ const ManageLeadsTab = ({ leadsData, loading, page, pageSize, setPage, setPageSi
           mb: 2,
         }}
       >
-        {leadsData?.data && leadsData?.data.length > 0 ? (
+        {displayLeads && displayLeads.length > 0 ? (
           <Box
             sx={{
               display: 'flex',
@@ -333,9 +414,9 @@ const ManageLeadsTab = ({ leadsData, loading, page, pageSize, setPage, setPageSi
               flexDirection: 'column',
             }}
           >
-            {leadsData?.data?.map((lead) => (
+            {sortedLeads?.map((lead) => (
               <MentionCard
-                disabledCheckbox={deleteManyLeadsMutation.isLoading}
+                disabledCheckbox={isTwitterSource || deleteManyLeadsMutation.isLoading}
                 key={lead.lead_id}
                 lead={lead}
                 deleteSelection={deleteSelection}
@@ -355,7 +436,7 @@ const ManageLeadsTab = ({ leadsData, loading, page, pageSize, setPage, setPageSi
         )}
       </LoaderWrapper>
 
-      {leadsData?.data && leadsData?.data.length > 0 && (
+      {displayLeads && displayLeads.length > 0 && (
         <Box
           sx={{
             display: 'flex',
@@ -379,7 +460,7 @@ const ManageLeadsTab = ({ leadsData, loading, page, pageSize, setPage, setPageSi
             </FormControl>
           </Box>
 
-          <Pagination count={Math.ceil(Number(leadsData?.total ?? 1) / pageSize)} shape="rounded" size="small" page={Number(page)} onChange={(event, pageNumber) => setPage(pageNumber)} />
+          <Pagination count={Math.ceil(Number(displayTotal || 1) / pageSize)} shape="rounded" size="small" page={Number(page)} onChange={(event, pageNumber) => setPage(pageNumber)} />
         </Box>
       )}
     </Box>

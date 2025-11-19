@@ -40,3 +40,5 @@ next-env.d.ts
 .env
 public/workbox-e43f5367.js
 public/workbox-e43f5367.js.map
+
+*.md
