@@ -18,7 +18,8 @@ const HomePage = () => {
   return (
     <>
       <ClientsDashboard />
-      {userDetails?.subscriptionStatus !== SubscriptionStatusEnum.ACTIVE && <PremiumPromptModal />}
+      {/* Temporarily disabled for local testing - subscription service not running locally */}
+      {/* {userDetails?.subscriptionStatus !== SubscriptionStatusEnum.ACTIVE && <PremiumPromptModal />} */}
     </>
   );
 };

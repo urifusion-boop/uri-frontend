@@ -339,6 +339,7 @@ const ConversationLeadFormV2 = () => {
         </Alert>
 
         {/* Form Title */}
+        <Box className="tour-form-fields">
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
           <SingleFieldInput
             label="Form Title"
@@ -492,10 +493,12 @@ const ConversationLeadFormV2 = () => {
             />
           </Box>
         </Box>
+        </Box>
 
         {/* Submit Button */}
         <Box sx={{ textAlign: 'center', pt: 3, borderTop: '1px solid #e5e7eb' }}>
           <LoadingButton
+            className="tour-generate-btn"
             onClick={handleSubmit}
             loading={createConversationalSearchLeadForm.isLoading || updateConversationalSearchLeadForm.isLoading || isLoadingTwitter}
             text={

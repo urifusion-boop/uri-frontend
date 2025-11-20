@@ -39,6 +39,7 @@ const formTypes: FormType[] = [
 const FormTypeSelector = ({ selectedType, onTypeSelect }: FormTypeSelectorProps) => {
   return (
     <Box
+      className="tour-form-type-selector"
       sx={{
         display: 'grid',
         gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(2, 1fr)' },

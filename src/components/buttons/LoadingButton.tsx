@@ -29,7 +29,8 @@ const LoadingButton: React.FC<LoadingButtonProps> = ({ loading = false, text, lo
         alignItems: 'center',
         gap: 1,
         height: 50,
-        width: 245,
+        minWidth: 245,
+        whiteSpace: 'nowrap',
       }}
       {...props}
     >

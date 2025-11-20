@@ -1,166 +1,315 @@
-import { Box, Button, Typography, styled } from '@mui/material';
-
+import { Box, Button, Typography, styled, Grid, Collapse, Chip } from '@mui/material';
+import { useState } from 'react';
+import { UserModuleService } from '@/api/UserModuleService';
 import { LightThemeColors } from '@/configs/colors.config';
-import { useModal } from '@/hooks/utils.hook';
+import { useUserModules } from '@/hooks/useUserModules.hook';
+import { useAuth } from '@/providers/AuthProvider';
 import ChartLine from '@/utils/icon/ChartLine';
 import HeartRateSearch from '@/utils/icon/HeartRateSearch';
 import { useRouter } from 'next/router';
 import React from 'react';
-import { BiBot } from 'react-icons/bi';
-import { FaFolder } from 'react-icons/fa';
+import { FaFolder, FaUser, FaBuilding, FaComments } from 'react-icons/fa';
 import { HiHashtag } from 'react-icons/hi';
+import { BsGraphUp } from 'react-icons/bs';
 import { MdRecordVoiceOver } from 'react-icons/md';
-import { PiBellRingingFill } from 'react-icons/pi';
-import HorizontalSlider from '../atoms/HorizontalSlider';
-import { ComingSoonComponent } from '../atoms/keyword_tracking/ComingSoonComponent';
-import CustomModal from '../modals/CustomModal';
 
 const Container = styled(Box)({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  // paddingX: '1.5rem',
   width: '100%',
   position: 'relative',
+  padding: '0 40px',
 });
 
-const globalData = [
+// Workflow definitions with their modules
+const workflowData = [
   {
-    title: 'Account Tracking',
-    description: 'Track your account performance and growth over time.',
-    icon: (
-      <ChartLine
-        style={{
-          color: LightThemeColors.uriColor,
-          width: 50,
-          height: 50,
-        }}
-      />
-    ),
-    href: '/account-tracking',
+    id: 'social-listening',
+    name: 'Social Listening',
+    description: 'Track conversations & monitor brand performance',
+    icon: <BsGraphUp size={40} color={LightThemeColors.uriColor} />,
+    comingSoon: false,
+    modules: [
+      {
+        id: 'account-tracking',
+        title: 'Account Tracking',
+        description: 'Track your account performance and growth over time.',
+        icon: (
+          <ChartLine
+            style={{
+              color: LightThemeColors.uriColor,
+              width: 40,
+              height: 40,
+            }}
+          />
+        ),
+        href: '/account-tracking',
+      },
+      {
+        id: 'keyword-tracking',
+        title: 'Keyword Tracking',
+        description: 'Track your keyword performance and growth over time.',
+        icon: (
+          <HeartRateSearch
+            style={{
+              color: LightThemeColors.uriColor,
+              width: 40,
+              height: 40,
+            }}
+          />
+        ),
+        href: '/keyword-tracking/overview',
+      },
+      {
+        id: 'hashtag-tracking',
+        title: 'Hashtag Tracking',
+        description: 'Track your hashtag performance and growth over time.',
+        icon: <HiHashtag size={40} color={LightThemeColors.uriColor} />,
+        href: '/hashtag-tracking',
+      },
+      {
+        id: 'report-generation',
+        title: 'Report Generation',
+        description: 'Generate insights reports for your business.',
+        icon: (
+          <FaFolder
+            style={{
+              color: LightThemeColors.uriColor,
+              width: 40,
+              height: 40,
+            }}
+          />
+        ),
+        href: '/report-generation',
+      },
+    ],
   },
   {
-    title: 'Keyword Tracking',
-    description: 'Track your keyword performance and growth over time.',
-    icon: (
-      <HeartRateSearch
-        style={{
-          color: LightThemeColors.uriColor,
-          width: 50,
-          height: 50,
-        }}
-      />
-    ),
-    href: '/keyword-tracking/overview',
+    id: 'lead-generation',
+    name: 'Lead Generation',
+    description: 'Find potential customers & leads',
+    icon: <MdRecordVoiceOver size={40} color={LightThemeColors.uriColor} />,
+    comingSoon: false,
+    modules: [
+      {
+        id: 'individual-leads',
+        title: 'Individual Leads',
+        description: 'Track and manage individual person leads.',
+        icon: <FaUser size={40} color={LightThemeColors.uriColor} />,
+        href: '/leads-tracking/forms/leads?type=individual',
+      },
+      {
+        id: 'organization-leads',
+        title: 'Organization Leads',
+        description: 'Track and manage organization leads.',
+        icon: <FaBuilding size={40} color={LightThemeColors.uriColor} />,
+        href: '/leads-tracking/forms/leads?type=organization',
+      },
+      {
+        id: 'conversational-leads',
+        title: 'Conversational Leads',
+        description: 'Track leads from conversations.',
+        icon: <FaComments size={40} color={LightThemeColors.uriColor} />,
+        href: '/leads-tracking/forms/leads?type=conversational',
+      },
+    ],
   },
   {
-    title: 'Content Management',
-    description: 'Manage your content and track its performance over time.',
-    icon: (
-      <FaFolder
-        style={{
-          color: LightThemeColors.uriColor,
-          width: 50,
-          height: 50,
-        }}
-      />
-    ),
-    href: '/content-management/create',
-  },
-  {
-    title: 'Hashtag Tracking',
-    description: 'Track your hashtag performance and growth over time.',
-    icon: <HiHashtag size={50} color={LightThemeColors.uriColor} />,
-    href: '/hashtag-tracking',
-  },
-  {
-    title: 'Lead Generation',
-    description: 'Generate leads for your business.',
-    icon: <MdRecordVoiceOver size={50} color={LightThemeColors.uriColor} />,
-    href: '/leads-tracking/forms',
-  },
-  {
-    title: 'Alert',
-    description: 'Get alerts based on your keywords.',
-    icon: <PiBellRingingFill size={50} color={LightThemeColors.uriColor} />,
-    href: '/alert?active_tab=mentions',
-  },
-  {
-    title: 'Insight Assistant',
-    description: 'Get insights and recommendations for your business.',
-    icon: <BiBot size={50} color={LightThemeColors.uriColor} />,
-    href: '/uri-assistant',
+    id: 'crm',
+    name: 'CRM',
+    description: 'Manage leads & sales pipeline',
+    icon: <BsGraphUp size={40} color={LightThemeColors.uriColor} />,
+    comingSoon: true,
+    modules: [],
   },
 ];
 
 const GlobalServices: React.FC = () => {
-  const { open, setOpen } = useModal();
   const router = useRouter();
+  const { userDetails } = useAuth();
+  const { selectedModules } = useUserModules();
+  const [expandedWorkflow, setExpandedWorkflow] = useState<string | null>(null);
+
+  const handleWorkflowClick = (workflowId: string) => {
+    setExpandedWorkflow(expandedWorkflow === workflowId ? null : workflowId);
+  };
+
+  const handleModuleClick = async (moduleId: string, href: string) => {
+    try {
+      if (userDetails?.userId) {
+        await UserModuleService.trackModuleAccess(userDetails.userId, moduleId);
+      }
+    } catch (error) {
+      console.error('Error tracking module access:', error);
+    }
+    router.push(href);
+  };
+
+  // Filter workflows based on user's enabled modules
+  // Show all workflows but filter modules, and always show coming soon workflows
+  const filteredWorkflows = workflowData.map((workflow) => ({
+    ...workflow,
+    modules: workflow.comingSoon
+      ? []
+      : workflow.modules.filter(
+          (module) => selectedModules.length === 0 || selectedModules.includes(module.id)
+        ),
+  })).filter((workflow) => workflow.comingSoon || workflow.modules.length > 0);
 
   return (
     <Container>
-      <CustomModal open={open} closeOnOverlayClick closeModal={() => setOpen(false)} maxWidth="100vh" width="100vh" showCloseIcon>
-        <ComingSoonComponent />
-      </CustomModal>
-
-      <HorizontalSlider variant="square" scrollThreshold={30}>
-        {globalData.map((data, index) => (
-          <Box
-            key={data.title}
-            sx={{
-              marginLeft: index === 0 ? '40px' : '0',
-              marginRight: index === globalData.length - 1 ? '40px' : '0',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              cursor: 'pointer',
-              width: 'fit-content',
-              minWidth: { xs: '80%', md: '305px' },
-              maxWidth: '305px', //'calc((100% - 20px * 2) / 3)',
-              p: 3,
-              borderRadius: '20px',
-              boxShadow: '1px 1px 6px 3px #00000011',
-              border: '2px solid white',
-              borderColor: 'transparent',
-              transition: 'all 0.3s ease-in-out',
-              '&:hover': {
-                borderColor: '#CD1B78',
-                borderRadius: '20px',
-                scale: 1.02,
-                '& .view-button': {
-                  bgcolor: '#CD1B78',
-                  '& .MuiTypography-root': {
-                    color: 'white',
-                  },
-                },
-              },
-            }}
-            className="group"
-            style={{ scrollSnapAlign: 'start' }}
-          >
-            <div className="flex items-center justify-center rounded-full bg-primary-100 w-16 h-16">{data.icon}</div>
-            <Typography variant="h6" className="text-center font-bold text-lg mt-2">
-              {data.title}
-            </Typography>
-            <Typography variant="body1" className="text-center pb-3">
-              {data.description}
-            </Typography>
-            <Button
-              onClick={() => router.push(data?.href ?? '#')}
-              className="mt-auto view-button"
+      <Grid container spacing={3} justifyContent="center">
+        {filteredWorkflows.map((workflow) => (
+          <Grid item xs={12} md={6} key={workflow.id}>
+            {/* Workflow Card */}
+            <Box
+              onClick={() => !workflow.comingSoon && handleWorkflowClick(workflow.id)}
               sx={{
-                px: 1.5,
-                py: 0.5,
-                borderRadius: 1.5,
-                textDecoration: 'none',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                cursor: workflow.comingSoon ? 'not-allowed' : 'pointer',
+                p: 3,
+                borderRadius: '20px',
+                boxShadow: '1px 1px 6px 3px #00000011',
+                border: expandedWorkflow === workflow.id
+                  ? `2px solid ${LightThemeColors.uriColor}`
+                  : '2px solid transparent',
+                backgroundColor: expandedWorkflow === workflow.id
+                  ? `${LightThemeColors.uriColor}10`
+                  : '#fff',
+                opacity: workflow.comingSoon ? 0.6 : 1,
                 transition: 'all 0.3s ease-in-out',
+                position: 'relative',
+                '&:hover': !workflow.comingSoon
+                  ? {
+                      borderColor: LightThemeColors.uriColor,
+                      transform: 'scale(1.02)',
+                    }
+                  : {},
               }}
             >
-              <Typography sx={{ color: '#907382', fontWeight: 600 }}>View</Typography>
-            </Button>
-          </Box>
+              {workflow.comingSoon && (
+                <Chip
+                  label="Coming Soon"
+                  size="small"
+                  sx={{
+                    position: 'absolute',
+                    top: 12,
+                    right: 12,
+                    backgroundColor: LightThemeColors.uriColor,
+                    color: '#fff',
+                    fontWeight: 600,
+                    fontSize: 11,
+                  }}
+                />
+              )}
+              <Box sx={{ mb: 2 }}>{workflow.icon}</Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  textAlign: 'center',
+                  fontWeight: 700,
+                  fontSize: 18,
+                  color: '#0d0e0f',
+                }}
+              >
+                {workflow.name}
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  textAlign: 'center',
+                  color: '#6C727F',
+                  mb: 1,
+                }}
+              >
+                {workflow.description}
+              </Typography>
+              {!workflow.comingSoon && (
+                <Typography
+                  sx={{
+                    fontSize: 12,
+                    color: LightThemeColors.uriColor,
+                    fontWeight: 600,
+                  }}
+                >
+                  {workflow.modules.length} module{workflow.modules.length !== 1 ? 's' : ''} • Click to {expandedWorkflow === workflow.id ? 'collapse' : 'expand'}
+                </Typography>
+              )}
+            </Box>
+
+            {/* Modules List */}
+            <Collapse in={expandedWorkflow === workflow.id}>
+              <Box sx={{ mt: 2, pl: 2 }}>
+                {workflow.modules.map((module) => (
+                  <Box
+                    key={module.id}
+                    onClick={() => handleModuleClick(module.id, module.href)}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      p: 2,
+                      mb: 1.5,
+                      borderRadius: '12px',
+                      boxShadow: '1px 1px 4px 2px #00000008',
+                      border: '1px solid #f0f0f0',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease-in-out',
+                      '&:hover': {
+                        borderColor: LightThemeColors.uriColor,
+                        backgroundColor: `${LightThemeColors.uriColor}05`,
+                        transform: 'translateX(4px)',
+                      },
+                    }}
+                  >
+                    <Box sx={{ flexShrink: 0 }}>{module.icon}</Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography
+                        sx={{
+                          fontWeight: 600,
+                          fontSize: 14,
+                          color: '#0d0e0f',
+                        }}
+                      >
+                        {module.title}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          fontSize: 12,
+                          color: '#6C727F',
+                        }}
+                      >
+                        {module.description}
+                      </Typography>
+                    </Box>
+                    <Button
+                      size="small"
+                      sx={{
+                        minWidth: 'auto',
+                        px: 2,
+                        py: 0.5,
+                        borderRadius: '8px',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: LightThemeColors.uriColor,
+                        '&:hover': {
+                          backgroundColor: LightThemeColors.uriColor,
+                          color: '#fff !important',
+                        },
+                      }}
+                    >
+                      Open
+                    </Button>
+                  </Box>
+                ))}
+              </Box>
+            </Collapse>
+          </Grid>
         ))}
-      </HorizontalSlider>
+      </Grid>
     </Container>
   );
 };

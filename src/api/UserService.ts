@@ -32,4 +32,42 @@ export class UserService {
     const response: Awaited<AxiosResponse<UriResponse<UserDto>>> = await UriHttpClient.getClient().post(userApiRoutes.updateUserAppToken, data);
     return response.data;
   }
+
+  // Workflow Management Methods
+  static async getUserWorkflows(userId: string): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().get(`/api/v1/users/${userId}/workflows`);
+    return response.data;
+  }
+
+  static async addWorkflow(userId: string, workflowId: string): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post(`/api/v1/users/${userId}/workflows`, {
+      workflowId,
+    });
+    return response.data;
+  }
+
+  static async removeWorkflow(userId: string, workflowId: string): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().delete(`/api/v1/users/${userId}/workflows/${workflowId}`);
+    return response.data;
+  }
+
+  static async setPrimaryWorkflow(userId: string, workflowId: string): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().put(`/api/v1/users/${userId}/workflows/primary`, {
+      workflowId,
+    });
+    return response.data;
+  }
+
+  // Module Management Methods
+  static async addModule(userId: string, moduleId: string): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post(`/api/v1/users/${userId}/modules`, {
+      moduleId,
+    });
+    return response.data;
+  }
+
+  static async removeModule(userId: string, moduleId: string): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().delete(`/api/v1/users/${userId}/modules/${moduleId}`);
+    return response.data;
+  }
 }

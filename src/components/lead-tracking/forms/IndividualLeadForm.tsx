@@ -201,6 +201,7 @@ const IndividualLeadForm = () => {
           <EditOutlinedIcon sx={{ fontSize: 16, ml: 1, verticalAlign: 'middle', color: '#9ca3af' }} />
         </Typography>
 
+        <Box className="tour-form-fields">
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
           <SingleFieldInput
             label="Form Title"
@@ -388,9 +389,11 @@ const IndividualLeadForm = () => {
             />
           </Box>
         </Box>
+        </Box>
 
         <Box sx={{ textAlign: 'center', pt: 3, borderTop: '1px solid #e5e7eb' }}>
           <LoadingButton
+            className="tour-generate-btn"
             onClick={handleSubmit}
             loading={createIndividualLeadForm.isLoading || updateIndividualLeadForm.isLoading}
             text={existingFormId ? 'Update Form' : 'Generate Leads'}

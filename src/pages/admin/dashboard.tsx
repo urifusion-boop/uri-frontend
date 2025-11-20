@@ -8,10 +8,12 @@ import { FaCircleNodes } from 'react-icons/fa6';
 import { GrAction } from 'react-icons/gr';
 import { HiMiniUserGroup } from 'react-icons/hi2';
 import { IoMdPricetags } from 'react-icons/io';
+import { BsGraphUp } from 'react-icons/bs';
 import overlay_img from '../../../public/assets/images/stat-bg.png';
 import FeatureTable from '../../components/admin/FeatureTable';
 import SubscriptionPlanTable from '../../components/admin/SubscriptionPlanTable';
 import UserTable from '../../components/admin/UserTable';
+import WorkflowAnalyticsTab from '../../components/admin/WorkflowAnalyticsTab';
 import CustomTabSelect from '../../components/atoms/CustomTabSelect';
 import DashboardLayout from '../../components/atoms/DashboardLayout';
 import SeoHead from '../../components/atoms/SeoHead';
@@ -37,6 +39,11 @@ const AdminDashboard = () => {
       label: 'Users',
       value: 'users',
       icon: HiMiniUserGroup,
+    },
+    {
+      label: 'Workflows',
+      value: 'workflows',
+      icon: BsGraphUp,
     },
     {
       label: 'Features',
@@ -112,6 +119,7 @@ const AdminDashboard = () => {
             <CustomTabSelect active={activeTab} buttons={tabButtons as any} onClick={(value) => setActiveTab(value)} isMobile isCenter width="30px" />
           </Box>
           {activeTab === 'users' && <UserTable />}
+          {activeTab === 'workflows' && <WorkflowAnalyticsTab />}
           {activeTab === 'features' && <FeatureTable />}
           {activeTab === 'pricing' && <SubscriptionPlanTable />}
         </Box>

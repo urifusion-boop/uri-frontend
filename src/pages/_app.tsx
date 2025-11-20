@@ -70,12 +70,9 @@ const ProtectedRoutes = () => {
       if (logoutUser) {
         logoutUser();
       }
-    } else if (isAuthenticated && router.pathname === '/auth/login') {
-      if (userDetails) {
-        if (userDetails?.role === UserRoleEnum.ADMIN) router.push('/admin/dashboard');
-        else router.push('/dashboard'); // Redirect to a suitable route
-      }
     }
+    // Note: Login page redirect is handled by login.hook.ts navigateUser function
+    // to properly redirect to lastAccessedModule or primaryModule
   }, [router, router.route, isAuthenticated, logoutUser, isPending, userDetails]);
 
   return null;

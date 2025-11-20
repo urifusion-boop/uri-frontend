@@ -200,6 +200,7 @@ const OrganizationLeadForm = () => {
           />
         </Typography>
 
+        <Box className="tour-form-fields">
         <Box
           sx={{
             display: 'grid',
@@ -392,9 +393,11 @@ const OrganizationLeadForm = () => {
             />
           </Box>
         </Box>
+        </Box>
 
         <Box sx={{ textAlign: 'center', pt: 3, borderTop: '1px solid #e5e7eb' }}>
           <LoadingButton
+            className="tour-generate-btn"
             onClick={handleSubmit}
             loading={createOrganizationLeadForm.isLoading || updateOrganizationSearchLeadForm.isLoading}
             text={existingFormId ? 'Update Form' : 'Generate Leads'}
