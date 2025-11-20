@@ -61,11 +61,13 @@ const ModulesTab = () => {
   }, [userDetails?.userId]);
 
   const handleWorkflowToggle = async (workflowId: string) => {
+    if (!userDetails?.userId) return;
+
     const workflow = WORKFLOWS[workflowId];
 
     // Check if coming soon
     if (workflow.comingSoon) {
-      toast.info(`${workflow.name} is coming soon! 🚀`);
+      toast(`${workflow.name} is coming soon! 🚀`, { icon: 'ℹ️' });
       return;
     }
 
@@ -125,8 +127,10 @@ const ModulesTab = () => {
   };
 
   const handleSetPrimary = async (workflowId: string) => {
+    if (!userDetails?.userId) return;
+
     if (workflowId === primaryWorkflow) {
-      toast.info('This is already your primary workflow');
+      toast('This is already your primary workflow', { icon: 'ℹ️' });
       return;
     }
 
@@ -150,6 +154,8 @@ const ModulesTab = () => {
   };
 
   const handleModuleToggle = async (workflowId: string, moduleId: string) => {
+    if (!userDetails?.userId) return;
+
     const isCurrentlyEnabled = enabledModules.includes(moduleId);
     const workflow = WORKFLOWS[workflowId];
     const workflowModules = workflow.modules.map(m => m.id);
@@ -538,14 +544,12 @@ const ModulesTab = () => {
                             </CustomButton>
                           )}
                           <CustomButton
-                            mode="outlined"
+                            mode="error"
                             onClick={() => handleWorkflowToggle(workflow.id)}
                             disabled={workflow.comingSoon || enabledWorkflows.length === 1}
                             style={{
                               fontSize: '13px',
                               padding: '8px 16px',
-                              borderColor: '#CD1B78',
-                              color: '#CD1B78',
                             }}
                           >
                             Remove

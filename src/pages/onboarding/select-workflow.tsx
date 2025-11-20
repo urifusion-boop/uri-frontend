@@ -28,7 +28,8 @@ const SelectWorkflowPage = () => {
 
     // Handle "Coming Soon" workflows
     if (workflow.comingSoon) {
-      toast.info(`${workflow.name} is coming soon! Please choose another workflow.`, {
+      toast(`${workflow.name} is coming soon! Please choose another workflow.`, {
+        icon: 'ℹ️',
         duration: 3000,
       });
       return;

@@ -113,7 +113,7 @@ export class LeadsService {
         page: 1,
         page_size: 1,
       });
-      return response.data && response.data.length > 0;
+      return !!(response.responseData && response.responseData.length > 0);
     } catch {
       return false;
     }

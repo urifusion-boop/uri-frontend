@@ -30,6 +30,9 @@ export class UserDto {
   paystackId?: number;
   enabledWorkflows?: string[];
   enabledModules?: string[];
+  primaryWorkflow?: string;
+  primaryModule?: string;
+  lastAccessedModule?: string;
   onboardingCompleted?: boolean;
   onboardingStep?: number;
   skipOnboarding?: boolean;

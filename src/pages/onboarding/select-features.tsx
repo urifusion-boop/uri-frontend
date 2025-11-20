@@ -105,7 +105,9 @@ const SelectFeaturesPage = () => {
     try {
       setLoading(true);
       const response = await OnboardingService.completeOnboarding(userDetails.userId, {
-        selectedModules,
+        primaryWorkflow: 'social-listening',
+        primaryModule: selectedModules[0],
+        enabledModules: selectedModules,
       });
 
       if (response.status) {

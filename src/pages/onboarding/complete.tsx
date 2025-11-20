@@ -66,7 +66,7 @@ const CompletePage = () => {
           enabledModules,
         });
 
-        if (response.status) {
+        if (response.status && response.responseData) {
           const { redirectTo, tourKey, enabledWorkflows, enabledModules, primaryWorkflow, primaryModule } = response.responseData;
 
           // Update userDetails in AuthProvider with new workflow data
