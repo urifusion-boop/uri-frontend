@@ -19,6 +19,15 @@ const GenerateLeadForm = () => {
     }
   }, [router.query.type]);
 
+  const handleTypeSelect = (type: string) => {
+    setSelectedFormType(type);
+    // Update URL query parameter
+    router.push({
+      pathname: router.pathname,
+      query: { ...router.query, type },
+    }, undefined, { shallow: true });
+  };
+
   const renderForm = () => {
     console.log('selectedFormType', selectedFormType);
     switch (selectedFormType) {
@@ -56,7 +65,7 @@ const GenerateLeadForm = () => {
           </Typography>
         </Box>
 
-        <FormTypeSelector selectedType={selectedFormType} onTypeSelect={setSelectedFormType} />
+        <FormTypeSelector selectedType={selectedFormType} onTypeSelect={handleTypeSelect} />
 
         <Box sx={{ mt: 2 }}>{renderForm()}</Box>
       </Box>

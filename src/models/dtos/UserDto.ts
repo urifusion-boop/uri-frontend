@@ -28,4 +28,25 @@ export class UserDto {
   readonly subscriptionStatus?: string;
   appTokens?: AppTokenDto[];
   paystackId?: number;
+  enabledWorkflows?: string[];
+  enabledModules?: string[];
+  onboardingCompleted?: boolean;
+  onboardingStep?: number;
+  skipOnboarding?: boolean;
+  businessDetails?: {
+    yourName?: string;
+    email?: string;
+    phoneNumber?: string;
+    businessName?: string;
+    industry?: string;
+    otherIndustry?: string;
+    businessLocation?: string;
+    whatYouSell?: string;
+    customerType?: string;
+    leadTypes?: string[];
+    biggestGoal?: string;
+    biggestChallenge?: string;
+    currentTools?: string;
+    submittedAt?: Date;
+  };
 }

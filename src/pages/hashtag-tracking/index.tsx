@@ -3,6 +3,7 @@ import { Box, Grid, Pagination } from '@mui/material';
 
 import DashboardLayout from '@/components/atoms/DashboardLayout';
 import FeatureLimitLock from '@/components/atoms/FeatureLimitLock';
+import InsightsAssistantButton from '@/components/atoms/InsightsAssistantButton';
 import SeoHead from '@/components/atoms/SeoHead';
 import SummaryCard from '@/components/cards/SummaryCard';
 import GuideTour from '@/components/guide-tour/guide-tour';
@@ -162,6 +163,9 @@ const HashtagTrackingOverview = () => {
                 />
               </Box>
             )}
+
+            {/* Quietly integrated Insights Assistant */}
+            <InsightsAssistantButton context="hashtag-tracking" />
           </Box>
         ) : (
           <FeatureLimitLock />

@@ -18,6 +18,7 @@ import { UriHttpClient } from '@/configs/http.config';
 import { theme } from '@/configs/muitheme.config';
 import { queryClient } from '@/configs/query-client.config';
 import CustomThemeProvider from '@/providers/ThemeProvider';
+import { WorkflowFilterProvider } from '@/contexts/WorkflowFilterContext';
 import { ThemeProvider } from '@mui/material';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -131,13 +132,15 @@ export default function App({ Component, pageProps }: AppProps) {
               <NotificationSoundProvider>
                 <Toaster />
                 <ReactQueryDevtools initialIsOpen={false} />
-                <CustomThemeProvider>
-                  <ThemeProvider theme={theme}>
-                    {showSubscriptionModal && <SubscriptionModal />}
-                    {/* <FeedbackModal /> */}
-                    <Component {...pageProps} />
-                  </ThemeProvider>
-                </CustomThemeProvider>
+                <WorkflowFilterProvider>
+                  <CustomThemeProvider>
+                    <ThemeProvider theme={theme}>
+                      {showSubscriptionModal && <SubscriptionModal />}
+                      {/* <FeedbackModal /> */}
+                      <Component {...pageProps} />
+                    </ThemeProvider>
+                  </CustomThemeProvider>
+                </WorkflowFilterProvider>
               </NotificationSoundProvider>
             </LoadingProvider>
           </AuthProvider>

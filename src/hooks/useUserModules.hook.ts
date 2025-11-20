@@ -20,10 +20,15 @@ export const useUserModules = () => {
         const response = await UserModuleService.getEnabledModules(userDetails.userId);
 
         if (response.status && response.responseData) {
+          // Handle both array and object with modules property
+          const modules = Array.isArray(response.responseData)
+            ? response.responseData
+            : (response.responseData as any).modules || [];
+
           // Extract module IDs from the response
-          const moduleIds = response.responseData
-            .filter((module) => module.enabled)
-            .map((module) => module.moduleId);
+          const moduleIds = modules
+            .filter((module: any) => module.enabled)
+            .map((module: any) => module.moduleId);
           setSelectedModules(moduleIds);
         } else {
           setError(response.responseMessage || 'Failed to fetch modules');

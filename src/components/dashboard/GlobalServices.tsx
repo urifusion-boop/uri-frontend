@@ -1,9 +1,10 @@
 import { Box, Button, Typography, styled, Grid, Collapse, Chip } from '@mui/material';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UserModuleService } from '@/api/UserModuleService';
 import { LightThemeColors } from '@/configs/colors.config';
 import { useUserModules } from '@/hooks/useUserModules.hook';
 import { useAuth } from '@/providers/AuthProvider';
+import { useWorkflowFilter } from '@/contexts/WorkflowFilterContext';
 import ChartLine from '@/utils/icon/ChartLine';
 import HeartRateSearch from '@/utils/icon/HeartRateSearch';
 import { useRouter } from 'next/router';
@@ -129,10 +130,30 @@ const GlobalServices: React.FC = () => {
   const router = useRouter();
   const { userDetails } = useAuth();
   const { selectedModules } = useUserModules();
-  const [expandedWorkflow, setExpandedWorkflow] = useState<string | null>(null);
+  const { selectedWorkflows, setSelectedWorkflows } = useWorkflowFilter();
 
   const handleWorkflowClick = (workflowId: string) => {
-    setExpandedWorkflow(expandedWorkflow === workflowId ? null : workflowId);
+    const isCurrentlyExpanded = selectedWorkflows.includes(workflowId);
+
+    let newExpandedWorkflows: string[];
+
+    if (isCurrentlyExpanded) {
+      // Remove from selection (deselect)
+      newExpandedWorkflows = selectedWorkflows.filter(w => w !== workflowId);
+    } else {
+      // Add to selection (multi-select)
+      newExpandedWorkflows = [...selectedWorkflows, workflowId];
+    }
+
+    // Update context and URL
+    setSelectedWorkflows(newExpandedWorkflows);
+
+    // Update URL with new selection
+    if (newExpandedWorkflows.length === 0) {
+      router.push('/dashboard', undefined, { shallow: true });
+    } else {
+      router.push(`/dashboard?workflow=${newExpandedWorkflows.join(',') }`, undefined, { shallow: true });
+    }
   };
 
   const handleModuleClick = async (moduleId: string, href: string) => {
@@ -173,10 +194,10 @@ const GlobalServices: React.FC = () => {
                 p: 3,
                 borderRadius: '20px',
                 boxShadow: '1px 1px 6px 3px #00000011',
-                border: expandedWorkflow === workflow.id
+                border: selectedWorkflows.includes(workflow.id)
                   ? `2px solid ${LightThemeColors.uriColor}`
                   : '2px solid transparent',
-                backgroundColor: expandedWorkflow === workflow.id
+                backgroundColor: selectedWorkflows.includes(workflow.id)
                   ? `${LightThemeColors.uriColor}10`
                   : '#fff',
                 opacity: workflow.comingSoon ? 0.6 : 1,
@@ -235,13 +256,13 @@ const GlobalServices: React.FC = () => {
                     fontWeight: 600,
                   }}
                 >
-                  {workflow.modules.length} module{workflow.modules.length !== 1 ? 's' : ''} • Click to {expandedWorkflow === workflow.id ? 'collapse' : 'expand'}
+                  {workflow.modules.length} module{workflow.modules.length !== 1 ? 's' : ''} • Click to {selectedWorkflows.includes(workflow.id) ? 'collapse' : 'expand'}
                 </Typography>
               )}
             </Box>
 
             {/* Modules List */}
-            <Collapse in={expandedWorkflow === workflow.id}>
+            <Collapse in={selectedWorkflows.includes(workflow.id)}>
               <Box sx={{ mt: 2, pl: 2 }}>
                 {workflow.modules.map((module) => (
                   <Box

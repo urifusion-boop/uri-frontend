@@ -47,20 +47,13 @@ const SelectWorkflowPage = () => {
 
     if (!workflow) return;
 
-    // If workflow has multiple modules, go to module selection screen
-    if (workflow.modules.length > 1) {
-      router.push(`/onboarding/select-module/${selectedWorkflow}`);
-    } else if (workflow.modules.length === 1) {
-      // Single module workflow - go directly to completion with that module
-      const module = workflow.modules[0];
-      router.push({
-        pathname: `/onboarding/complete`,
-        query: {
-          workflow: selectedWorkflow,
-          module: module.id,
-        },
-      });
-    }
+    // After workflow selection, go to business details form
+    router.push({
+      pathname: `/onboarding/business-details`,
+      query: {
+        workflow: selectedWorkflow,
+      },
+    });
   };
 
   return (
