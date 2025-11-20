@@ -15,7 +15,8 @@ type IFacebookInsightsApi =
   | "getFacebookPhotoInsights"
   | "getFacebookMentions"
   | "fetchFacebookAiMediaReport"
-  | "getFacebookPost";
+  | "getFacebookPost"
+  | "getFacebookPosts";
 
 const rawFacebookInsightsApiRoutes: Record<IFacebookInsightsApi, string> = {
   getBusinessDiscovery: "/facebook-insights/business-discovery",
@@ -30,6 +31,7 @@ const rawFacebookInsightsApiRoutes: Record<IFacebookInsightsApi, string> = {
   getFacebookMentions: "/facebook-insights/page/mentions",
   fetchFacebookAiMediaReport: "/facebook-insights/ai-media-report",
   getFacebookPost: "/facebook-insights/page/posts",
+  getFacebookPosts: "/openai-apify-facebook/fetch-posts",
 };
 
 export const facebookInsightsRoutes: Record<IFacebookInsightsApi, string> =

@@ -32,7 +32,6 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({ platformConfigs, se
   // Temporarily disable specific platforms in the form UI
   const disabledPlatforms = new Set<BrowsercloudPlatformEnum>([
     BrowsercloudPlatformEnum.THREADS,
-    BrowsercloudPlatformEnum.FACEBOOK,
     BrowsercloudPlatformEnum.LINKEDIN,
   ]);
 

@@ -8,6 +8,7 @@ import SmartModal from '@/components/modals/SmartModal';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
 import { ConversationalSearchFormDto, PlatformConfigFormDto } from '@/models/dtos/LeadFormDto';
 import { TwitterService } from '@/api/TwitterService';
+import { FacebookService } from '@/api/FacebookService';
 import { TiktokService } from '@/api/TiktokService';
 import { TwitterFetchResponseDto } from '@/models/dtos/TwitterDto';
 import { BrowsercloudPlatformEnum } from '@/models/enum-models/BrowsercloudPlatformEnum';
@@ -51,6 +52,7 @@ const ConversationLeadFormV2 = () => {
   const [twitterResults, setTwitterResults] = useState<TwitterFetchResponseDto | null>(null);
   const [isLoadingTwitter, setIsLoadingTwitter] = useState(false);
   const [isLoadingTiktok, setIsLoadingTiktok] = useState(false);
+  const [isLoadingFacebook, setIsLoadingFacebook] = useState(false);
 
   const { autoPopulateLeadForm, isAutoPopulating } = useLeadFormHooks();
   const [autoPopulateData, setAutoPopulateData] = useState('');
@@ -185,11 +187,14 @@ const ConversationLeadFormV2 = () => {
       (config) => config.platform === BrowsercloudPlatformEnum.TWITTER && config.enabled
     );
     const linkedinEnabled = false;
+    const facebookEnabled = form.platform_configs?.some(
+      (config) => config.platform === BrowsercloudPlatformEnum.FACEBOOK && config.enabled
+    );
     const tiktokEnabled = form.platform_configs?.some(
       (config) => config.platform === BrowsercloudPlatformEnum.TIKTOK && config.enabled
     );
 
-    if ((twitterEnabled || linkedinEnabled || tiktokEnabled) && (!form.keywords || form.keywords.length === 0)) {
+    if ((twitterEnabled || linkedinEnabled || tiktokEnabled || facebookEnabled) && (!form.keywords || form.keywords.length === 0)) {
       triggerToast('error', 'Please add at least one keyword to fetch data');
       return;
     }
@@ -282,9 +287,60 @@ const ConversationLeadFormV2 = () => {
       }
     }
 
+    // If Facebook is enabled, fetch Facebook posts and auto-save
+    if (facebookEnabled && form.keywords && form.keywords.length > 0) {
+      setIsLoadingFacebook(true);
+      try {
+        const keyword = form.keywords[0];
+        const fbResponse: any = await FacebookService.fetchPosts(keyword, 10);
+        const posts = fbResponse?.responseData?.posts ?? fbResponse?.responseData?.data?.posts ?? [];
+        const leadsPayload: LeadDto[] = posts.map((p: any) => ({
+          first_name: p.author || 'Facebook User',
+          last_name: '',
+          username: p.author || '',
+          mention: p.text || '',
+          lead_reason: p.text || '',
+          lead_status: LeadStatusEnum.NEW,
+          opportunity_type: 'Other',
+          tags: [],
+          lead_link: p.url || '',
+          social_profile_link: p.url || '',
+          picture_url: '',
+          created_date: p.created_at ? new Date(p.created_at).toISOString() : new Date().toISOString(),
+          last_updated: p.created_at ? new Date(p.created_at).toISOString() : new Date().toISOString(),
+          lead_type: LeadTypeEnum.CONVERSATIONAL,
+          website_url: p.url || '',
+          sentiment: p.sentiment,
+          confidence: p.confidence,
+          lead_source: LeadSourceEnum.FACEBOOK,
+          assigned_to: userId,
+          starred: false,
+        }));
+        if (leadsPayload.length > 0) {
+          const saveResponse = await LeadsService.multipleCreate(leadsPayload);
+          if (saveResponse.status) {
+            triggerToast('success', `Fetched and saved ${leadsPayload.length} Facebook leads.`);
+            router.push('/leads-tracking/forms/leads?type=conversational');
+            return;
+          } else {
+            triggerToast('error', saveResponse.responseMessage ?? 'Failed to save Facebook leads');
+            return;
+          }
+        } else {
+          triggerToast('error', 'No Facebook posts to save as leads');
+          return;
+        }
+      } catch (error) {
+        console.error('Facebook API error:', error);
+        triggerToast('error', 'Failed to fetch Facebook data. Please try again.');
+        return;
+      } finally {
+        setIsLoadingFacebook(false);
+      }
+    }
+
   const disabledPlatforms = new Set([
       BrowsercloudPlatformEnum.THREADS,
-      BrowsercloudPlatformEnum.FACEBOOK,
       BrowsercloudPlatformEnum.LINKEDIN,
     ]);
     const enabledPlatforms =
@@ -376,7 +432,6 @@ const ConversationLeadFormV2 = () => {
 
   const disabledPlatforms = new Set([
     BrowsercloudPlatformEnum.THREADS,
-    BrowsercloudPlatformEnum.FACEBOOK,
   ]);
   const enabledPlatformsCount =
     form.platform_configs?.filter((c) => c.enabled && !disabledPlatforms.has(c.platform as any)).length || 0;

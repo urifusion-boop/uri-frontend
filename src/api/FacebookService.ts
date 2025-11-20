@@ -1,5 +1,6 @@
 import { UriHttpClient } from '@/configs/http.config';
 import { facebookApiRoutes } from '@/constants/routes/facebookApiRoutes';
+import { facebookInsightsRoutes } from '@/constants/routes/facebookInsightsRoutes';
 import { ApiScopeEnum } from '@/models/enum-models/ApiScopeEnum';
 import { UriResponse } from '@/models/responses/UriResponse';
 import { AxiosResponse } from 'axios';
@@ -27,6 +28,13 @@ export class FacebookService {
 
   static async disConnectFacebook(userId: string): Promise<UriResponse<string>> {
     const response: Awaited<AxiosResponse<UriResponse<string>>> = await UriHttpClient.getClient().get(`${facebookApiRoutes.disconnect}/${userId}`);
+    return response.data;
+  }
+
+  static async fetchPosts(keyword: string, maxPosts: number = 3): Promise<any> {
+    const response: Awaited<AxiosResponse<any>> = await UriHttpClient.getClient().get(
+      `${facebookInsightsRoutes.getFacebookPosts}?keyword=${encodeURIComponent(keyword)}&max_posts=${maxPosts}`
+    );
     return response.data;
   }
 }
