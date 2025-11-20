@@ -26,13 +26,15 @@ type ITiktokInsightsApi =
   | "saveTiktokAccount"
   | "getTiktokMedia"
   | "getTiktokHashtagSearch"
-  | "getTiktokBusinessDiscovery";
+  | "getTiktokBusinessDiscovery"
+  | "getTiktokPosts";
 
 const rawTiktokInsightsApiRoutes: Record<ITiktokInsightsApi, string> = {
   saveTiktokAccount: "/tiktok-insights/save-tiktok-account",
   getTiktokMedia: "/tiktok-insights/media",
   getTiktokHashtagSearch: "/tiktok-insights/hashtag-search",
   getTiktokBusinessDiscovery: "/tiktok-insights/business-discovery",
+  getTiktokPosts: "/openai-apify-tiktok/fetch-posts",
 };
 
 export const tiktokInsightsApiRoutes: Record<ITiktokInsightsApi, string> =

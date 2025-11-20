@@ -24,6 +24,9 @@ const PlatformIcons: Record<BrowsercloudPlatformEnum, React.ReactElement> = {
   [BrowsercloudPlatformEnum.THREADS]: (
     <Box sx={{ fontSize: 14, fontWeight: 'bold', fontFamily: 'monospace' }}>@</Box>
   ),
+  [BrowsercloudPlatformEnum.TIKTOK]: (
+    <Box sx={{ fontSize: 14, fontWeight: 'bold', fontFamily: 'sans-serif' }}>♪</Box>
+  ),
 };
 
 const RealtimeLeadNotification: React.FC<RealtimeLeadNotificationProps> = ({

@@ -62,7 +62,6 @@ const InfluencerProfiles = () => {
     unbindAccount,
     unbindingAccount,
     getTwitterUrl,
-    getLinkedInUrl,
     connectingAccount,
   } = useInfluencersTrackingOverview();
 
@@ -316,9 +315,7 @@ const InfluencerProfiles = () => {
         authenticateX={() => {
           getTwitterUrl();
         }}
-        authenticateLinkedIn={() => {
-          getLinkedInUrl();
-        }}
+        
       />
 
       {/* Connect account Modal */}

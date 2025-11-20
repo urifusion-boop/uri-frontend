@@ -1,7 +1,6 @@
 import { SocialMediaEnum } from "@/models/enum-models/SocialMediaEnum";
 import { EditorState } from "draft-js";
 import TwitterPreview from "./platforms/TwitterPreview";
-import LinkedInPreview from "./platforms/LinkedInPreview";
 import FacebookPreview from "./platforms/FacebookPreview";
 import InstagramPreview from "./platforms/InstagramPreview";
 import TikTokPreview from "./platforms/TikTokPreview";
@@ -54,15 +53,7 @@ const SocialMediaPreviewContainer = ({
           />
         );
       case SocialMediaEnum.LINKEDIN:
-        return (
-          <LinkedInPreview
-            editorState={editorState}
-            attachments={attachments}
-            profileImage={profileImage}
-            username={username}
-            displayName={displayName}
-          />
-        );
+        return null;
       case SocialMediaEnum.FACEBOOK:
         return (
           <FacebookPreview
