@@ -104,4 +104,18 @@ export class LeadsService {
 
     return response.data;
   }
+
+  static async hasLeadsByType(userId: string, leadType: string): Promise<boolean> {
+    try {
+      const response = await this.getByFilters({
+        user_id: userId,
+        lead_type: leadType,
+        page: 1,
+        page_size: 1,
+      });
+      return !!(response.responseData && response.responseData.length > 0);
+    } catch {
+      return false;
+    }
+  }
 }

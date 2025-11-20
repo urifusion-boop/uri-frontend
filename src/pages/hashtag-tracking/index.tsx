@@ -3,11 +3,12 @@ import { Box, Grid, Pagination } from '@mui/material';
 
 import DashboardLayout from '@/components/atoms/DashboardLayout';
 import FeatureLimitLock from '@/components/atoms/FeatureLimitLock';
+import InsightsAssistantButton from '@/components/atoms/InsightsAssistantButton';
 import SeoHead from '@/components/atoms/SeoHead';
 import SummaryCard from '@/components/cards/SummaryCard';
 import GuideTour from '@/components/guide-tour/guide-tour';
 import { HASHTAG_TOUR_STEPS } from '@/components/guide-tour/tour-steps/hashtag-tour';
-import useGuideTour from '@/components/guide-tour/useGuideTour';
+import { useModuleTour } from '@/hooks/useModuleTour.hook';
 import AddHashtagModal from '@/components/hashtag-tracking/AddHashtagModal';
 import FeaturesHeader from '@/components/headers/FeaturesHeader';
 import DeleteModal from '@/components/modals/DeleteModal';
@@ -25,10 +26,9 @@ const HashtagTrackingOverview = () => {
   const { isMobile } = useResponsiveness();
   const { subscriptionPlanType } = useAuth();
 
-  const { steps, startTour, run, handleTourFinish } = useGuideTour({
-    initialRun: true,
+  const { steps, startTour, run, handleTourFinish } = useModuleTour({
+    moduleId: 'hashtag-tracking',
     steps: HASHTAG_TOUR_STEPS,
-    tourKey: 'hasSeenHashtagTour',
   });
 
   const featureLimit = useFeatureLimitStore((state) => state.featureLimit);
@@ -163,6 +163,9 @@ const HashtagTrackingOverview = () => {
                 />
               </Box>
             )}
+
+            {/* Quietly integrated Insights Assistant */}
+            <InsightsAssistantButton context="hashtag-tracking" />
           </Box>
         ) : (
           <FeatureLimitLock />

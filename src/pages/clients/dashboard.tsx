@@ -31,6 +31,17 @@ const ClientsDashboard = () => {
       localStorage.setItem('URI_WELCOME', 'true');
       openModal();
     }
+
+    // Check if user just completed onboarding
+    const newUserModules = localStorage.getItem('newUserModules');
+    if (newUserModules) {
+      // Show welcome modal for new users
+      openModal();
+
+      // Mark that we've shown the intro
+      localStorage.removeItem('newUserModules');
+      localStorage.setItem('showModuleTours', 'true');
+    }
   }, [openModal]);
 
   return (

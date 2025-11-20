@@ -167,6 +167,9 @@ export interface LeadFormGetByFiltersDto {
   user_id?: string;
   form_type?: string;
   form_title?: string;
+  lead_type?: string;
+  page?: number;
+  page_size?: number;
 }
 
 export interface AutoPopulateDto {

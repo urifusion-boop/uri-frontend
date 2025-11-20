@@ -188,7 +188,7 @@ const SignupAsPage = () => {
               </div>
 
               <CustomButton
-                onClick={() => router.push('/login')}
+                onClick={() => router.push('/onboarding/welcome')}
                 mode="primary"
                 style={{
                   maxWidth: '470px',
