@@ -2,6 +2,7 @@ import { LeadDto } from '@/models/dtos/LeadsDto';
 import { Dialog, DialogTitle, DialogContent, Box, Typography, IconButton, Chip, Link, Divider } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import TwitterIcon from '@mui/icons-material/Twitter';
+import FacebookIcon from '@mui/icons-material/Facebook';
 import LinkIcon from '@mui/icons-material/Link';
 import PersonIcon from '@mui/icons-material/Person';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
@@ -32,6 +33,14 @@ const platformConfigs: Record<string, PlatformConfig> = {
     contentLabel: 'Tweet Content',
     urlLabel: 'Tweet URL',
     profileUrlField: 'twitter_url',
+  },
+  facebook: {
+    name: 'Facebook',
+    icon: FacebookIcon,
+    color: '#1877F2',
+    contentLabel: 'Post Content',
+    urlLabel: 'Post URL',
+    profileUrlField: 'facebook_url',
   },
   tiktok: {
     name: 'TikTok',
