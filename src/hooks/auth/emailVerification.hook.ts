@@ -48,18 +48,30 @@ export const useEmailVerificationHook = () => {
 
     if (response.status) {
       // Email verified successfully - auto-login the user
-      const tokenDetails = response?.responseData as ITokenDetails;
+      const responseData = response?.responseData as any;
 
-      if (tokenDetails?.accessToken && tokenDetails?.refreshToken) {
+      if (responseData?.accessToken && responseData?.refreshToken) {
         // Save tokens
+        const tokenDetails: ITokenDetails = {
+          accessToken: responseData.accessToken,
+          refreshToken: responseData.refreshToken,
+        };
         saveUserTokens(tokenDetails);
 
-        // Get user details
-        const userClaims = SecurityHelper.parseJwt(tokenDetails?.accessToken);
-        const userData = await UserService.getByUserIdApi(userClaims?.userId);
-
-        // Save user details
-        saveUserDetails((userData.responseData as unknown as UserDto) ?? ({} as UserDto));
+        // If user data is included in the response, save it directly
+        if (responseData?.user) {
+          saveUserDetails(responseData.user as UserDto);
+        } else {
+          // Otherwise, fetch user details
+          try {
+            const userClaims = SecurityHelper.parseJwt(tokenDetails?.accessToken);
+            const userData = await UserService.getByUserIdApi(userClaims?.userId);
+            saveUserDetails((userData.responseData as unknown as UserDto) ?? ({} as UserDto));
+          } catch (error) {
+            console.error('Error fetching user details after email verification:', error);
+            // Continue anyway - user is verified and tokens are saved
+          }
+        }
       }
 
       setStatus("confirmed");
