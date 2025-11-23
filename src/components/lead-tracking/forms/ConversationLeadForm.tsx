@@ -6,19 +6,10 @@ import ListValuesInput from '@/components/input/ListValuesInput';
 import SingleFieldInput from '@/components/input/SingleFieldInput';
 import SmartModal from '@/components/modals/SmartModal';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
-import { ConversationalSearchFormDto, PlatformConfigFormDto } from '@/models/dtos/LeadFormDto';
-import { TwitterService } from '@/api/TwitterService';
-import { FacebookService } from '@/api/FacebookService';
-import { TiktokService } from '@/api/TiktokService';
-import { TwitterFetchResponseDto } from '@/models/dtos/TwitterDto';
+import { ConversationalSearchFormDto } from '@/models/dtos/LeadFormDto';
 import { BrowsercloudPlatformEnum } from '@/models/enum-models/BrowsercloudPlatformEnum';
 import { FormTypeEnum } from '@/models/enum-models/FormTypeEnum';
 import { useAuth } from '@/providers/AuthProvider';
-import { LeadsService } from '@/api/LeadsService';
-import { LeadDto } from '@/models/dtos/LeadsDto';
-import { LeadStatusEnum } from '@/models/enum-models/LeadStatusEnum';
-import { LeadTypeEnum } from '@/models/enum-models/LeadTypeEnum';
-import { LeadSourceEnum } from '@/models/enum-models/LeadSourceEnum';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import BoltIcon from '@mui/icons-material/Bolt';
@@ -49,10 +40,6 @@ const ConversationLeadFormV2 = () => {
   });
 
   const [existingFormId, setExistingFormId] = useState<string | null>(null);
-  const [twitterResults, setTwitterResults] = useState<TwitterFetchResponseDto | null>(null);
-  const [isLoadingTwitter, setIsLoadingTwitter] = useState(false);
-  const [isLoadingTiktok, setIsLoadingTiktok] = useState(false);
-  const [isLoadingFacebook, setIsLoadingFacebook] = useState(false);
 
   const { autoPopulateLeadForm, isAutoPopulating } = useLeadFormHooks();
   const [autoPopulateData, setAutoPopulateData] = useState('');
@@ -106,73 +93,6 @@ const ConversationLeadFormV2 = () => {
     }
   }, [existingForm, isSuccess, userId]);
 
-  // Merge newly fetched Twitter results with previously cached ones
-  const mergeTwitterResults = (
-    prev: TwitterFetchResponseDto | null,
-    next: TwitterFetchResponseDto
-  ): TwitterFetchResponseDto => {
-    const prevTweets = prev?.responseData?.tweets ?? [];
-    const nextTweets = next?.responseData?.tweets ?? [];
-
-    // Deduplicate by URL if available, otherwise by text + created_at
-    const seen = new Set<string>();
-    const mergedTweets = [...prevTweets, ...nextTweets].filter((tweet) => {
-      const key = tweet.url || `${tweet.text}-${tweet.created_at}`;
-      if (!key) return true;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-
-    return {
-      ...next,
-      responseData: {
-        ...next.responseData,
-        tweets: mergedTweets,
-        total_tweets: mergedTweets.length,
-      },
-    };
-  };
-
-  const convertTwitterDateToISO = (twitterDate: string): string => {
-    try {
-      // Twitter format: "Sun Nov 09 17:51:05 +0000 2025"
-      // Convert to ISO format
-      const date = new Date(twitterDate);
-      return date.toISOString();
-    } catch (error) {
-      console.error('Error converting date:', error);
-      // Fallback to current date if conversion fails
-      return new Date().toISOString();
-    }
-  };
-
-  const mapTweetsToLeadPayload = (tw: TwitterFetchResponseDto, assignedTo: string): LeadDto[] => {
-    return (tw.responseData?.tweets ?? []).map((tweet) => ({
-      first_name: tweet.author || 'Twitter User',
-      last_name: '',
-      username: tweet.author || '',
-      mention: tweet.text,
-      lead_reason: tweet.text,
-      lead_status: LeadStatusEnum.NEW,
-      opportunity_type: 'Other',
-      tags: [],
-      twitter_url: tweet.url,
-      lead_link: tweet.url,
-      social_profile_link: tweet.url,
-      picture_url: '',
-      created_date: convertTwitterDateToISO(tweet.created_at),
-      last_updated: convertTwitterDateToISO(tweet.created_at),
-      lead_type: LeadTypeEnum.CONVERSATIONAL,
-      website_url: tweet.url ?? '',
-      sentiment: tweet.sentiment,
-      confidence: tweet.confidence,
-      lead_source: LeadSourceEnum.X,
-      assigned_to: assignedTo,
-      starred: false,
-    }));
-  };
-
   const handleChange = (field: keyof ConversationalSearchFormDto, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -195,121 +115,14 @@ const ConversationLeadFormV2 = () => {
     );
 
     if ((twitterEnabled || linkedinEnabled || tiktokEnabled || facebookEnabled) && (!form.keywords || form.keywords.length === 0)) {
-      triggerToast('error', 'Please add at least one keyword to fetch data');
+      triggerToast('error', 'Please add at least one keyword to monitor');
       return;
     }
 
-    // Store Twitter fetch flag - we'll process it after saving the form
-    let shouldFetchTwitter = false;
-    if (twitterEnabled && form.keywords && form.keywords.length > 0) {
-      shouldFetchTwitter = true;
-    }
+    // Platform fetching is now handled by background jobs on the backend
+    // Leads will be fetched immediately after form save/update
 
-    // If TikTok is enabled, fetch TikTok data and auto-save
-    if (tiktokEnabled && form.keywords && form.keywords.length > 0) {
-      setIsLoadingTiktok(true);
-      try {
-        const keyword = form.keywords[0];
-        const tkResponse: any = await TiktokService.fetchPosts(keyword, 10);
-        const posts = tkResponse?.responseData?.posts ?? tkResponse?.responseData?.data?.posts ?? [];
-        const leadsPayload: LeadDto[] = posts.map((p: any) => ({
-          first_name: p.author || p.username || 'TikTok User',
-          last_name: '',
-          username: p.author || p.username || '',
-          mention: p.text || p.desc || '',
-          lead_reason: p.text || p.desc || '',
-          lead_status: LeadStatusEnum.NEW,
-          opportunity_type: 'Other',
-          tags: [],
-          lead_link: p.url || p.webVideoUrl || p.video_url || '',
-          social_profile_link: p.url || p.webVideoUrl || p.video_url || '',
-          picture_url: '',
-          created_date: typeof p.createTime === 'number' ? new Date(p.createTime * 1000).toISOString() : (p.created_at ? new Date(p.created_at).toISOString() : new Date().toISOString()),
-          last_updated: typeof p.createTime === 'number' ? new Date(p.createTime * 1000).toISOString() : (p.created_at ? new Date(p.created_at).toISOString() : new Date().toISOString()),
-          lead_type: LeadTypeEnum.CONVERSATIONAL,
-          website_url: p.url || p.webVideoUrl || p.video_url || '',
-          sentiment: p.sentiment,
-          confidence: p.confidence,
-          lead_source: LeadSourceEnum.TIKTOK,
-          assigned_to: userId,
-          starred: false,
-        }));
-        if (leadsPayload.length > 0) {
-          const saveResponse = await LeadsService.multipleCreate(leadsPayload);
-          if (saveResponse.status) {
-            triggerToast('success', `Fetched and saved ${leadsPayload.length} TikTok leads.`);
-            router.push('/leads-tracking/forms/leads?type=conversational');
-            return;
-          } else {
-            triggerToast('error', saveResponse.responseMessage ?? 'Failed to save TikTok leads');
-            return;
-          }
-        } else {
-          triggerToast('error', 'No TikTok posts to save as leads');
-          return;
-        }
-      } catch (error) {
-        console.error('TikTok API error:', error);
-        triggerToast('error', 'Failed to fetch TikTok data. Please try again.');
-        return;
-      } finally {
-        setIsLoadingTiktok(false);
-      }
-    }
-
-    // If Facebook is enabled, fetch Facebook posts and auto-save
-    if (facebookEnabled && form.keywords && form.keywords.length > 0) {
-      setIsLoadingFacebook(true);
-      try {
-        const keyword = form.keywords[0];
-        const fbResponse: any = await FacebookService.fetchPosts(keyword, 10);
-        const posts = fbResponse?.responseData?.posts ?? fbResponse?.responseData?.data?.posts ?? [];
-        const leadsPayload: LeadDto[] = posts.map((p: any) => ({
-          first_name: p.author || 'Facebook User',
-          last_name: '',
-          username: p.author || '',
-          mention: p.text || '',
-          lead_reason: p.text || '',
-          lead_status: LeadStatusEnum.NEW,
-          opportunity_type: 'Other',
-          tags: [],
-          lead_link: p.url || '',
-          social_profile_link: p.url || '',
-          picture_url: '',
-          created_date: p.created_at ? new Date(p.created_at).toISOString() : new Date().toISOString(),
-          last_updated: p.created_at ? new Date(p.created_at).toISOString() : new Date().toISOString(),
-          lead_type: LeadTypeEnum.CONVERSATIONAL,
-          website_url: p.url || '',
-          sentiment: p.sentiment,
-          confidence: p.confidence,
-          lead_source: LeadSourceEnum.FACEBOOK,
-          assigned_to: userId,
-          starred: false,
-        }));
-        if (leadsPayload.length > 0) {
-          const saveResponse = await LeadsService.multipleCreate(leadsPayload);
-          if (saveResponse.status) {
-            triggerToast('success', `Fetched and saved ${leadsPayload.length} Facebook leads.`);
-            router.push('/leads-tracking/forms/leads?type=conversational');
-            return;
-          } else {
-            triggerToast('error', saveResponse.responseMessage ?? 'Failed to save Facebook leads');
-            return;
-          }
-        } else {
-          triggerToast('error', 'No Facebook posts to save as leads');
-          return;
-        }
-      } catch (error) {
-        console.error('Facebook API error:', error);
-        triggerToast('error', 'Failed to fetch Facebook data. Please try again.');
-        return;
-      } finally {
-        setIsLoadingFacebook(false);
-      }
-    }
-
-  const disabledPlatforms = new Set([
+    const disabledPlatforms = new Set([
       BrowsercloudPlatformEnum.THREADS,
       BrowsercloudPlatformEnum.LINKEDIN,
     ]);
@@ -612,19 +425,9 @@ const ConversationLeadFormV2 = () => {
           <LoadingButton
             className="tour-generate-btn"
             onClick={handleSubmit}
-            loading={createConversationalSearchLeadForm.isLoading || updateConversationalSearchLeadForm.isLoading || isLoadingTwitter || isLoadingTiktok || isLoadingFacebook}
-            text={
-              isLoadingTwitter
-                ? 'Fetching Twitter Data...'
-                : isLoadingTiktok
-                ? 'Fetching TikTok Data...'
-                : isLoadingFacebook
-                ? 'Fetching Facebook Data...'
-                : existingFormId
-                ? 'Save Update'
-                : 'Save'
-            }
-            loadingText={isLoadingTwitter || isLoadingTiktok || isLoadingFacebook ? 'Fetching posts...' : 'Saving...'}
+            loading={createConversationalSearchLeadForm.isLoading || updateConversationalSearchLeadForm.isLoading}
+            text={existingFormId ? 'Save Update' : 'Save'}
+            loadingText="Saving..."
             startIcon={<SaveIcon />}
           />
 
@@ -645,8 +448,8 @@ const ConversationLeadFormV2 = () => {
         mainText="Success! 🎉"
         subText={
           form.enable_realtime
-            ? 'Your real-time monitoring is now active. You will receive instant notifications when new leads are detected.'
-            : 'Your form was successfully saved. Your form is now setup and ready to generate leads.'
+            ? 'Your form has been saved! We are now fetching your leads. Check back in a few moments to see all your leads.'
+            : 'Your form was successfully saved.'
         }
         buttonText="View Leads"
         onClick={() => {
