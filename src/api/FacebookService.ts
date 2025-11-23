@@ -31,7 +31,7 @@ export class FacebookService {
     return response.data;
   }
 
-  static async fetchPosts(keyword: string, maxPosts: number = 3): Promise<any> {
+  static async fetchPosts(keyword: string, maxPosts: number = 2): Promise<any> {
     const response: Awaited<AxiosResponse<any>> = await UriHttpClient.getClient().get(
       `${facebookInsightsRoutes.getFacebookPosts}?keyword=${encodeURIComponent(keyword)}&max_posts=${maxPosts}`
     );
