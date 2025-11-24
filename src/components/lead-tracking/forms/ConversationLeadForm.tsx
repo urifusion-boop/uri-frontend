@@ -269,7 +269,7 @@ const ConversationLeadFormV2 = () => {
         if (savedCount > 0) {
           setOpenSuccessModal(true);
         } else {
-          triggerToast('info', `No leads passed intent analysis thresholds (0 of ${allLeads.length} qualified)`);
+          triggerToast('error', `No leads passed intent analysis thresholds (0 of ${allLeads.length} qualified)`);
         }
       } else {
         triggerToast('error', 'No leads found across selected platforms');
