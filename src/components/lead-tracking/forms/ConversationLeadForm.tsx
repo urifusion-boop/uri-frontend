@@ -20,6 +20,14 @@ import router from 'next/router';
 import { useEffect, useState } from 'react';
 import { HiPencil } from 'react-icons/hi';
 import PlatformSelector from '../PlatformSelector';
+import { TwitterService } from '@/api/TwitterService';
+import { FacebookService } from '@/api/FacebookService';
+import { TiktokService } from '@/api/TiktokService';
+import { LeadsService } from '@/api/LeadsService';
+import { LeadDto } from '@/models/dtos/LeadsDto';
+import { LeadStatusEnum } from '@/models/enum-models/LeadStatusEnum';
+import { LeadOpportunityTypeEnum } from '@/models/enum-models/LeadOpportunityTypeEnum';
+import { LeadSourceEnum } from '@/models/enum-models/LeadSourceEnum';
 
 const ConversationLeadFormV2 = () => {
   const [form, setForm] = useState<ConversationalSearchFormDto>({
@@ -40,6 +48,8 @@ const ConversationLeadFormV2 = () => {
   });
 
   const [existingFormId, setExistingFormId] = useState<string | null>(null);
+  const [isFetchingLeads, setIsFetchingLeads] = useState(false);
+  const [fetchingStatus, setFetchingStatus] = useState<string>('');
 
   const { autoPopulateLeadForm, isAutoPopulating } = useLeadFormHooks();
   const [autoPopulateData, setAutoPopulateData] = useState('');
@@ -95,6 +105,162 @@ const ConversationLeadFormV2 = () => {
 
   const handleChange = (field: keyof ConversationalSearchFormDto, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Sequential platform fetching
+  const fetchLeadsFromPlatforms = async (leadFormId: string) => {
+    if (!form.keywords || form.keywords.length === 0) {
+      console.log('No keywords to fetch');
+      return;
+    }
+
+    const keyword = form.keywords[0]; // Use first keyword
+    const allLeads: LeadDto[] = [];
+
+    setIsFetchingLeads(true);
+
+    // Check which platforms are enabled
+    const twitterEnabled = form.platform_configs?.some(
+      (config) => config.platform === BrowsercloudPlatformEnum.TWITTER && config.enabled
+    );
+    const facebookEnabled = form.platform_configs?.some(
+      (config) => config.platform === BrowsercloudPlatformEnum.FACEBOOK && config.enabled
+    );
+    const tiktokEnabled = form.platform_configs?.some(
+      (config) => config.platform === BrowsercloudPlatformEnum.TIKTOK && config.enabled
+    );
+
+    try {
+      // Fetch Twitter leads sequentially
+      if (twitterEnabled) {
+        setFetchingStatus('Fetching leads from Twitter...');
+        try {
+          const twitterResponse = await TwitterService.fetchTweets(keyword, 2);
+          const tweets = twitterResponse?.responseData?.tweets || [];
+
+          tweets.forEach((tweet: any) => {
+            allLeads.push({
+              first_name: tweet.author || 'Twitter User',
+              last_name: '',
+              username: tweet.author || '',
+              mention: tweet.text || '',
+              lead_reason: tweet.text || '',
+              lead_status: LeadStatusEnum.NEW,
+              opportunity_type: LeadOpportunityTypeEnum.Other,
+              tags: [],
+              twitter_url: tweet.url || '',
+              lead_link: tweet.url || '',
+              social_profile_link: tweet.url || '',
+              picture_url: '',
+              created_date: new Date(tweet.created_at).toISOString(),
+              last_updated: new Date(tweet.created_at).toISOString(),
+              lead_type: FormTypeEnum.CONVERSATIONAL,
+              website_url: tweet.url || '',
+              lead_source: LeadSourceEnum.X,
+              assigned_to: userId || '',
+              starred: false,
+              lead_form_snapshot_id: leadFormId,
+            } as LeadDto);
+          });
+
+          console.log(`Fetched ${tweets.length} leads from Twitter`);
+        } catch (error) {
+          console.error('Error fetching Twitter leads:', error);
+        }
+      }
+
+      // Fetch Facebook leads sequentially
+      if (facebookEnabled) {
+        setFetchingStatus('Fetching leads from Facebook...');
+        try {
+          const facebookResponse = await FacebookService.fetchPosts(keyword, 2);
+          const posts = facebookResponse?.responseData?.posts || facebookResponse?.responseData?.data?.posts || [];
+
+          posts.forEach((post: any) => {
+            allLeads.push({
+              first_name: post.author || 'Facebook User',
+              last_name: '',
+              username: post.author || '',
+              mention: post.text || '',
+              lead_reason: post.text || '',
+              lead_status: LeadStatusEnum.NEW,
+              opportunity_type: LeadOpportunityTypeEnum.Other,
+              tags: [],
+              lead_link: post.url || '',
+              social_profile_link: post.url || '',
+              facebook_url: post.url || '',
+              picture_url: '',
+              created_date: post.created_at ? new Date(post.created_at).toISOString() : new Date().toISOString(),
+              last_updated: post.created_at ? new Date(post.created_at).toISOString() : new Date().toISOString(),
+              lead_type: FormTypeEnum.CONVERSATIONAL,
+              website_url: post.url || '',
+              lead_source: LeadSourceEnum.FACEBOOK,
+              assigned_to: userId || '',
+              starred: false,
+              lead_form_snapshot_id: leadFormId,
+            } as LeadDto);
+          });
+
+          console.log(`Fetched ${posts.length} leads from Facebook`);
+        } catch (error) {
+          console.error('Error fetching Facebook leads:', error);
+        }
+      }
+
+      // Fetch TikTok leads sequentially
+      if (tiktokEnabled) {
+        setFetchingStatus('Fetching leads from TikTok...');
+        try {
+          const tiktokResponse = await TiktokService.fetchPosts(keyword, 2);
+          const posts = tiktokResponse?.responseData?.posts || tiktokResponse?.responseData?.data?.posts || [];
+
+          posts.forEach((post: any) => {
+            allLeads.push({
+              first_name: post.author || post.username || 'TikTok User',
+              last_name: '',
+              username: post.author || post.username || '',
+              mention: post.text || post.desc || '',
+              lead_reason: post.text || post.desc || '',
+              lead_status: LeadStatusEnum.NEW,
+              opportunity_type: LeadOpportunityTypeEnum.Other,
+              tags: [],
+              lead_link: post.url || post.webVideoUrl || post.video_url || '',
+              social_profile_link: post.url || post.webVideoUrl || post.video_url || '',
+              picture_url: '',
+              created_date: post.createTime ? new Date(post.createTime * 1000).toISOString() : new Date().toISOString(),
+              last_updated: post.createTime ? new Date(post.createTime * 1000).toISOString() : new Date().toISOString(),
+              lead_type: FormTypeEnum.CONVERSATIONAL,
+              website_url: post.url || post.webVideoUrl || post.video_url || '',
+              lead_source: LeadSourceEnum.TIKTOK,
+              assigned_to: userId || '',
+              starred: false,
+              lead_form_snapshot_id: leadFormId,
+            } as LeadDto);
+          });
+
+          console.log(`Fetched ${posts.length} leads from TikTok`);
+        } catch (error) {
+          console.error('Error fetching TikTok leads:', error);
+        }
+      }
+
+      // Save all leads to database
+      if (allLeads.length > 0) {
+        setFetchingStatus(`Saving ${allLeads.length} leads to database...`);
+        await LeadsService.multipleCreate(allLeads);
+        console.log(`Successfully saved ${allLeads.length} leads`);
+        triggerToast('success', `Successfully fetched and saved ${allLeads.length} leads!`);
+      } else {
+        triggerToast('info', 'No leads found across selected platforms');
+      }
+
+    } catch (error) {
+      console.error('Error in sequential lead fetching:', error);
+      triggerToast('error', 'Error fetching leads from platforms');
+    } finally {
+      setIsFetchingLeads(false);
+      setFetchingStatus('');
+    }
   };
 
   const handleSubmit = async () => {
@@ -165,8 +331,10 @@ const ConversationLeadFormV2 = () => {
       updateConversationalSearchLeadForm.mutate(
         { lead_form_id: existingFormId, data: updatePayload },
         {
-          onSuccess: () => {
+          onSuccess: async () => {
             setOpenSuccessModal(true);
+            // Trigger sequential lead fetching after successful update
+            await fetchLeadsFromPlatforms(existingFormId);
           },
           onError: () => {
             triggerToast('error', 'Update failed. Please try again.');
@@ -175,8 +343,13 @@ const ConversationLeadFormV2 = () => {
       );
     } else {
       createConversationalSearchLeadForm.mutate(payload, {
-        onSuccess: () => {
+        onSuccess: async (response) => {
           setOpenSuccessModal(true);
+          // Trigger sequential lead fetching after successful creation
+          const newFormId = response?.responseData?.lead_form_id;
+          if (newFormId) {
+            await fetchLeadsFromPlatforms(newFormId);
+          }
         },
         onError: () => {
           triggerToast('error', 'Creation failed. Please try again.');
@@ -425,14 +598,16 @@ const ConversationLeadFormV2 = () => {
           <LoadingButton
             className="tour-generate-btn"
             onClick={handleSubmit}
-            loading={createConversationalSearchLeadForm.isLoading || updateConversationalSearchLeadForm.isLoading}
+            loading={createConversationalSearchLeadForm.isLoading || updateConversationalSearchLeadForm.isLoading || isFetchingLeads}
             text={existingFormId ? 'Save Update' : 'Save'}
-            loadingText="Saving..."
+            loadingText={isFetchingLeads ? fetchingStatus : "Saving..."}
             startIcon={<SaveIcon />}
           />
 
           <Typography variant="caption" sx={{ color: '#6b7280', mt: 2, display: 'block' }}>
-            {existingFormId
+            {isFetchingLeads
+              ? fetchingStatus
+              : existingFormId
               ? 'Update your saved form details'
               : form.enable_realtime
               ? 'Start monitoring for leads in real-time across selected platforms'
@@ -448,7 +623,7 @@ const ConversationLeadFormV2 = () => {
         mainText="Success! 🎉"
         subText={
           form.enable_realtime
-            ? 'Your form has been saved! We are now fetching your leads. Check back in a few moments to see all your leads.'
+            ? 'Your form has been saved and leads have been fetched.'
             : 'Your form was successfully saved.'
         }
         buttonText="View Leads"
