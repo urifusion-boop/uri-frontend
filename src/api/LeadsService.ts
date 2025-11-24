@@ -24,8 +24,11 @@ export class LeadsService {
     return response.data;
   }
 
-  static async multipleCreate(leads: LeadDto[]): Promise<UriResponse<any>> {
-    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post(leadsApiRoutes.multipleCreate, leads);
+  static async multipleCreate(leads: LeadDto[], leadFormId?: string): Promise<UriResponse<any>> {
+    const url = leadFormId
+      ? `${leadsApiRoutes.multipleCreate}?lead_form_id=${leadFormId}`
+      : leadsApiRoutes.multipleCreate;
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post(url, leads);
     return response.data;
   }
 
@@ -80,9 +83,11 @@ export class LeadsService {
   }
 
   static async getLeadAnalytics(userId: string, date_filter: string, lead_type?: LeadTypeEnum): Promise<UriResponse<LeadAnalyticsDto>> {
-    const response: Awaited<AxiosResponse<UriResponse<LeadAnalyticsDto>>> = await UriHttpClient.getClient().get(
-      `${leadsApiRoutes.analytics}?user_id=${userId}&date_filter=${date_filter}&lead_type=${lead_type}`
-    );
+    let url = `${leadsApiRoutes.analytics}?user_id=${userId}&date_filter=${date_filter}`;
+    if (lead_type) {
+      url += `&lead_type=${lead_type}`;
+    }
+    const response: Awaited<AxiosResponse<UriResponse<LeadAnalyticsDto>>> = await UriHttpClient.getClient().get(url);
 
     return response.data;
   }

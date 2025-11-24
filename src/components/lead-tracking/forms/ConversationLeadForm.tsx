@@ -260,12 +260,17 @@ const ConversationLeadFormV2 = () => {
         }
       }
 
-      // Save all leads to database
+      // Save all leads to database with intent analysis
       if (allLeads.length > 0) {
-        setFetchingStatus(`Saving ${allLeads.length} leads to database...`);
-        await LeadsService.multipleCreate(allLeads);
-        console.log(`Successfully saved ${allLeads.length} leads`);
-        setOpenSuccessModal(true);
+        setFetchingStatus(`Analyzing ${allLeads.length} leads for intent...`);
+        const result = await LeadsService.multipleCreate(allLeads, leadFormId);
+        const savedCount = result.responseData?.leads?.length || 0;
+        console.log(`Intent analysis: ${allLeads.length} fetched -> ${savedCount} qualified and saved`);
+        if (savedCount > 0) {
+          setOpenSuccessModal(true);
+        } else {
+          triggerToast('info', `No leads passed intent analysis thresholds (0 of ${allLeads.length} qualified)`);
+        }
       } else {
         triggerToast('error', 'No leads found across selected platforms');
       }
