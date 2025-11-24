@@ -13,7 +13,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import BoltIcon from '@mui/icons-material/Bolt';
-import { Box, IconButton, Tooltip, Typography, Switch, FormControlLabel, Chip, Alert } from '@mui/material';
+import { Box, IconButton, Tooltip, Typography, Switch, FormControlLabel, Chip, Alert, Button } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import Image from 'next/image';
 import router from 'next/router';
@@ -249,7 +249,7 @@ const ConversationLeadFormV2 = () => {
         setFetchingStatus(`Saving ${allLeads.length} leads to database...`);
         await LeadsService.multipleCreate(allLeads);
         console.log(`Successfully saved ${allLeads.length} leads`);
-        triggerToast('success', `Successfully fetched and saved ${allLeads.length} leads!`);
+        setOpenSuccessModal(true);
       } else {
         triggerToast('error', 'No leads found across selected platforms');
       }
@@ -332,7 +332,7 @@ const ConversationLeadFormV2 = () => {
         { lead_form_id: existingFormId, data: updatePayload },
         {
           onSuccess: async () => {
-            setOpenSuccessModal(true);
+            // setOpenSuccessModal(true);
             // Trigger sequential lead fetching after successful update
             await fetchLeadsFromPlatforms(existingFormId);
           },
@@ -344,7 +344,7 @@ const ConversationLeadFormV2 = () => {
     } else {
       createConversationalSearchLeadForm.mutate(payload, {
         onSuccess: async (response) => {
-          setOpenSuccessModal(true);
+          // setOpenSuccessModal(true);
           // Trigger sequential lead fetching after successful creation
           const newFormId = response?.responseData?.data?.[0]?.lead_form_id;
           if (newFormId) {
@@ -593,14 +593,39 @@ const ConversationLeadFormV2 = () => {
 
         {/* Submit Button */}
         <Box sx={{ textAlign: 'center', pt: 3, borderTop: '1px solid #e5e7eb' }}>
-          <LoadingButton
-            className="tour-generate-btn"
-            onClick={handleSubmit}
-            loading={createConversationalSearchLeadForm.isLoading || updateConversationalSearchLeadForm.isLoading || isFetchingLeads}
-            text={existingFormId ? 'Save Update' : 'Save'}
-            loadingText={isFetchingLeads ? fetchingStatus : "Saving..."}
-            startIcon={<SaveIcon />}
-          />
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
+            <LoadingButton
+              className="tour-generate-btn"
+              onClick={handleSubmit}
+              loading={createConversationalSearchLeadForm.isLoading || updateConversationalSearchLeadForm.isLoading || isFetchingLeads}
+              text={existingFormId ? 'Save Update' : 'Save'}
+              loadingText={isFetchingLeads ? fetchingStatus : "Saving..."}
+              startIcon={<SaveIcon />}
+            />
+
+            <Button
+              variant="outlined"
+              onClick={() => router.push('/leads-tracking/forms/leads?type=conversational')}
+              sx={{
+                borderColor: '#CD1B78',
+                color: '#CD1B78',
+                '&:hover': {
+                  borderColor: '#b31665',
+                  backgroundColor: 'rgba(205, 27, 120, 0.04)',
+                },
+                px: 8,
+                py: 2,
+                borderRadius: 3,
+                fontSize: '16px',
+                fontWeight: 600,
+                textTransform: 'none',
+                height: 50,
+                minWidth: 245,
+              }}
+            >
+              View Leads
+            </Button>
+          </Box>
 
           <Typography variant="caption" sx={{ color: '#6b7280', mt: 2, display: 'block' }}>
             {isFetchingLeads
