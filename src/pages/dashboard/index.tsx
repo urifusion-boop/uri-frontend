@@ -18,7 +18,9 @@ const HomePage = () => {
   return (
     <>
       <ClientsDashboard />
-      {userDetails?.subscriptionStatus !== SubscriptionStatusEnum.ACTIVE && <PremiumPromptModal />}
+      {/* ⚠️ LOCAL TESTING ONLY - PremiumPromptModal commented out
+          TODO: RESTORE FOR PRODUCTION - See PRODUCTION_DEPLOYMENT_CHECKLIST.md */}
+      {/* {userDetails?.subscriptionStatus !== SubscriptionStatusEnum.ACTIVE && <PremiumPromptModal />} */}
     </>
   );
 };

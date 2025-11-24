@@ -188,6 +188,12 @@ export interface BusinessSearchFormDto {
   keywords: string[];
   competitors: string[];
 }
+export interface ScoringThresholdsDto {
+  intent_score_min: number;
+  relevance_score_min: number;
+  final_score_min: number;
+}
+
 export interface ConversationalSearchFormDto {
   keywords: string[];
   competitors: string[];
@@ -204,6 +210,10 @@ export interface ConversationalSearchFormDto {
   enable_realtime?: boolean;
   monitoring_platforms?: string[];
   platform_configs?: PlatformConfigFormDto[];
+  // CLG Upgrade fields - Intent Analysis
+  category_context?: string; // Industry/category context (e.g., "skincare", "fintech")
+  implied_keywords?: string[]; // Indirect signals (e.g., "harmattan", "dry skin", "winter")
+  scoring_thresholds?: ScoringThresholdsDto; // Custom qualification thresholds
 }
 
 export interface PlatformConfigFormDto {

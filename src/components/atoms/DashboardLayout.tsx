@@ -45,7 +45,9 @@ const DashboardLayout: React.FC<IProps> = ({ children, bgColor, sideNavColor, ex
           backgroundColor: bgColor ?? themeColors.background,
         }}
       >
-        {userDetails?.subscriptionStatus !== SubscriptionStatusEnum.ACTIVE ? (
+        {/* ⚠️ LOCAL TESTING ONLY - Subscription check commented out
+            TODO: RESTORE FOR PRODUCTION - See PRODUCTION_DEPLOYMENT_CHECKLIST.md */}
+        {/* {userDetails?.subscriptionStatus !== SubscriptionStatusEnum.ACTIVE ? (
           <>
             <PageHeader toggleSideNav={toggleSideNav} />
             <Box
@@ -59,7 +61,7 @@ const DashboardLayout: React.FC<IProps> = ({ children, bgColor, sideNavColor, ex
               <NewSubscription />
             </Box>
           </>
-        ) : (
+        ) : ( */}
           <>
             {!excludeHeader && (userDetails?.role === UserRoleEnum.ADMIN ? <AdminPageHeader toggleSideNav={toggleSideNav} /> : <PageHeader toggleSideNav={toggleSideNav} />)}
             <div
@@ -73,7 +75,7 @@ const DashboardLayout: React.FC<IProps> = ({ children, bgColor, sideNavColor, ex
               {children}
             </div>
           </>
-        )}
+        {/* )} */}
       </div>
     </>
   );
