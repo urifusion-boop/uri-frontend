@@ -67,16 +67,12 @@ export const useLeadQueries = (
   const leadAnalyticsQuery = useQuery({
     queryKey: ['lead-analytics', userId, dateFilter, leadType],
     queryFn: async () => {
-      if (leadType) {
-        const response = await LeadsService.getLeadAnalytics(userId, dateFilter ?? '', leadType);
-        return response.responseData;
-      }
-      const response = await LeadsService.getLeadAnalytics(userId, dateFilter ?? '');
+      const response = await LeadsService.getLeadAnalytics(userId, dateFilter ?? '', leadType);
       return response.responseData;
     },
     enabled: true, // Always enabled since analytics data is needed on the leads tab
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnMount: true,
     staleTime: FIVE_MINUTES,
     keepPreviousData: true,
   });
