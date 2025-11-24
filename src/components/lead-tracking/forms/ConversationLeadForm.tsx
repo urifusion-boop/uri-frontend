@@ -45,6 +45,14 @@ const ConversationLeadFormV2 = () => {
     enable_realtime: true, // V2 default
     monitoring_platforms: [],
     platform_configs: [],
+    // CLG Upgrade fields
+    category_context: '',
+    implied_keywords: [],
+    scoring_thresholds: {
+      intent_score_min: 0.55,
+      relevance_score_min: 0.50,
+      final_score_min: 0.60,
+    },
   });
 
   const [existingFormId, setExistingFormId] = useState<string | null>(null);
@@ -97,6 +105,14 @@ const ConversationLeadFormV2 = () => {
         enable_realtime: true,
         monitoring_platforms: (existingForm as any).monitoring_platforms || [],
         platform_configs: (existingForm as any).platform_configs || [],
+        // CLG Upgrade fields
+        category_context: (existingForm as any).category_context || '',
+        implied_keywords: (existingForm as any).implied_keywords || [],
+        scoring_thresholds: (existingForm as any).scoring_thresholds || {
+          intent_score_min: 0.55,
+          relevance_score_min: 0.50,
+          final_score_min: 0.60,
+        },
       });
 
       setExistingFormId(lead_form_id);
@@ -326,6 +342,10 @@ const ConversationLeadFormV2 = () => {
         enable_realtime: true,
         monitoring_platforms: payload.monitoring_platforms || [],
         platform_configs: payload.platform_configs || [],
+        // CLG Upgrade fields
+        category_context: payload.category_context || '',
+        implied_keywords: payload.implied_keywords || [],
+        scoring_thresholds: payload.scoring_thresholds,
       };
 
       updateConversationalSearchLeadForm.mutate(
@@ -360,7 +380,7 @@ const ConversationLeadFormV2 = () => {
 
   useEffect(() => {
     if (autoPopulateSuccess && autoPopulatedResponse?.responseData) {
-      const data = autoPopulatedResponse.responseData;
+      const data = autoPopulatedResponse.responseData as any;
       setForm((prev: any) => ({
         ...prev,
         form_title: data.form_title || prev.form_title,
@@ -372,6 +392,9 @@ const ConversationLeadFormV2 = () => {
         add_to_history: data.add_to_history || prev.add_to_history,
         auto_generate: data.auto_generate || prev.auto_generate,
         form_type: data.form_type || prev.form_type,
+        // CLG Upgrade fields from auto-populate
+        category_context: data.category_context || prev.category_context,
+        implied_keywords: data.implied_keywords || prev.implied_keywords,
       }));
       triggerToast('success', 'Fields updated using AI-generated suggestions');
     }
@@ -498,12 +521,24 @@ const ConversationLeadFormV2 = () => {
           </Box>
         )}
 
+        {/* Category Context (CLG Upgrade) */}
+        <Box sx={{ mb: 3 }}>
+          <SingleFieldInput
+            label="Category Context"
+            tooltip="The industry or category for intent analysis. This helps AI understand the domain and detect implied buying signals. E.g., 'skincare', 'fintech', 'construction materials'"
+            placeholder="e.g. 'skincare', 'project management software', 'construction materials'"
+            value={form.category_context || ''}
+            setValue={(val) => handleChange('category_context', val)}
+            required={false}
+          />
+        </Box>
+
         {/* Keywords and Excluded Keywords */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
             <ListValuesInput
               label="Keywords"
-              tooltip="The keywords you want to generate leads for. This includes the keywords you want to track conversations for."
+              tooltip="Direct search terms people use when looking to buy. E.g., 'buy moisturizer', 'need CRM', 'looking for cement'"
               placeholder="e.g. 'Construction', 'Cement', 'Dangote', 'Real Estate', 'Renovation'"
               keywords={form.keywords || []}
               setKeywords={(val) => handleChange('keywords', val)}
@@ -512,13 +547,24 @@ const ConversationLeadFormV2 = () => {
 
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
             <ListValuesInput
-              label="Excluded Keywords"
-              tooltip="This includes the keywords you want to exclude from the search."
-              placeholder="e.g. 'Nestle', 'Unilever'"
-              keywords={form.excluded_keywords || []}
-              setKeywords={(val) => handleChange('excluded_keywords', val)}
+              label="Implied Keywords"
+              tooltip="Indirect signals that suggest buying intent through problems, situations, or lifestyle changes. E.g., 'harmattan', 'dry skin', 'project delays', 'team burnout'"
+              placeholder="e.g. 'harmattan', 'dry skin', 'missing deadlines', 'scaling issues'"
+              keywords={form.implied_keywords || []}
+              setKeywords={(val) => handleChange('implied_keywords', val)}
             />
           </Box>
+        </Box>
+
+        {/* Excluded Keywords */}
+        <Box sx={{ mb: 3 }}>
+          <ListValuesInput
+            label="Excluded Keywords"
+            tooltip="Keywords to filter out noise and spam from your results."
+            placeholder="e.g. 'spam', 'ad', 'promotion'"
+            keywords={form.excluded_keywords || []}
+            setKeywords={(val) => handleChange('excluded_keywords', val)}
+          />
         </Box>
 
         {/* Competitors and Buying Signals */}
