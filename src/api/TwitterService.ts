@@ -45,7 +45,7 @@ export class TwitterService {
     return response.data;
   }
 
-  static async fetchTweets(keyword: string, maxTweets: number = 3): Promise<TwitterFetchResponseDto> {
+  static async fetchTweets(keyword: string, maxTweets: number = 2): Promise<TwitterFetchResponseDto> {
     const response: Awaited<AxiosResponse<TwitterFetchResponseDto>> = await UriHttpClient.getClient().get(
       `${twitterApiRoutes.fetchTweets}?keyword=${encodeURIComponent(keyword)}&max_tweets=${maxTweets}`
     );
