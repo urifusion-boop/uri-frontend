@@ -13,7 +13,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import BoltIcon from '@mui/icons-material/Bolt';
-import { Box, IconButton, Tooltip, Typography, Switch, FormControlLabel, Chip, Alert, Button } from '@mui/material';
+import { Box, IconButton, Tooltip, Typography, Switch, FormControlLabel, Chip, Alert } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import Image from 'next/image';
 import router from 'next/router';
@@ -251,7 +251,7 @@ const ConversationLeadFormV2 = () => {
         console.log(`Successfully saved ${allLeads.length} leads`);
         triggerToast('success', `Successfully fetched and saved ${allLeads.length} leads!`);
       } else {
-        triggerToast('info', 'No leads found across selected platforms');
+        triggerToast('error', 'No leads found across selected platforms');
       }
 
     } catch (error) {
@@ -346,7 +346,7 @@ const ConversationLeadFormV2 = () => {
         onSuccess: async (response) => {
           setOpenSuccessModal(true);
           // Trigger sequential lead fetching after successful creation
-          const newFormId = response?.responseData?.lead_form_id;
+          const newFormId = response?.responseData?.data?.[0]?.lead_form_id;
           if (newFormId) {
             await fetchLeadsFromPlatforms(newFormId);
           }
@@ -389,8 +389,6 @@ const ConversationLeadFormV2 = () => {
   const disabledPlatforms = new Set([
     BrowsercloudPlatformEnum.THREADS,
   ]);
-  const enabledPlatformsCount =
-    form.platform_configs?.filter((c) => c.enabled && !disabledPlatforms.has(c.platform as any)).length || 0;
 
   return (
     <Box sx={{ maxWidth: '950px', mx: 'auto', mt: 4 }}>
@@ -623,7 +621,7 @@ const ConversationLeadFormV2 = () => {
         mainText="Success! 🎉"
         subText={
           form.enable_realtime
-            ? 'Your form has been saved and leads have been fetched.'
+            ? 'Your form has been successfully saved. You should see your leads in a few minutes'
             : 'Your form was successfully saved.'
         }
         buttonText="View Leads"
