@@ -151,7 +151,7 @@ const ConversationLeadFormV2 = () => {
       if (twitterEnabled) {
         setFetchingStatus('Fetching leads from Twitter...');
         try {
-          const twitterResponse = await TwitterService.fetchTweets(keyword, 2);
+          const twitterResponse = await TwitterService.fetchTweets(keyword, 10);
           const tweets = twitterResponse?.responseData?.tweets || [];
 
           tweets.forEach((tweet: any) => {
@@ -189,7 +189,7 @@ const ConversationLeadFormV2 = () => {
       if (facebookEnabled) {
         setFetchingStatus('Fetching leads from Facebook...');
         try {
-          const facebookResponse = await FacebookService.fetchPosts(keyword, 2);
+          const facebookResponse = await FacebookService.fetchPosts(keyword, 10);
           const posts = facebookResponse?.responseData?.posts || facebookResponse?.responseData?.data?.posts || [];
 
           posts.forEach((post: any) => {
@@ -227,7 +227,7 @@ const ConversationLeadFormV2 = () => {
       if (tiktokEnabled) {
         setFetchingStatus('Fetching leads from TikTok...');
         try {
-          const tiktokResponse = await TiktokService.fetchPosts(keyword, 2);
+          const tiktokResponse = await TiktokService.fetchPosts(keyword, 10);
           const posts = tiktokResponse?.responseData?.posts || tiktokResponse?.responseData?.data?.posts || [];
 
           posts.forEach((post: any) => {
