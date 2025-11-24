@@ -342,6 +342,10 @@ const ConversationLeadFormV2 = () => {
         enable_realtime: true,
         monitoring_platforms: payload.monitoring_platforms || [],
         platform_configs: payload.platform_configs || [],
+        // CLG Upgrade fields
+        category_context: payload.category_context || '',
+        implied_keywords: payload.implied_keywords || [],
+        scoring_thresholds: payload.scoring_thresholds,
       };
 
       updateConversationalSearchLeadForm.mutate(
