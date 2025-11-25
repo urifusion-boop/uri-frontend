@@ -5,6 +5,7 @@ import { UserDto } from '@/models/dtos/UserDto';
 import { UriResponse } from '@/models/responses/UriResponse';
 import { AxiosResponse } from 'axios';
 import { DeleteUserDto } from '../models/dtos/DeleteUserDto';
+import { BackendUrlEnum } from '@/models/enum-models/BackendUrlEnum';
 
 export class UserService {
   static async updateUserApi(user?: UserDto): Promise<UriResponse<UserDto>> {
@@ -35,19 +36,19 @@ export class UserService {
 
   // Workflow Management Methods
   static async getUserWorkflows(userId: string): Promise<UriResponse<any>> {
-    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().get(`/api/v1/users/${userId}/workflows`);
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().get(`${BackendUrlEnum.BACKEND}/users/${userId}/workflows`);
     return response.data;
   }
 
   static async addWorkflow(userId: string, workflowId: string): Promise<UriResponse<any>> {
-    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post(`/api/v1/users/${userId}/workflows`, {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post(`${BackendUrlEnum.BACKEND}/users/${userId}/workflows`, {
       workflowId,
     });
     return response.data;
   }
 
   static async removeWorkflow(userId: string, workflowId: string): Promise<UriResponse<any>> {
-    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().delete(`/api/v1/users/${userId}/workflows/${workflowId}`);
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().delete(`${BackendUrlEnum.BACKEND}/users/${userId}/workflows/${workflowId}`);
     return response.data;
   }
 

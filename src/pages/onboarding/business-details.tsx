@@ -475,7 +475,7 @@ const BusinessDetailsPage = () => {
                       onChange={onChange}
                       onBlur={onBlur}
                       errorText={errors?.whatYouSell?.message}
-                      placeholder="Brief one-sentence description of your product or service"
+                      placeholder="e.g., We sell handmade jewelry for weddings (minimum 10 characters)"
                       radius={2.5}
                     />
                   )}

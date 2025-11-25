@@ -59,15 +59,15 @@ const SubscriptionModal: React.FC = () => {
             textAlign: "center",
             maxWidth: "512px",
             width: "100%",
-            maxHeight: "700px",
+            maxHeight: "90vh", // 90% of viewport height
             overflowY: "auto",
             zIndex: 10, // Above the overlay
-            height: "100vh",
             backgroundColor: "white",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
+            borderRadius: "12px",
           }}
         >
           <img
@@ -134,7 +134,7 @@ const SubscriptionModal: React.FC = () => {
                 py: 1.5,
                 borderRadius: "8px",
               }}
-              onClick={() => router.push("/dashboard")}
+              onClick={() => router.push("/pricing")}
             >
               Get Access Now
             </Button>
