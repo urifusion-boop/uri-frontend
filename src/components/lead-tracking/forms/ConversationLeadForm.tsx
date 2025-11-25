@@ -23,7 +23,7 @@ import PlatformSelector from '../PlatformSelector';
 import { TwitterService } from '@/api/TwitterService';
 import { FacebookService } from '@/api/FacebookService';
 import { TiktokService } from '@/api/TiktokService';
-import { LeadsService } from '@/api/LeadsService';
+import { LeadsService as LeadFormService } from '@/api/LeadFormService';
 import { LeadDto } from '@/models/dtos/LeadsDto';
 import { LeadStatusEnum } from '@/models/enum-models/LeadStatusEnum';
 import { LeadOpportunityTypeEnum } from '@/models/enum-models/LeadOpportunityTypeEnum';
@@ -123,161 +123,29 @@ const ConversationLeadFormV2 = () => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Sequential platform fetching
+  // Fetch leads from backend with intent analysis
   const fetchLeadsFromPlatforms = async (leadFormId: string) => {
-    if (!form.keywords || form.keywords.length === 0) {
-      console.log('No keywords to fetch');
+    if (!userId) {
+      triggerToast('error', 'User ID is required');
       return;
     }
 
-    const keyword = form.keywords[0]; // Use first keyword
-    const allLeads: LeadDto[] = [];
-
     setIsFetchingLeads(true);
-
-    // Check which platforms are enabled
-    const twitterEnabled = form.platform_configs?.some(
-      (config) => config.platform === BrowsercloudPlatformEnum.TWITTER && config.enabled
-    );
-    const facebookEnabled = form.platform_configs?.some(
-      (config) => config.platform === BrowsercloudPlatformEnum.FACEBOOK && config.enabled
-    );
-    const tiktokEnabled = form.platform_configs?.some(
-      (config) => config.platform === BrowsercloudPlatformEnum.TIKTOK && config.enabled
-    );
+    setFetchingStatus('Fetching and analyzing leads from platforms...');
 
     try {
-      // Fetch Twitter leads sequentially
-      if (twitterEnabled) {
-        setFetchingStatus('Fetching leads from Twitter...');
-        try {
-          const twitterResponse = await TwitterService.fetchTweets(keyword, 10);
-          const tweets = twitterResponse?.responseData?.tweets || [];
+      // Call backend endpoint that handles platform fetching + intent analysis
+      const response = await LeadFormService.fetchConversationalLeads(leadFormId, userId);
 
-          tweets.forEach((tweet: any) => {
-            allLeads.push({
-              first_name: tweet.author || 'Twitter User',
-              last_name: '',
-              username: tweet.author || '',
-              mention: tweet.text || '',
-              lead_reason: tweet.text || '',
-              lead_status: LeadStatusEnum.NEW,
-              opportunity_type: LeadOpportunityTypeEnum.Other,
-              tags: [],
-              twitter_url: tweet.url || '',
-              lead_link: tweet.url || '',
-              social_profile_link: tweet.url || '',
-              picture_url: '',
-              created_date: new Date(tweet.created_at).toISOString(),
-              last_updated: new Date(tweet.created_at).toISOString(),
-              lead_type: FormTypeEnum.CONVERSATIONAL,
-              website_url: tweet.url || '',
-              lead_source: LeadSourceEnum.X,
-              assigned_to: userId || '',
-              starred: false,
-              lead_form_snapshot_id: leadFormId,
-            } as LeadDto);
-          });
-
-          console.log(`Fetched ${tweets.length} leads from Twitter`);
-        } catch (error) {
-          console.error('Error fetching Twitter leads:', error);
-        }
-      }
-
-      // Fetch Facebook leads sequentially
-      if (facebookEnabled) {
-        setFetchingStatus('Fetching leads from Facebook...');
-        try {
-          const facebookResponse = await FacebookService.fetchPosts(keyword, 10);
-          const posts = facebookResponse?.responseData?.posts || facebookResponse?.responseData?.data?.posts || [];
-
-          posts.forEach((post: any) => {
-            allLeads.push({
-              first_name: post.author || 'Facebook User',
-              last_name: '',
-              username: post.author || '',
-              mention: post.text || '',
-              lead_reason: post.text || '',
-              lead_status: LeadStatusEnum.NEW,
-              opportunity_type: LeadOpportunityTypeEnum.Other,
-              tags: [],
-              lead_link: post.url || '',
-              social_profile_link: post.url || '',
-              facebook_url: post.url || '',
-              picture_url: '',
-              created_date: post.created_at ? new Date(post.created_at).toISOString() : new Date().toISOString(),
-              last_updated: post.created_at ? new Date(post.created_at).toISOString() : new Date().toISOString(),
-              lead_type: FormTypeEnum.CONVERSATIONAL,
-              website_url: post.url || '',
-              lead_source: LeadSourceEnum.FACEBOOK,
-              assigned_to: userId || '',
-              starred: false,
-              lead_form_snapshot_id: leadFormId,
-            } as LeadDto);
-          });
-
-          console.log(`Fetched ${posts.length} leads from Facebook`);
-        } catch (error) {
-          console.error('Error fetching Facebook leads:', error);
-        }
-      }
-
-      // Fetch TikTok leads sequentially
-      if (tiktokEnabled) {
-        setFetchingStatus('Fetching leads from TikTok...');
-        try {
-          const tiktokResponse = await TiktokService.fetchPosts(keyword, 10);
-          const posts = tiktokResponse?.responseData?.posts || tiktokResponse?.responseData?.data?.posts || [];
-
-          posts.forEach((post: any) => {
-            allLeads.push({
-              first_name: post.author || post.username || 'TikTok User',
-              last_name: '',
-              username: post.author || post.username || '',
-              mention: post.text || post.desc || '',
-              lead_reason: post.text || post.desc || '',
-              lead_status: LeadStatusEnum.NEW,
-              opportunity_type: LeadOpportunityTypeEnum.Other,
-              tags: [],
-              lead_link: post.url || post.webVideoUrl || post.video_url || '',
-              social_profile_link: post.url || post.webVideoUrl || post.video_url || '',
-              picture_url: '',
-              created_date: post.createTime ? new Date(post.createTime * 1000).toISOString() : new Date().toISOString(),
-              last_updated: post.createTime ? new Date(post.createTime * 1000).toISOString() : new Date().toISOString(),
-              lead_type: FormTypeEnum.CONVERSATIONAL,
-              website_url: post.url || post.webVideoUrl || post.video_url || '',
-              lead_source: LeadSourceEnum.TIKTOK,
-              assigned_to: userId || '',
-              starred: false,
-              lead_form_snapshot_id: leadFormId,
-            } as LeadDto);
-          });
-
-          console.log(`Fetched ${posts.length} leads from TikTok`);
-        } catch (error) {
-          console.error('Error fetching TikTok leads:', error);
-        }
-      }
-
-      // Save all leads to database with intent analysis
-      if (allLeads.length > 0) {
-        setFetchingStatus(`Analyzing ${allLeads.length} leads for intent...`);
-        const result = await LeadsService.multipleCreate(allLeads, leadFormId);
-        const savedCount = result.responseData?.leads?.length || 0;
-        console.log(`Intent analysis: ${allLeads.length} fetched -> ${savedCount} qualified and saved`);
-        if (savedCount > 0) {
-          setOpenSuccessModal(true);
-        } else {
-          triggerToast('error', `No leads passed intent analysis thresholds (0 of ${allLeads.length} qualified)`);
-        }
+      if (response.responseCode === 200) {
+        setOpenSuccessModal(true);
+        triggerToast('success', 'Leads fetched and analyzed successfully!');
       } else {
-        triggerToast('error', 'No leads found across selected platforms');
+        triggerToast('error', response.responseMessage || 'Failed to fetch leads');
       }
-
     } catch (error) {
-      console.error('Error in sequential lead fetching:', error);
-      triggerToast('error', 'Error fetching leads from platforms');
+      console.error('Error fetching leads:', error);
+      triggerToast('error', 'Error fetching leads from backend');
     } finally {
       setIsFetchingLeads(false);
       setFetchingStatus('');
