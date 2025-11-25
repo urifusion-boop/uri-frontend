@@ -13,7 +13,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import BoltIcon from '@mui/icons-material/Bolt';
-import { Box, IconButton, Tooltip, Typography, Switch, FormControlLabel, Chip, Alert, Button } from '@mui/material';
+import { Box, IconButton, Tooltip, Typography, Switch, FormControlLabel, Chip, Alert, Button, LinearProgress } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import Image from 'next/image';
 import router from 'next/router';
@@ -58,6 +58,8 @@ const ConversationLeadFormV2 = () => {
   const [existingFormId, setExistingFormId] = useState<string | null>(null);
   const [isFetchingLeads, setIsFetchingLeads] = useState(false);
   const [fetchingStatus, setFetchingStatus] = useState<string>('');
+  const [fetchingProgress, setFetchingProgress] = useState(0);
+  const [currentTip, setCurrentTip] = useState('');
 
   const { autoPopulateLeadForm, isAutoPopulating } = useLeadFormHooks();
   const [autoPopulateData, setAutoPopulateData] = useState('');
@@ -131,31 +133,79 @@ const ConversationLeadFormV2 = () => {
     }
 
     setIsFetchingLeads(true);
-    setFetchingStatus('Fetching posts from social media platforms...');
+    setFetchingProgress(0);
+
+    // Helpful tips to rotate through
+    const tips = [
+      "💡 Tip: Use specific keywords like 'need' instead of generic terms",
+      "🎯 Did you know? Specific pain points yield better leads",
+      "⚡ Pro tip: Try 'looking for recommendations' for better results",
+      "🔍 Fun fact: 70% of posts are filtered out for being promotional",
+    ];
+
+    // Status messages progression
+    const statusMessages = [
+      { msg: '🔍 Scanning social media platforms...', progress: 10 },
+      { msg: '📥 Fetching posts from selected platforms...', progress: 25 },
+      { msg: '🤖 AI is analyzing posts for intent...', progress: 40 },
+      { msg: '✨ Validating lead quality and relevance...', progress: 60 },
+      { msg: '🎯 Filtering and scoring results...', progress: 75 },
+      { msg: '🏁 Almost done! Finalizing results...', progress: 90 },
+    ];
+
+    let currentTipIndex = 0;
+    let currentStatusIndex = 0;
+
+    // Rotate tips every 4 seconds
+    const tipInterval = setInterval(() => {
+      setCurrentTip(tips[currentTipIndex]);
+      currentTipIndex = (currentTipIndex + 1) % tips.length;
+    }, 4000);
+
+    // Progress status messages
+    const statusInterval = setInterval(() => {
+      if (currentStatusIndex < statusMessages.length) {
+        setFetchingStatus(statusMessages[currentStatusIndex].msg);
+        setFetchingProgress(statusMessages[currentStatusIndex].progress);
+        currentStatusIndex++;
+      }
+    }, 3000);
+
+    // Set initial state
+    setCurrentTip(tips[0]);
+    setFetchingStatus(statusMessages[0].msg);
 
     try {
-      // Update status after 3 seconds
-      const statusTimer = setTimeout(() => {
-        setFetchingStatus('Analyzing posts with AI... This may take 30-60 seconds. Please wait...');
-      }, 3000);
-
       // Call backend endpoint that handles platform fetching + intent analysis
       const response = await LeadFormService.fetchConversationalLeads(leadFormId, userId);
 
-      clearTimeout(statusTimer);
+      clearInterval(tipInterval);
+      clearInterval(statusInterval);
+
+      // Complete progress
+      setFetchingProgress(100);
+      setFetchingStatus('✅ Analysis complete!');
 
       if (response.responseCode === 200) {
-        setOpenSuccessModal(true);
-        triggerToast('success', 'Leads fetched and analyzed successfully!');
+        setTimeout(() => {
+          setOpenSuccessModal(true);
+          triggerToast('success', 'Leads fetched and analyzed successfully!');
+        }, 500);
       } else {
         triggerToast('error', response.responseMessage || 'Failed to fetch leads');
       }
     } catch (error) {
       console.error('Error fetching leads:', error);
+      clearInterval(tipInterval);
+      clearInterval(statusInterval);
       triggerToast('error', 'Error fetching leads. The analysis may have taken too long. Please try again.');
     } finally {
       setIsFetchingLeads(false);
-      setFetchingStatus('');
+      setTimeout(() => {
+        setFetchingStatus('');
+        setFetchingProgress(0);
+        setCurrentTip('');
+      }, 1000);
     }
   };
 
@@ -516,6 +566,54 @@ const ConversationLeadFormV2 = () => {
           </Box>
         </Box>
         </Box>
+
+        {/* Progress Indicator */}
+        {isFetchingLeads && (
+          <Box sx={{
+            mb: 3,
+            p: 3,
+            bgcolor: '#f8f9ff',
+            borderRadius: 2,
+            border: '1px solid #e0e7ff'
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <Typography variant="body1" sx={{ fontWeight: 600, color: '#1e293b' }}>
+                {fetchingStatus}
+              </Typography>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: '#CD1B78' }}>
+                {fetchingProgress}%
+              </Typography>
+            </Box>
+
+            <LinearProgress
+              variant="determinate"
+              value={fetchingProgress}
+              sx={{
+                height: 8,
+                borderRadius: 4,
+                backgroundColor: '#e0e7ff',
+                '& .MuiLinearProgress-bar': {
+                  borderRadius: 4,
+                  backgroundColor: '#CD1B78',
+                }
+              }}
+            />
+
+            {currentTip && (
+              <Box sx={{
+                mt: 2,
+                p: 2,
+                bgcolor: 'white',
+                borderRadius: 1.5,
+                border: '1px solid #e0e7ff'
+              }}>
+                <Typography variant="body2" sx={{ color: '#475569', fontStyle: 'italic' }}>
+                  {currentTip}
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        )}
 
         {/* Submit Button */}
         <Box sx={{ textAlign: 'center', pt: 3, borderTop: '1px solid #e5e7eb' }}>
