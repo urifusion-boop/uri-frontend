@@ -107,7 +107,11 @@ export class LeadsService {
 
   static async fetchConversationalLeads(lead_form_id: string, user_id: string): Promise<UriResponse<{ message: string; lead_form_id: string }>> {
     const response: Awaited<AxiosResponse<UriResponse<{ message: string; lead_form_id: string }>>> = await UriHttpClient.getClient().post(
-      `${leadFormApiRoutes.conversationalSearchFetchLeads}?lead_form_id=${lead_form_id}&user_id=${user_id}`
+      `${leadFormApiRoutes.conversationalSearchFetchLeads}?lead_form_id=${lead_form_id}&user_id=${user_id}`,
+      {},
+      {
+        timeout: 180000 // 3 minutes timeout for AI analysis
+      }
     );
 
     return response.data;

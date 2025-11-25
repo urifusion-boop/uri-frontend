@@ -131,11 +131,18 @@ const ConversationLeadFormV2 = () => {
     }
 
     setIsFetchingLeads(true);
-    setFetchingStatus('Fetching and analyzing leads from platforms...');
+    setFetchingStatus('Fetching posts from social media platforms...');
 
     try {
+      // Update status after 3 seconds
+      const statusTimer = setTimeout(() => {
+        setFetchingStatus('Analyzing posts with AI... This may take 30-60 seconds. Please wait...');
+      }, 3000);
+
       // Call backend endpoint that handles platform fetching + intent analysis
       const response = await LeadFormService.fetchConversationalLeads(leadFormId, userId);
+
+      clearTimeout(statusTimer);
 
       if (response.responseCode === 200) {
         setOpenSuccessModal(true);
@@ -145,7 +152,7 @@ const ConversationLeadFormV2 = () => {
       }
     } catch (error) {
       console.error('Error fetching leads:', error);
-      triggerToast('error', 'Error fetching leads from backend');
+      triggerToast('error', 'Error fetching leads. The analysis may have taken too long. Please try again.');
     } finally {
       setIsFetchingLeads(false);
       setFetchingStatus('');
