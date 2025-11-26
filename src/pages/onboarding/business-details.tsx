@@ -61,10 +61,10 @@ const BusinessDetailsSchema = z.object({
   industry: z.string().min(1, 'Please select an industry'),
   otherIndustry: z.string().optional(),
   businessLocation: z.string().min(2, 'Please enter your business location'),
-  whatYouSell: z.string().min(10, 'Please provide a brief description'),
+  whatYouSell: z.string().min(10, 'Please provide a brief description (minimum 10 characters)'),
   customerType: z.string().min(1, 'Please select your customer type'),
   leadTypes: z.array(z.string()).min(1, 'Please select at least one lead type'),
-  biggestGoal: z.string().min(1, 'Please select your biggest goal'),
+  biggestGoals: z.array(z.string()).min(1, 'Please select at least one goal'),
   biggestChallenge: z.string().optional(),
   currentTools: z.string().optional(),
 });
@@ -109,6 +109,7 @@ const BusinessDetailsPage = () => {
       email: userDetails?.email || '',
       phoneNumber: userDetails?.phoneNumber || '',
       leadTypes: [],
+      biggestGoals: [],
     },
   });
 
@@ -121,7 +122,7 @@ const BusinessDetailsPage = () => {
   const [industrySelect, setIndustrySelect] = useState<ISelectData | null>(null);
   const [customerTypeSelect, setCustomerTypeSelect] = useState<ISelectData | null>(null);
   const [leadTypesSelect, setLeadTypesSelect] = useState<ISelectData[]>([]);
-  const [goalSelect, setGoalSelect] = useState<ISelectData | null>(null);
+  const [goalsSelect, setGoalsSelect] = useState<ISelectData[]>([]);
   const [autoSaving, setAutoSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
@@ -131,7 +132,7 @@ const BusinessDetailsPage = () => {
 
   // Calculate form completion progress
   const calculateProgress = useCallback(() => {
-    const requiredFields = ['yourName', 'email', 'phoneNumber', 'businessName', 'industry', 'businessLocation', 'whatYouSell', 'customerType', 'leadTypes', 'biggestGoal'];
+    const requiredFields = ['yourName', 'email', 'phoneNumber', 'businessName', 'industry', 'businessLocation', 'whatYouSell', 'customerType', 'leadTypes', 'biggestGoals'];
     const filledFields = requiredFields.filter(field => {
       const value = formValues[field as keyof BusinessDetailsValues];
       if (Array.isArray(value)) return value.length > 0;
@@ -186,7 +187,49 @@ const BusinessDetailsPage = () => {
       }
     } catch (error: any) {
       console.error('Error saving business details:', error);
-      toast.error(error?.response?.data?.responseMessage || 'Failed to save business details. Please try again.');
+
+      // Extract detailed error message from various possible error structures
+      let errorMessage = 'Failed to save business details. Please try again.';
+
+      if (error?.response?.data?.responseMessage) {
+        errorMessage = error.response.data.responseMessage;
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      // Handle validation errors
+      if (error?.response?.data?.errors) {
+        const validationErrors = error.response.data.errors;
+        if (Array.isArray(validationErrors)) {
+          errorMessage = validationErrors.join(', ');
+        } else if (typeof validationErrors === 'object') {
+          errorMessage = Object.values(validationErrors).join(', ');
+        }
+      }
+
+      // Handle specific HTTP status codes
+      if (error?.response?.status === 400) {
+        errorMessage = `Validation Error: ${errorMessage}`;
+      } else if (error?.response?.status === 401) {
+        errorMessage = 'Session expired. Please login again.';
+        setTimeout(() => router.push('/login'), 2000);
+      } else if (error?.response?.status === 403) {
+        errorMessage = 'Access denied. Please check your permissions.';
+      } else if (error?.response?.status === 404) {
+        errorMessage = 'Service not found. Please contact support.';
+      } else if (error?.response?.status === 500) {
+        errorMessage = 'Server error. Please try again later.';
+      } else if (error?.response?.status === 402) {
+        errorMessage = 'Subscription required. Please upgrade your plan.';
+      }
+
+      toast.error(errorMessage, {
+        duration: 5000,
+      });
     } finally {
       setLoading(false);
     }
@@ -298,6 +341,34 @@ const BusinessDetailsPage = () => {
               />
             </Box>
           </Box>
+
+          {/* Validation Errors Summary */}
+          {Object.keys(errors).length > 0 && (
+            <Box
+              sx={{
+                mb: 3,
+                p: 2,
+                bgcolor: '#FEF2F2',
+                border: '1px solid #FCA5A5',
+                borderRadius: '8px',
+              }}
+            >
+              <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#DC2626', mb: 1 }}>
+                ⚠️ Please fix the following errors before continuing:
+              </Typography>
+              <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
+                {Object.entries(errors).map(([field, error]) => (
+                  <Typography
+                    key={field}
+                    component="li"
+                    sx={{ fontSize: 13, color: '#DC2626', mb: 0.5 }}
+                  >
+                    {error?.message || `Invalid ${field}`}
+                  </Typography>
+                ))}
+              </Box>
+            </Box>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -513,16 +584,16 @@ const BusinessDetailsPage = () => {
                     <SelectField
                       label="What type of leads do you want?*"
                       options={LEAD_TYPE_OPTIONS}
-                      value={leadTypesSelect.length > 0 ? leadTypesSelect[0] : null}
+                      value={leadTypesSelect}
                       onChange={(e) => {
-                        const values = e ? [e] : [];
+                        const values = Array.isArray(e) ? e : (e ? [e] : []);
                         setLeadTypesSelect(values);
                         onChange(values.map((v) => v.value));
                       }}
-                      placeholder="Select lead type"
+                      placeholder="Select lead types (multiple allowed)"
                       errorText={errors?.leadTypes?.message}
                       height="40px"
-                      multiSelect={false}
+                      multiSelect={true}
                     />
                   )}
                 />
@@ -536,23 +607,25 @@ const BusinessDetailsPage = () => {
                 <Divider sx={{ mb: 2 }} />
               </Grid>
 
-              {/* Biggest Goal */}
+              {/* Biggest Goals */}
               <Grid item xs={12}>
                 <Controller
                   control={control}
-                  name="biggestGoal"
+                  name="biggestGoals"
                   render={({ field: { onChange } }) => (
                     <SelectField
                       label="What is your biggest goal right now?*"
                       options={GOAL_OPTIONS}
-                      value={goalSelect}
+                      value={goalsSelect}
                       onChange={(e) => {
-                        setGoalSelect(e);
-                        onChange(e?.value || '');
+                        const values = Array.isArray(e) ? e : (e ? [e] : []);
+                        setGoalsSelect(values);
+                        onChange(values.map((v) => v.value));
                       }}
-                      placeholder="Select your primary goal"
-                      errorText={errors?.biggestGoal?.message}
+                      placeholder="Select your goals (multiple allowed)"
+                      errorText={errors?.biggestGoals?.message}
                       height="40px"
+                      multiSelect={true}
                     />
                   )}
                 />
