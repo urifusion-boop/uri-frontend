@@ -170,7 +170,10 @@ const VideoUpload = ({ clientProfile, index }: IProps) => {
           </Text>
           <SelectField
             options={clientsEmbedLinks}
-            onChange={(e) => setSelectedOption(e?.label as string)}
+            onChange={(e) => {
+              if (!e || Array.isArray(e)) return;
+              setSelectedOption(e.label as string);
+            }}
             placeholder="Select"
             value={{
               label: selectedOption,

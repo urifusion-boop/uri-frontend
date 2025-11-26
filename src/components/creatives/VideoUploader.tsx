@@ -206,7 +206,10 @@ const VideoUpload = ({ creativeProfile, index }: IProps) => {
           </Text>
           <SelectField
             options={clientsEmbedLinks}
-            onChange={(e) => setSelectedOption(e?.value as string)}
+            onChange={(e) => {
+              if (!e || Array.isArray(e)) return;
+              setSelectedOption(e.value as string);
+            }}
             placeholder="Select"
             value={{
               label: selectedOption,

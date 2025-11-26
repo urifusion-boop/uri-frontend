@@ -5,7 +5,7 @@ import { FaFacebook, FaLinkedinIn, FaXTwitter } from 'react-icons/fa6';
 
 import GuideTour from '@/components/guide-tour/guide-tour';
 import { ACCOUNT_TOUR_STEPS } from '@/components/guide-tour/tour-steps/account-tour';
-import useGuideTour from '@/components/guide-tour/useGuideTour';
+import { useModuleTour } from '@/hooks/useModuleTour.hook';
 import FeaturesHeader from '@/components/headers/FeaturesHeader';
 import TrackLimit from '@/components/trackers/TrackLimit';
 import { isFeatureDisabled } from '@/configs/rules.config';
@@ -37,10 +37,9 @@ const accountIcons: Record<string, JSX.Element> = {
 const InfluencerProfiles = () => {
   const { userDetails, subscriptionPlanType } = useAuth();
 
-  const { run, startTour, steps, handleTourFinish } = useGuideTour({
-    initialRun: true,
+  const { run, startTour, steps, handleTourFinish } = useModuleTour({
+    moduleId: 'account-tracking',
     steps: ACCOUNT_TOUR_STEPS,
-    tourKey: 'hasSeenAccountTour',
   });
 
   const featureLimit = useFeatureLimitStore((state) => state.featureLimit);

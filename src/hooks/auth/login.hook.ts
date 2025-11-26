@@ -2,6 +2,8 @@ import { AuthService } from '@/api/AuthService';
 import { ClientProfileService } from '@/api/ClientProfileService';
 import { CreativeProfileService } from '@/api/CreativeProfileService';
 import { SubscriptionService } from '@/api/SubscriptionService';
+import { OnboardingService } from '@/api/OnboardingService';
+import { LeadsService } from '@/api/LeadFormService';
 import { STORE_KEYS } from '@/configs/store.config';
 import { dashboardRoutes } from '@/constants/ClientRoute';
 import { SecurityHelper } from '@/helpers/SecurityHelper';
@@ -105,8 +107,8 @@ export const useLoginHook = () => {
             await handleCreativeProfile(userClaims.userId!);
           }
 
-          toast.success('You’re logged in and ready to go!');
-          navigateUser(userData?.responseData?.userType!);
+          toast.success("You're logged in and ready to go!");
+          await navigateUser(userData?.responseData?.userType!, userClaims.userId!);
         }
       } else {
         toast.error('Authentication Failed, Please Login again');
@@ -149,9 +151,150 @@ export const useLoginHook = () => {
     saveCreativeUserProfile(profileResponse.responseData as CreativeProfileDto);
   };
 
-  const navigateUser = (userType: string) => {
-    const dashboardRoute = userType === UserTypeEnum.BUSINESS ? dashboardRoutes.dashboardClients : dashboardRoutes.dashboardCreatives;
-    router.push(dashboardRoute);
+  const navigateUser = async (userType: string, userId: string) => {
+    try {
+      // Check if user has completed onboarding
+      const onboardingStatus = await OnboardingService.getOnboardingStatus(userId);
+
+      console.log('🔍 Onboarding Status Response:', onboardingStatus);
+
+      // If API call failed or no data, assume onboarding not completed
+      if (!onboardingStatus.status || !onboardingStatus.responseData) {
+        console.log('❌ No onboarding data found, redirecting to welcome page');
+        router.push('/onboarding/welcome');
+        return;
+      }
+
+      const { onboardingCompleted, onboardingStep, lastAccessedModule, primaryModule, primaryWorkflow } = onboardingStatus.responseData;
+
+      console.log('📊 Onboarding Data:', {
+        onboardingCompleted,
+        onboardingStep,
+        primaryWorkflow,
+        primaryModule,
+        lastAccessedModule
+      });
+
+      // If onboarding not completed, redirect based on last step
+      if (!onboardingCompleted) {
+        const step = onboardingStep || 0;
+        console.log(`🎯 Onboarding incomplete. Resuming from step ${step}`);
+
+        // Step-based routing
+        if (step === 0) {
+          // Not started, go to welcome
+          router.push('/onboarding/welcome');
+        } else if (step === 1) {
+          // Welcome completed, go to workflow selection
+          router.push('/onboarding/select-workflow');
+        } else if (step === 2) {
+          // Workflow selected, go to business details
+          if (primaryWorkflow) {
+            router.push(`/onboarding/business-details?workflow=${primaryWorkflow}`);
+          } else {
+            // No workflow saved, restart from workflow selection
+            router.push('/onboarding/select-workflow');
+          }
+        } else if (step === 3) {
+          // Business details saved, go to module selection
+          if (primaryWorkflow) {
+            router.push(`/onboarding/select-module/${primaryWorkflow}`);
+          } else {
+            // No workflow saved, restart from workflow selection
+            router.push('/onboarding/select-workflow');
+          }
+        } else {
+          // Fallback to welcome if step is unclear
+          router.push('/onboarding/welcome');
+        }
+        return;
+      }
+
+      // Onboarding completed - proceed with module routing
+      const moduleRoutes: Record<string, string> = {
+        'account-tracking': '/account-tracking',
+        'keyword-tracking': '/keyword-tracking/overview',
+        'hashtag-tracking': '/hashtag-tracking',
+        'report-generation': '/report-generation',
+        'individual-leads': '/leads-tracking/forms/leads?type=individual',
+        'organization-leads': '/leads-tracking/forms/leads?type=organization',
+        'conversational-leads': '/leads-tracking/forms/leads?type=conversational',
+      };
+
+      // Helper to get lead route based on whether user has leads
+      const getLeadModuleRoute = async (moduleId: string, userId: string): Promise<string> => {
+        const leadTypeMap: Record<string, string> = {
+          'individual-leads': 'PERSON',
+          'organization-leads': 'ORGANIZATION',
+          'conversational-leads': 'CONVERSATIONAL',
+        };
+
+        const leadType = leadTypeMap[moduleId];
+        if (leadType) {
+          const hasLeads = await LeadsService.hasLeadsByType(userId, leadType);
+          if (hasLeads) {
+            // Has leads - go to list page
+            return moduleRoutes[moduleId];
+          } else {
+            // No leads - go to form page
+            const formRoutes: Record<string, string> = {
+              'individual-leads': '/leads-tracking/forms/manage?type=individual',
+              'organization-leads': '/leads-tracking/forms/manage?type=organization',
+              'conversational-leads': '/leads-tracking/forms/manage?type=conversational',
+            };
+            return formRoutes[moduleId];
+          }
+        }
+        return moduleRoutes[moduleId];
+      };
+
+      // Priority 1: If user has a last accessed module, redirect them there
+      if (lastAccessedModule) {
+        const moduleRoute = moduleRoutes[lastAccessedModule];
+        if (moduleRoute) {
+          // Check if it's a lead module that needs special routing
+          if (lastAccessedModule.includes('-leads')) {
+            const route = await getLeadModuleRoute(lastAccessedModule, userId);
+            router.push(route);
+            return;
+          }
+          router.push(moduleRoute);
+          return;
+        }
+      }
+
+      // Priority 2: Fallback to primary module (selected during onboarding)
+      if (primaryModule) {
+        const moduleRoute = moduleRoutes[primaryModule];
+        if (moduleRoute) {
+          // Check if it's a lead module that needs special routing
+          if (primaryModule.includes('-leads')) {
+            const route = await getLeadModuleRoute(primaryModule, userId);
+            router.push(route);
+            return;
+          }
+          router.push(moduleRoute);
+          return;
+        }
+      }
+
+      // Priority 3: Go to dashboard if no module info
+      const dashboardRoute = userType === UserTypeEnum.BUSINESS ? dashboardRoutes.dashboardClients : dashboardRoutes.dashboardCreatives;
+      router.push(dashboardRoute);
+    } catch (error: any) {
+      console.error('Error checking onboarding status:', error);
+
+      // Handle 404 (no onboarding record) - treat as not completed
+      if (error?.response?.status === 404) {
+        console.log('Onboarding record not found (404), redirecting to welcome page');
+        router.push('/onboarding/welcome');
+        return;
+      }
+
+      // Handle other errors - redirect to welcome to be safe
+      console.log('Error fetching onboarding status, redirecting to welcome page');
+      router.push('/onboarding/welcome');
+    }
   };
 
   return {

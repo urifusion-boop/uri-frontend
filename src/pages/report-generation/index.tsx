@@ -8,7 +8,7 @@ import SeoHead from '@/components/atoms/SeoHead';
 import SwitchBox from '@/components/atoms/SwitchBox';
 import GuideTour from '@/components/guide-tour/guide-tour';
 import { REPORT_TOUR_STEPS } from '@/components/guide-tour/tour-steps/report-tour';
-import useGuideTour from '@/components/guide-tour/useGuideTour';
+import { useModuleTour } from '@/hooks/useModuleTour.hook';
 import FeaturesHeader from '@/components/headers/FeaturesHeader';
 import MultiSelectDropdown from '@/components/input/MultiSelectDropdown';
 import BaseExportModal from '@/components/modals/BaseExportModal';
@@ -75,10 +75,9 @@ const ReportGeneration = () => {
   const isMobile = useMediaQuery('(max-width:600px)');
   const featureLimit = useFeatureLimitStore((state) => state.featureLimit);
 
-  const { steps, startTour, run, handleTourFinish } = useGuideTour({
+  const { steps, startTour, run, handleTourFinish } = useModuleTour({
+    moduleId: 'report-generation',
     steps: REPORT_TOUR_STEPS,
-    initialRun: true,
-    tourKey: 'hasSeenReportTour',
   });
 
   const {

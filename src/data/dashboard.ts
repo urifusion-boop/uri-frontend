@@ -7,6 +7,7 @@ import AlertOnFilled from '@/utils/icon/AlertOnFilled';
 import ChartLine from '@/utils/icon/ChartLine';
 import HeartRateSearch from '@/utils/icon/HeartRateSearch';
 import { BiBot } from 'react-icons/bi';
+import { BsGraphUp } from 'react-icons/bs';
 import { FaList } from 'react-icons/fa';
 import { FiHelpCircle } from 'react-icons/fi';
 import { GoChecklist } from 'react-icons/go';
@@ -35,45 +36,54 @@ export const dashboardLinks: ILink[] = [
   {
     label: 'Dashboard',
     route: '/dashboard',
-    icon: RxDashboard, // Clean dashboard icon for the central hub.
+    icon: RxDashboard,
     tourKey: 'tour-dashboard-btn',
   },
   {
-    label: 'Keyword Tracking',
-    icon: HeartRateSearch, // A magnifying glass icon for tracking keywords.
-    route: '/keyword-tracking/overview',
-    tourKey: 'tour-keyword-keyword-btn',
+    label: 'Social Listening',
+    icon: BsGraphUp,
+    route: '/social-listening',
+    tourKey: 'tour-social-listening-btn',
+    subLinkers: [
+      {
+        label: 'Account Tracking',
+        route: '/account-tracking',
+        icon: ChartLine,
+      },
+      {
+        label: 'Keyword Tracking',
+        route: '/keyword-tracking/overview',
+        icon: HeartRateSearch,
+      },
+      {
+        label: 'Hashtag Tracking',
+        route: '/hashtag-tracking',
+        icon: HiHashtag,
+      },
+      {
+        label: 'Report Generation',
+        route: '/report-generation',
+        icon: GoChecklist,
+      },
+    ],
   },
   {
-    label: 'Account Tracking',
-    icon: ChartLine, // A trending graph for tracking influencer metrics.
-    route: '/account-tracking',
-    tourKey: 'tour-account-overview-btn',
-    // subLinkers: [
-    //   {
-    //     label: 'Overview',
-    //     route: '/overview',
-    //     icon: FaUsers, // A camera icon for influencer media overview.
-    //   },
-    // {
-    //   label: "Comparison Analysis",
-    //   route: "/comparison-analysis",
-    //   needId: true,
-    //   icon: AiOutlineVideoCamera, // A video camera for comparison analysis.
-    // },
-    //],
-  },
-  {
-    label: 'Hashtag Tracking',
-    icon: HiHashtag, // A camera for managing content/media.
-    route: '/hashtag-tracking',
-    tourKey: 'tour-hashtag-overview-btn',
-  },
-  {
-    label: 'Content Management',
-    icon: FaFolder, // A camera for managing content/media.
-    route: '/content-management/create',
-    tourKey: 'tour-content-btn',
+    label: 'Lead Generation',
+    icon: MdRecordVoiceOver,
+    route: '/leads-tracking',
+    tourKey: 'tour-lead-overview-btn',
+    subLinkers: [
+      {
+        label: 'Forms',
+        route: '/leads-tracking/forms',
+        icon: BiBook,
+      },
+      {
+        label: 'History',
+        route: '/leads-tracking/history',
+        icon: FaList,
+      },
+    ],
   },
   {
     label: 'Insight Assistant',
@@ -81,54 +91,6 @@ export const dashboardLinks: ILink[] = [
     icon: BiBot,
     tourKey: 'tour-insight-btn',
   },
-  {
-    label: 'Leads Tracking',
-    icon: MdRecordVoiceOver,
-    route: '/leads-tracking',
-    tourKey: 'tour-lead-overview-btn',
-    subLinkers: [
-      {
-        label: 'Forms',
-        route: '/forms',
-        icon: BiBook,
-      },
-      {
-        label: 'History',
-        route: '/history',
-        icon: FaList,
-      },
-    ],
-    // subLinkers: [
-    //   // {
-    //   //   label: 'Overview',
-    //   //   route: '/overview',
-    //   //   icon: FaUsers, // A camera icon for influencer media overview.
-    //   // },
-    //   {
-    //     label: 'Forms',
-    //     route: '/forms',
-    //     icon: FaBook, // A camera icon for influencer media overview.
-    //   },
-    // ],
-  },
-  {
-    label: 'Alerts',
-    icon: AlertOnFilled,
-    route: '/alert',
-    tourKey: 'tour-alert-btn',
-  },
-  {
-    label: 'Report Generation',
-    icon: GoChecklist,
-    route: '/report-generation',
-    tourKey: 'tour-report-btn',
-  },
-  // {
-  //   label: 'Teams',
-  //   icon: LiaUsersCogSolid,
-  //   route: '/teams',
-  //   tourKey: 'tour-teams-btn',
-  // },
 ];
 
 export const dashboardAdminLinks: ILink[] = [

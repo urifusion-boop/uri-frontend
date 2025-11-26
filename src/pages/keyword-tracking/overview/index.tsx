@@ -10,7 +10,7 @@ import SeoHead from '@/components/atoms/SeoHead';
 import SummaryCard from '@/components/cards/SummaryCard';
 import GuideTour from '@/components/guide-tour/guide-tour';
 import { KEYWORD_TOUR_STEPS } from '@/components/guide-tour/tour-steps/keyword-tour';
-import useGuideTour from '@/components/guide-tour/useGuideTour';
+import { useModuleTour } from '@/hooks/useModuleTour.hook';
 import FeaturesHeader from '@/components/headers/FeaturesHeader';
 import Spinner from '@/components/loaders/Spinner';
 import KeywordTrackerTable from '@/components/tables/KeywordTable';
@@ -33,10 +33,9 @@ const KeywordTrackingOverview = () => {
   const isLimitInitialState = useFeatureLimitStore((state) => state.isInitialState);
   const { subscriptionPlanType } = useAuth();
 
-  const { run, startTour, steps, handleTourFinish } = useGuideTour({
-    initialRun: true,
+  const { run, startTour, steps, handleTourFinish } = useModuleTour({
+    moduleId: 'keyword-tracking',
     steps: KEYWORD_TOUR_STEPS,
-    tourKey: 'hasSeenKeywordTour',
   });
 
   const {

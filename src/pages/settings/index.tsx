@@ -13,15 +13,17 @@ const ConnectedAccountsTab = lazy(() => import('@/components/settings/ConnectedA
 const SubscriptionTab = lazy(() => import('@/components/settings/SubscriptionTab'));
 const ChangePasswordTab = lazy(() => import('@/components/settings/ChangePasswordTab'));
 const DeleteAccountTab = lazy(() => import('@/components/settings/DeleteAccountTab'));
+const ModulesTab = lazy(() => import('@/components/settings/ModulesTab'));
 
-const SETTINGS_TABS = ['notification', 'connected-accounts', 'subscription', 'change-password', 'delete-account'] as const;
+const SETTINGS_TABS = ['workflows', 'notification', 'connected-accounts', 'subscription', 'change-password', 'delete-account'] as const;
 
 type SettingsTabType = (typeof SETTINGS_TABS)[number];
 
 const Settings = () => {
-  const [activeTab, setActiveTab] = useQueryState('tab', parseAsStringLiteral(SETTINGS_TABS).withDefault('notification'));
+  const [activeTab, setActiveTab] = useQueryState('tab', parseAsStringLiteral(SETTINGS_TABS).withDefault('workflows'));
 
   const tabComponents: Record<SettingsTabType, JSX.Element> = {
+    workflows: <ModulesTab />,
     notification: <NotificationTab />,
     'connected-accounts': <ConnectedAccountsTab />,
     subscription: <SubscriptionTab />,

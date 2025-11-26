@@ -297,7 +297,8 @@ const FeatureTable = () => {
             }
             value={null}
             onChange={(e) => {
-              if (!e || !e.value) return;
+              if (!e || Array.isArray(e)) return;
+              if (!e.value) return;
               setSelectedFeatures(selectedFeatures.concat(e));
               setNewFeature({
                 ...newFeature,
@@ -358,7 +359,8 @@ const FeatureTable = () => {
             options={userTypes}
             value={null}
             onChange={(e) => {
-              if (!e || !e.value) return;
+              if (!e || Array.isArray(e)) return;
+              if (!e.value) return;
               setSelectedUserTypes(selectedUserTypes.concat(e));
               setNewFeature({
                 ...newFeature,
@@ -611,7 +613,8 @@ const FeatureTableRow: React.FC<IRowProps> = ({ featureData, refetch }) => {
               }
               value={null}
               onChange={(e) => {
-                if (!e || !e.value) return;
+                if (!e || Array.isArray(e)) return;
+                if (!e.value) return;
                 setSelectedFeatures(selectedFeatures.concat(e));
                 setUpdatedFeature({
                   ...updatedFeature,
@@ -672,7 +675,8 @@ const FeatureTableRow: React.FC<IRowProps> = ({ featureData, refetch }) => {
               options={userTypes}
               value={null}
               onChange={(e) => {
-                if (!e || !e.value) return;
+                if (!e || Array.isArray(e)) return;
+                if (!e.value) return;
                 setSelectedUserTypes(selectedUserTypes.concat(e));
                 setUpdatedFeature({
                   ...updatedFeature,

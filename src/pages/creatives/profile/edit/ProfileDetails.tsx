@@ -256,6 +256,7 @@ const ProfileDetails: React.FC<IProps> = ({
               options={bodySizes}
               value={bodySizeSelect}
               onChange={(e) => {
+              if (Array.isArray(e)) return;
                 setBodySizeSelect(e ? e : { label: "", value: 1 });
               }}
               placeholder="Body Size"
@@ -288,6 +289,7 @@ const ProfileDetails: React.FC<IProps> = ({
               options={eyeColors}
               value={eyeColorSelect}
               onChange={(e) => {
+              if (Array.isArray(e)) return;
                 setEyeColorSelect(e ? e : { label: "", value: 1 });
               }}
               placeholder="Eye Color"
@@ -304,6 +306,7 @@ const ProfileDetails: React.FC<IProps> = ({
               options={skinColors}
               value={skinColorSelect}
               onChange={(e) => {
+              if (Array.isArray(e)) return;
                 setSkinColorSelect(e ? e : { label: "", value: 1 });
               }}
               placeholder="Skin Color"
@@ -351,6 +354,7 @@ const ProfileDetails: React.FC<IProps> = ({
                   value={languageSelect[index]}
                   options={languages}
                   onChange={(e) => {
+              if (Array.isArray(e)) return;
                     setLanguageSelect(
                       languageSelect.map((item, id) =>
                         id === index && e ? e : item
@@ -373,6 +377,7 @@ const ProfileDetails: React.FC<IProps> = ({
                       value={proficiencySelect[index]}
                       options={proficiencies}
                       onChange={(e) => {
+              if (Array.isArray(e)) return;
                         setProficiencySelect(
                           proficiencySelect.map((item, id) =>
                             id === index && e ? e : item

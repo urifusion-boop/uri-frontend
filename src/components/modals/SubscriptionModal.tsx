@@ -13,11 +13,16 @@ import CheckIcon from "@mui/icons-material/Check";
 import { useRouter } from "next/navigation";
 
 const SubscriptionModal: React.FC = () => {
-  const open = true;
+  const [open, setOpen] = React.useState(true);
   const router = useRouter();
 
   const handleGoBack = () => {
     window.location.href = "/dashboard";
+  };
+
+  const handleGetAccess = () => {
+    setOpen(false);
+    router.push("/pricing");
   };
 
   const listTest = [
@@ -59,15 +64,15 @@ const SubscriptionModal: React.FC = () => {
             textAlign: "center",
             maxWidth: "512px",
             width: "100%",
-            maxHeight: "700px",
-            overflowY: "auto",
+            minHeight: "620px",
+            overflow: "hidden",
             zIndex: 10, // Above the overlay
-            height: "100vh",
             backgroundColor: "white",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
+            borderRadius: "12px",
           }}
         >
           <img
@@ -134,7 +139,7 @@ const SubscriptionModal: React.FC = () => {
                 py: 1.5,
                 borderRadius: "8px",
               }}
-              onClick={() => router.push("/dashboard")}
+              onClick={handleGetAccess}
             >
               Get Access Now
             </Button>

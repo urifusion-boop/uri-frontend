@@ -18,6 +18,10 @@ const nextConfig = withPWA({
   async rewrites() {
     return [
       {
+        source: '/uri-insights/:path*',
+        destination: 'http://localhost:8001/:path*',
+      },
+      {
         source: "/email-verification",
         destination: "/auth/email-verification",
       },

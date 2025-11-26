@@ -11,6 +11,8 @@ import { FaChevronDown } from 'react-icons/fa6';
 import { GrClose } from 'react-icons/gr';
 import { UserTypeEnum } from '../../models/enum-models/UserTypeEnum';
 import { useAuth } from '../../providers/AuthProvider';
+import { useWorkflowFilter } from '@/contexts/WorkflowFilterContext';
+import { useUserWorkflows } from '@/hooks/useUserWorkflows';
 import Text from './CustomText';
 import { UriLogo } from './Icons';
 
@@ -22,13 +24,83 @@ interface IProps {
 
 const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
   const { themeColors } = useCustomTheme();
-  const { pathname, asPath, query } = useRouter();
+  const router = useRouter();
+  const { pathname, asPath, query } = router;
   const { userDetails } = useAuth();
+  const { selectedWorkflows } = useWorkflowFilter();
 
   const [profileRoute, setProfileRoute] = useState('');
   const [expandedLinks, setExpandedLinks] = useState<{
     [key: string]: boolean;
   }>({});
+
+  // Fetch user's enabled workflows from API
+  const { enabledWorkflows: userEnabledWorkflows } = useUserWorkflows();
+
+  // Filter dashboard links based on enabled workflows and dashboard selection
+  const filteredDashboardLinks = React.useMemo(() => {
+    return dashboardLinks.filter(link => {
+      // Always show Dashboard
+      if (link.route === '/dashboard') return true;
+
+      // Hide Insight Assistant from top-level (per requirements)
+      if (link.route === '/uri-assistant') return false;
+
+      // For workflow links (Social Listening, Lead Generation)
+      if (link.route === '/social-listening') {
+        const isEnabled = userEnabledWorkflows.includes('social-listening');
+
+        // Priority 1: If user has manually selected workflows on dashboard, ONLY show selected
+        if (selectedWorkflows.length > 0) {
+          return selectedWorkflows.includes('social-listening');
+        }
+
+        // Priority 2: If user has NO enabled workflows (empty), show ALL workflows
+        if (userEnabledWorkflows.length === 0) {
+          return true; // Show everything when nothing is enabled
+        }
+
+        // Priority 3: If no dashboard selection, check if workflow is enabled
+        if (!isEnabled) return false;
+
+        // Priority 4: If user has only ONE enabled workflow, show only that one
+        if (userEnabledWorkflows.length === 1) {
+          return true;
+        }
+
+        // Priority 5: If user has multiple enabled workflows and no dashboard selection, show all enabled
+        return true;
+      }
+
+      if (link.route === '/leads-tracking') {
+        const isEnabled = userEnabledWorkflows.includes('lead-generation');
+
+        // Priority 1: If user has manually selected workflows on dashboard, ONLY show selected
+        if (selectedWorkflows.length > 0) {
+          return selectedWorkflows.includes('lead-generation');
+        }
+
+        // Priority 2: If user has NO enabled workflows (empty), show ALL workflows
+        if (userEnabledWorkflows.length === 0) {
+          return true; // Show everything when nothing is enabled
+        }
+
+        // Priority 3: If no dashboard selection, check if workflow is enabled
+        if (!isEnabled) return false;
+
+        // Priority 4: If user has only ONE enabled workflow, show only that one
+        if (userEnabledWorkflows.length === 1) {
+          return true;
+        }
+
+        // Priority 5: If user has multiple enabled workflows and no dashboard selection, show all enabled
+        return true;
+      }
+
+      // Show all other links (Help, Settings)
+      return true;
+    });
+  }, [selectedWorkflows, userEnabledWorkflows]);
 
   useEffect(() => {
     if (userDetails?.userId) setProfileRoute(`/${userDetails?.userType === UserTypeEnum.BUSINESS ? 'clients' : 'profile'}/${userDetails?.userId ?? ''}`);
@@ -40,9 +112,51 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
         return str === '/profile';
       }
 
+      // Special case: Dashboard should not be highlighted when a workflow is selected
+      if (str === '/dashboard' && pathname === '/dashboard' && query.workflow) {
+        return false;
+      }
+
+      // If subLink is provided and starts with '/' (absolute path)
+      if (subLink && subLink.startsWith('/')) {
+        return pathname === subLink || pathname.startsWith(subLink + '/');
+      }
+
+      // For relative subLinks or no subLink
       return pathname.includes(str) && pathname.endsWith(subLink ?? '');
     },
-    [asPath, profileRoute, pathname]
+    [asPath, profileRoute, pathname, query.workflow]
+  );
+
+  const isParentActive = useCallback(
+    (item: any) => {
+      // Check if the parent route itself is active
+      if (activeLink(item.route)) return true;
+
+      // Check if workflow is selected via query parameter on dashboard
+      if (pathname === '/dashboard' && query.workflow) {
+        const workflowMap: Record<string, string> = {
+          'social-listening': '/social-listening',
+          'lead-generation': '/leads-tracking',
+        };
+        if (workflowMap[query.workflow as string] === item.route) {
+          return true;
+        }
+      }
+
+      // Check if any child with absolute path is active
+      if (item.subLinkers) {
+        return item.subLinkers.some((subLink: any) => {
+          if (subLink.route.startsWith('/')) {
+            return pathname === subLink.route || pathname.startsWith(subLink.route + '/');
+          }
+          return activeLink(item.route, subLink.route);
+        });
+      }
+
+      return false;
+    },
+    [activeLink, pathname, query.workflow]
   );
 
   const toggleLink = (linkName: string) => {
@@ -83,7 +197,7 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
           }}
         >
           <Box className="tour-features">
-            {dashboardLinks.map((item, index) => {
+            {filteredDashboardLinks.map((item, index) => {
               return item.subLinkers ? (
                 <Fragment key={item.route}>
                   <Box
@@ -100,8 +214,8 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
                       className={styles.sidebarButton}
                       sx={{
                         padding: `10px ${open ? '10px' : '16px'}`,
-                        backgroundColor: activeLink(item.route) ? `${themeColors.primary} !important` : null,
-                        borderColor: activeLink(item.route) ? `${themeColors.primary} !important` : null,
+                        backgroundColor: isParentActive(item) ? `${themeColors.primary} !important` : null,
+                        borderColor: isParentActive(item) ? `${themeColors.primary} !important` : null,
                       }}
                     >
                       <Box
@@ -116,11 +230,11 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
                             style={{
                               width: '18px',
                               height: '18px',
-                              color: activeLink(item.route) ? 'white' : themeColors.secondary,
+                              color: isParentActive(item) ? 'white' : themeColors.secondary,
                             }}
                           />
                           {open && (
-                            <Text size={14} weight={500} sx={{ ml: 2, whiteSpace: 'nowrap' }} color={activeLink(item.route) ? 'white' : themeColors.secondary}>
+                            <Text size={14} weight={500} sx={{ ml: 2, whiteSpace: 'nowrap' }} color={isParentActive(item) ? 'white' : themeColors.secondary}>
                               {item.label}
                             </Text>
                           )}
@@ -128,7 +242,7 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
                         {open && (
                           <FaChevronDown
                             style={{
-                              color: activeLink(item.route) ? 'white' : themeColors.secondary,
+                              color: isParentActive(item) ? 'white' : themeColors.secondary,
                               float: 'right',
                               fontSize: 14,
                               marginTop: 5,
@@ -144,7 +258,7 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
                     item.subLinkers.map((subLink, index) => (
                       <Link
                         key={index}
-                        href={item?.route === '/profile' ? profileRoute : subLink.needId ? `${item.route}/${query.trackerId ?? 0}${subLink?.route}` : `${item.route}${subLink.route}`}
+                        href={item?.route === '/profile' ? profileRoute : subLink.needId ? `${item.route}/${query.trackerId ?? 0}${subLink?.route}` : subLink.route.startsWith('/') ? subLink.route : `${item.route}${subLink.route}`}
                         onMouseEnter={() => setOpen(true)}
                       >
                         <Box
@@ -162,7 +276,7 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
                               style={{
                                 width: '18px',
                                 height: '18px',
-                                color: activeLink(item.route) ? '#dfdfdf' : themeColors.secondary,
+                                color: activeLink(item.route, subLink.route) ? 'white' : themeColors.secondary,
                               }}
                             />
                             {open && (
@@ -275,7 +389,7 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
           />
         </Box>
         <Box>
-          {dashboardLinks.map((item, index) => {
+          {filteredDashboardLinks.map((item, index) => {
             return item.subLinkers ? (
               <Fragment key={item.route}>
                 <Box
@@ -291,8 +405,8 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
                     className={styles.sidebarButton}
                     sx={{
                       padding: `10px 10px`,
-                      backgroundColor: activeLink(item.route) ? `${themeColors.primary} !important` : null,
-                      borderColor: activeLink(item.route) ? `${themeColors.primary} !important` : null,
+                      backgroundColor: isParentActive(item) ? `${themeColors.primary} !important` : null,
+                      borderColor: isParentActive(item) ? `${themeColors.primary} !important` : null,
                     }}
                   >
                     <Box
@@ -307,11 +421,11 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
                           style={{
                             width: '18px',
                             height: '18px',
-                            color: activeLink(item.route) ? 'white' : themeColors.secondary,
+                            color: isParentActive(item) ? 'white' : themeColors.secondary,
                           }}
                         />
                         {open && (
-                          <Text size={16} weight={500} sx={{ ml: 2 }} color={activeLink(item.route) ? 'white' : themeColors.secondary}>
+                          <Text size={16} weight={500} sx={{ ml: 2 }} color={isParentActive(item) ? 'white' : themeColors.secondary}>
                             {item.label}
                           </Text>
                         )}
@@ -319,7 +433,7 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
                       {open && (
                         <FaChevronDown
                           style={{
-                            color: activeLink(item.route) ? 'white' : themeColors.secondary,
+                            color: isParentActive(item) ? 'white' : themeColors.secondary,
                             float: 'right',
                             fontSize: 13,
                             marginTop: 5,
@@ -336,7 +450,7 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
                   item.subLinkers.map((subLink, index) => (
                     <Link
                       key={index}
-                      href={item?.route === '/profile' ? profileRoute : subLink.needId ? `${item.route}/${query.trackerId ?? 0}${subLink?.route}` : `${item.route}${subLink.route}`}
+                      href={item?.route === '/profile' ? profileRoute : subLink.needId ? `${item.route}/${query.trackerId ?? 0}${subLink?.route}` : subLink.route.startsWith('/') ? subLink.route : `${item.route}${subLink.route}`}
                       onMouseEnter={() => setOpen(true)}
                     >
                       <Box

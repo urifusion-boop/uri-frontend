@@ -99,6 +99,7 @@ const BusinessDetails: React.FC<IProps> = ({ active, formDetails, setFormDetails
               options={businessTypes}
               value={businessTypeSelect}
               onChange={(e) => {
+                if (Array.isArray(e)) return;
                 setValue('type', typeof e?.value === 'string' ? e.value : '');
                 setBusinessTypeSelect(e ? e : { label: '', value: '' });
                 setFormDetails({ ...formDetails, type: String(e?.value) });
@@ -130,6 +131,7 @@ const BusinessDetails: React.FC<IProps> = ({ active, formDetails, setFormDetails
               options={branchOrHeadOffice}
               value={branchSelect}
               onChange={(e) => {
+                if (Array.isArray(e)) return;
                 setValue('category', typeof e?.value === 'string' ? e.value : '');
                 setBranchSelect(e ? e : { label: '', value: '' });
                 setFormDetails({ ...formDetails, category: String(e?.value) });

@@ -77,6 +77,7 @@ const MoreDetails: React.FC<IProps> = ({ onSubmit, active, formDetails, setFormD
                 value={languageSelect[index]}
                 options={languages}
                 onChange={(e) => {
+                  if (Array.isArray(e)) return;
                   setLanguageSelect(languageSelect.map((item, id) => (id === index && e ? e : item)));
                   setFormDetails({
                     ...formDetails,
@@ -96,6 +97,7 @@ const MoreDetails: React.FC<IProps> = ({ onSubmit, active, formDetails, setFormD
                 value={proficiencySelect[index]}
                 options={proficiencies}
                 onChange={(e) => {
+                  if (Array.isArray(e)) return;
                   setProficiencySelect(proficiencySelect.map((item, id) => (id === index && e ? e : item)));
                   setFormDetails({
                     ...formDetails,

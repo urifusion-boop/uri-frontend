@@ -105,7 +105,16 @@ export const useSignup = () => {
         if (userClaims) await handleCreativeProfile(userClaims.userId!);
 
         toast.success(response?.responseMessage);
-        router.push(dashboardRoutes.dashboardCreatives);
+
+        // Check if user has completed onboarding
+        const user = userData.responseData as unknown as UserDto;
+        if (user?.onboardingCompleted) {
+          // User has completed onboarding - redirect to their primary module or dashboard
+          router.push(dashboardRoutes.dashboardCreatives);
+        } else {
+          // User hasn't completed onboarding - redirect to welcome screen
+          router.push('/onboarding/welcome');
+        }
       } else {
         toast.error(response.responseMessage);
         setGoogleLoading(false);

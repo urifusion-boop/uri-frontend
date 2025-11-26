@@ -7,7 +7,7 @@ import DashboardLayout from '@/components/atoms/DashboardLayout';
 import SeoHead from '@/components/atoms/SeoHead';
 import GuideTour from '@/components/guide-tour/guide-tour';
 import { LEAD_TOUR_STEPS } from '@/components/guide-tour/tour-steps/lead-tour';
-import useGuideTour from '@/components/guide-tour/useGuideTour';
+import { useModuleTour } from '@/hooks/useModuleTour.hook';
 import AnalyticsTab from '@/components/lead-tracking/AnalyticsTab';
 import FeatureHeader from '@/components/lead-tracking/FeatureHeader';
 import ManageTab from '@/components/lead-tracking/LeadsTab';
@@ -22,10 +22,9 @@ const LeadTracking = () => {
   const [openLeadBusinessInfoModal, setOpenLeadBusinessInfoModal] = useState(false);
   const isMobile = useMediaQuery('(max-width:800px)');
 
-  const { run, startTour, steps, handleTourFinish } = useGuideTour({
-    initialRun: true,
+  const { run, startTour, steps, handleTourFinish } = useModuleTour({
+    moduleId: 'lead-generation',
     steps: LEAD_TOUR_STEPS,
-    tourKey: 'hasSeenLeadTour',
   });
 
   const tabs = ['leads', 'manage', 'analytics', 'details'] as const;

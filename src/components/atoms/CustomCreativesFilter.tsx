@@ -595,7 +595,8 @@ const CustomCreativesFilter: React.FC<IProps> = ({ setFilter, setOpen }) => {
               options={stateOptions()}
               value={{ label: state, value: state }}
               onChange={(e) => {
-                setState(e?.label as string);
+                if (!e || Array.isArray(e)) return;
+                setState(e.label as string);
               }}
               placeholder="Select a State"
             />

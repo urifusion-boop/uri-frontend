@@ -17,7 +17,7 @@ export const useLeadTrackingHook = (activeTab: string, leadType?: LeadTypeEnum) 
     defaultValue: 'row',
   });
 
-  const { leadsQuery, businessInfoQuery, updateStatusMutation, leadGenerationMutation, statusQueries, leadAnalyticsQuery, generateLeadReportMutation, enrichLeadMutation } = useLeadQueries(
+  const { leadsQuery, businessInfoQuery, existingLeadFormQuery, updateStatusMutation, leadGenerationMutation, statusQueries, leadAnalyticsQuery, generateLeadReportMutation, enrichLeadMutation } = useLeadQueries(
     queryClient,
     {
       searchValue,
@@ -84,6 +84,8 @@ export const useLeadTrackingHook = (activeTab: string, leadType?: LeadTypeEnum) 
     isLoadingAnalytics: leadAnalyticsQuery.isLoading,
     businessInfoData: businessInfoQuery.data?.data?.[0] ?? null,
     isLoadingBusinessInfo: businessInfoQuery.isLoading,
+    existingLeadForm: existingLeadFormQuery.data,
+    isLoadingLeadForm: existingLeadFormQuery.isLoading,
     allLeads,
     getPaginationFunction,
     updateStatus: updateStatusMutation.mutate,
