@@ -10,11 +10,6 @@ import { ConversationalSearchFormDto } from '@/models/dtos/LeadFormDto';
 import { BrowsercloudPlatformEnum } from '@/models/enum-models/BrowsercloudPlatformEnum';
 import { FormTypeEnum } from '@/models/enum-models/FormTypeEnum';
 import { useAuth } from '@/providers/AuthProvider';
-import { LeadsService } from '@/api/LeadsService';
-import { LeadDto } from '@/models/dtos/LeadsDto';
-import { LeadStatusEnum } from '@/models/enum-models/LeadStatusEnum';
-import { LeadTypeEnum } from '@/models/enum-models/LeadTypeEnum';
-import { LeadSourceEnum } from '@/models/enum-models/LeadSourceEnum';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import BoltIcon from '@mui/icons-material/Bolt';
@@ -31,8 +26,10 @@ import { TiktokService } from '@/api/TiktokService';
 import { LeadsService as LeadFormService } from '@/api/LeadFormService';
 import { LeadDto } from '@/models/dtos/LeadsDto';
 import { LeadStatusEnum } from '@/models/enum-models/LeadStatusEnum';
+import { LeadTypeEnum } from '@/models/enum-models/LeadTypeEnum';
 import { LeadOpportunityTypeEnum } from '@/models/enum-models/LeadOpportunityTypeEnum';
 import { LeadSourceEnum } from '@/models/enum-models/LeadSourceEnum';
+import { TwitterFetchResponseDto } from '@/models/dtos/TwitterDto';
 
 const ConversationLeadFormV2 = () => {
   const [form, setForm] = useState<ConversationalSearchFormDto>({
