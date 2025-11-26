@@ -58,6 +58,12 @@ const ConversationLeadFormV2 = () => {
   const [fetchingStatus, setFetchingStatus] = useState<string>('');
   const [fetchingProgress, setFetchingProgress] = useState(0);
   const [currentTip, setCurrentTip] = useState('');
+  const [leadStats, setLeadStats] = useState<{
+    total_fetched: number;
+    total_qualified: number;
+    new_leads_saved: number;
+    duplicates_skipped: number;
+  } | null>(null);
 
   const { autoPopulateLeadForm, isAutoPopulating } = useLeadFormHooks();
   const [autoPopulateData, setAutoPopulateData] = useState('');
@@ -237,6 +243,11 @@ const ConversationLeadFormV2 = () => {
       setFetchingStatus('✅ Analysis complete!');
 
       if (response.responseCode === 200) {
+        // Store the stats from the response
+        if (response.responseData?.stats) {
+          setLeadStats(response.responseData.stats);
+        }
+
         setTimeout(() => {
           setOpenSuccessModal(true);
           triggerToast('success', 'Leads fetched and analyzed successfully!');
@@ -700,16 +711,85 @@ const ConversationLeadFormV2 = () => {
       <SmartModal
         open={openSuccessModal}
         image={<Image src="/assets/images/success.png" alt="Success" width={64} height={64} />}
-        mainText="Success! 🎉"
-        subText={form.enable_realtime ? 'Your form has been successfully saved. You should see your leads in a few minutes' : 'Your form was successfully saved.'}
+        mainText={leadStats && leadStats.new_leads_saved === 0 ? "Analysis Complete" : "Success! 🎉"}
+        subText={
+          leadStats ? (
+            leadStats.new_leads_saved > 0 ? (
+              `Found ${leadStats.new_leads_saved} relevant lead${leadStats.new_leads_saved > 1 ? 's' : ''} out of ${leadStats.total_fetched} post${leadStats.total_fetched > 1 ? 's' : ''} analyzed across selected platforms.`
+            ) : leadStats.total_fetched > 0 ? (
+              `No relevant leads found. Analyzed ${leadStats.total_fetched} post${leadStats.total_fetched > 1 ? 's' : ''} across selected platforms. Try adjusting your keywords or criteria for better results.`
+            ) : (
+              'No posts found matching your keywords. Try using different or broader keywords.'
+            )
+          ) : form.enable_realtime ? (
+            'Your form has been successfully saved. You should see your leads in a few minutes'
+          ) : (
+            'Your form was successfully saved.'
+          )
+        }
         buttonText="View Leads"
         onClick={() => {
           setOpenSuccessModal(false);
+          setLeadStats(null);
           router.push('/leads-tracking/forms/leads?type=conversational');
         }}
-        onOutlineButtonClick={() => setOpenSuccessModal(false)}
-        outlineButtonText="Cancel"
-      />
+        onOutlineButtonClick={() => {
+          setOpenSuccessModal(false);
+          setLeadStats(null);
+        }}
+        outlineButtonText="Close"
+      >
+        {leadStats && (
+          <Box sx={{ mt: 3, width: '100%', maxWidth: '400px' }}>
+            <Box sx={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: 2,
+              p: 3,
+              backgroundColor: '#f8f9fa',
+              borderRadius: '12px',
+              border: '1px solid #e9ecef'
+            }}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: '#CD1B78', mb: 0.5 }}>
+                  {leadStats.new_leads_saved}
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#6c757d', fontSize: '12px' }}>
+                  New Leads
+                </Typography>
+              </Box>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: '#495057', mb: 0.5 }}>
+                  {leadStats.total_fetched}
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#6c757d', fontSize: '12px' }}>
+                  Posts Analyzed
+                </Typography>
+              </Box>
+              {leadStats.total_qualified > 0 && (
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: '#17a2b8', mb: 0.5 }}>
+                    {leadStats.total_qualified}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#6c757d', fontSize: '12px' }}>
+                    Qualified Posts
+                  </Typography>
+                </Box>
+              )}
+              {leadStats.duplicates_skipped > 0 && (
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: '#ffc107', mb: 0.5 }}>
+                    {leadStats.duplicates_skipped}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#6c757d', fontSize: '12px' }}>
+                    Duplicates Skipped
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Box>
+        )}
+      </SmartModal>
     </Box>
   );
 };

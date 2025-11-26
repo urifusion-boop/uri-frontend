@@ -105,8 +105,27 @@ export class LeadsService {
     return response.data;
   }
 
-  static async fetchConversationalLeads(lead_form_id: string, user_id: string): Promise<UriResponse<{ message: string; lead_form_id: string }>> {
-    const response: Awaited<AxiosResponse<UriResponse<{ message: string; lead_form_id: string }>>> = await UriHttpClient.getClient().post(
+  static async fetchConversationalLeads(
+    lead_form_id: string,
+    user_id: string
+  ): Promise<UriResponse<{
+    lead_form_id: string;
+    stats: {
+      total_fetched: number;
+      total_qualified: number;
+      new_leads_saved: number;
+      duplicates_skipped: number;
+    }
+  }>> {
+    const response: Awaited<AxiosResponse<UriResponse<{
+      lead_form_id: string;
+      stats: {
+        total_fetched: number;
+        total_qualified: number;
+        new_leads_saved: number;
+        duplicates_skipped: number;
+      }
+    }>>> = await UriHttpClient.getClient().post(
       `${leadFormApiRoutes.conversationalSearchFetchLeads}?lead_form_id=${lead_form_id}&user_id=${user_id}`,
       {},
       {
