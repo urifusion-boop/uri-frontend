@@ -7,12 +7,14 @@ import useCustomTheme from '@/hooks/theme.hook';
 import { WORKFLOW_LIST } from '@/constants/workflows';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@/providers/AuthProvider';
+import { OnboardingService } from '@/api/OnboardingService';
 
 const SelectWorkflowPage = () => {
   const router = useRouter();
   const { themeColors } = useCustomTheme();
   const { userDetails } = useAuth();
   const [selectedWorkflow, setSelectedWorkflow] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   // Protect route - redirect to login if not authenticated
   useEffect(() => {
@@ -38,7 +40,7 @@ const SelectWorkflowPage = () => {
     setSelectedWorkflow(workflowId);
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!selectedWorkflow) {
       toast.error('Please select a workflow to continue');
       return;
@@ -48,13 +50,41 @@ const SelectWorkflowPage = () => {
 
     if (!workflow) return;
 
-    // After workflow selection, go to business details form
-    router.push({
-      pathname: `/onboarding/business-details`,
-      query: {
-        workflow: selectedWorkflow,
-      },
-    });
+    if (!userDetails?.userId) {
+      router.push({
+        pathname: `/onboarding/business-details`,
+        query: {
+          workflow: selectedWorkflow,
+        },
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      console.log('💼 Saving workflow:', selectedWorkflow, 'for user:', userDetails.userId);
+
+      // Save workflow selection and update step to 2
+      const workflowResponse = await OnboardingService.saveWorkflow(userDetails.userId, { workflow: selectedWorkflow });
+      console.log('✅ Workflow saved:', workflowResponse);
+
+      console.log('📝 Updating onboarding step to 2...');
+      const stepResponse = await OnboardingService.updateOnboardingStep(userDetails.userId, { step: 2 });
+      console.log('✅ Step updated:', stepResponse);
+
+      // After workflow selection, go to business details form
+      router.push({
+        pathname: `/onboarding/business-details`,
+        query: {
+          workflow: selectedWorkflow,
+        },
+      });
+    } catch (error) {
+      console.error('❌ Error saving workflow:', error);
+      toast.error('Failed to save workflow. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -250,6 +280,7 @@ const SelectWorkflowPage = () => {
             mode="primary"
             onClick={handleContinue}
             disabled={!selectedWorkflow}
+            loading={loading}
             style={{
               width: '100%',
               padding: '12px',

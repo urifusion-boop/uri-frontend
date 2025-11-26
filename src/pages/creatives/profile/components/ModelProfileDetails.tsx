@@ -114,6 +114,7 @@ const ModelProfileDetails: React.FC<IProps> = ({ active, formDetails, setFormDet
             options={bodySizes}
             value={bodySizeSelect}
             onChange={(e) => {
+              if (Array.isArray(e)) return;
               setBodySizeSelect(e ? e : { label: '', value: 1 });
               setFormDetails({
                 ...formDetails,
@@ -138,6 +139,7 @@ const ModelProfileDetails: React.FC<IProps> = ({ active, formDetails, setFormDet
             options={eyeColors}
             value={eyeColorSelect}
             onChange={(e) => {
+              if (Array.isArray(e)) return;
               setEyeColorSelect(e ? e : { label: '', value: 1 });
               setFormDetails({
                 ...formDetails,
@@ -156,6 +158,7 @@ const ModelProfileDetails: React.FC<IProps> = ({ active, formDetails, setFormDet
             options={skinColors}
             value={skinColorSelect}
             onChange={(e) => {
+              if (Array.isArray(e)) return;
               setSkinColorSelect(e ? e : { label: '', value: 1 });
               setFormDetails({
                 ...formDetails,

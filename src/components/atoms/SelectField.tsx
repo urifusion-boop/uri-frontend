@@ -7,7 +7,7 @@ import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import Text, { ErrorText } from "./CustomText";
 
-type ValueType = ISelectData | null;
+type ValueType = ISelectData | ISelectData[] | null;
 
 interface IProps {
   label?: string;
@@ -56,7 +56,10 @@ const SelectField: React.FC<IProps> = ({
         isMulti={multiSelect}
         options={options}
         // @ts-ignore
-        onChange={onChange}
+        onChange={(newValue) => {
+          // Cast to our ValueType for proper type handling
+          onChange(newValue as ValueType);
+        }}
         defaultValue={defaultValue}
         value={value}
         placeholder={placeholder}
@@ -66,7 +69,39 @@ const SelectField: React.FC<IProps> = ({
             background: noBg ? "#fff" : themeColors.inputBackground,
             border: `1px solid ${error ? "red" : themeColors.inputBorder}`,
             color: themeColors.blackWhite,
-            height: height || "56px",
+            minHeight: height || "56px",
+            height: "auto",
+          }),
+          valueContainer: (baseStyles) => ({
+            ...baseStyles,
+            padding: "8px",
+            maxHeight: multiSelect ? "120px" : "auto",
+            overflowY: multiSelect ? "auto" : "visible",
+            flexWrap: "wrap",
+            gap: "4px",
+          }),
+          multiValue: (baseStyles) => ({
+            ...baseStyles,
+            backgroundColor: themeColors.primary || "#CD1B78",
+            borderRadius: "6px",
+            padding: "2px 4px",
+            margin: "2px",
+          }),
+          multiValueLabel: (baseStyles) => ({
+            ...baseStyles,
+            color: "#fff",
+            fontSize: "13px",
+            fontWeight: 500,
+            padding: "2px 6px",
+          }),
+          multiValueRemove: (baseStyles) => ({
+            ...baseStyles,
+            color: "#fff",
+            cursor: "pointer",
+            ":hover": {
+              backgroundColor: "rgba(255, 255, 255, 0.2)",
+              color: "#fff",
+            },
           }),
           placeholder: (baseStyles) => {
             return {
@@ -78,18 +113,18 @@ const SelectField: React.FC<IProps> = ({
           // Style for the dropdown indicator (arrow)
           dropdownIndicator: (provided) => ({
             ...provided,
-            color: themeColors.secondary, // Change this to the desired font color
+            color: themeColors.secondary,
           }),
           // Style for the selected option label
           singleValue: (provided) => ({
             ...provided,
-            color: themeColors.blackWhite, // Change this to the desired font color
+            color: themeColors.blackWhite,
           }),
           // Style for the dropdown menu
           menu: (provided) => ({
             ...provided,
-            color: themeColors.secondary, // Change this to the desired font color for the options in the dropdown
-            backgroundColor: themeColors.background, // Change this to the desired background color for the dropdown
+            color: themeColors.secondary,
+            backgroundColor: themeColors.background,
             boxShadow: `0px 2px 4px ${
               currentTheme === "light"
                 ? "rgba(0, 0, 0, 0.1)"
@@ -100,8 +135,8 @@ const SelectField: React.FC<IProps> = ({
           // Style for the menu list (the container of the options)
           menuList: (provided) => ({
             ...provided,
-            color: themeColors.secondary, // Change this to the desired font color for the options in the dropdown
-            backgroundColor: themeColors.background, // Change this to the desired background color for the dropdown
+            color: themeColors.secondary,
+            backgroundColor: themeColors.background,
             boxShadow: `0px 2px 4px ${
               currentTheme === "light"
                 ? "rgba(0, 0, 0, 0.1)"

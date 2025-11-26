@@ -312,7 +312,8 @@ const SubscriptionPlanTable = () => {
             }
             value={null}
             onChange={(e) => {
-              if (!e || !e.value) return;
+              if (!e || Array.isArray(e)) return;
+              if (!e.value) return;
               setSelectedFeatures(selectedFeatures.concat(e));
               setNewPlan({
                 ...newPlan,
@@ -331,7 +332,8 @@ const SubscriptionPlanTable = () => {
               value: newPlan.userType?.toUpperCase() ?? '',
             }}
             onChange={(e) => {
-              if (!e || !e.value) return;
+              if (!e || Array.isArray(e)) return;
+              if (!e.value) return;
               setNewPlan({ ...newPlan, userType: String(e?.value) });
             }}
             placeholder="Select a usertype."
@@ -360,7 +362,8 @@ const SubscriptionPlanTable = () => {
               value: newPlan.duration?.toUpperCase() ?? '',
             }}
             onChange={(e) => {
-              if (!e || !e.value) return;
+              if (!e || Array.isArray(e)) return;
+              if (!e.value) return;
               setNewPlan({ ...newPlan, duration: String(e?.value) });
             }}
             placeholder="Select a duration."
@@ -593,7 +596,8 @@ const SubscriptionPlanTableRow: React.FC<IRowProps> = ({ subscriptionPlanData, r
               }
               value={null}
               onChange={(e) => {
-                if (!e || !e.value) return;
+                if (!e || Array.isArray(e)) return;
+              if (!e.value) return;
                 setSelectedFeatures(selectedFeatures.concat(e));
                 setUpdatedPlan({
                   ...updatedPlan,
@@ -612,7 +616,8 @@ const SubscriptionPlanTableRow: React.FC<IRowProps> = ({ subscriptionPlanData, r
                 value: updatedPlan.userType?.toUpperCase() ?? '',
               }}
               onChange={(e) => {
-                if (!e || !e.value) return;
+                if (!e || Array.isArray(e)) return;
+              if (!e.value) return;
                 setUpdatedPlan({ ...updatedPlan, userType: String(e?.value) });
               }}
               placeholder="Select a usertype."
@@ -644,7 +649,8 @@ const SubscriptionPlanTableRow: React.FC<IRowProps> = ({ subscriptionPlanData, r
                 value: updatedPlan.duration?.toUpperCase() ?? '',
               }}
               onChange={(e) => {
-                if (!e || !e.value) return;
+                if (!e || Array.isArray(e)) return;
+              if (!e.value) return;
                 setUpdatedPlan({ ...updatedPlan, duration: String(e?.value) });
               }}
               placeholder="Select a duration."

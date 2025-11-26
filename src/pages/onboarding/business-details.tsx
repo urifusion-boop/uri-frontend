@@ -172,10 +172,19 @@ const BusinessDetailsPage = () => {
     try {
       setLoading(true);
 
+      console.log('💾 Saving business details for user:', userDetails.userId);
+
       // Call API to save business details
       const response = await OnboardingService.saveBusinessDetails(userDetails.userId, data);
 
+      console.log('✅ Business details saved:', response);
+
       if (response.status) {
+        // Update step to 3 (business details saved)
+        console.log('📝 Updating onboarding step to 3...');
+        const stepResponse = await OnboardingService.updateOnboardingStep(userDetails.userId, { step: 3 });
+        console.log('✅ Step updated:', stepResponse);
+
         toast.success('Business details saved successfully!');
 
         // Navigate to module selection page with workflow
@@ -480,6 +489,7 @@ const BusinessDetailsPage = () => {
                       options={INDUSTRY_OPTIONS}
                       value={industrySelect}
                       onChange={(e) => {
+                        if (Array.isArray(e)) return;
                         setIndustrySelect(e);
                         onChange(e?.value || '');
                       }}
@@ -564,6 +574,7 @@ const BusinessDetailsPage = () => {
                       options={CUSTOMER_TYPE_OPTIONS}
                       value={customerTypeSelect}
                       onChange={(e) => {
+                        if (Array.isArray(e)) return;
                         setCustomerTypeSelect(e);
                         onChange(e?.value || '');
                       }}

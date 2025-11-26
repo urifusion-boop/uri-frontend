@@ -1,17 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import CustomButton from '@/components/atoms/CustomButton';
 import SeoHead from '@/components/atoms/SeoHead';
 import useCustomTheme from '@/hooks/theme.hook';
+import { useAuth } from '@/providers/AuthProvider';
+import { OnboardingService } from '@/api/OnboardingService';
 
 const WelcomePage = () => {
   const router = useRouter();
   const { themeColors } = useCustomTheme();
+  const { userDetails } = useAuth();
+  const [loading, setLoading] = useState(false);
 
-  const handleGetStarted = () => {
-    router.push('/onboarding/select-workflow');
+  const handleGetStarted = async () => {
+    if (!userDetails?.userId) {
+      router.push('/onboarding/select-workflow');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      // Update step to 1 (welcome completed)
+      await OnboardingService.updateOnboardingStep(userDetails.userId, { step: 1 });
+      router.push('/onboarding/select-workflow');
+    } catch (error) {
+      console.error('Error updating onboarding step:', error);
+      // Continue anyway to not block user
+      router.push('/onboarding/select-workflow');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -88,6 +108,7 @@ const WelcomePage = () => {
           <CustomButton
             mode="primary"
             onClick={handleGetStarted}
+            loading={loading}
             style={{
               width: '100%',
               padding: '14px',

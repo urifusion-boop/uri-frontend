@@ -442,6 +442,7 @@ const UserTable = () => {
               options={userRoles}
               value={selectedRole}
               onChange={(e) => {
+                if (Array.isArray(e)) return;
                 setSelectedRole(e ? e : { label: '', value: '' });
                 setNewUser({ ...newUser, role: String(e?.value) });
               }}
@@ -465,6 +466,7 @@ const UserTable = () => {
                 options={userTypes}
                 value={selectedUserType}
                 onChange={(e) => {
+                  if (Array.isArray(e)) return;
                   setSelectedUserType(e ? e : { label: '', value: '' });
                   setNewUser({ ...newUser, userType: String(e?.value) });
                 }}
@@ -676,6 +678,7 @@ const CreativeUserTableRow: React.FC<ICreativeRowProps> = ({ userData, key }) =>
               options={userStatuses}
               value={newStatus}
               onChange={(e) => {
+                if (Array.isArray(e)) return;
                 setNewStatus(e ? e : { label: '', value: '' });
               }}
               placeholder="Select a status."
@@ -915,6 +918,7 @@ const ClientUserTableRow: React.FC<IClientRowProps> = ({ userData, key }) => {
               options={userStatuses}
               value={newStatus}
               onChange={(e) => {
+                if (Array.isArray(e)) return;
                 setNewStatus(e ? e : { label: '', value: '' });
               }}
               placeholder="Select a status."

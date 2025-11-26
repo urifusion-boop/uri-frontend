@@ -89,6 +89,7 @@ const LocationProfileSetup: React.FC<IProps> = ({ active, formDetails, setFormDe
           options={countries}
           value={countrySelect}
           onChange={(e) => {
+            if (Array.isArray(e)) return;
             setValue('country', typeof e?.value === 'string' ? e.value : '');
             setCountrySelect(e ? e : { label: '', value: '' });
             setFormDetails({
@@ -106,6 +107,7 @@ const LocationProfileSetup: React.FC<IProps> = ({ active, formDetails, setFormDe
           value={stateSelect}
           options={stateOptions()}
           onChange={(e) => {
+            if (Array.isArray(e)) return;
             setState(typeof e?.value === 'string' ? e.value : '');
             setCity('');
             setValue('state', typeof e?.value === 'string' ? e.value : '');
@@ -125,6 +127,7 @@ const LocationProfileSetup: React.FC<IProps> = ({ active, formDetails, setFormDe
           options={cityOptions(state)}
           value={citySelect}
           onChange={(e) => {
+            if (Array.isArray(e)) return;
             setValue('city', typeof e?.value === 'string' ? e.value : '');
             setCitySelect(e ? e : { label: '', value: '' });
             setFormDetails({

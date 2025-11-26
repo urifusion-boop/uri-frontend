@@ -16,6 +16,10 @@ export interface OnboardingStatus {
   enabledModules?: string[];
 }
 
+export interface SaveWorkflowDto {
+  workflow: string;
+}
+
 export interface CompleteOnboardingDto {
   primaryWorkflow: string;
   primaryModule: string;
@@ -61,6 +65,12 @@ export class OnboardingService {
     return response.data;
   }
 
+  static async saveWorkflow(userId: string, data: SaveWorkflowDto): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> =
+      await UriHttpClient.getClient().post(`${BackendUrlEnum.BACKEND}/onboarding/${userId}/workflow`, data);
+    return response.data;
+  }
+
   static async saveBusinessDetails(
     userId: string,
     data: {
@@ -74,7 +84,7 @@ export class OnboardingService {
       whatYouSell: string;
       customerType: string;
       leadTypes: string[];
-      biggestGoal: string;
+      biggestGoals: string[];
       biggestChallenge?: string;
       currentTools?: string;
     }

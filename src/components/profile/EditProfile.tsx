@@ -323,6 +323,7 @@ const BusinessDetails: React.FC<IProps> = ({
         options={businessTypes}
         value={businessTypeSelect}
         onChange={(e) => {
+          if (Array.isArray(e)) return;
           setBusinessTypeSelect(e ? e : { label: "", value: "" });
         }}
         placeholder="Choose your business type."
@@ -339,6 +340,7 @@ const BusinessDetails: React.FC<IProps> = ({
         options={branchOrHeadOffice}
         value={branchSelect}
         onChange={(e) => {
+          if (Array.isArray(e)) return;
           setBranchSelect(e ? e : { label: "", value: "" });
         }}
         placeholder="Branch or Head office"
@@ -590,6 +592,7 @@ const Location: React.FC<IProps> = ({
         options={countries}
         value={countrySelect}
         onChange={(e) => {
+          if (Array.isArray(e)) return;
           setCountrySelect(e ? e : { label: "", value: "" });
         }}
         placeholder="Select a Country"
@@ -607,6 +610,7 @@ const Location: React.FC<IProps> = ({
         value={stateSelect}
         options={stateOptions()}
         onChange={(e) => {
+          if (Array.isArray(e)) return;
           setStateSelect(e ? e : { label: "", value: "" });
           e ? setState(String(e.value)) : null;
         }}
@@ -625,6 +629,7 @@ const Location: React.FC<IProps> = ({
         options={cityOptions(state)}
         value={citySelect}
         onChange={(e) => {
+          if (Array.isArray(e)) return;
           setCitySelect(e ? e : { label: "", value: "" });
         }}
         placeholder="Select a City"

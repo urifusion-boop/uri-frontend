@@ -124,6 +124,7 @@ const UserLocation: React.FC<IProps> = ({ profile, setCurrentStage }) => {
         options={countries}
         value={countrySelect}
         onChange={(e) => {
+          if (Array.isArray(e)) return;
           setCountrySelect(e ? e : { label: "", value: "" });
         }}
         placeholder="Select a Country"
@@ -141,6 +142,7 @@ const UserLocation: React.FC<IProps> = ({ profile, setCurrentStage }) => {
         value={stateSelect}
         options={stateOptions()}
         onChange={(e) => {
+          if (Array.isArray(e)) return;
           setStateSelect(e ? e : { label: "", value: "" });
           e ? setState(String(e.value)) : null;
         }}
@@ -159,6 +161,7 @@ const UserLocation: React.FC<IProps> = ({ profile, setCurrentStage }) => {
         options={cityOptions(state)}
         value={citySelect}
         onChange={(e) => {
+          if (Array.isArray(e)) return;
           setCitySelect(e ? e : { label: "", value: "" });
         }}
         placeholder="Select a City"
