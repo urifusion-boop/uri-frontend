@@ -1,22 +1,22 @@
-import { useState } from "react";
-import Footer from "@/components/landing/Footer";
-import Header from "@/components/landing/Header";
-import TAndC from "@/components/landing/TAndC";
-import styles from "@/styles/landing.module.css";
-import FAQ from "@/components/landing/FAQ";
-import SeoHead from "@/components/atoms/SeoHead";
-import { Box, Link, Typography } from "@mui/material";
-import useCustomTheme from "@/hooks/theme.hook";
-import { IoMdClose } from "react-icons/io";
-import { useRouter } from "next/router";
-import toast from "react-hot-toast";
-import CustomRadio from "../../components/atoms/CustomRadio";
-import { AccountDeletionReasonEnum } from "../../models/enum-models/AccountDeletionReasonEnum";
-import Text from "../../components/atoms/CustomText";
-import { UserService } from "../../api/UserService";
-import CustomButton from "../../components/atoms/CustomButton";
-import InputField from "../../components/atoms/Input";
-import { TextHelper } from "../../helpers/TextHelper";
+import SeoHead from '@/components/atoms/SeoHead';
+import FAQ from '@/components/landing/FAQ';
+import Footer from '@/components/landing/Footer';
+import Header from '@/components/landing/Header';
+import TAndC from '@/components/landing/TAndC';
+import useCustomTheme from '@/hooks/theme.hook';
+import styles from '@/styles/landing.module.css';
+import { Box, Link, Typography } from '@mui/material';
+import { useRouter } from 'next/router';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
+import { IoMdClose } from 'react-icons/io';
+import { UserService } from '../../api/UserService';
+import CustomButton from '../../components/atoms/CustomButton';
+import CustomRadio from '../../components/atoms/CustomRadio';
+import Text from '../../components/atoms/CustomText';
+import InputField from '../../components/atoms/Input';
+import { TextHelper } from '../../helpers/TextHelper';
+import { AccountDeletionReasonEnum } from '../../models/enum-models/AccountDeletionReasonEnum';
 
 export default function DeleteAccount() {
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
@@ -26,9 +26,9 @@ export default function DeleteAccount() {
 
   const [loading, setLoading] = useState(false);
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
   const [deletionReasons, setDeletionReasons] = useState<string[]>([]);
-  const [otherReason, setOtherReason] = useState("");
+  const [otherReason, setOtherReason] = useState('');
 
   const deleteAccount = async () => {
     setLoading(true);
@@ -39,7 +39,7 @@ export default function DeleteAccount() {
       otherReason,
     });
 
-    if (result.status) router.push("/");
+    if (result.status) router.push('/');
     else toast.error(result.responseMessage);
 
     setLoading(false);
@@ -58,30 +58,18 @@ export default function DeleteAccount() {
       </div>
 
       <>
-        <Box
-          className={styles.overlay}
-          onClick={() => setShowDeleteAccount(showDeleteAccount)}
-        ></Box>
+        <Box className={styles.overlay} onClick={() => setShowDeleteAccount(showDeleteAccount)}></Box>
         <Box className={`${styles.infoContainer} no-scroll`}>
-          <Box sx={{ padding: "30px 30px" }}>
-            <Box
-              className="d-flex justify-between"
-              sx={{ alignItems: "center", mb: "10px" }}
-            >
+          <Box sx={{ padding: '30px 30px' }}>
+            <Box className="d-flex justify-between" sx={{ alignItems: 'center', mb: '10px' }}>
               <Link href={process.env.NEXT_PUBLIC_CLIENT_HOST}>
-                <img
-                  src="/assets/images/logo.png"
-                  alt="logo"
-                  width={70}
-                  height={40}
-                  style={{ marginLeft: "-7px" }}
-                />
+                <img src="/assets/images/logo.png" alt="logo" width={70} height={40} style={{ marginLeft: '-7px' }} />
               </Link>
               <IoMdClose
                 style={{
-                  width: "30px",
-                  height: "30px",
-                  cursor: "pointer",
+                  width: '30px',
+                  height: '30px',
+                  cursor: 'pointer',
                 }}
                 onClick={handleClose}
               />
@@ -90,18 +78,10 @@ export default function DeleteAccount() {
               Delete Account
             </Typography>
             <Typography variant="body2" gutterBottom>
-              If you want to leave URI, you can delete your account. Your user
-              data will be deleted permanently. Note that this action cannot be
-              undone.
+              If you want to leave URI, you can delete your account. Your user data will be deleted permanently. Note that this action cannot be undone.
             </Typography>
 
-            <InputField
-              label="Email Address"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              mt={3}
-            />
+            <InputField label="Email Address" type="email" value={email} onChange={(e) => setEmail(e.target.value)} mt={3} />
             {email.length < 1 || !TextHelper.containsEmail(email) ? (
               <Text size={12} weight={400} color="red">
                 Please input the email address linked to your account.
@@ -113,94 +93,45 @@ export default function DeleteAccount() {
             </Typography>
 
             <CustomRadio
-              label={"Account Compromised"}
-              checked={deletionReasons.includes(
-                AccountDeletionReasonEnum.ACCOUNT_CONPROMISED
-              )}
+              label={'Account Compromised'}
+              checked={deletionReasons.includes(AccountDeletionReasonEnum.ACCOUNT_CONPROMISED)}
               onClick={() => {
-                deletionReasons.includes(
-                  AccountDeletionReasonEnum.ACCOUNT_CONPROMISED
-                )
-                  ? setDeletionReasons(
-                      deletionReasons.filter(
-                        (reason) =>
-                          reason !==
-                          AccountDeletionReasonEnum.ACCOUNT_CONPROMISED
-                      )
-                    )
-                  : setDeletionReasons(
-                      deletionReasons.concat(
-                        AccountDeletionReasonEnum.ACCOUNT_CONPROMISED
-                      )
-                    );
+                deletionReasons.includes(AccountDeletionReasonEnum.ACCOUNT_CONPROMISED)
+                  ? setDeletionReasons(deletionReasons.filter((reason) => reason !== AccountDeletionReasonEnum.ACCOUNT_CONPROMISED))
+                  : setDeletionReasons(deletionReasons.concat(AccountDeletionReasonEnum.ACCOUNT_CONPROMISED));
               }}
               value={AccountDeletionReasonEnum.ACCOUNT_CONPROMISED}
             />
 
             <CustomRadio
-              label={"Preferred Alternative"}
-              checked={deletionReasons.includes(
-                AccountDeletionReasonEnum.PREFERRED_ALTERNATIVE
-              )}
+              label={'Preferred Alternative'}
+              checked={deletionReasons.includes(AccountDeletionReasonEnum.PREFERRED_ALTERNATIVE)}
               onClick={() => {
-                deletionReasons.includes(
-                  AccountDeletionReasonEnum.PREFERRED_ALTERNATIVE
-                )
-                  ? setDeletionReasons(
-                      deletionReasons.filter(
-                        (reason) =>
-                          reason !==
-                          AccountDeletionReasonEnum.PREFERRED_ALTERNATIVE
-                      )
-                    )
-                  : setDeletionReasons(
-                      deletionReasons.concat(
-                        AccountDeletionReasonEnum.PREFERRED_ALTERNATIVE
-                      )
-                    );
+                deletionReasons.includes(AccountDeletionReasonEnum.PREFERRED_ALTERNATIVE)
+                  ? setDeletionReasons(deletionReasons.filter((reason) => reason !== AccountDeletionReasonEnum.PREFERRED_ALTERNATIVE))
+                  : setDeletionReasons(deletionReasons.concat(AccountDeletionReasonEnum.PREFERRED_ALTERNATIVE));
               }}
               value={AccountDeletionReasonEnum.PREFERRED_ALTERNATIVE}
             />
 
             <CustomRadio
-              label={"Privacy Concerns"}
-              checked={deletionReasons.includes(
-                AccountDeletionReasonEnum.PRIVACY_CONCERNS
-              )}
+              label={'Privacy Concerns'}
+              checked={deletionReasons.includes(AccountDeletionReasonEnum.PRIVACY_CONCERNS)}
               onClick={() => {
-                deletionReasons.includes(
-                  AccountDeletionReasonEnum.PRIVACY_CONCERNS
-                )
-                  ? setDeletionReasons(
-                      deletionReasons.filter(
-                        (reason) =>
-                          reason !== AccountDeletionReasonEnum.PRIVACY_CONCERNS
-                      )
-                    )
-                  : setDeletionReasons(
-                      deletionReasons.concat(
-                        AccountDeletionReasonEnum.PRIVACY_CONCERNS
-                      )
-                    );
+                deletionReasons.includes(AccountDeletionReasonEnum.PRIVACY_CONCERNS)
+                  ? setDeletionReasons(deletionReasons.filter((reason) => reason !== AccountDeletionReasonEnum.PRIVACY_CONCERNS))
+                  : setDeletionReasons(deletionReasons.concat(AccountDeletionReasonEnum.PRIVACY_CONCERNS));
               }}
               value={AccountDeletionReasonEnum.PRIVACY_CONCERNS}
             />
 
             <CustomRadio
-              label={"Other"}
-              checked={deletionReasons.includes(
-                AccountDeletionReasonEnum.OTHER
-              )}
+              label={'Other'}
+              checked={deletionReasons.includes(AccountDeletionReasonEnum.OTHER)}
               onClick={() => {
                 deletionReasons.includes(AccountDeletionReasonEnum.OTHER)
-                  ? setDeletionReasons(
-                      deletionReasons.filter(
-                        (reason) => reason !== AccountDeletionReasonEnum.OTHER
-                      )
-                    )
-                  : setDeletionReasons(
-                      deletionReasons.concat(AccountDeletionReasonEnum.OTHER)
-                    );
+                  ? setDeletionReasons(deletionReasons.filter((reason) => reason !== AccountDeletionReasonEnum.OTHER))
+                  : setDeletionReasons(deletionReasons.concat(AccountDeletionReasonEnum.OTHER));
               }}
               value={AccountDeletionReasonEnum.OTHER}
             />
@@ -217,23 +148,19 @@ export default function DeleteAccount() {
                   maxLength={200}
                   required
                   style={{
-                    width: "100%",
-                    minHeight: "173px",
-                    maxHeight: "173px",
-                    margin: "30px 0 0px",
-                    border: "1px solid #E0DEF7",
-                    borderRadius: "5px",
-                    outline: "1px solid #E0DEF7",
-                    padding: "18px",
-                    background: "white",
+                    width: '100%',
+                    minHeight: '173px',
+                    maxHeight: '173px',
+                    margin: '30px 0 0px',
+                    border: '1px solid #E0DEF7',
+                    borderRadius: '5px',
+                    outline: '1px solid #E0DEF7',
+                    padding: '18px',
+                    background: 'white',
                   }}
                   placeholder="Not more than 500 characters."
                   onChange={(e) => {
-                    setOtherReason(
-                      String(e.target.value).trim().length <= 500
-                        ? e.target.value
-                        : otherReason
-                    );
+                    setOtherReason(String(e.target.value).trim().length <= 500 ? e.target.value : otherReason);
                   }}
                   value={otherReason}
                 ></textarea>
@@ -248,15 +175,9 @@ export default function DeleteAccount() {
 
             <CustomButton
               mode="primary"
-              style={{ width: "253px", marginTop: "30px" }}
+              style={{ width: '253px', marginTop: '30px' }}
               onClick={() => deleteAccount()}
-              disabled={
-                email.length < 1 ||
-                !TextHelper.containsEmail(email) ||
-                deletionReasons.length < 1 ||
-                (deletionReasons.includes(AccountDeletionReasonEnum.OTHER) &&
-                  otherReason.length < 1)
-              }
+              disabled={email.length < 1 || !TextHelper.containsEmail(email) || deletionReasons.length < 1 || (deletionReasons.includes(AccountDeletionReasonEnum.OTHER) && otherReason.length < 1)}
               loading={loading}
             >
               Delete
@@ -265,15 +186,10 @@ export default function DeleteAccount() {
         </Box>
       </>
 
-      <Footer
-        toggleTAndC={() => setShowDeleteAccount(!showDeleteAccount)}
-        toggleFAQs={() => setShowFAQs(!showFAQs)}
-      />
+      <Footer toggleTAndC={() => setShowDeleteAccount(!showDeleteAccount)} toggleFAQs={() => setShowFAQs(!showFAQs)} />
 
-      {showDeleteAccount ? (
-        <TAndC toggleTAndC={() => setShowDeleteAccount(!showDeleteAccount)} />
-      ) : null}
-      {showFAQs ? <FAQ toggleFAQs={() => setShowFAQs(!showFAQs)} /> : null}
+      {showDeleteAccount ? <TAndC toggleTAndC={() => setShowDeleteAccount(!showDeleteAccount)} /> : null}
+      {showFAQs ? <FAQ /> : null}
     </>
   );
 }

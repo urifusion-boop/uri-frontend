@@ -1,14 +1,14 @@
 export type IAuthRoute = 'login' | 'registerCreative' | 'registerClient' | 'forgotPassword' | 'resetPassword' | 'emailVerification' | 'pengridLogin' | 'signupAs';
 
 export const authRoutes: Record<IAuthRoute, string> = {
-  login: '/login',
+  login: '/auth/login',
   registerCreative: '/auth/creative-signup',
   registerClient: '/auth/client-signup',
-  forgotPassword: '/forgot-password',
-  resetPassword: '/reset-password',
-  emailVerification: '/email-verification',
+  forgotPassword: '/auth/forgot-password',
+  resetPassword: '/auth/reset-password',
+  emailVerification: '/auth/email-verification',
   pengridLogin: '/pengrid-login',
-  signupAs: '/signup-as',
+  signupAs: '/auth/signup-as',
 };
 
 export type IDashboardRoutes = 'dashboardAdmin' | 'dashboardHome' | 'dashboardCreatives' | 'dashboardClients';

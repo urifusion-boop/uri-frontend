@@ -1,10 +1,81 @@
-@import url("https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-*{
+:root {
+  --background: 0 0% 100%;
+  --foreground: 240 10% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 10%;
+  --primary: 326 76% 45%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 4% 95%;
+  --secondary-foreground: 240 6% 15%;
+  --muted: 240 4% 95%;
+  --muted-foreground: 240 5% 45%;
+  --accent: 240 4% 95%;
+  --accent-foreground: 240 6% 15%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 240 6% 90%;
+  --input: 240 6% 90%;
+  --ring: 240 5% 30%;
+}
+
+.dark {
+  --background: 240 6% 8%;
+  --foreground: 0 0% 98%;
+  --card: 240 6% 10%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 6% 10%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 326 76% 45%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 4% 16%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 4% 16%;
+  --muted-foreground: 0 0% 80%;
+  --accent: 240 4% 16%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 240 3.7% 28%;
+  --input: 240 3.7% 28%;
+  --ring: 240 5% 30%;
+}
+
+/* Utilities for new landing */
+.hover-lift {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, hsl(var(--primary)) 0%, #8e2de2 50%, #4a00e0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.glow-pink {
+  box-shadow: 0 0 0 3px hsla(326, 76%, 45%, 0.2);
+}
+.hover-scale {
+  transition: transform 0.2s ease;
+}
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+* {
   scroll-behavior: smooth;
   scroll-padding: 10px;
 }
@@ -13,8 +84,7 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Urbanist", sans-serif !important;
-
+  font-family: 'Urbanist', sans-serif !important;
 }
 
 h1,
@@ -25,7 +95,7 @@ h5,
 h6,
 p,
 span {
-  font-family: "Urbanist", sans-serif !important;
+  font-family: 'Urbanist', sans-serif !important;
 }
 
 .container {
@@ -33,14 +103,13 @@ span {
   max-width: 1580px;
   margin-left: auto;
   margin-right: auto;
-  padding-left: 1rem;  /* 16px */
+  padding-left: 1rem; /* 16px */
   padding-right: 1rem; /* 16px */
   box-sizing: border-box;
 }
 
-
 .track-font {
-  font-family: "Urbanist", sans-serif !important;
+  font-family: 'Urbanist', sans-serif !important;
 }
 
 .card-dragging {
@@ -67,7 +136,7 @@ span {
 
 .character--selected {
   border: 2px solid #cd1b78;
-  background-color: "black";
+  background-color: 'black';
 }
 @media (max-width: 768px) {
   .board {
@@ -119,7 +188,7 @@ span {
   outline: none !important;
   cursor: pointer;
   background-color: #cb2a7c;
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   margin-top: 30px;
   color: white;
   font-weight: 700;
@@ -405,8 +474,8 @@ th {
   height: 175px;
 }
 
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
@@ -617,12 +686,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
 /* Highlight the current day */
 .rbc-today {
-  background-color: rgba(
-    205,
-    27,
-    120,
-    0.1
-  ) !important; /* Light pink for today */
+  background-color: rgba(205, 27, 120, 0.1) !important; /* Light pink for today */
   border-left: 4px solid #cd1b78;
 }
 
@@ -754,6 +818,5 @@ div.past-date.rbc-off-range-bg {
 .payment-receipt-container {
   mask:
     linear-gradient(0, #0000 10px, #000 0) 0 5px,
-    radial-gradient(5px, #000 calc(100% - 1px), #0000) 50%/9.25px 10px repeat
-      space;
+    radial-gradient(5px, #000 calc(100% - 1px), #0000) 50%/9.25px 10px repeat space;
 }
