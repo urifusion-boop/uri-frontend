@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -84,7 +82,14 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Urbanist', sans-serif !important;
+  font-family:
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif !important;
 }
 
 h1,
@@ -95,7 +100,14 @@ h5,
 h6,
 p,
 span {
-  font-family: 'Urbanist', sans-serif !important;
+  font-family:
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif !important;
 }
 
 .container {
@@ -109,7 +121,14 @@ span {
 }
 
 .track-font {
-  font-family: 'Urbanist', sans-serif !important;
+  font-family:
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif !important;
 }
 
 .card-dragging {

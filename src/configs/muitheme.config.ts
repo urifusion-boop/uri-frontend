@@ -1,13 +1,5 @@
 import { createTheme } from '@mui/material/styles';
 
-import { Urbanist } from 'next/font/google';
-
-// Load Google Font
-const roboto = Urbanist({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
-});
-
 export const theme = createTheme({
   breakpoints: {
     values: {
@@ -22,7 +14,7 @@ export const theme = createTheme({
     button: {
       textTransform: 'none',
     },
-    fontFamily: roboto.style.fontFamily,
+    fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
   },
   palette: {
     background: {
