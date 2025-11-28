@@ -83,6 +83,7 @@ body {
   padding: 0;
   box-sizing: border-box;
   font-family:
+    'Urbanist',
     system-ui,
     -apple-system,
     Segoe UI,
@@ -101,6 +102,7 @@ h6,
 p,
 span {
   font-family:
+    'Urbanist',
     system-ui,
     -apple-system,
     Segoe UI,
@@ -122,6 +124,7 @@ span {
 
 .track-font {
   font-family:
+    'Urbanist',
     system-ui,
     -apple-system,
     Segoe UI,

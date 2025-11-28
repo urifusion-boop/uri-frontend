@@ -1,5 +1,10 @@
 import '@/styles/flaticon.css';
 import '@/styles/globals.css';
+import '@fontsource/urbanist/400.css';
+import '@fontsource/urbanist/500.css';
+import '@fontsource/urbanist/600.css';
+import '@fontsource/urbanist/700.css';
+import '@fontsource/urbanist/800.css';
 import 'nprogress/nprogress.css';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import 'react-image-crop/dist/ReactCrop.css';
@@ -17,8 +22,8 @@ import SubscriptionModal from '@/components/modals/SubscriptionModal';
 import { UriHttpClient } from '@/configs/http.config';
 import { theme } from '@/configs/muitheme.config';
 import { queryClient } from '@/configs/query-client.config';
-import CustomThemeProvider from '@/providers/ThemeProvider';
 import { WorkflowFilterProvider } from '@/contexts/WorkflowFilterContext';
+import CustomThemeProvider from '@/providers/ThemeProvider';
 import { ThemeProvider } from '@mui/material';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -27,7 +32,6 @@ import { useRouter } from 'next/router';
 import NProgress from 'nprogress';
 import { ErrorBoundary } from 'react-error-boundary';
 import initServiceWorker from '../lib/initServiceWorker';
-import { UserRoleEnum } from '../models/enum-models/UserRoleEnums';
 import { NotificationSoundProvider } from '../providers/NotificationProvider';
 
 UriHttpClient.initialize();

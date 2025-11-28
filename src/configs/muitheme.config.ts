@@ -14,7 +14,7 @@ export const theme = createTheme({
     button: {
       textTransform: 'none',
     },
-    fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
+    fontFamily: 'Urbanist, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
   },
   palette: {
     background: {
