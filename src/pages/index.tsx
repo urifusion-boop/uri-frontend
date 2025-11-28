@@ -13,7 +13,6 @@ import ProblemSolution from '@/components/ProblemSolution';
 import ROICalculator from '@/components/ROICalculator';
 import Testimonials from '@/components/Testimonials';
 import TopBrands from '@/components/TopBrands';
-import FAQ from '@/components/landing/FAQ';
 import Footer from '@/components/landing/Footer';
 import { useRouter } from 'next/router';
 
@@ -35,7 +34,7 @@ export default function Home() {
       <Testimonials />
       <ROICalculator />
       <Pricing />
-      <FAQ />
+      {/* <FAQ /> */}
       <CTA />
       <Footer toggleTAndC={() => router.push('/terms-and-conditions')} toggleFAQs={() => router.push('/faqs')} />
     </div>
