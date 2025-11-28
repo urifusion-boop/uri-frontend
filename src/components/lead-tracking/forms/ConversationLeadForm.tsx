@@ -1,3 +1,4 @@
+import { LeadsService as LeadFormService } from '@/api/LeadFormService';
 import { triggerToast } from '@/components/atoms/CustomToast';
 import LoadingButton from '@/components/buttons/LoadingButton';
 import AnimatedSendInput from '@/components/input/AnimatedSendInput';
@@ -7,27 +8,24 @@ import SingleFieldInput from '@/components/input/SingleFieldInput';
 import SmartModal from '@/components/modals/SmartModal';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
 import { ConversationalSearchFormDto } from '@/models/dtos/LeadFormDto';
+import { LeadDto } from '@/models/dtos/LeadsDto';
+import { TwitterFetchResponseDto } from '@/models/dtos/TwitterDto';
 import { BrowsercloudPlatformEnum } from '@/models/enum-models/BrowsercloudPlatformEnum';
 import { FormTypeEnum } from '@/models/enum-models/FormTypeEnum';
+import { LeadSourceEnum } from '@/models/enum-models/LeadSourceEnum';
+import { LeadStatusEnum } from '@/models/enum-models/LeadStatusEnum';
+import { LeadTypeEnum } from '@/models/enum-models/LeadTypeEnum';
 import { useAuth } from '@/providers/AuthProvider';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import BoltIcon from '@mui/icons-material/Bolt';
-import { Box, IconButton, Tooltip, Typography, Switch, FormControlLabel, Chip, Alert, Button, LinearProgress } from '@mui/material';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SaveIcon from '@mui/icons-material/Save';
+import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
+import { Alert, Box, Button, Chip, FormControlLabel, IconButton, LinearProgress, Switch, Tooltip, Typography } from '@mui/material';
 import Image from 'next/image';
 import router from 'next/router';
 import { useEffect, useState } from 'react';
 import { HiPencil } from 'react-icons/hi';
 import PlatformSelector from '../PlatformSelector';
-import { TwitterService } from '@/api/TwitterService';
-import { FacebookService } from '@/api/FacebookService';
-import { TiktokService } from '@/api/TiktokService';
-import { LeadsService as LeadFormService } from '@/api/LeadFormService';
-import { LeadDto } from '@/models/dtos/LeadsDto';
-import { LeadStatusEnum } from '@/models/enum-models/LeadStatusEnum';
-import { LeadOpportunityTypeEnum } from '@/models/enum-models/LeadOpportunityTypeEnum';
-import { LeadSourceEnum } from '@/models/enum-models/LeadSourceEnum';
 
 const ConversationLeadFormV2 = () => {
   const [form, setForm] = useState<ConversationalSearchFormDto>({
@@ -50,8 +48,8 @@ const ConversationLeadFormV2 = () => {
     implied_keywords: [],
     scoring_thresholds: {
       intent_score_min: 0.55,
-      relevance_score_min: 0.50,
-      final_score_min: 0.60,
+      relevance_score_min: 0.5,
+      final_score_min: 0.6,
     },
   });
 
@@ -78,19 +76,7 @@ const ConversationLeadFormV2 = () => {
   useEffect(() => {
     console.log('existingForm', existingForm);
     if (existingForm && isSuccess && userId) {
-      const {
-        form_title,
-        intent_type,
-        buying_signals,
-        excluded_keywords,
-        ai_response_guide,
-        keywords,
-        competitors,
-        lead_form_id,
-        add_to_history,
-        auto_generate,
-        form_type,
-      } = existingForm;
+      const { form_title, intent_type, buying_signals, excluded_keywords, ai_response_guide, keywords, competitors, lead_form_id, add_to_history, auto_generate, form_type } = existingForm;
 
       setForm({
         user_id: userId,
@@ -112,14 +98,78 @@ const ConversationLeadFormV2 = () => {
         implied_keywords: (existingForm as any).implied_keywords || [],
         scoring_thresholds: (existingForm as any).scoring_thresholds || {
           intent_score_min: 0.55,
-          relevance_score_min: 0.50,
-          final_score_min: 0.60,
+          relevance_score_min: 0.5,
+          final_score_min: 0.6,
         },
       });
 
       setExistingFormId(lead_form_id);
     }
   }, [existingForm, isSuccess, userId]);
+
+  // Merge newly fetched Twitter results with previously cached ones
+  const mergeTwitterResults = (prev: TwitterFetchResponseDto | null, next: TwitterFetchResponseDto): TwitterFetchResponseDto => {
+    const prevTweets = prev?.responseData?.tweets ?? [];
+    const nextTweets = next?.responseData?.tweets ?? [];
+
+    // Deduplicate by URL if available, otherwise by text + created_at
+    const seen = new Set<string>();
+    const mergedTweets = [...prevTweets, ...nextTweets].filter((tweet) => {
+      const key = tweet.url || `${tweet.text}-${tweet.created_at}`;
+      if (!key) return true;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    return {
+      ...next,
+      responseData: {
+        ...next.responseData,
+        tweets: mergedTweets,
+        total_tweets: mergedTweets.length,
+      },
+    };
+  };
+
+  const convertTwitterDateToISO = (twitterDate: string): string => {
+    try {
+      // Twitter format: "Sun Nov 09 17:51:05 +0000 2025"
+      // Convert to ISO format
+      const date = new Date(twitterDate);
+      return date.toISOString();
+    } catch (error) {
+      console.error('Error converting date:', error);
+      // Fallback to current date if conversion fails
+      return new Date().toISOString();
+    }
+  };
+
+  const mapTweetsToLeadPayload = (tw: TwitterFetchResponseDto, assignedTo: string): LeadDto[] => {
+    return (tw.responseData?.tweets ?? []).map((tweet) => ({
+      first_name: tweet.author || 'Twitter User',
+      last_name: '',
+      username: tweet.author || '',
+      mention: tweet.text,
+      lead_reason: tweet.text,
+      lead_status: LeadStatusEnum.NEW,
+      opportunity_type: 'Other',
+      tags: [],
+      twitter_url: tweet.url,
+      lead_link: tweet.url,
+      social_profile_link: tweet.url,
+      picture_url: '',
+      created_date: convertTwitterDateToISO(tweet.created_at),
+      last_updated: convertTwitterDateToISO(tweet.created_at),
+      lead_type: LeadTypeEnum.CONVERSATIONAL,
+      website_url: tweet.url ?? '',
+      sentiment: tweet.sentiment,
+      confidence: tweet.confidence,
+      lead_source: LeadSourceEnum.X,
+      assigned_to: assignedTo,
+      starred: false,
+    }));
+  };
 
   const handleChange = (field: keyof ConversationalSearchFormDto, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -138,9 +188,9 @@ const ConversationLeadFormV2 = () => {
     // Helpful tips to rotate through
     const tips = [
       "💡 Tip: Use specific keywords like 'need' instead of generic terms",
-      "🎯 Did you know? Specific pain points yield better leads",
+      '🎯 Did you know? Specific pain points yield better leads',
       "⚡ Pro tip: Try 'looking for recommendations' for better results",
-      "🔍 Fun fact: 70% of posts are filtered out for being promotional",
+      '🔍 Fun fact: 70% of posts are filtered out for being promotional',
     ];
 
     // Status messages progression
@@ -215,16 +265,10 @@ const ConversationLeadFormV2 = () => {
       return;
     }
 
-    const twitterEnabled = form.platform_configs?.some(
-      (config) => config.platform === BrowsercloudPlatformEnum.TWITTER && config.enabled
-    );
+    const twitterEnabled = form.platform_configs?.some((config) => config.platform === BrowsercloudPlatformEnum.TWITTER && config.enabled);
     const linkedinEnabled = false;
-    const facebookEnabled = form.platform_configs?.some(
-      (config) => config.platform === BrowsercloudPlatformEnum.FACEBOOK && config.enabled
-    );
-    const tiktokEnabled = form.platform_configs?.some(
-      (config) => config.platform === BrowsercloudPlatformEnum.TIKTOK && config.enabled
-    );
+    const facebookEnabled = form.platform_configs?.some((config) => config.platform === BrowsercloudPlatformEnum.FACEBOOK && config.enabled);
+    const tiktokEnabled = form.platform_configs?.some((config) => config.platform === BrowsercloudPlatformEnum.TIKTOK && config.enabled);
 
     if ((twitterEnabled || linkedinEnabled || tiktokEnabled || facebookEnabled) && (!form.keywords || form.keywords.length === 0)) {
       triggerToast('error', 'Please add at least one keyword to monitor');
@@ -234,20 +278,13 @@ const ConversationLeadFormV2 = () => {
     // Platform fetching is now handled by background jobs on the backend
     // Leads will be fetched immediately after form save/update
 
-    const disabledPlatforms = new Set([
-      BrowsercloudPlatformEnum.THREADS,
-      BrowsercloudPlatformEnum.LINKEDIN,
-    ]);
-    const enabledPlatforms =
-      form.platform_configs?.
-        filter((c) => c.enabled && !disabledPlatforms.has(c.platform as any))
-        .map((c) => c.platform) || [];
+    const disabledPlatforms = new Set([BrowsercloudPlatformEnum.THREADS, BrowsercloudPlatformEnum.LINKEDIN]);
+    const enabledPlatforms = form.platform_configs?.filter((c) => c.enabled && !disabledPlatforms.has(c.platform as any)).map((c) => c.platform) || [];
 
     if (form.enable_realtime && enabledPlatforms.length === 0) {
       triggerToast('error', 'Please select at least one platform for real-time monitoring');
       return;
     }
-
 
     const payload: ConversationalSearchFormDto = {
       ...form,
@@ -339,9 +376,7 @@ const ConversationLeadFormV2 = () => {
     });
   };
 
-  const disabledPlatforms = new Set([
-    BrowsercloudPlatformEnum.THREADS,
-  ]);
+  const disabledPlatforms = new Set([BrowsercloudPlatformEnum.THREADS]);
 
   return (
     <Box sx={{ maxWidth: '950px', mx: 'auto', mt: 4 }}>
@@ -380,202 +415,198 @@ const ConversationLeadFormV2 = () => {
                 Get instant notifications when leads appear across social platforms.
               </Typography>
             </Box>
-            <FormControlLabel
-              control={<Switch checked color="primary" disabled />}
-              label=""
-            />
+            <FormControlLabel control={<Switch checked color="primary" disabled />} label="" />
           </Box>
         </Alert>
 
         {/* Form Title */}
         <Box className="tour-form-fields">
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
-          <SingleFieldInput
-            label="Form Title"
-            tooltip="Give your form a name to help you identify it later. This will be displayed in the lead generation dashboard."
-            placeholder="Form Title"
-            value={form.form_title || ''}
-            setValue={(val) => handleChange('form_title', val)}
-            required
-          />
-        </Box>
-
-        {/* AI Form Completion Section */}
-        <Box my={6}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-            <Typography variant="body2" sx={{ fontWeight: 500, color: '#4b5563' }}>
-              Want help completing this form?
-            </Typography>
-            <SmartToyOutlinedIcon sx={{ fontSize: 20, color: '#6b7280' }} />
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
+            <SingleFieldInput
+              label="Form Title"
+              tooltip="Give your form a name to help you identify it later. This will be displayed in the lead generation dashboard."
+              placeholder="Form Title"
+              value={form.form_title || ''}
+              setValue={(val) => handleChange('form_title', val)}
+              required
+            />
           </Box>
 
-          <Typography variant="caption" sx={{ color: '#6b7280', mb: 1, display: 'block' }}>
-            Type what you're trying to achieve and let AI auto-fill the form. Example: "Find startup founders in Berlin working in fintech."
-          </Typography>
+          {/* AI Form Completion Section */}
+          <Box my={6}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Typography variant="body2" sx={{ fontWeight: 500, color: '#4b5563' }}>
+                Want help completing this form?
+              </Typography>
+              <SmartToyOutlinedIcon sx={{ fontSize: 20, color: '#6b7280' }} />
+            </Box>
 
-          {!isEditingAIInput && (
-            <Tooltip title="Use AI to complete form">
-              <IconButton
-                onClick={() => setIsEditingAIInput(true)}
-                size="small"
-                sx={{
-                  backgroundColor: '#f3f4f6',
-                  borderRadius: '8px',
-                  height: 36,
-                  mb: 1,
-                }}
-              >
-                <HiPencil size={18} />
-              </IconButton>
-            </Tooltip>
+            <Typography variant="caption" sx={{ color: '#6b7280', mb: 1, display: 'block' }}>
+              Type what you're trying to achieve and let AI auto-fill the form. Example: "Find startup founders in Berlin working in fintech."
+            </Typography>
+
+            {!isEditingAIInput && (
+              <Tooltip title="Use AI to complete form">
+                <IconButton
+                  onClick={() => setIsEditingAIInput(true)}
+                  size="small"
+                  sx={{
+                    backgroundColor: '#f3f4f6',
+                    borderRadius: '8px',
+                    height: 36,
+                    mb: 1,
+                  }}
+                >
+                  <HiPencil size={18} />
+                </IconButton>
+              </Tooltip>
+            )}
+
+            <AnimatedSendInput
+              isEditing={isEditingAIInput}
+              setIsEditing={setIsEditingAIInput}
+              inputValue={autoPopulateData}
+              onChange={setAutoPopulateData}
+              onSend={handleAutoPopulate}
+              loading={isAutoPopulating}
+              placeholder="Describe what you want to find or monitor across platforms..."
+            />
+          </Box>
+
+          {/* Platform Selection (V2) */}
+          {form.enable_realtime && (
+            <Box sx={{ mb: 4 }}>
+              <PlatformSelector platformConfigs={form.platform_configs || []} setPlatformConfigs={(configs) => handleChange('platform_configs', configs)} />
+            </Box>
           )}
 
-          <AnimatedSendInput
-            isEditing={isEditingAIInput}
-            setIsEditing={setIsEditingAIInput}
-            inputValue={autoPopulateData}
-            onChange={setAutoPopulateData}
-            onSend={handleAutoPopulate}
-            loading={isAutoPopulating}
-            placeholder="Describe what you want to find or monitor across platforms..."
-          />
-        </Box>
-
-        {/* Platform Selection (V2) */}
-        {form.enable_realtime && (
-          <Box sx={{ mb: 4 }}>
-            <PlatformSelector
-              platformConfigs={form.platform_configs || []}
-              setPlatformConfigs={(configs) => handleChange('platform_configs', configs)}
-            />
-          </Box>
-        )}
-
-        {/* Category Context (CLG Upgrade) */}
-        <Box sx={{ mb: 3 }}>
-          <SingleFieldInput
-            label="Category Context"
-            tooltip="The industry or category for intent analysis. This helps AI understand the domain and detect implied buying signals. E.g., 'skincare', 'fintech', 'construction materials'"
-            placeholder="e.g. 'skincare', 'project management software', 'construction materials'"
-            value={form.category_context || ''}
-            setValue={(val) => handleChange('category_context', val)}
-            required={false}
-          />
-        </Box>
-
-        {/* Keywords and Excluded Keywords */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
-            <ListValuesInput
-              label="Keywords"
-              tooltip="Direct search terms people use when looking to buy. E.g., 'buy moisturizer', 'need CRM', 'looking for cement'"
-              placeholder="e.g. 'Construction', 'Cement', 'Dangote', 'Real Estate', 'Renovation'"
-              keywords={form.keywords || []}
-              setKeywords={(val) => handleChange('keywords', val)}
-            />
-          </Box>
-
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
-            <ListValuesInput
-              label="Implied Keywords"
-              tooltip="Indirect signals that suggest buying intent through problems, situations, or lifestyle changes. E.g., 'harmattan', 'dry skin', 'project delays', 'team burnout'"
-              placeholder="e.g. 'harmattan', 'dry skin', 'missing deadlines', 'scaling issues'"
-              keywords={form.implied_keywords || []}
-              setKeywords={(val) => handleChange('implied_keywords', val)}
-            />
-          </Box>
-        </Box>
-
-        {/* Excluded Keywords */}
-        <Box sx={{ mb: 3 }}>
-          <ListValuesInput
-            label="Excluded Keywords"
-            tooltip="Keywords to filter out noise and spam from your results."
-            placeholder="e.g. 'spam', 'ad', 'promotion'"
-            keywords={form.excluded_keywords || []}
-            setKeywords={(val) => handleChange('excluded_keywords', val)}
-          />
-        </Box>
-
-        {/* Competitors and Buying Signals */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
-            <ListValuesInput
-              label="Competitors"
-              tooltip="The competitors you want to be noted for in the conversations. This can include positive or negative mentions that you can leverage for your sales and marketing efforts."
-              keywords={form.competitors || []}
-              setKeywords={(val) => handleChange('competitors', val)}
-              placeholder="e.g. 'Bamburi Cement', 'Lafarge Africa'"
-            />
-          </Box>
-
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
-            <ListValuesInput
-              label="Buying Signals"
-              tooltip="This helps the AI to analyze the conversations and understand what can trigger a purchase, collaboration, partnership or decision to buy from you or engage with you. Be specific about the type of buying signal you want to track."
-              keywords={form.buying_signals || []}
-              setKeywords={(val) => handleChange('buying_signals', val)}
-              placeholder="e.g. 'People talking about Cement'"
-            />
-          </Box>
-        </Box>
-
-        {/* Intent Type and AI Response Guide */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
+          {/* Category Context (CLG Upgrade) */}
+          <Box sx={{ mb: 3 }}>
             <SingleFieldInput
-              label="Intent Type"
-              tooltip="This helps the AI to understand the context of the kind of leads you need to generate. i.e companies in wholesale or retail, industrial companies, etc."
-              placeholder="e.g. 'Sell to construction companies'"
-              value={form.intent_type || ''}
-              setValue={(val) => handleChange('intent_type', val)}
+              label="Category Context"
+              tooltip="The industry or category for intent analysis. This helps AI understand the domain and detect implied buying signals. E.g., 'skincare', 'fintech', 'construction materials'"
+              placeholder="e.g. 'skincare', 'project management software', 'construction materials'"
+              value={form.category_context || ''}
+              setValue={(val) => handleChange('category_context', val)}
               required={false}
             />
           </Box>
 
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
-            <SingleFieldInput
-              label="AI Response Guide"
-              tooltip="How should Dera AI compose your leads follow up messages?"
-              placeholder="e.g. 'Respond like a Construction Salesperson'"
-              value={form.ai_response_guide || ''}
-              setValue={(val) => handleChange('ai_response_guide', val)}
-              required={false}
-            />
-          </Box>
-        </Box>
+          {/* Keywords and Excluded Keywords */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
+              <ListValuesInput
+                label="Keywords"
+                tooltip="Direct search terms people use when looking to buy. E.g., 'buy moisturizer', 'need CRM', 'looking for cement'"
+                placeholder="e.g. 'Construction', 'Cement', 'Dangote', 'Real Estate', 'Renovation'"
+                keywords={form.keywords || []}
+                setKeywords={(val) => handleChange('keywords', val)}
+              />
+            </Box>
 
-        {/* Checkboxes */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr' }, gap: 3, mb: 3 }}>
-          <Box mt={3.5} sx={{ display: 'flex', alignItems: 'center' }}>
-            <CustomCheckbox
-              label="Add to history"
-              checked={form.add_to_history || false}
-              onChange={(val) => handleChange('add_to_history', val)}
-              tooltip="Check this if you want to add the form to your history. This will add the form to your history so you can easily find it later."
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
+              <ListValuesInput
+                label="Implied Keywords"
+                tooltip="Indirect signals that suggest buying intent through problems, situations, or lifestyle changes. E.g., 'harmattan', 'dry skin', 'project delays', 'team burnout'"
+                placeholder="e.g. 'harmattan', 'dry skin', 'missing deadlines', 'scaling issues'"
+                keywords={form.implied_keywords || []}
+                setKeywords={(val) => handleChange('implied_keywords', val)}
+              />
+            </Box>
+          </Box>
+
+          {/* Excluded Keywords */}
+          <Box sx={{ mb: 3 }}>
+            <ListValuesInput
+              label="Excluded Keywords"
+              tooltip="Keywords to filter out noise and spam from your results."
+              placeholder="e.g. 'spam', 'ad', 'promotion'"
+              keywords={form.excluded_keywords || []}
+              setKeywords={(val) => handleChange('excluded_keywords', val)}
             />
           </Box>
 
-          <Box mt={3.5} sx={{ display: 'flex', alignItems: 'center' }}>
-            <CustomCheckbox
-              label="Auto-generate"
-              checked={form.auto_generate || false}
-              onChange={(val) => handleChange('auto_generate', val)}
-              tooltip="Check this if you want to auto-generate the form. This will auto-generate the form with the data from the backend."
-            />
+          {/* Competitors and Buying Signals */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
+              <ListValuesInput
+                label="Competitors"
+                tooltip="The competitors you want to be noted for in the conversations. This can include positive or negative mentions that you can leverage for your sales and marketing efforts."
+                keywords={form.competitors || []}
+                setKeywords={(val) => handleChange('competitors', val)}
+                placeholder="e.g. 'Bamburi Cement', 'Lafarge Africa'"
+              />
+            </Box>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
+              <ListValuesInput
+                label="Buying Signals"
+                tooltip="This helps the AI to analyze the conversations and understand what can trigger a purchase, collaboration, partnership or decision to buy from you or engage with you. Be specific about the type of buying signal you want to track."
+                keywords={form.buying_signals || []}
+                setKeywords={(val) => handleChange('buying_signals', val)}
+                placeholder="e.g. 'People talking about Cement'"
+              />
+            </Box>
           </Box>
-        </Box>
+
+          {/* Intent Type and AI Response Guide */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
+              <SingleFieldInput
+                label="Intent Type"
+                tooltip="This helps the AI to understand the context of the kind of leads you need to generate. i.e companies in wholesale or retail, industrial companies, etc."
+                placeholder="e.g. 'Sell to construction companies'"
+                value={form.intent_type || ''}
+                setValue={(val) => handleChange('intent_type', val)}
+                required={false}
+              />
+            </Box>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
+              <SingleFieldInput
+                label="AI Response Guide"
+                tooltip="How should Dera AI compose your leads follow up messages?"
+                placeholder="e.g. 'Respond like a Construction Salesperson'"
+                value={form.ai_response_guide || ''}
+                setValue={(val) => handleChange('ai_response_guide', val)}
+                required={false}
+              />
+            </Box>
+          </Box>
+
+          {/* Checkboxes */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr' }, gap: 3, mb: 3 }}>
+            <Box mt={3.5} sx={{ display: 'flex', alignItems: 'center' }}>
+              <CustomCheckbox
+                label="Add to history"
+                checked={form.add_to_history || false}
+                onChange={(val) => handleChange('add_to_history', val)}
+                tooltip="Check this if you want to add the form to your history. This will add the form to your history so you can easily find it later."
+              />
+            </Box>
+
+            <Box mt={3.5} sx={{ display: 'flex', alignItems: 'center' }}>
+              <CustomCheckbox
+                label="Auto-generate"
+                checked={form.auto_generate || false}
+                onChange={(val) => handleChange('auto_generate', val)}
+                tooltip="Check this if you want to auto-generate the form. This will auto-generate the form with the data from the backend."
+              />
+            </Box>
+          </Box>
         </Box>
 
         {/* Progress Indicator */}
         {isFetchingLeads && (
-          <Box sx={{
-            mb: 3,
-            p: 3,
-            bgcolor: '#f8f9ff',
-            borderRadius: 2,
-            border: '1px solid #e0e7ff'
-          }}>
+          <Box
+            sx={{
+              mb: 3,
+              p: 3,
+              bgcolor: '#f8f9ff',
+              borderRadius: 2,
+              border: '1px solid #e0e7ff',
+            }}
+          >
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
               <Typography variant="body1" sx={{ fontWeight: 600, color: '#1e293b' }}>
                 {fetchingStatus}
@@ -595,18 +626,20 @@ const ConversationLeadFormV2 = () => {
                 '& .MuiLinearProgress-bar': {
                   borderRadius: 4,
                   backgroundColor: '#CD1B78',
-                }
+                },
               }}
             />
 
             {currentTip && (
-              <Box sx={{
-                mt: 2,
-                p: 2,
-                bgcolor: 'white',
-                borderRadius: 1.5,
-                border: '1px solid #e0e7ff'
-              }}>
+              <Box
+                sx={{
+                  mt: 2,
+                  p: 2,
+                  bgcolor: 'white',
+                  borderRadius: 1.5,
+                  border: '1px solid #e0e7ff',
+                }}
+              >
                 <Typography variant="body2" sx={{ color: '#475569', fontStyle: 'italic' }}>
                   {currentTip}
                 </Typography>
@@ -623,7 +656,7 @@ const ConversationLeadFormV2 = () => {
               onClick={handleSubmit}
               loading={createConversationalSearchLeadForm.isLoading || updateConversationalSearchLeadForm.isLoading || isFetchingLeads}
               text={existingFormId ? 'Save Update' : 'Save'}
-              loadingText={isFetchingLeads ? fetchingStatus : "Saving..."}
+              loadingText={isFetchingLeads ? fetchingStatus : 'Saving...'}
               startIcon={<SaveIcon />}
             />
 
@@ -655,10 +688,10 @@ const ConversationLeadFormV2 = () => {
             {isFetchingLeads
               ? fetchingStatus
               : existingFormId
-              ? 'Update your saved form details'
-              : form.enable_realtime
-              ? 'Start monitoring for leads in real-time across selected platforms'
-              : 'Click to start searching for candidates matching your criteria'}
+                ? 'Update your saved form details'
+                : form.enable_realtime
+                  ? 'Start monitoring for leads in real-time across selected platforms'
+                  : 'Click to start searching for candidates matching your criteria'}
           </Typography>
         </Box>
       </Box>
@@ -668,11 +701,7 @@ const ConversationLeadFormV2 = () => {
         open={openSuccessModal}
         image={<Image src="/assets/images/success.png" alt="Success" width={64} height={64} />}
         mainText="Success! 🎉"
-        subText={
-          form.enable_realtime
-            ? 'Your form has been successfully saved. You should see your leads in a few minutes'
-            : 'Your form was successfully saved.'
-        }
+        subText={form.enable_realtime ? 'Your form has been successfully saved. You should see your leads in a few minutes' : 'Your form was successfully saved.'}
         buttonText="View Leads"
         onClick={() => {
           setOpenSuccessModal(false);
