@@ -48,9 +48,9 @@ const TrialUsageWidget: React.FC<TrialUsageWidgetProps> = ({ trialStatus }) => {
     {
       label: 'Reports Generated',
       current: usage.reportsGenerated,
-      max: usage.maxReports,
+      max: usage.maxReports > 0 ? usage.maxReports : 5, // Show 5 if maxReports is -1 or invalid
       icon: '📈',
-      isUnlimited: usage.maxReports === -1,
+      isUnlimited: false, // No longer unlimited in trial
     },
   ];
 

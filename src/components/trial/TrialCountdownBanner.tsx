@@ -26,6 +26,7 @@ const TrialCountdownBanner: React.FC<TrialCountdownBannerProps> = ({ trialStatus
   const { daysRemaining, usage } = trialStatus;
   const leadsProgress = (usage.leadsGenerated / usage.maxLeads) * 100;
   const signalsProgress = (usage.signalsUsed / usage.maxSignals) * 100;
+  const reportsProgress = usage.maxReports > 0 ? (usage.reportsGenerated / usage.maxReports) * 100 : 0;
 
   return (
     <Box
@@ -80,7 +81,7 @@ const TrialCountdownBanner: React.FC<TrialCountdownBannerProps> = ({ trialStatus
                 color: '#8C8C8C',
               }}
             >
-              {usage.leadsGenerated}/{usage.maxLeads} leads • {usage.signalsUsed}/{usage.maxSignals} signals
+              {usage.leadsGenerated}/{usage.maxLeads} leads • {usage.signalsUsed}/{usage.maxSignals} signals • {usage.reportsGenerated}/{usage.maxReports} reports
             </Typography>
           </Box>
         </Box>
@@ -106,7 +107,7 @@ const TrialCountdownBanner: React.FC<TrialCountdownBannerProps> = ({ trialStatus
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
           gap: 2,
         }}
       >
@@ -144,6 +145,29 @@ const TrialCountdownBanner: React.FC<TrialCountdownBannerProps> = ({ trialStatus
           <LinearProgress
             variant="determinate"
             value={Math.min(signalsProgress, 100)}
+            sx={{
+              height: 6,
+              borderRadius: 3,
+              backgroundColor: '#FFE5F3',
+              '& .MuiLinearProgress-bar': {
+                backgroundColor: '#CD1B78',
+                borderRadius: 3,
+              },
+            }}
+          />
+        </Box>
+
+        {/* Reports Progress */}
+        <Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+            <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#6B6B6B' }}>Reports</Typography>
+            <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#CD1B78' }}>
+              {usage.reportsGenerated}/{usage.maxReports}
+            </Typography>
+          </Box>
+          <LinearProgress
+            variant="determinate"
+            value={Math.min(reportsProgress, 100)}
             sx={{
               height: 6,
               borderRadius: 3,
