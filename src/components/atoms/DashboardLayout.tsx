@@ -29,6 +29,11 @@ const DashboardLayout: React.FC<IProps> = ({ children, bgColor, sideNavColor, ex
     setSideNavOpen(!sideNavOpen);
   };
 
+  // Check if user has access (either active subscription OR active trial)
+  const hasActiveSubscription = userDetails?.subscriptionStatus === SubscriptionStatusEnum.ACTIVE;
+  const hasActiveTrial = userDetails?.trialStatus === 'active';
+  const hasAccess = hasActiveSubscription || hasActiveTrial;
+
   return (
     <>
       {userDetails?.role === UserRoleEnum.ADMIN ? (
@@ -45,7 +50,7 @@ const DashboardLayout: React.FC<IProps> = ({ children, bgColor, sideNavColor, ex
           backgroundColor: bgColor ?? themeColors.background,
         }}
       >
-        {userDetails?.subscriptionStatus !== SubscriptionStatusEnum.ACTIVE ? (
+        {!hasAccess ? (
           <>
             <PageHeader toggleSideNav={toggleSideNav} />
             <Box

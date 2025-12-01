@@ -17,6 +17,9 @@ export class UserDto {
   confirmationCode?: string;
   confirmationCodeExpires?: Date;
   hasUsedFreeTrial?: boolean;
+  trialStatus?: string; // 'not_started' | 'active' | 'expired'
+  trialStartDate?: string;
+  trialEndDate?: string;
   phoneNumberConfirmed?: boolean;
   lastLogin?: number;
   dateCreated?: string;
