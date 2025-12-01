@@ -7,6 +7,7 @@ import Spinner from '../loaders/Spinner';
 interface SmartModalProps {
   open: boolean;
   onClick?: () => void;
+  onClose?: () => void; // Separate handler for close button
   image?: React.ReactNode;
   mainText?: string | React.ReactNode;
   subText?: string | React.ReactNode;
@@ -25,6 +26,7 @@ interface SmartModalProps {
 const SmartModal: React.FC<SmartModalProps> = ({
   open,
   onClick,
+  onClose,
   image,
   mainText,
   subText,
@@ -58,7 +60,7 @@ const SmartModal: React.FC<SmartModalProps> = ({
       >
         <IconButton
           aria-label="close"
-          onClick={onClick}
+          onClick={onClose || onClick}
           size="small"
           sx={{
             position: 'absolute',

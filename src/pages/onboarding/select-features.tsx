@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
-import { Box, Typography, Grid } from '@mui/material';
-import { useRouter } from 'next/router';
+import { OnboardingService } from '@/api/OnboardingService';
+import { TrialService } from '@/api/TrialService';
 import CustomButton from '@/components/atoms/CustomButton';
 import SeoHead from '@/components/atoms/SeoHead';
+import TrialActivationModal from '@/components/trial/TrialActivationModal';
 import useCustomTheme from '@/hooks/theme.hook';
 import { useAuth } from '@/providers/AuthProvider';
-import { OnboardingService } from '@/api/OnboardingService';
-import { toast } from 'react-hot-toast';
 import ChartLine from '@/utils/icon/ChartLine';
 import HeartRateSearch from '@/utils/icon/HeartRateSearch';
+import { Box, Grid, Typography } from '@mui/material';
+import { useRouter } from 'next/router';
+import React, { useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { BiBot } from 'react-icons/bi';
 import { FaFolder } from 'react-icons/fa';
 import { HiHashtag } from 'react-icons/hi';
@@ -76,6 +78,7 @@ const SelectFeaturesPage = () => {
   const { userDetails } = useAuth();
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showTrialModal, setShowTrialModal] = useState(false);
 
   const handleModuleToggle = (moduleId: string) => {
     setSelectedModules((prev) => {
@@ -116,7 +119,28 @@ const SelectFeaturesPage = () => {
         // Store selected modules in localStorage to trigger tours
         localStorage.setItem('newUserModules', JSON.stringify(selectedModules));
 
-        router.push('/dashboard');
+        // Check if user is eligible for trial before showing modal
+        try {
+          const trialStatusResponse = await TrialService.getTrialStatus(userDetails.userId);
+          if (trialStatusResponse.status && trialStatusResponse.responseData) {
+            const trialData = trialStatusResponse.responseData;
+
+            // Only show modal if user hasn't used trial and doesn't have active trial
+            if (!trialData.hasUsedFreeTrial && trialData.status === 'not_started') {
+              setShowTrialModal(true);
+            } else {
+              // User not eligible (already used trial), redirect to dashboard
+              router.push('/dashboard');
+            }
+          } else {
+            // Couldn't fetch trial status - assume new user, show trial modal
+            setShowTrialModal(true);
+          }
+        } catch (error) {
+          // Error checking trial status - assume new user, show trial modal
+          console.error('Error checking trial status:', error);
+          setShowTrialModal(true);
+        }
       } else {
         toast.error(response.responseMessage || 'Failed to complete onboarding');
       }
@@ -433,6 +457,9 @@ const SelectFeaturesPage = () => {
           )}
         </Box>
       </Box>
+
+      {/* Trial Activation Modal */}
+      {userDetails?.userId && <TrialActivationModal open={showTrialModal} onClose={() => setShowTrialModal(false)} onSuccess={() => router.push('/dashboard')} userId={userDetails.userId} />}
     </>
   );
 };

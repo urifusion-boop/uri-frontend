@@ -85,7 +85,7 @@ export const useLeadFormHooks = () => {
   });
 
   const createConversationalSearchLeadForm = useMutation({
-    mutationFn: async (data: ConversationalSearchFormDto): Promise<UriResponse<LeadFormResponseDto>> => {
+    mutationFn: async (data: ConversationalSearchFormDto): Promise<UriResponse<any>> => {
       const res = await LeadFormService.createConversationalSearchLeadForm(data);
       if (!res.status) {
         throw new Error(res.responseMessage || 'Failed to create conversational search lead form');

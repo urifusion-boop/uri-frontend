@@ -344,7 +344,7 @@ const ConversationLeadFormV2 = () => {
         onSuccess: async (response) => {
           // setOpenSuccessModal(true);
           // Trigger sequential lead fetching after successful creation
-          const newFormId = response?.responseData?.data?.[0]?.lead_form_id;
+          const newFormId = response?.responseData?.lead_form_id;
           if (newFormId) {
             await fetchLeadsFromPlatforms(newFormId);
           }
@@ -359,9 +359,13 @@ const ConversationLeadFormV2 = () => {
   useEffect(() => {
     if (autoPopulateSuccess && autoPopulatedResponse?.responseData) {
       const data = autoPopulatedResponse.responseData as any;
+      console.log('🔍 Auto-populate response data:', data);
+      console.log('🔍 intent_type from response:', data.intent_type);
+      console.log('🔍 ai_response_guide from response:', data.ai_response_guide);
       setForm((prev: any) => ({
         ...prev,
         form_title: data.form_title || prev.form_title,
+        intent_type: data.intent_type || prev.intent_type,
         ai_response_guide: data.ai_response_guide || prev.ai_response_guide,
         keywords: data.keywords || prev.keywords,
         competitors: data.competitors || prev.competitors,
@@ -711,21 +715,17 @@ const ConversationLeadFormV2 = () => {
       <SmartModal
         open={openSuccessModal}
         image={<Image src="/assets/images/success.png" alt="Success" width={64} height={64} />}
-        mainText={leadStats && leadStats.new_leads_saved === 0 ? "Analysis Complete" : "Success! 🎉"}
+        mainText={leadStats && leadStats.new_leads_saved === 0 ? 'Analysis Complete' : 'Success! 🎉'}
         subText={
-          leadStats ? (
-            leadStats.new_leads_saved > 0 ? (
-              `Found ${leadStats.new_leads_saved} relevant lead${leadStats.new_leads_saved > 1 ? 's' : ''} out of ${leadStats.total_fetched} post${leadStats.total_fetched > 1 ? 's' : ''} analyzed across selected platforms.`
-            ) : leadStats.total_fetched > 0 ? (
-              `No relevant leads found. Analyzed ${leadStats.total_fetched} post${leadStats.total_fetched > 1 ? 's' : ''} across selected platforms. Try adjusting your keywords or criteria for better results.`
-            ) : (
-              'No posts found matching your keywords. Try using different or broader keywords.'
-            )
-          ) : form.enable_realtime ? (
-            'Your form has been successfully saved. You should see your leads in a few minutes'
-          ) : (
-            'Your form was successfully saved.'
-          )
+          leadStats
+            ? leadStats.new_leads_saved > 0
+              ? `Found ${leadStats.new_leads_saved} relevant lead${leadStats.new_leads_saved > 1 ? 's' : ''} out of ${leadStats.total_fetched} post${leadStats.total_fetched > 1 ? 's' : ''} analyzed across selected platforms.`
+              : leadStats.total_fetched > 0
+                ? `No relevant leads found. Analyzed ${leadStats.total_fetched} post${leadStats.total_fetched > 1 ? 's' : ''} across selected platforms. Try adjusting your keywords or criteria for better results.`
+                : 'No posts found matching your keywords. Try using different or broader keywords.'
+            : form.enable_realtime
+              ? 'Your form has been successfully saved. You should see your leads in a few minutes'
+              : 'Your form was successfully saved.'
         }
         buttonText="View Leads"
         onClick={() => {
@@ -741,15 +741,17 @@ const ConversationLeadFormV2 = () => {
       >
         {leadStats && (
           <Box sx={{ mt: 3, width: '100%', maxWidth: '400px' }}>
-            <Box sx={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 2,
-              p: 3,
-              backgroundColor: '#f8f9fa',
-              borderRadius: '12px',
-              border: '1px solid #e9ecef'
-            }}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 2,
+                p: 3,
+                backgroundColor: '#f8f9fa',
+                borderRadius: '12px',
+                border: '1px solid #e9ecef',
+              }}
+            >
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="h4" sx={{ fontWeight: 700, color: '#CD1B78', mb: 0.5 }}>
                   {leadStats.new_leads_saved}
