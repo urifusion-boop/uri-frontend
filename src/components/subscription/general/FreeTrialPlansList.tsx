@@ -2,6 +2,7 @@ import { Box } from '@mui/material';
 import { useState } from 'react';
 import { FaRegStar } from 'react-icons/fa';
 
+import { TrialService } from '@/api/TrialService';
 import { triggerToast } from '@/components/atoms/CustomToast';
 import ExploreUri from '@/components/subscription/general/ExploreUri';
 import SubscriptionPlan from '@/components/subscription/general/SubscriptionPlan';
@@ -18,15 +19,15 @@ interface Props {
 
 const FreeTrialPlansList = ({ onSelectPlan, selectedPlan }: Props) => {
   const [trialComplete, setTrialComplete] = useState(false);
-  const { trialSubscription, getUserDetails } = useSubscription();
+  const { getUserDetails } = useSubscription();
   const { userDetails } = useAuth();
 
   const freeTrialPlan: SubscriptionPlanDto = {
     name: SubscriptionTypeEnum.FreeTrial,
-    plan_code: 'TRIAL_000',
-    interval: 'three_days',
+    plan_code: 'TRIAL_7_DAY_FREE',
+    interval: 'seven_days',
     amount: 0,
-    description: 'URI free trial plan',
+    description: 'URI 7-day free trial',
     created_at: '',
     updated_at: '',
     plan_type: SubscriptionTypeEnum.FreeTrial,
@@ -34,13 +35,17 @@ const FreeTrialPlansList = ({ onSelectPlan, selectedPlan }: Props) => {
 
   const handleTrialStart = async () => {
     try {
-      if (!userDetails?.userId || !userDetails?.email) return;
-      await trialSubscription.mutateAsync({
-        user_id: userDetails.userId,
-        email: userDetails.email,
-      });
-
-      await getUserDetails.mutateAsync(); // refresh auth and subscription info
+      if (!userDetails?.userId) return;
+      const response = await TrialService.activateTrial(userDetails.userId);
+      if (!response?.status) {
+        triggerToast('error', response?.responseMessage ?? 'Failed to activate trial');
+        return;
+      }
+      const accessToken = response?.responseData?.accessToken;
+      const refreshToken = response?.responseData?.refreshToken;
+      if (accessToken) localStorage.setItem('token', accessToken);
+      if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
+      await getUserDetails.mutateAsync();
       setTrialComplete(true);
     } catch (error: any) {
       triggerToast('error', error?.message ?? 'Failed to activate trial');
@@ -62,16 +67,16 @@ const FreeTrialPlansList = ({ onSelectPlan, selectedPlan }: Props) => {
     >
       <SubscriptionPlan
         key={freeTrialPlan.plan_code}
-        duration="/3 days"
+        duration="/7 days"
         planType={SubscriptionTypeEnum.FreeTrial}
         planFeatures={planFeatures[SubscriptionTypeEnum.FreeTrial]}
         onSelect={handleTrialStart}
         price={freeTrialPlan.amount}
         selected={selectedPlan === freeTrialPlan.name}
         icon={FaRegStar}
-        subTitle="valid for 3 days"
-        description="Try it free before choosing a paid plan"
-        buttonText={trialSubscription.isLoading || getUserDetails.isLoading ? 'Activating...' : 'Activate Free Trial'}
+        subTitle="valid for 7 days"
+        description="Start your 7-day free trial"
+        buttonText={getUserDetails.isLoading ? 'Activating...' : 'Start Free Trial Now'}
       />
     </Box>
   );

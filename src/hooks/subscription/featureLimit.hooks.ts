@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 
 const useFeatureLimit = (userId: string) => {
   const { setIsLoading, setIsInitialState, setFeatureLimit } = useFeatureLimitStore();
-  const { saveSubscriptionPlanType } = useAuth();
+  const authContext = useAuth();
   const {
     data,
     isLoading: queryIsLoading,
@@ -19,15 +19,22 @@ const useFeatureLimit = (userId: string) => {
       if (result.status && result.responseData) {
         setIsInitialState(false);
         setFeatureLimit(result.responseData);
-        if (result.responseData?.subscriptionPlan) {
-          saveSubscriptionPlanType(result.responseData?.subscriptionPlan);
+        if (result.responseData?.subscriptionPlan && authContext?.saveSubscriptionPlanType) {
+          authContext.saveSubscriptionPlanType(result.responseData?.subscriptionPlan);
         }
         return result.responseData;
       } else {
-        throw new Error(result.responseMessage ?? 'Error fetching Feature limit');
+        // Feature limit not found is normal for new users without subscription/trial
+        // Return null instead of throwing error
+        setIsInitialState(false);
+        return null;
       }
     },
     enabled: !!userId,
+    retry: false, // Don't retry on 404
+    refetchInterval: 30000, // Auto-refresh every 30 seconds
+    refetchIntervalInBackground: false, // Only refetch when tab is active
+    refetchOnWindowFocus: true, // Refetch when user returns to tab
   });
 
   useEffect(() => {

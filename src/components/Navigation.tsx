@@ -1,7 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { authRoutes } from '@/constants/ClientRoute';
+import { authRoutes, dashboardRoutes } from '@/constants/ClientRoute';
 import { useAuth } from '@/providers/AuthProvider';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import LogoutIcon from '@mui/icons-material/Logout';
+import PersonIcon from '@mui/icons-material/Person';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { Avatar, Menu as MuiMenu, MenuItem as MuiMenuItem } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
 import { Award, BarChart3, Bell, BookOpen, Brain, Building2, ChevronDown, FileText, Menu, Target, Users, Video, Zap } from 'lucide-react';
@@ -15,7 +20,8 @@ const Navigation = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileActiveMenu, setMobileActiveMenu] = useState<string | null>(null);
   const router = useRouter();
-  const { isAuthenticated, logoutUser } = useAuth();
+  const { isAuthenticated, logoutUser, userDetails } = useAuth();
+  const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -260,12 +266,106 @@ const Navigation = () => {
               </button>
             )}
             {isAuthenticated ? (
-              <Button
-                className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-xl shadow-soft text-xs sm:text-sm px-3 sm:px-4 py-2 hidden sm:block"
-                onClick={() => logoutUser()}
-              >
-                Logout
-              </Button>
+              <>
+                <div onClick={(e) => setProfileAnchor(e.currentTarget)} className="hidden sm:flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg hover:bg-accent">
+                  <Avatar sx={{ width: 36, height: 36, bgcolor: '#CD1B78', fontSize: '14px', fontWeight: 600 }}>{(userDetails?.firstName?.[0] || '') + (userDetails?.lastName?.[0] || '')}</Avatar>
+                  <span className="text-sm font-medium text-foreground">{userDetails?.firstName}</span>
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <MuiMenu
+                  anchorEl={profileAnchor}
+                  open={Boolean(profileAnchor)}
+                  onClose={() => setProfileAnchor(null)}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                  sx={{
+                    '& .MuiPaper-root': {
+                      boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.1)',
+                      borderRadius: '8px',
+                      padding: '10px',
+                      minWidth: '200px',
+                      mt: 1,
+                    },
+                  }}
+                >
+                  <MuiMenuItem
+                    onClick={() => {
+                      router.push(dashboardRoutes.dashboardClients);
+                      setProfileAnchor(null);
+                    }}
+                    sx={{
+                      color: '#111',
+                      fontSize: '14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '10px 16px',
+                      borderRadius: '6px',
+                      '&:hover': { backgroundColor: '#f5f5f5' },
+                    }}
+                  >
+                    <DashboardIcon sx={{ color: '#CD1B78', fontSize: '20px' }} />
+                    Dashboard
+                  </MuiMenuItem>
+                  <MuiMenuItem
+                    onClick={() => {
+                      router.push('/profile');
+                      setProfileAnchor(null);
+                    }}
+                    sx={{
+                      color: '#111',
+                      fontSize: '14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '10px 16px',
+                      borderRadius: '6px',
+                      '&:hover': { backgroundColor: '#f5f5f5' },
+                    }}
+                  >
+                    <PersonIcon sx={{ color: '#CD1B78', fontSize: '20px' }} />
+                    Profile
+                  </MuiMenuItem>
+                  <MuiMenuItem
+                    onClick={() => {
+                      router.push('/settings');
+                      setProfileAnchor(null);
+                    }}
+                    sx={{
+                      color: '#111',
+                      fontSize: '14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '10px 16px',
+                      borderRadius: '6px',
+                      '&:hover': { backgroundColor: '#f5f5f5' },
+                    }}
+                  >
+                    <SettingsIcon sx={{ color: '#CD1B78', fontSize: '20px' }} />
+                    Settings
+                  </MuiMenuItem>
+                  <MuiMenuItem
+                    onClick={() => {
+                      logoutUser();
+                      setProfileAnchor(null);
+                    }}
+                    sx={{
+                      color: '#CD1B78',
+                      fontSize: '14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '10px 16px',
+                      borderRadius: '6px',
+                      '&:hover': { backgroundColor: '#fff5f9' },
+                    }}
+                  >
+                    <LogoutIcon sx={{ color: '#CD1B78', fontSize: '20px' }} />
+                    Logout
+                  </MuiMenuItem>
+                </MuiMenu>
+              </>
             ) : (
               <Button
                 className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-xl shadow-soft text-xs sm:text-sm px-3 sm:px-4 py-2 hidden sm:block"
@@ -419,6 +519,65 @@ const Navigation = () => {
                       {isAuthenticated ? 'Logout' : 'Start Free'}
                     </Button>
                   </div>
+
+                  {isAuthenticated ? (
+                    <div className="mt-6 border-t pt-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <Avatar sx={{ width: 40, height: 40, bgcolor: '#CD1B78', fontSize: '16px', fontWeight: 600 }}>
+                          {(userDetails?.firstName?.[0] || '') + (userDetails?.lastName?.[0] || '')}
+                        </Avatar>
+                        <div>
+                          <div className="text-sm font-semibold">
+                            {userDetails?.firstName} {userDetails?.lastName}
+                          </div>
+                          <div className="text-xs text-muted-foreground">{userDetails?.email}</div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-3">
+                        <Button
+                          className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-xl shadow-soft text-sm py-2"
+                          onClick={() => {
+                            router.push(dashboardRoutes.dashboardClients);
+                            setMobileMenuOpen(false);
+                          }}
+                        >
+                          Go to Dashboard
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="font-semibold rounded-xl text-primary border-primary hover:bg-primary/10 text-sm py-2"
+                          onClick={() => {
+                            logoutUser();
+                            setMobileMenuOpen(false);
+                          }}
+                        >
+                          Logout
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-6 border-t pt-6 flex flex-col gap-3">
+                      <Button
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-xl shadow-soft text-sm py-2"
+                        onClick={() => {
+                          router.push(authRoutes.login);
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        Login
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="font-semibold rounded-xl text-primary border-primary hover:bg-primary/10 text-sm py-2"
+                        onClick={() => {
+                          router.push(authRoutes.signupAs);
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        Sign Up
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>

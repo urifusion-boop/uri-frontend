@@ -63,6 +63,11 @@ const LeadsView = ({ leadType, label, icon, excludeTabs = [] }: LeadsViewProps) 
   });
 
   const { subscriptionPlanType } = useAuth();
+  const { userDetails } = useAuth();
+  const userId = userDetails?.userId;
+
+  // Removed WebSocket - using polling instead for reliable updates
+  // useRealtimeLeads({ userId, autoConnect: true });
 
   const featureLimit = useFeatureLimitStore((state) => state.featureLimit);
   const isLimitInitialState = useFeatureLimitStore((state) => state.isInitialState);
