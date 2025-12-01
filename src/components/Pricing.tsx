@@ -1,25 +1,34 @@
 import { motion } from 'framer-motion';
+import { Building2, Check, Crown, Users } from 'lucide-react';
 
 const plans = [
-  { name: 'Standard', price: '₦35k', badge: 'Starter', features: ['Up to 2 keyword trackers', '2 social accounts', '2 hashtags', 'Lead tracking', 'Content management'] },
+  {
+    name: 'Standard',
+    price: '₦35k',
+    badge: 'Starter',
+    features: ['Up to 2 keyword trackers', '2 social accounts', '2 hashtags', 'Lead tracking', 'Content management'],
+  },
   {
     name: 'Professional',
     price: '₦160k',
     badge: 'Teams',
     features: ['Up to 3 keyword trackers', '3 social accounts', '3 hashtags', 'Lead tracking', 'Content management', 'AI assistant', 'Report generation', 'Daily reports'],
     highlight: true,
+    icon: Crown,
   },
   {
     name: 'Business',
     price: '₦240k',
     badge: 'Growth',
     features: ['Up to 7 keyword trackers', '6 social accounts', '7 hashtags', 'Lead tracking', 'Content management', 'AI assistant', 'Report generation', 'Team collaboration'],
+    icon: Users,
   },
   {
     name: 'Enterprise',
     price: 'Custom',
     badge: 'Scale',
     features: ['Unlimited trackers/social/accounts/hashtags', 'Advanced AI assistant', 'Full report generation', 'Team collaboration', 'Alerts & advanced support', 'PDF reports, weekly summaries'],
+    icon: Building2,
   },
 ];
 
@@ -54,13 +63,18 @@ const Pricing = () => {
               <div className={`rounded-2xl border shadow-lg p-6 h-full ${plan.highlight ? 'bg-gradient-to-br from-primary/10 to-secondary/10 border-primary' : 'bg-card border-border'}`}>
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-xs font-bold px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">{plan.badge}</span>
+                  {plan.icon && (
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <plan.icon className="w-4 h-4 text-primary" />
+                    </div>
+                  )}
                 </div>
                 <h3 className="text-xl font-bold mb-1">{plan.name}</h3>
                 <p className="text-3xl font-extrabold mb-4">{plan.price}</p>
                 <ul className="space-y-2 mb-6">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-sm">
-                      <span className="w-4 h-4 rounded-full bg-primary/20 inline-block" />
+                      <Check className="w-4 h-4 text-primary" />
                       <span className="text-foreground/80">{f}</span>
                     </li>
                   ))}
@@ -82,7 +96,7 @@ const Pricing = () => {
             <ul className="space-y-2">
               {highlights.map((h) => (
                 <li key={h} className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <span className="w-4 h-4 rounded-full bg-primary/20 inline-block mt-1" />
+                  <Check className="w-4 h-4 text-primary mt-0.5" />
                   <span>{h}</span>
                 </li>
               ))}

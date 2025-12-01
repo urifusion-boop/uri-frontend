@@ -258,7 +258,7 @@ export default function PrivacyPolicy() {
         </Box>
       </>
 
-      <Footer toggleTAndC={() => setShowTAndC(!showTAndC)} toggleFAQs={() => setShowFAQs(!showFAQs)} />
+      <Footer />
 
       {showTAndC ? <TAndC toggleTAndC={() => setShowTAndC(!showTAndC)} /> : null}
       {showFAQs ? <FAQ /> : null}
