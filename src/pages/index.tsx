@@ -3,6 +3,7 @@ import CTA from '@/components/CTA';
 import CaseStudy from '@/components/CaseStudy';
 import ComparisonTable from '@/components/ComparisonTable';
 import ContextualIntelligence from '@/components/ContextualIntelligence';
+import FAQs from '@/components/FAQs';
 import Features from '@/components/Features';
 import Hero from '@/components/Hero';
 import HowItWorks from '@/components/HowItWorks';
@@ -34,9 +35,9 @@ export default function Home() {
       <Testimonials />
       <ROICalculator />
       <Pricing />
-      {/* <FAQ /> */}
+      <FAQs />
       <CTA />
-      <Footer toggleTAndC={() => router.push('/terms-and-conditions')} toggleFAQs={() => router.push('/faqs')} />
+      <Footer />
     </div>
   );
 }

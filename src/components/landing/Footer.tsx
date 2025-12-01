@@ -1,335 +1,183 @@
-import { Box, Grid } from "@mui/material";
-import React, { useState } from "react";
-import Text from "../atoms/CustomText";
-import styles from "../../styles/landing.module.css";
-import Link from "next/link";
+import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
+import { Facebook, Linkedin, Twitter, Youtube } from 'lucide-react';
 
-import { IoLogoInstagram } from "react-icons/io";
-import { LuTwitter } from "react-icons/lu";
-import { RiFacebookCircleLine } from "react-icons/ri";
-import CustomButton from "../atoms/CustomButton";
-import CustomModal from "../modals/CustomModal";
-import { useModal } from "../../hooks/utils.hook";
-import InputField from "../atoms/Input";
-import TextAreaField from "../atoms/CustomTextArea";
-import { ContactMessageService } from "../../api/ContactService";
-import { TextHelper } from "../../helpers/TextHelper";
-import { useRouter } from "next/router";
-import { AppleIcon, GooglePlayStoreIcon } from "@/components/atoms/Icons";
-
-interface IProps {
-  toggleTAndC: () => void;
-  toggleFAQs: () => void;
-}
-
-const Footer: React.FC<IProps> = ({ toggleTAndC, toggleFAQs }) => {
-  const router = useRouter();
-  const { open, setOpen, openModal } = useModal();
-  const [contactFormDetails, setContactFormDetails] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
-  const [messageSent, setMessageSent] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const sendContactMessage = async () => {
-    setIsLoading(true);
-    const response =
-      await ContactMessageService.createMessageApi(contactFormDetails);
-    if (response.status) setMessageSent(true);
-    setIsLoading(false);
-    setContactFormDetails({
-      name: "",
-      email: "",
-      message: "",
-    });
-  };
-
+const Footer = () => {
   return (
-    <Box className={styles.footerContainer}>
-      <Grid
-        container
-        spacing={2}
-        sx={{ mt: 2, pb: 3, borderBottom: "2px solid dimgray" }}
-      >
-        <Grid item xs={12} sm={3}>
-          <img
-            src="/assets/images/landing/logo-white.png"
-            alt="Image not found"
-            className={styles.footerLogo}
-          />
-        </Grid>
-        <Grid item xs={12} sm={3}>
-          <Text
-            className="pointer"
-            size={17}
-            weight={500}
-            color="white"
-            sx={{ mt: 2 }}
-            center
-            onClick={() => router.push("/terms-and-conditions")}
-          >
-            Terms & Conditions
-          </Text>
-        </Grid>
-        <Grid item xs={12} sm={3}>
-          <Text
-            className="pointer"
-            size={17}
-            weight={500}
-            color="white"
-            sx={{ mt: 2 }}
-            center
-            onClick={() => router.push("/privacy-policy")}
-          >
-            Privacy Policy
-          </Text>
-        </Grid>
-        <Grid item xs={12} sm={3}>
-          <Text
-            className="pointer"
-            size={17}
-            weight={500}
-            color="white"
-            sx={{ mt: 2 }}
-            center
-            onClick={() => toggleFAQs()}
-          >
-            FAQs
-          </Text>
-        </Grid>
-      </Grid>
+    <footer className="bg-gradient-to-b from-background to-muted/50 py-12 sm:pb-2">
+      <div className="container mx-auto px-4 sm:px-6">
+        {/* CTA Section */}
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12 sm:mb-16 px-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">Ready to stop searching and start closing?</h2>
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto">
+            Join hundreds of sales teams already using URI to capture the leads everyone else misses.
+          </p>
+          <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-hover text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-xl shadow-strong hover-lift font-semibold">
+            Sign Up for Free
+          </Button>
+        </motion.div>
 
-      <Grid container spacing={2} sx={{ mt: 3 }}>
-        <Grid item xs={12} sm={5}>
-          <Box className="d-flex" mb={3}>
-            <Link href="https://www.instagram.com/uri.creative?igsh=OGQ5ZDc2ODk2ZA==">
-              <IoLogoInstagram
-                style={{
-                  color: "white",
-                  marginRight: "20px",
-                  width: "20px",
-                  height: "20px",
-                }}
-              />
-            </Link>
-            <Link href="https://twitter.com/uricreative?t=2H3TtMmJr8SiKELAzc2WkQ&s=08">
-              <LuTwitter
-                style={{
-                  color: "white",
-                  marginRight: "20px",
-                  width: "20px",
-                  height: "20px",
-                }}
-              />
-            </Link>
-            <Link href="https://www.facebook.com">
-              <RiFacebookCircleLine
-                style={{
-                  color: "white",
-                  marginRight: "20px",
-                  width: "20px",
-                  height: "20px",
-                }}
-              />
-            </Link>
-          </Box>
-          <Box mb={"30px"} maxWidth={"350px"} gap={"12px"} display={"flex"}>
-            <Box
-              bgcolor={"white"}
-              paddingY={"8px"}
-              paddingX={"12px"}
-              borderRadius={"5px"}
-              alignItems={"center"}
-              className="d-flex"
-              flexBasis={"100%"}
-              mt={2}
-              style={{ cursor: "pointer" }} // Add pointer cursor for better UX
-            >
-              <GooglePlayStoreIcon />
-              <Box marginLeft={"8px"}>
-                <Text size={10} weight={500} color="black">
-                  GET IT ON
-                </Text>
-                <Text size={13} weight={600} color="black">
-                  Google Play
-                </Text>
-              </Box>
-            </Box>
-            <Box
-              alignItems={"center"}
-              bgcolor={"white"}
-              paddingY={"8px"}
-              paddingX={"12px"}
-              borderRadius={"5px"}
-              className="d-flex"
-              flexBasis={"100%"}
-              mt={2}
-              style={{ cursor: "pointer" }} // Add pointer cursor for better UX
-            >
-              <AppleIcon />
-              <Box marginLeft={"8px"}>
-                <Text size={10} weight={500} color="black">
-                  Download on the
-                </Text>
-                <Text size={13} weight={600} color="black">
-                  App Store
-                </Text>
-              </Box>
-            </Box>
-          </Box>
-
-          <Text size={15} weight={500} color="white">
-            2024 Uzuri Creative Ltd . All Rights Reserved
-          </Text>
-        </Grid>
-        <Grid item xs={12} sm={7}>
-          <Box className="d-flex justify-end" mb={3}>
-            <Text
-              size={22}
-              weight={700}
-              style={{ color: "white", fontFamily: "poorich" }}
-            >
-              Have any questions? Reach out to us
-            </Text>
-          </Box>
+        {/* Footer Links */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 sm:gap-8 mb-12 max-w-6xl mx-auto">
           <div>
-            <Box className="d-flex justify-end">
-              <CustomButton
-                mode="primary"
-                type="submit"
-                style={{
-                  width: "100%",
-                  maxWidth: "450px",
-                }}
-                loading={false}
-                onClick={() => openModal()}
+            <h3 className="font-bold text-xl mb-2">URI</h3>
+            <p className="text-sm text-muted-foreground italic">Enhancing Business Growth</p>
+            <p className="text-sm text-muted-foreground mt-2">Transform your business to thrive in a digitized and connected world driven by software innovation.</p>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-4">Product</h4>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li>
+                <a href="#features" className="hover:text-foreground transition-colors">
+                  Features
+                </a>
+              </li>
+              <li>
+                <a href="#solutions" className="hover:text-foreground transition-colors">
+                  Solutions
+                </a>
+              </li>
+              <li>
+                <a href="#pricing" className="hover:text-foreground transition-colors">
+                  Pricing
+                </a>
+              </li>
+              <li>
+                <a href="#integrations" className="hover:text-foreground transition-colors">
+                  Integrations
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-4">Solutions</h4>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li>
+                <a href="#solutions" className="hover:text-foreground transition-colors">
+                  For Agencies
+                </a>
+              </li>
+              <li>
+                <a href="#solutions" className="hover:text-foreground transition-colors">
+                  For Startups
+                </a>
+              </li>
+              <li>
+                <a href="#solutions" className="hover:text-foreground transition-colors">
+                  For Business
+                </a>
+              </li>
+              <li>
+                <a href="#solutions" className="hover:text-foreground transition-colors">
+                  For Product Teams
+                </a>
+              </li>
+              <li>
+                <a href="#solutions" className="hover:text-foreground transition-colors">
+                  For Media & Entertainment
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-4">Company</h4>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li>
+                <a href="#about" className="hover:text-foreground transition-colors">
+                  About Us
+                </a>
+              </li>
+              <li>
+                <a href="#careers" className="hover:text-foreground transition-colors">
+                  Careers
+                </a>
+              </li>
+              <li>
+                <a href="#blog" className="hover:text-foreground transition-colors">
+                  Blog
+                </a>
+              </li>
+              <li>
+                <a href="#contact" className="hover:text-foreground transition-colors">
+                  Contact
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-4">Contact</h4>
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <p className="text-foreground font-semibold">+234-707-630-7855</p>
+              <a href="mailto:hello@uri.africa" className="hover:text-foreground transition-colors">
+                hello@uri.africa
+              </a>
+              {/* <a
+                href="#contact"
+                className="inline-block rounded-xl px-4 py-2 bg-primary text-primary-foreground font-semibold shadow-strong hover:opacity-90 transition-opacity"
               >
                 Contact Us
-              </CustomButton>
-            </Box>
+              </a> */}
+            </div>
           </div>
-        </Grid>
-      </Grid>
+        </div>
 
-      <CustomModal
-        width="556px"
-        open={open}
-        setOpen={setOpen}
-        closeOnOverlayClick={true}
-      >
-        {!messageSent ? (
-          <Box sx={{ padding: "10px 10px" }}>
-            <Text size={32} weight={700} center>
-              Reach out to us!
-            </Text>
-            <Text size={16} weight={500} sx={{ mb: 2 }} center>
-              {`We're always happy to hear from you.`}
-            </Text>
+        {/* Social Media & Copyright */}
+        <div className="border-t border-border py-3 px-4 sm:px-6">
+          <div className="flex items-center justify-between gap-3 overflow-x-auto whitespace-nowrap text-xs">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <a href="#terms" className="hover:text-foreground transition-colors hover:underline">
+                Terms of Use
+              </a>
+              <span className="text-border">|</span>
+              <a href="#faqs" className="hover:text-foreground transition-colors hover:underline">
+                Faqs
+              </a>
+              <span className="text-border">|</span>
+              <a href="#privacy" className="hover:text-foreground transition-colors hover:underline">
+                Privacy Policy
+              </a>
+              <span className="text-border">|</span>
+              <a href="#security" className="hover:text-foreground transition-colors hover:underline">
+                Security
+              </a>
+              <span className="text-border">|</span>
+              <a href="#accessibility" className="hover:text-foreground transition-colors hover:underline">
+                Accessibility
+              </a>
+            </div>
 
-            <Box mb={2}>
-              <InputField
-                placeholder="Your Full Name"
-                type="text"
-                value={contactFormDetails.name}
-                onChange={(e) => {
-                  setContactFormDetails({
-                    ...contactFormDetails,
-                    name: e.target.value,
-                  });
-                }}
-              />
-              {contactFormDetails.name.trim().length < 3 ? (
-                <Text size={12} weight={400} color="red">
-                  Full Name must be at least three characters.
-                </Text>
-              ) : null}
-            </Box>
-            <Box mb={2}>
-              <InputField
-                placeholder="Your Email Address"
-                type="email"
-                value={contactFormDetails.email}
-                onChange={(e) => {
-                  setContactFormDetails({
-                    ...contactFormDetails,
-                    email: e.target.value,
-                  });
-                }}
-                style={{ marginBottom: "20px" }}
-              />
-              {!TextHelper.containsEmail(contactFormDetails.email) ? (
-                <Text size={12} weight={400} color="red">
-                  Please input a valid email address.
-                </Text>
-              ) : null}
-            </Box>
-            <TextAreaField
-              style={{
-                padding: "30px",
-                fontSize: "15px",
-              }}
-              placeholder="Your message."
-              value={contactFormDetails.message}
-              onChange={(e) =>
-                setContactFormDetails({
-                  ...contactFormDetails,
-                  message: e.target.value,
-                })
-              }
-            />
-            {contactFormDetails.message.trim().length < 10 ? (
-              <Text size={12} weight={400} color="red">
-                Message must be at least ten characters.
-              </Text>
-            ) : null}
+            <div className="flex items-center gap-3">
+              <a
+                href="https://www.facebook.com/share/p/Cn19gyDHqVNni2ca/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Facebook"
+              >
+                <Facebook className="h-4 w-4" />
+              </a>
+              <a href="https://x.com/uricreative" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Twitter">
+                <Twitter className="h-4 w-4" />
+              </a>
+              <a
+                href="https://www.linkedin.com/company/uri-creative/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="h-4 w-4" />
+              </a>
+              <a href="https://www.youtube.com/@UriCreative" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="YouTube">
+                <Youtube className="h-4 w-4" />
+              </a>
+            </div>
 
-            <CustomButton
-              mode="primary"
-              style={{ margin: "35px 0px" }}
-              type="submit"
-              loading={isLoading}
-              disabled={
-                isLoading ||
-                contactFormDetails.name.trim().length < 3 ||
-                !TextHelper.containsEmail(contactFormDetails.email) ||
-                contactFormDetails.message.trim().length < 10
-              }
-              data-testid="close-request-sent-button"
-              onClick={() => {
-                sendContactMessage();
-              }}
-            >
-              Submit
-            </CustomButton>
-          </Box>
-        ) : (
-          <Box sx={{ padding: "10px 30px" }}>
-            <Text size={52} weight={700} center>
-              ✅
-            </Text>
-            <Text size={20} weight={500} sx={{ lineHeight: "50px" }} center>
-              Thank you for your message.
-              <br />
-              We will respond to you shortly.
-            </Text>
-            <CustomButton
-              mode="primary"
-              style={{ margin: "35px 0px" }}
-              type="submit"
-              data-testid="close-request-sent-button"
-              onClick={() => {
-                setOpen(false);
-                setMessageSent(false);
-              }}
-            >
-              Close
-            </CustomButton>
-          </Box>
-        )}
-      </CustomModal>
-    </Box>
+            <p className="text-muted-foreground">© 2025 Uri Creative. All Rights Reserved.</p>
+          </div>
+        </div>
+      </div>
+    </footer>
   );
 };
 

@@ -1,3 +1,4 @@
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { motion } from 'framer-motion';
 import { Radar, Target, Zap } from 'lucide-react';
 
@@ -53,6 +54,30 @@ const HowItWorks = () => {
             </motion.div>
           ))}
         </div>
+
+        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="max-w-5xl mx-auto mt-12">
+          <div className="bg-background border-2 border-border rounded-2xl shadow-strong overflow-hidden">
+            <div className="px-4 sm:px-6 pt-4 sm:pt-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-3">
+                <span className="text-xs font-medium">Get Started On URI</span>
+              </div>
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-2">How do I schedule posts across my social media platforms?</h3>
+              <p className="text-sm text-muted-foreground mb-4">The video below provides step-by-step guide to start using URI.</p>
+            </div>
+            <div className="px-2 sm:px-3 pb-4 sm:pb-6">
+              <AspectRatio ratio={16 / 9}>
+                <iframe
+                  className="w-full h-full rounded-xl"
+                  src="https://www.youtube.com/embed/1qpvBioMUME?rel=0"
+                  title="Get Started on URI"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
+              </AspectRatio>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

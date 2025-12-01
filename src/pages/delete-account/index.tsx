@@ -186,7 +186,7 @@ export default function DeleteAccount() {
         </Box>
       </>
 
-      <Footer toggleTAndC={() => setShowDeleteAccount(!showDeleteAccount)} toggleFAQs={() => setShowFAQs(!showFAQs)} />
+      <Footer />
 
       {showDeleteAccount ? <TAndC toggleTAndC={() => setShowDeleteAccount(!showDeleteAccount)} /> : null}
       {showFAQs ? <FAQ /> : null}
