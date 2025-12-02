@@ -12,6 +12,7 @@ import Navigation from '@/components/Navigation';
 import Pricing from '@/components/Pricing';
 import ProblemSolution from '@/components/ProblemSolution';
 import ROICalculator from '@/components/ROICalculator';
+import Showcase from '@/components/Showcase';
 import Testimonials from '@/components/Testimonials';
 import TopBrands from '@/components/TopBrands';
 import Footer from '@/components/landing/Footer';
@@ -27,6 +28,7 @@ export default function Home() {
       <TopBrands />
       <ProblemSolution />
       <Features />
+      <Showcase />
       <ContextualIntelligence />
       <CRMRevitalization />
       <ComparisonTable />

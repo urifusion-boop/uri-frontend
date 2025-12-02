@@ -20,7 +20,7 @@ const ProblemSolution = () => {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="relative">
-            <div className="relative bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl p-8 border border-border shadow-strong">
+            <div className="relative bg-card rounded-2xl p-8 border border-border shadow-strong">
               <div className="mb-6">
                 <div className="flex items-center gap-3 mb-4">
                   <Filter className="w-8 h-8 text-primary" />

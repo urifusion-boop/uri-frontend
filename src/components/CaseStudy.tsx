@@ -110,7 +110,7 @@ const CaseStudy = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.5 }}
-            className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl p-8 md:p-12 border border-primary/20 mb-12"
+            className="bg-card rounded-2xl p-8 md:p-12 border border-border mb-12 shadow-lg"
           >
             <div className="text-6xl text-primary mb-4 font-serif">"</div>
             <blockquote className="text-xl md:text-2xl font-medium mb-6 leading-relaxed">

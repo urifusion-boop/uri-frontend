@@ -6,7 +6,7 @@ import { useRouter } from 'next/router';
 const CTA = () => {
   const router = useRouter();
   return (
-    <section id="start" className="py-12 sm:py-20 bg-gradient-to-r from-primary/10 to-secondary/10">
+    <section id="start" className="py-12 sm:py-20 bg-muted/20">
       <div className="container mx-auto px-4 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -20,10 +20,7 @@ const CTA = () => {
             <p className="text-muted-foreground mt-2">Start free and explore real-time insights today.</p>
           </div>
           <div>
-            <Button
-              className="bg-gradient-to-r from-primary to-secondary text-primary-foreground rounded-xl shadow-strong px-6 py-5 font-semibold hover:opacity-90"
-              onClick={() => router.push(authRoutes.signupAs)}
-            >
+            <Button size="lg" className="rounded-xl shadow-strong px-6 py-5 font-semibold" onClick={() => router.push(authRoutes.signupAs)}>
               Start Free
             </Button>
           </div>

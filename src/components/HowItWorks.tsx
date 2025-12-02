@@ -38,7 +38,7 @@ const HowItWorks = () => {
         <div className="grid md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
           {steps.map((step, index) => (
             <motion.div key={index} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.2 }} className="relative">
-              <div className={`bg-gradient-to-br ${step.color} rounded-2xl p-8 border border-primary/30 shadow-lg hover-lift h-full`}>
+              <div className="bg-card rounded-2xl p-8 border border-border shadow-lg hover-lift h-full">
                 <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mb-6 shadow-soft">
                   <step.icon className="w-8 h-8 text-primary-foreground" />
                 </div>
@@ -48,7 +48,7 @@ const HowItWorks = () => {
               </div>
               {index < steps.length - 1 && (
                 <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
-                  <div className="w-8 h-0.5 bg-gradient-to-r from-primary to-secondary" />
+                  <div className="w-8 h-0.5 bg-border" />
                 </div>
               )}
             </motion.div>
@@ -59,21 +59,20 @@ const HowItWorks = () => {
           <div className="bg-background border-2 border-border rounded-2xl shadow-strong overflow-hidden">
             <div className="px-4 sm:px-6 pt-4 sm:pt-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-3">
-                <span className="text-xs font-medium">Get Started On URI</span>
+                <span className="text-xs font-medium">Quick Guide</span>
               </div>
-              <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-2">How do I schedule posts across my social media platforms?</h3>
-              <p className="text-sm text-muted-foreground mb-4">The video below provides step-by-step guide to start using URI.</p>
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-2">How to generate reports</h3>
+              <p className="text-sm text-muted-foreground mb-4">A visual walkthrough to create performance reports in URI.</p>
             </div>
             <div className="px-2 sm:px-3 pb-4 sm:pb-6">
               <AspectRatio ratio={16 / 9}>
-                <iframe
-                  className="w-full h-full rounded-xl"
-                  src="https://www.youtube.com/embed/1qpvBioMUME?rel=0"
-                  title="Get Started on URI"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  referrerPolicy="strict-origin-when-cross-origin"
-                  allowFullScreen
-                />
+                <a href="/assets/images/landing/How_to_generate_reports.png" target="_blank" rel="noreferrer" className="block">
+                  <img
+                    src="/assets/images/landing/How_to_generate_reports.png"
+                    alt="How to generate reports in URI"
+                    className="w-full h-full object-cover rounded-xl border border-border shadow-soft hover:scale-[1.01] transition-transform"
+                  />
+                </a>
               </AspectRatio>
             </div>
           </div>
