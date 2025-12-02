@@ -1,5 +1,9 @@
 import { TrialService } from '@/api/TrialService';
+import { UserService } from '@/api/UserService';
 import SmartModal from '@/components/modals/SmartModal';
+import { SecurityHelper } from '@/helpers/SecurityHelper';
+import { UserDto } from '@/models/dtos/UserDto';
+import { useAuth } from '@/providers/AuthProvider';
 import CheckIcon from '@mui/icons-material/Check';
 import { Box, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
 import React, { useState } from 'react';
@@ -14,21 +18,30 @@ interface TrialActivationModalProps {
 
 const TrialActivationModal: React.FC<TrialActivationModalProps> = ({ open, onClose, onSuccess, userId }) => {
   const [isActivating, setIsActivating] = useState(false);
+  const { saveUserTokens, saveUserDetails } = useAuth();
 
   const handleActivate = async () => {
     try {
       setIsActivating(true);
       const response = await TrialService.activateTrial(userId);
 
-      if (response.status) {
+      if (response.status && response.responseData) {
         toast.success('🎉 Your 7-day free trial has started!');
 
-        // Save new JWT token with updated trialStatus claim
-        if (response.responseData?.accessToken) {
-          localStorage.setItem('token', response.responseData.accessToken);
-        }
-        if (response.responseData?.refreshToken) {
-          localStorage.setItem('refreshToken', response.responseData.refreshToken);
+        // Save new JWT tokens using AuthProvider (correct storage)
+        if (response.responseData.accessToken && response.responseData.refreshToken) {
+          saveUserTokens({
+            accessToken: response.responseData.accessToken,
+            refreshToken: response.responseData.refreshToken,
+          });
+
+          // Fetch fresh user data from backend with updated trial status
+          const userClaims = SecurityHelper.parseJwt(response.responseData.accessToken);
+          const userData = await UserService.getByUserIdApi(userClaims?.userId);
+
+          if (userData.status && userData.responseData) {
+            saveUserDetails(userData.responseData as unknown as UserDto);
+          }
         }
 
         onSuccess();
