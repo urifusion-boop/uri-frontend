@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { authRoutes } from '@/constants/ClientRoute';
 import { motion } from 'framer-motion';
 import { Building2, Check, Crown, Users } from 'lucide-react';
 
@@ -81,7 +82,7 @@ const Pricing = () => {
                   ))}
                 </ul>
                 <Button asChild size="lg" variant={plan.highlight ? 'default' : 'outline'} className="w-full rounded-xl font-semibold">
-                  <a href="#start">Start Free Trial</a>
+                  <a href={authRoutes.signupAs}>Start Free Trial</a>
                 </Button>
               </div>
             </motion.div>

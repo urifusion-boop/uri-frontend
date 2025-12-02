@@ -9,7 +9,6 @@ import Hero from '@/components/Hero';
 import HowItWorks from '@/components/HowItWorks';
 import LivePulse from '@/components/LivePulse';
 import Navigation from '@/components/Navigation';
-import Pricing from '@/components/Pricing';
 import ProblemSolution from '@/components/ProblemSolution';
 import ROICalculator from '@/components/ROICalculator';
 import Showcase from '@/components/Showcase';
@@ -36,7 +35,6 @@ export default function Home() {
       <CaseStudy />
       <Testimonials />
       <ROICalculator />
-      <Pricing />
       <FAQs />
       <CTA />
       <Footer />

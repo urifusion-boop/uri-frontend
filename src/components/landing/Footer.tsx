@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { Facebook, Linkedin, Twitter, Youtube } from 'lucide-react';
+import Link from 'next/link';
 
 const Footer = () => {
   return (
@@ -38,9 +39,9 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="#pricing" className="hover:text-foreground transition-colors">
+                <Link href="/pricing" className="hover:text-foreground transition-colors">
                   Pricing
-                </a>
+                </Link>
               </li>
               <li>
                 <a href="#integrations" className="hover:text-foreground transition-colors">

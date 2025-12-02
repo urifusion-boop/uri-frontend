@@ -253,9 +253,9 @@ const Navigation = () => {
               </AnimatePresence>
             </div>
 
-            <a href="#pricing" className="text-foreground/70 hover:text-foreground transition-colors font-medium">
+            <Link href="/pricing" className="text-foreground/70 hover:text-foreground transition-colors font-medium">
               Pricing
-            </a>
+            </Link>
           </div>
 
           {/* Right Actions */}
@@ -492,9 +492,9 @@ const Navigation = () => {
                   </div>
 
                   {/* Pricing Mobile */}
-                  <a href="#pricing" className="text-lg font-semibold" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href="/pricing" className="text-lg font-semibold" onClick={() => setMobileMenuOpen(false)}>
                     Pricing
-                  </a>
+                  </Link>
 
                   {/* Mobile Actions */}
                   <div className="flex flex-col gap-3 pt-4 border-t border-border">
