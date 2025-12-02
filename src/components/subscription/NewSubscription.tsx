@@ -53,8 +53,26 @@ const NewSubscription = () => {
   }, [userDetails?.userId]);
 
   const handleTrialSuccess = () => {
-    // Reload page to refresh user details and token
-    router.reload();
+    // Check if user has selected a primary module during onboarding
+    const primaryModule = localStorage.getItem('primaryModule');
+
+    if (primaryModule) {
+      // Map module ID to route for new users
+      const moduleRoutes: Record<string, string> = {
+        'account-tracking': '/account-tracking',
+        'keyword-tracking': '/keyword-tracking',
+        'hashtag-tracking': '/hashtag-tracking',
+        'lead-generation': '/leads-tracking',
+        'content-management': '/content-management',
+        alert: '/alert',
+        'insight-assistant': '/uri-assistant',
+      };
+
+      router.push(moduleRoutes[primaryModule] || '/dashboard');
+    } else {
+      // Existing user without onboarding, go to dashboard
+      router.push('/dashboard');
+    }
   };
 
   const steps = ['Choose Plan', 'Make Payment', 'Payment Method', 'Explore Uri'];

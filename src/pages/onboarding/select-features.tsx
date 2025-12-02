@@ -118,6 +118,8 @@ const SelectFeaturesPage = () => {
 
         // Store selected modules in localStorage to trigger tours
         localStorage.setItem('newUserModules', JSON.stringify(selectedModules));
+        // Store primary module for post-trial redirect
+        localStorage.setItem('primaryModule', selectedModules[0]);
 
         // Check if user is eligible for trial before showing modal
         try {
