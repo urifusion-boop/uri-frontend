@@ -2,11 +2,11 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { motion } from 'framer-motion';
 
 const sections = [
-  {
-    title: 'Agriculture Financing Signals',
-    desc: 'Identify financing needs in agriculture and engage decision-makers when intent is clear. URI surfaces timely signals you can act on.',
-    img: '/assets/images/landing/Agriculture_Financing_Needs.png',
-  },
+  // {
+  //   title: 'Agriculture Financing Signals',
+  //   desc: 'Identify financing needs in agriculture and engage decision-makers when intent is clear. URI surfaces timely signals you can act on.',
+  //   img: '/assets/images/landing/Agriculture_Financing_Needs.png',
+  // },
   {
     title: 'Global SaaS Opportunities',
     desc: 'Spot SaaS expansion and market moves in real-time. Use contextual insight to prioritize outreach with the right narrative.',
@@ -17,11 +17,11 @@ const sections = [
     desc: 'Create and share clean, actionable performance reports. Keep stakeholders aligned with data that tells a clear story.',
     img: '/assets/images/landing/How_to_generate_reports.png',
   },
-  {
-    title: 'Product Snapshot',
-    desc: 'A look at URI’s product experience — designed for speed, clarity, and real-time intelligence.',
-    img: '/assets/images/landing/product_screenshot.png',
-  },
+  // {
+  //   title: 'Product Snapshot',
+  //   desc: 'A look at URI’s product experience — designed for speed, clarity, and real-time intelligence.',
+  //   img: '/assets/images/landing/product_screenshot.png',
+  // },
 ];
 
 const ShowcaseSections = () => {

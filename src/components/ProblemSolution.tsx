@@ -1,3 +1,4 @@
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { motion } from 'framer-motion';
 import { Filter, TrendingUp } from 'lucide-react';
 
@@ -40,6 +41,11 @@ const ProblemSolution = () => {
                     <p className="text-sm font-semibold">🎯 High Intent: "Just started at Company X as Head of..."</p>
                   </motion.div>
                 </div>
+              </div>
+              <div className="mt-6">
+                <AspectRatio ratio={16 / 9}>
+                  <img src="/assets/images/landing/product_screenshot.png" alt="URI Product Screenshot" className="w-full h-full object-cover rounded-xl border border-border" />
+                </AspectRatio>
               </div>
             </div>
           </motion.div>
