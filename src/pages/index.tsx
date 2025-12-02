@@ -4,7 +4,6 @@ import CaseStudy from '@/components/CaseStudy';
 import ComparisonTable from '@/components/ComparisonTable';
 import ContextualIntelligence from '@/components/ContextualIntelligence';
 import FAQs from '@/components/FAQs';
-import Features from '@/components/Features';
 import Hero from '@/components/Hero';
 import HowItWorks from '@/components/HowItWorks';
 import LivePulse from '@/components/LivePulse';
@@ -26,7 +25,7 @@ export default function Home() {
       <LivePulse />
       <TopBrands />
       <ProblemSolution />
-      <Features />
+      {/* <Features /> */}
       <Showcase />
       <ContextualIntelligence />
       <CRMRevitalization />
