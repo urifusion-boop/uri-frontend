@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/providers/AuthProvider';
 import { UriHttpClient } from '@/configs/http.config';
+import { BackendUrlEnum } from '@/models/enum-models/BackendUrlEnum';
+import { useAuth } from '@/providers/AuthProvider';
+import { useEffect, useState } from 'react';
 
 export const useUserWorkflows = () => {
   const { userDetails } = useAuth();
@@ -16,9 +17,7 @@ export const useUserWorkflows = () => {
 
       try {
         setLoading(true);
-        const response = await UriHttpClient.getClient().get(
-          `/api/v1/users/${userDetails.userId}/workflows`
-        );
+        const response = await UriHttpClient.getClient().get(`${BackendUrlEnum.BACKEND}/users/${userDetails.userId}/workflows`);
 
         if (response.data.status && response.data.responseData) {
           setEnabledWorkflows(response.data.responseData.enabledWorkflows || []);
