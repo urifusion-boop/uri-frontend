@@ -10,7 +10,7 @@ import LivePulse from '@/components/LivePulse';
 import Navigation from '@/components/Navigation';
 import ProblemSolution from '@/components/ProblemSolution';
 import ROICalculator from '@/components/ROICalculator';
-import Showcase from '@/components/Showcase';
+import ShowcaseSections from '@/components/ShowcaseSections';
 import Testimonials from '@/components/Testimonials';
 import TopBrands from '@/components/TopBrands';
 import Footer from '@/components/landing/Footer';
@@ -26,7 +26,7 @@ export default function Home() {
       <TopBrands />
       <ProblemSolution />
       {/* <Features /> */}
-      <Showcase />
+      <ShowcaseSections />
       <ContextualIntelligence />
       <CRMRevitalization />
       <ComparisonTable />
