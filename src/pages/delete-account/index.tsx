@@ -1,8 +1,8 @@
 import SeoHead from '@/components/atoms/SeoHead';
 import FAQ from '@/components/landing/FAQ';
 import Footer from '@/components/landing/Footer';
-import Header from '@/components/landing/Header';
 import TAndC from '@/components/landing/TAndC';
+import Navigation from '@/components/Navigation';
 import useCustomTheme from '@/hooks/theme.hook';
 import styles from '@/styles/landing.module.css';
 import { Box, Link, Typography } from '@mui/material';
@@ -54,7 +54,7 @@ export default function DeleteAccount() {
       <SeoHead title="Delete Account" />
 
       <div className={styles.welcome}>
-        <Header />
+        <Navigation />
       </div>
 
       <>

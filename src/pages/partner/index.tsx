@@ -2,11 +2,11 @@ import { ApplicationIcon, ApprovedIcon, PersonalGrowthIcon } from '@/components/
 import SeoHead from '@/components/atoms/SeoHead';
 import FeatureCard from '@/components/landing/FeatureCard';
 import FeatureParentComponent from '@/components/landing/FeatureParentComponent';
-import Header from '@/components/landing/Header';
+import Footer from '@/components/landing/Footer';
 import PartnerProgramOptions from '@/components/landing/PartnerProgramOptions';
 import Partners from '@/components/landing/Partners';
-import UpperFooter from '@/components/landing/UpperFooter';
 import WhyPartner from '@/components/landing/WhyPartner';
+import Navigation from '@/components/Navigation';
 import { Box } from '@mui/material';
 import Image from 'next/image';
 
@@ -33,7 +33,7 @@ function Index() {
     <>
       <SeoHead title="For Business Owners" />
       <div className="bg-[#FFF]">
-        <Header />
+        <Navigation />
         <div className="container">
           <FeatureParentComponent className="items-center md:my-[60px]">
             <FeatureCard
@@ -59,7 +59,7 @@ function Index() {
           <PartnerProgramOptions />
           <Box sx={{ marginBottom: '50px' }} />
         </div>
-        <UpperFooter />
+        <Footer />
       </div>
     </>
   );

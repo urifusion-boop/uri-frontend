@@ -132,7 +132,7 @@ const CaseStudy = () => {
             transition={{ delay: 0.6 }}
             className="bg-card border border-border rounded-2xl p-8 mb-12"
           >
-            <h3 className="text-2xl font-bold mb-8 text-center">90-Day Transformation Timeline</h3>
+            {/* <h3 className="text-2xl font-bold mb-8 text-center">90-Day Transformation Timeline</h3> */}
             <div className="space-y-6">
               <div className="flex gap-4">
                 <div className="flex flex-col items-center">

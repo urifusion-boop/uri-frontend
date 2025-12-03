@@ -1,9 +1,9 @@
 import { TrialService } from '@/api/TrialService';
 import Enterprise from '@/components/landing/Enterprise';
-import Header from '@/components/landing/Header';
+import Footer from '@/components/landing/Footer';
 import Pricing from '@/components/landing/Pricing';
 import PricingTable from '@/components/landing/PricingTable';
-import UpperFooter from '@/components/landing/UpperFooter';
+import Navigation from '@/components/Navigation';
 import TrialActivationModal from '@/components/trial/TrialActivationModal';
 import { useAuth } from '@/providers/AuthProvider';
 import { Box, Button, Typography } from '@mui/material';
@@ -44,7 +44,7 @@ function PricingPage() {
 
   return (
     <div className="bg-[#FFFCFE]">
-      <Header />
+      <Navigation />
       <div className="container">
         {/* Trial Banner for Eligible Users - Compact Version */}
         {!checkingEligibility && isTrialEligible && userDetails && (
@@ -96,7 +96,7 @@ function PricingPage() {
         <PricingTable />
       </div>
 
-      <UpperFooter />
+      <Footer />
 
       {/* Trial Activation Modal */}
       {userDetails?.userId && <TrialActivationModal open={showTrialModal} onClose={() => setShowTrialModal(false)} onSuccess={() => router.push('/dashboard')} userId={userDetails.userId} />}

@@ -1,5 +1,6 @@
 import CRMRevitalization from '@/components/CRMRevitalization';
 import CTA from '@/components/CTA';
+import CaseStudy from '@/components/CaseStudy';
 import ComparisonTable from '@/components/ComparisonTable';
 import ContextualIntelligence from '@/components/ContextualIntelligence';
 import FAQs from '@/components/FAQs';
@@ -30,7 +31,7 @@ export default function Home() {
       <CRMRevitalization />
       <ComparisonTable />
       <HowItWorks />
-      {/* <CaseStudy /> */}
+      <CaseStudy />
       <Testimonials />
       <ROICalculator />
       <FAQs />

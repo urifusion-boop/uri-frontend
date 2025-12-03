@@ -1,8 +1,8 @@
 import { TrialService, TrialStatus } from '@/api/TrialService';
 import SeoHead from '@/components/atoms/SeoHead';
 import Stepper2 from '@/components/atoms/Stepper2';
-import Header from '@/components/landing/Header';
-import UpperFooter from '@/components/landing/UpperFooter';
+import Footer from '@/components/landing/Footer';
+import Navigation from '@/components/Navigation';
 import ExploreUri from '@/components/subscription/general/ExploreUri';
 import MakePayment from '@/components/subscription/general/MakePayment';
 import PaymentMethod from '@/components/subscription/general/PaymentMethod';
@@ -60,7 +60,7 @@ const CheckoutPage = () => {
     <>
       <SeoHead title="Checkout" />
       <div className="bg-[#FFFCFE] min-h-screen">
-        <Header />
+        <Navigation />
         <div className="container py-8">
           {/* Trial Banner - only show if trial is active */}
           {trialStatus && trialStatus.status === 'active' && (
@@ -99,7 +99,7 @@ const CheckoutPage = () => {
             </Box>
           </Box>
         </div>
-        <UpperFooter />
+        <Footer />
       </div>
     </>
   );

@@ -8,15 +8,15 @@ const sections = [
   //   img: '/assets/images/landing/Agriculture_Financing_Needs.png',
   // },
   {
-    title: 'Global SaaS Opportunities',
-    desc: 'Spot SaaS expansion and market moves in real-time. Use contextual insight to prioritize outreach with the right narrative.',
+    title: 'Find people anywhere and everywhere',
+    desc: 'Unlock the power of precise, automated lead generation with Uri designed to help you reach the right prospects—no matter where they are. Instantly discover verified contacts, enrich your pipeline with actionable data, and scale your outreach with confidence. Whether you’re targeting niche markets or broad audiences, our platform puts the world’s professional network at your fingertips.',
     img: '/assets/images/landing/Glbal_saas.png',
   },
-  {
-    title: 'Generate Reports Easily',
-    desc: 'Create and share clean, actionable performance reports. Keep stakeholders aligned with data that tells a clear story.',
-    img: '/assets/images/landing/How_to_generate_reports.png',
-  },
+  // {
+  //   title: 'Generate Reports Easily',
+  //   desc: 'Create and share clean, actionable performance reports. Keep stakeholders aligned with data that tells a clear story.',
+  //   img: '/assets/images/landing/How_to_generate_reports.png',
+  // },
   // {
   //   title: 'Product Snapshot',
   //   desc: 'A look at URI’s product experience — designed for speed, clarity, and real-time intelligence.',
@@ -28,13 +28,13 @@ const ShowcaseSections = () => {
   return (
     <section className="py-12 sm:py-20 bg-muted/20">
       <div className="container mx-auto px-4 sm:px-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12 sm:mb-16 px-4">
+        {/* <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12 sm:mb-16 px-4">
           <p className="text-primary text-sm font-semibold tracking-wide">IN CONTEXT</p>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mt-2">
             Context + <span className="text-primary">Design</span>
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mt-3">Short explanations paired with visuals. Alternating layout for rhythm and clarity.</p>
-        </motion.div>
+        </motion.div> */}
 
         <div className="space-y-10 sm:space-y-14">
           {sections.map((s, i) => (
