@@ -74,9 +74,6 @@ const ProblemSolution = () => {
                     </motion.div>
                   </div>
                 </div>
-                <div className="mt-6">
-                  <img src="/assets/images/landing/product_screenshot.png" alt="URI Product Screenshot" className="w-full h-full object-cover rounded-xl border border-border" />
-                </div>
               </div>
             </motion.div>
 
@@ -86,11 +83,7 @@ const ProblemSolution = () => {
                   <h3 className="text-xl font-bold mb-2">Contextual Enrichment</h3>
                   <p className="text-sm text-muted-foreground">Signals are enriched with company, role, and sentiment to help you prioritize.</p>
                 </div>
-                <img
-                  src="https://images.unsplash.com/photo-1556157382-97eda2a7e676?auto=format&fit=crop&w=1600&q=60"
-                  alt="Analytics dashboard visualization"
-                  className="w-full h-full object-cover rounded-xl border border-border"
-                />
+                <img src="/assets/images/landing/product_screenshot.png" alt="URI Product Screenshot" className="w-full h-full object-cover rounded-xl border border-border" />
               </div>
             </motion.div>
 
@@ -100,11 +93,7 @@ const ProblemSolution = () => {
                   <h3 className="text-xl font-bold mb-2">Role Changes</h3>
                   <p className="text-sm text-muted-foreground">Detect leadership moves and team reshuffles that indicate buying windows.</p>
                 </div>
-                <img
-                  src="https://images.unsplash.com/photo-1551836022-4c4c79ecde51?auto=format&fit=crop&w=1600&q=60"
-                  alt="Professionals collaborating in modern office"
-                  className="w-full h-full object-cover rounded-xl border border-border"
-                />
+                <img src="/assets/images/landing/How_to_generate_reports.png" alt="How to generate reports" className="w-full h-full object-cover rounded-xl border border-border" />
               </div>
             </motion.div>
 
@@ -118,20 +107,6 @@ const ProblemSolution = () => {
                   // src="https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?auto=format&fit=crop&w=1600&q=60"
                   src="/assets/images/landing/Glbal_saas.png"
                   alt="City skyline representing market movement"
-                  className="w-full h-full object-cover rounded-xl border border-border"
-                />
-              </div>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="relative">
-              <div className="relative bg-card rounded-2xl p-8 border border-border shadow-strong">
-                <div className="mb-6">
-                  <h3 className="text-xl font-bold mb-2">Instant Alerts</h3>
-                  <p className="text-sm text-muted-foreground">Get notified the moment high-intent signals emerge so you can act first.</p>
-                </div>
-                <img
-                  src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=1600&q=60"
-                  alt="Mobile phone receiving real-time notifications"
                   className="w-full h-full object-cover rounded-xl border border-border"
                 />
               </div>

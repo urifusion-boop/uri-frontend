@@ -9,7 +9,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import { Avatar, Menu as MuiMenu, MenuItem as MuiMenuItem } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
-import { Award, BarChart3, BookOpen, Bot, Building2, ChevronDown, FileText, Hash, Menu, Target, Users, Video } from 'lucide-react';
+import { Award, BarChart3, BookOpen, Bot, Building2, ChevronDown, FileText, Hash, Menu, Newspaper, Target, Users, Video } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -75,6 +75,7 @@ const Navigation = () => {
         items: [
           { icon: BookOpen, name: 'How It Works', desc: 'Uri in action', href: '/#how-it-works' },
           { icon: FileText, name: 'FAQs', desc: 'Answers to common questions', href: '/faqs' },
+          { icon: Newspaper, name: 'Blog', desc: 'Insights and updates', href: '/blog' },
         ],
       },
     ],
@@ -212,7 +213,12 @@ const Navigation = () => {
                             <h3 className="text-sm font-bold text-primary mb-4">{section.title}</h3>
                             <div className="space-y-3">
                               {section.items.map((item, itemIdx) => (
-                                <a key={itemIdx} href="#" className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent transition-colors">
+                                <Link
+                                  key={itemIdx}
+                                  href={item.href || '#'}
+                                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent transition-colors group"
+                                  onClick={() => setActiveMenu(null)}
+                                >
                                   {item.icon && (
                                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
                                       <item.icon className="w-5 h-5 text-primary" />
@@ -222,7 +228,7 @@ const Navigation = () => {
                                     <div className="font-semibold text-sm mb-1">{item.name}</div>
                                     <div className="text-xs text-muted-foreground">{item.desc}</div>
                                   </div>
-                                </a>
+                                </Link>
                               ))}
                             </div>
                           </div>
@@ -457,7 +463,12 @@ const Navigation = () => {
                               <h4 className="text-sm font-bold text-primary mb-2">{section.title}</h4>
                               <div className="space-y-2">
                                 {section.items.map((item, itemIdx) => (
-                                  <a key={itemIdx} href="#" className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                                  <Link
+                                    key={itemIdx}
+                                    href={item.href || '#'}
+                                    className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent transition-colors"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                  >
                                     {item.icon && (
                                       <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                                         <item.icon className="w-4 h-4 text-primary" />
@@ -467,7 +478,7 @@ const Navigation = () => {
                                       <div className="font-semibold text-sm">{item.name}</div>
                                       <div className="text-xs text-muted-foreground">{item.desc}</div>
                                     </div>
-                                  </a>
+                                  </Link>
                                 ))}
                               </div>
                             </div>
