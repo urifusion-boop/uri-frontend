@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Bot, Filter, Mail, Sparkles, TrendingUp } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -24,31 +24,33 @@ const ProblemSolution = () => {
       <div className="container mx-auto px-4 sm:px-6">
         <div className="grid md:grid-cols-2 gap-8 md:gap-12 max-w-6xl mx-auto">
           <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="md:sticky md:top-36 md:self-start">
-            {showPublicContent ? (
-              <div>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">Find people anywhere and everywhere</h2>
-                <p className="text-lg text-muted-foreground">
-                  Unlock the power of precise, automated lead generation with Uri designed to help you reach the right prospects—no matter where they are. Instantly discover verified contacts, enrich
-                  your pipeline with actionable data, and scale your outreach with confidence. Whether you’re targeting niche markets or broad audiences, our platform puts the world’s professional
-                  network at your fingertips.
-                </p>
-              </div>
-            ) : (
-              <div>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">We Listen 24/7 So You Don't Have To</h2>
-                <p className="text-lg text-muted-foreground mb-6">You can't refresh social media every 5 minutes. URI monitors your prospects all day, every day, across every platform.</p>
-                <p className="text-lg text-muted-foreground mb-6">
-                  The moment someone signals intent—whether it's a job change, a complaint, or an announcement—URI captures it and alerts you instantly.
-                </p>
-                <div className="flex items-start gap-4 p-4 bg-accent rounded-xl border border-primary/20">
-                  <TrendingUp className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
-                  <div>
-                    <p className="font-semibold mb-1">Real-Time Intelligence</p>
-                    <p className="text-sm text-muted-foreground">Stop relying on outdated lists. Get fresh, actionable signals as they happen.</p>
+            <AnimatePresence mode="wait">
+              {showPublicContent ? (
+                <motion.div key="public" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">Find people anywhere and everywhere</h2>
+                  <p className="text-lg text-muted-foreground">
+                    Unlock the power of precise, automated lead generation with Uri designed to help you reach the right prospects—no matter where they are. Instantly discover verified contacts,
+                    enrich your pipeline with actionable data, and scale your outreach with confidence. Whether you’re targeting niche markets or broad audiences, our platform puts the world’s
+                    professional network at your fingertips.
+                  </p>
+                </motion.div>
+              ) : (
+                <motion.div key="listen" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">We Listen 24/7 So You Don't Have To</h2>
+                  <p className="text-lg text-muted-foreground mb-6">You can't refresh social media every 5 minutes. URI monitors your prospects all day, every day, across every platform.</p>
+                  <p className="text-lg text-muted-foreground mb-6">
+                    The moment someone signals intent—whether it's a job change, a complaint, or an announcement—URI captures it and alerts you instantly.
+                  </p>
+                  <div className="flex items-start gap-4 p-4 bg-accent rounded-xl border border-primary/20">
+                    <TrendingUp className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
+                    <div>
+                      <p className="font-semibold mb-1">Real-Time Intelligence</p>
+                      <p className="text-sm text-muted-foreground">Stop relying on outdated lists. Get fresh, actionable signals as they happen.</p>
+                    </div>
                   </div>
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
 
           <div className="space-y-10">
@@ -114,9 +116,24 @@ const ProblemSolution = () => {
 
             <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="relative">
               <div className="relative bg-card rounded-2xl p-8 border border-border shadow-strong">
-                <div className="text-center mb-2">
-                  <h3 className="text-2xl sm:text-3xl font-bold mb-2">Clone Your Best Sales Rep with Dera AI</h3>
-                  <p className="text-sm sm:text-base text-muted-foreground">Let AI craft personalized, contextual outreach that converts.</p>
+                <div className="text-center md:text-left">
+                  <h3 className="text-2xl sm:text-3xl font-bold mb-4">Clone Your Best Sales Rep. Infinite Scale.</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground mb-3 leading-relaxed max-w-prose mx-auto md:mx-0">Imagine if your CRM and social handles could talk. With Dera, they can.</p>
+                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-prose mx-auto md:mx-0">
+                    Dera AI connects your sales, marketing, and social data to build a brain for your outreach. We use those insights to "clone" your best sales strategies, generating warm, contextual
+                    messages that drive real revenue.
+                  </p>
+                </div>
+                <div className="space-y-3 text-sm sm:text-base text-muted-foreground mt-6 max-w-prose mx-auto md:mx-0">
+                  <p>
+                    <span className="font-semibold">Chat with your data:</span> Instantly turn sales and marketing stats into actionable strategy.
+                  </p>
+                  <p>
+                    <span className="font-semibold">Context is King:</span> We use social signals to make every message feel relevant.
+                  </p>
+                  <p>
+                    <span className="font-semibold">Clone Success:</span> Replicate the tone and tactic of your top performers, 24/7.
+                  </p>
                 </div>
               </div>
             </motion.div>
