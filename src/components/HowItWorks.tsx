@@ -27,7 +27,7 @@ const HowItWorks = () => {
   return (
     <section className="py-12 sm:py-20 bg-gradient-to-b from-background to-muted/30">
       <div className="container mx-auto px-4 sm:px-6">
-        <div className="grid md:grid-cols-2 gap-8 md:gap-10 items-start max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-8 md:gap-10 items-stretch max-w-6xl mx-auto">
           <div>
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center md:text-left mb-12 sm:mb-16 px-4 md:px-0">
               <p className="text-primary text-sm font-semibold tracking-wide">HOW IT WORKS</p>
@@ -59,11 +59,9 @@ const HowItWorks = () => {
             </div>
           </div>
 
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.15 }} className="px-4 md:px-0">
-            <div className="bg-card rounded-2xl border border-border shadow-strong overflow-hidden">
-              <AspectRatio ratio={16 / 10}>
-                <img src="/assets/images/landing/Agriculture_Financing_Needs.png" alt="Agriculture Financing Needs" className="w-full h-full object-cover" />
-              </AspectRatio>
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.15 }} className="px-4 md:px-0 h-full">
+            <div className="bg-card rounded-2xl border border-border shadow-strong overflow-hidden h-full">
+              <img src="/assets/images/landing/Agriculture_Financing_Needs.png" alt="Agriculture Financing Needs" className="w-full h-full object-contain" />
             </div>
           </motion.div>
         </div>

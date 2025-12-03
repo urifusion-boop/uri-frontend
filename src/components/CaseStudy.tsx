@@ -72,7 +72,7 @@ const CaseStudy = () => {
             </div>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} className="mb-12">
+          {/* <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} className="mb-12">
             <h3 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8">The Results</h3>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {metrics.map((metric, index) => (
@@ -103,7 +103,7 @@ const CaseStudy = () => {
                 </motion.div>
               ))}
             </div>
-          </motion.div>
+          </motion.div> */}
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -121,60 +121,6 @@ const CaseStudy = () => {
               <div>
                 <div className="font-semibold">Chidi Mbanefo</div>
                 <div className="text-sm text-muted-foreground">Head of Sales, Sendsafe Logistics</div>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.6 }}
-            className="bg-card border border-border rounded-2xl p-8 mb-12"
-          >
-            {/* <h3 className="text-2xl font-bold mb-8 text-center">90-Day Transformation Timeline</h3> */}
-            <div className="space-y-6">
-              <div className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold">1</div>
-                  <div className="w-0.5 h-full bg-border mt-2" />
-                </div>
-                <div className="flex-1 pb-6">
-                  <div className="font-semibold mb-1">Week 1-2: Setup & Training</div>
-                  <p className="text-sm text-muted-foreground">URI configured to monitor Lagos market for logistics buying signals. Team trained on platform.</p>
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold">2</div>
-                  <div className="w-0.5 h-full bg-border mt-2" />
-                </div>
-                <div className="flex-1 pb-6">
-                  <div className="font-semibold mb-1">Week 3-4: First Results</div>
-                  <p className="text-sm text-muted-foreground">150% increase in qualified leads. First major deal closed from a real-time social signal.</p>
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold">3</div>
-                  <div className="w-0.5 h-full bg-border mt-2" />
-                </div>
-                <div className="flex-1 pb-6">
-                  <div className="font-semibold mb-1">Month 2: Scaling Up</div>
-                  <p className="text-sm text-muted-foreground">Sales team fully transitioned to URI-driven leads. Cold calling reduced by 80%.</p>
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold">✓</div>
-                </div>
-                <div className="flex-1">
-                  <div className="font-semibold mb-1">Month 3: Full Impact</div>
-                  <p className="text-sm text-muted-foreground">300% increase in conversions achieved. Monthly revenue quadrupled.</p>
-                </div>
               </div>
             </div>
           </motion.div>
