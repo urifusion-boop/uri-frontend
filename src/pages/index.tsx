@@ -3,6 +3,7 @@ import CTA from '@/components/CTA';
 import CaseStudy from '@/components/CaseStudy';
 import ComparisonTable from '@/components/ComparisonTable';
 import ContextualIntelligence from '@/components/ContextualIntelligence';
+import DeraAI from '@/components/DeraAI';
 import FAQs from '@/components/FAQs';
 import Hero from '@/components/Hero';
 import HowItWorks from '@/components/HowItWorks';
@@ -30,6 +31,7 @@ export default function Home() {
       <ContextualIntelligence />
       <CRMRevitalization />
       <ComparisonTable />
+      <DeraAI />
       <HowItWorks />
       <CaseStudy />
       <Testimonials />
