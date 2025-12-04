@@ -1,8 +1,8 @@
 import SeoHead from '@/components/atoms/SeoHead';
 import FAQ from '@/components/landing/FAQ';
 import Footer from '@/components/landing/Footer';
-import Header from '@/components/landing/Header';
 import TAndC from '@/components/landing/TAndC';
+import Navigation from '@/components/Navigation';
 import { LightThemeColors } from '@/configs/colors.config';
 import useCustomTheme from '@/hooks/theme.hook';
 import styles from '@/styles/landing.module.css';
@@ -26,7 +26,7 @@ export default function PrivacyPolicy() {
       <SeoHead title="Terms and Conditions" />
 
       <div className={styles.welcome}>
-        <Header />
+        <Navigation />
       </div>
 
       <>

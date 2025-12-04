@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { Search } from 'lucide-react';
+import { Globe, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const queries = [
@@ -54,7 +54,7 @@ const Hero = () => {
             transition={{ delay: 0.2 }}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8"
           >
-            <span className="text-2xl">🌍</span>
+            <Globe className="w-6 h-6 text-primary" />
             <span className="text-sm font-medium">Built for the nuances of the African Market.</span>
           </motion.div>
 

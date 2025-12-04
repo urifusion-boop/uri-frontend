@@ -2,15 +2,15 @@ import HeroSection from '@/components/atoms/HeroSection';
 import ChatBot from '@/components/atoms/chatbot/ChatBot';
 import Enterprise from '@/components/landing/Enterprise';
 import FAQ from '@/components/landing/FAQ';
+import Footer from '@/components/landing/Footer';
 import { LandingFeatures } from '@/components/landing/LandingFeatures';
-import LowerFooter from '@/components/landing/LowerFooter';
 import TopBrands from '@/components/landing/TopBrands';
-import UpperFooter from '@/components/landing/UpperFooter';
+// import UpperFooter from '@/components/landing/UpperFooter';
+import Navigation from '@/components/Navigation';
 import { Box } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import SeoHead from '../components/atoms/SeoHead';
-import Header from '../components/landing/Header';
 import Method from '../components/landing/Method';
 import Partners from '../components/landing/Partners';
 import Reviews from '../components/landing/Reviews';
@@ -28,7 +28,7 @@ export default function HomeOld() {
       <div>
         <Box className="relative">
           <div>
-            <Header />
+            <Navigation />
             <HeroSection />
           </div>
           <TopBrands />
@@ -53,9 +53,7 @@ export default function HomeOld() {
           />
         </Box>
 
-        <UpperFooter />
-
-        <LowerFooter toggleTAndC={() => setShowTAndC(!showTAndC)} />
+        <Footer />
 
         {/* Other Components */}
         {showTAndC && <TAndC toggleTAndC={() => setShowTAndC(!showTAndC)} />}

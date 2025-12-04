@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { Facebook, Linkedin, Twitter, Youtube } from 'lucide-react';
+import Link from 'next/link';
 
 const Footer = () => {
   return (
@@ -38,9 +39,9 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="#pricing" className="hover:text-foreground transition-colors">
+                <Link href="/pricing" className="hover:text-foreground transition-colors">
                   Pricing
-                </a>
+                </Link>
               </li>
               <li>
                 <a href="#integrations" className="hover:text-foreground transition-colors">
@@ -125,17 +126,17 @@ const Footer = () => {
         <div className="border-t border-border py-3 px-4 sm:px-6">
           <div className="flex items-center justify-between gap-3 overflow-x-auto whitespace-nowrap text-xs">
             <div className="flex items-center gap-2 text-muted-foreground">
-              <a href="#terms" className="hover:text-foreground transition-colors hover:underline">
-                Terms of Use
-              </a>
+              <Link href="/terms-and-conditions" className="hover:text-foreground transition-colors hover:underline">
+                Terms and Conditions
+              </Link>
               <span className="text-border">|</span>
-              <a href="#faqs" className="hover:text-foreground transition-colors hover:underline">
-                Faqs
-              </a>
+              <Link href="/faqs" className="hover:text-foreground transition-colors hover:underline">
+                FAQs
+              </Link>
               <span className="text-border">|</span>
-              <a href="#privacy" className="hover:text-foreground transition-colors hover:underline">
+              <Link href="/privacy-policy" className="hover:text-foreground transition-colors hover:underline">
                 Privacy Policy
-              </a>
+              </Link>
               <span className="text-border">|</span>
               <a href="#security" className="hover:text-foreground transition-colors hover:underline">
                 Security

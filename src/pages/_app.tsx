@@ -52,6 +52,7 @@ const publicRoutes = [
   '/terms-and-conditions',
   '/delete-account',
   '/faqs',
+  '/blog',
   '/pricing',
   '/agencies',
   '/startups',
@@ -70,7 +71,7 @@ const ProtectedRoutes = () => {
   useEffect(() => {
     if (isPending) return;
 
-    const pathIsProtected = !publicRoutes.includes(router.pathname) && !router.pathname.startsWith('/faqs/');
+    const pathIsProtected = !publicRoutes.includes(router.pathname) && !router.pathname.startsWith('/faqs/') && !router.pathname.startsWith('/blog/');
     if (!isAuthenticated && pathIsProtected) {
       if (logoutUser) {
         logoutUser();

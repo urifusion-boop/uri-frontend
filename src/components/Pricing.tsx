@@ -1,3 +1,5 @@
+import { Button } from '@/components/ui/button';
+import { authRoutes } from '@/constants/ClientRoute';
 import { motion } from 'framer-motion';
 import { Building2, Check, Crown, Users } from 'lucide-react';
 
@@ -60,7 +62,7 @@ const Pricing = () => {
               transition={{ delay: (i % 4) * 0.1 }}
               whileHover={plan.highlight ? { scale: 1.03, rotate: 0.25 } : { scale: 1.02 }}
             >
-              <div className={`rounded-2xl border shadow-lg p-6 h-full ${plan.highlight ? 'bg-gradient-to-br from-primary/10 to-secondary/10 border-primary' : 'bg-card border-border'}`}>
+              <div className={`rounded-2xl border shadow-lg p-6 h-full ${plan.highlight ? 'bg-card border-primary' : 'bg-card border-border'}`}>
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-xs font-bold px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">{plan.badge}</span>
                   {plan.icon && (
@@ -79,12 +81,9 @@ const Pricing = () => {
                     </li>
                   ))}
                 </ul>
-                <a
-                  href="#start"
-                  className="block text-center rounded-xl px-4 py-3 font-semibold bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 transition-opacity glow-pink"
-                >
-                  Start Free Trial
-                </a>
+                <Button asChild size="lg" variant={plan.highlight ? 'default' : 'outline'} className="w-full rounded-xl font-semibold">
+                  <a href={authRoutes.signupAs}>Start Free Trial</a>
+                </Button>
               </div>
             </motion.div>
           ))}

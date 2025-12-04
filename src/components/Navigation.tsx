@@ -9,7 +9,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import { Avatar, Menu as MuiMenu, MenuItem as MuiMenuItem } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
-import { Award, BarChart3, Bell, BookOpen, Brain, Building2, ChevronDown, FileText, Menu, Target, Users, Video, Zap } from 'lucide-react';
+import { Award, BarChart3, BookOpen, Bot, Building2, ChevronDown, FileText, Hash, Menu, Newspaper, Target, Users, Video } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -38,40 +38,30 @@ const Navigation = () => {
     title: 'Features',
     sections: [
       {
-        title: 'Core Features',
+        title: 'Platform Features',
         items: [
-          { icon: Target, name: 'Signal Detection', desc: 'Real-time buying signals', href: '/signal-detection' },
-          { icon: Brain, name: 'AI Analysis', desc: 'Contextual intelligence', href: '#' },
-          { icon: Bell, name: 'Smart Alerts', desc: 'Instant notifications', href: '#' },
-        ],
-      },
-      {
-        title: 'Intelligence',
-        items: [
-          { icon: BarChart3, name: 'Analytics', desc: 'Deep insights & trends' },
-          { icon: Zap, name: 'Automation', desc: 'Automated outreach' },
+          { icon: Target, name: 'Keyword Tracking', desc: 'Track mentions and trends', href: '/#keyword-tracking' },
+          { icon: BarChart3, name: 'Account Tracking', desc: 'Monitor account performance', href: '/#account-tracking' },
+          { icon: Users, name: 'Lead Tracking', desc: 'Capture qualified leads', href: '/#lead-tracking' },
+          { icon: FileText, name: 'Content Management', desc: 'Plan and schedule content', href: '/#content-management' },
+          { icon: Hash, name: 'Hashtag Tracking', desc: 'Analyze hashtag performance', href: '/#hashtag-tracking' },
+          { icon: Bot, name: 'Insight Assistant', desc: 'Get AI-powered insights', href: '/#insight-assistant' },
         ],
       },
     ],
   };
 
   const solutionsMenu: { title: string; sections: MenuSection[] } = {
-    title: 'Solutions',
+    title: 'Use Case',
     sections: [
       {
-        title: 'By Company Type',
+        title: 'By Role',
         items: [
-          { icon: Building2, name: 'Enterprise', desc: 'Large organizations' },
-          { icon: Users, name: 'SMB', desc: 'Small & medium business' },
-          { icon: Award, name: 'Startups', desc: 'Growing companies' },
-        ],
-      },
-      {
-        title: 'By Industry',
-        items: [
-          { name: 'Technology', desc: 'SaaS & tech companies' },
-          { name: 'Real Estate', desc: 'Property & logistics' },
-          { name: 'Professional Services', desc: 'Consulting & agencies' },
+          { icon: Building2, name: 'For Business Owners', desc: 'Drive growth with insights', href: '/business-owners' },
+          { icon: Users, name: 'For Agencies', desc: 'Create data-led campaigns', href: '/agencies' },
+          { icon: Award, name: 'For Startups', desc: 'Accelerate traction', href: '/startups' },
+          { icon: BarChart3, name: 'For Product Teams', desc: 'Inform product decisions', href: '/product-teams' },
+          { icon: Video, name: 'For Media & Entertainment', desc: 'Engage audiences', href: '/media-and-entertainment' },
         ],
       },
     ],
@@ -83,17 +73,9 @@ const Navigation = () => {
       {
         title: 'Learn',
         items: [
-          { icon: FileText, name: 'Blog', desc: 'Latest insights & tips' },
-          { icon: BookOpen, name: 'Guides', desc: 'In-depth tutorials' },
-          { icon: Video, name: 'Webinars', desc: 'Live & recorded sessions' },
-        ],
-      },
-      {
-        title: 'Support',
-        items: [
-          { name: 'Documentation', desc: 'Technical resources' },
-          { name: 'Case Studies', desc: 'Success stories' },
-          { name: 'Help Center', desc: 'FAQs & support' },
+          { icon: BookOpen, name: 'How It Works', desc: 'Uri in action', href: '/#how-it-works' },
+          { icon: FileText, name: 'FAQs', desc: 'Answers to common questions', href: '/faqs' },
+          { icon: Newspaper, name: 'Blog', desc: 'Insights and updates', href: '/blog' },
         ],
       },
     ],
@@ -165,10 +147,10 @@ const Navigation = () => {
               </AnimatePresence>
             </div>
 
-            {/* Solutions Dropdown */}
+            {/* Use Case Dropdown */}
             <div className="relative" onMouseEnter={() => setActiveMenu('solutions')} onMouseLeave={() => setActiveMenu(null)}>
               <button className="flex items-center gap-1 text-foreground/70 hover:text-foreground transition-colors font-medium">
-                Solutions
+                Use Case
                 <ChevronDown className="w-4 h-4" />
               </button>
               <AnimatePresence>
@@ -187,7 +169,7 @@ const Navigation = () => {
                             <h3 className="text-sm font-bold text-primary mb-4">{section.title}</h3>
                             <div className="space-y-3">
                               {section.items.map((item, itemIdx) => (
-                                <a key={itemIdx} href="#" className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent transition-colors">
+                                <Link key={itemIdx} href={item.href || '#'} className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent transition-colors" onClick={() => setActiveMenu(null)}>
                                   {item.icon && (
                                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
                                       <item.icon className="w-5 h-5 text-primary" />
@@ -197,7 +179,7 @@ const Navigation = () => {
                                     <div className="font-semibold text-sm mb-1">{item.name}</div>
                                     <div className="text-xs text-muted-foreground">{item.desc}</div>
                                   </div>
-                                </a>
+                                </Link>
                               ))}
                             </div>
                           </div>
@@ -231,7 +213,12 @@ const Navigation = () => {
                             <h3 className="text-sm font-bold text-primary mb-4">{section.title}</h3>
                             <div className="space-y-3">
                               {section.items.map((item, itemIdx) => (
-                                <a key={itemIdx} href="#" className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent transition-colors">
+                                <Link
+                                  key={itemIdx}
+                                  href={item.href || '#'}
+                                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent transition-colors group"
+                                  onClick={() => setActiveMenu(null)}
+                                >
                                   {item.icon && (
                                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
                                       <item.icon className="w-5 h-5 text-primary" />
@@ -241,7 +228,7 @@ const Navigation = () => {
                                     <div className="font-semibold text-sm mb-1">{item.name}</div>
                                     <div className="text-xs text-muted-foreground">{item.desc}</div>
                                   </div>
-                                </a>
+                                </Link>
                               ))}
                             </div>
                           </div>
@@ -253,9 +240,9 @@ const Navigation = () => {
               </AnimatePresence>
             </div>
 
-            <a href="#pricing" className="text-foreground/70 hover:text-foreground transition-colors font-medium">
+            <Link href="/pricing" className="text-foreground/70 hover:text-foreground transition-colors font-medium">
               Pricing
-            </a>
+            </Link>
           </div>
 
           {/* Right Actions */}
@@ -423,10 +410,10 @@ const Navigation = () => {
                     </AnimatePresence>
                   </div>
 
-                  {/* Solutions Mobile */}
+                  {/* Use Case Mobile */}
                   <div>
                     <button onClick={() => setMobileActiveMenu(mobileActiveMenu === 'solutions' ? null : 'solutions')} className="flex items-center justify-between w-full text-lg font-semibold mb-3">
-                      Solutions
+                      Use Case
                       <ChevronDown className={`w-5 h-5 transition-transform ${mobileActiveMenu === 'solutions' ? 'rotate-180' : ''}`} />
                     </button>
                     <AnimatePresence>
@@ -437,7 +424,12 @@ const Navigation = () => {
                               <h4 className="text-sm font-bold text-primary mb-2">{section.title}</h4>
                               <div className="space-y-2">
                                 {section.items.map((item, itemIdx) => (
-                                  <a key={itemIdx} href="#" className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                                  <Link
+                                    key={itemIdx}
+                                    href={item.href || '#'}
+                                    className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent transition-colors"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                  >
                                     {item.icon && (
                                       <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                                         <item.icon className="w-4 h-4 text-primary" />
@@ -447,7 +439,7 @@ const Navigation = () => {
                                       <div className="font-semibold text-sm">{item.name}</div>
                                       <div className="text-xs text-muted-foreground">{item.desc}</div>
                                     </div>
-                                  </a>
+                                  </Link>
                                 ))}
                               </div>
                             </div>
@@ -471,7 +463,12 @@ const Navigation = () => {
                               <h4 className="text-sm font-bold text-primary mb-2">{section.title}</h4>
                               <div className="space-y-2">
                                 {section.items.map((item, itemIdx) => (
-                                  <a key={itemIdx} href="#" className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                                  <Link
+                                    key={itemIdx}
+                                    href={item.href || '#'}
+                                    className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent transition-colors"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                  >
                                     {item.icon && (
                                       <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                                         <item.icon className="w-4 h-4 text-primary" />
@@ -481,7 +478,7 @@ const Navigation = () => {
                                       <div className="font-semibold text-sm">{item.name}</div>
                                       <div className="text-xs text-muted-foreground">{item.desc}</div>
                                     </div>
-                                  </a>
+                                  </Link>
                                 ))}
                               </div>
                             </div>
@@ -492,9 +489,9 @@ const Navigation = () => {
                   </div>
 
                   {/* Pricing Mobile */}
-                  <a href="#pricing" className="text-lg font-semibold" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href="/pricing" className="text-lg font-semibold" onClick={() => setMobileMenuOpen(false)}>
                     Pricing
-                  </a>
+                  </Link>
 
                   {/* Mobile Actions */}
                   <div className="flex flex-col gap-3 pt-4 border-t border-border">
