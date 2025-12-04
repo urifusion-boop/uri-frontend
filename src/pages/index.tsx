@@ -1,4 +1,3 @@
-import CRMRevitalization from '@/components/CRMRevitalization';
 import CTA from '@/components/CTA';
 import CaseStudy from '@/components/CaseStudy';
 import ContextualIntelligence from '@/components/ContextualIntelligence';
@@ -26,7 +25,7 @@ export default function Home() {
       {/* <Features /> */}
       {/* <ShowcaseSections /> */}
       <ContextualIntelligence />
-      <CRMRevitalization />
+      {/* <CRMRevitalization /> */}
       <HowItWorks />
       <CaseStudy />
       <Testimonials />
