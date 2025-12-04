@@ -13,6 +13,7 @@ type ILeadFormApi =
   | 'conversationalSearchCreate'
   | 'conversationalSearchUpdate'
   | 'conversationalSearchFetchLeads'
+  | 'conversationalSearchJobStatus'
   | 'getById'
   | 'getByUserId'
   | 'update'
@@ -30,6 +31,7 @@ const rawLeadFormApiRoutes: Record<ILeadFormApi, string> = {
   conversationalSearchCreate: '/lead-forms/conversation-search/create',
   conversationalSearchUpdate: '/lead-forms/conversation-search/update',
   conversationalSearchFetchLeads: '/lead-forms/conversation-search/fetch-leads',
+  conversationalSearchJobStatus: '/lead-forms/conversation-search/job-status',
   getById: '/lead-forms/getById',
   getByUserId: '/lead-forms/getByUserId',
   getByFilters: '/lead-forms/getByFilters',
