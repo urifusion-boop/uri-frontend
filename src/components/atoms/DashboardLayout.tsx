@@ -45,8 +45,7 @@ const DashboardLayout: React.FC<IProps> = ({ children, bgColor, sideNavColor, ex
           backgroundColor: bgColor ?? themeColors.background,
         }}
       >
-        {/* ⚠️ LOCAL TESTING ONLY - SUBSCRIPTION CHECK BYPASSED */}
-        {userDetails?.subscriptionStatus !== SubscriptionStatusEnum.ACTIVE ? (
+        {userDetails?.subscriptionStatus !== SubscriptionStatusEnum.ACTIVE && userDetails?.trialStatus !== 'active' ? (
           <>
             <PageHeader toggleSideNav={toggleSideNav} />
             <Box
