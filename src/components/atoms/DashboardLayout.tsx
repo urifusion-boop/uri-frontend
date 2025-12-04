@@ -1,13 +1,17 @@
+import { Box } from '@mui/material';
 import React, { ReactNode, useState } from 'react';
 
 import useCustomTheme from '@/hooks/theme.hook';
+import { SubscriptionStatusEnum } from '@/models/enum-models/SubscriptionStatusEnum';
 import styles from '@/styles/Dashboard.module.css';
 import { UserRoleEnum } from '../../models/enum-models/UserRoleEnums';
 import { useAuth } from '../../providers/AuthProvider';
 import AdminDashSideNav from '../admin/AdminDashSideNav';
 import AdminPageHeader from '../admin/AdminPageHeader';
 import PageHeader from '../headers/PageHeader';
+import NewSubscription from '../subscription/NewSubscription';
 import DashSideNav from './DashSideNav';
+import SeoHead from './SeoHead';
 
 interface IProps {
   children: ReactNode;
@@ -42,7 +46,7 @@ const DashboardLayout: React.FC<IProps> = ({ children, bgColor, sideNavColor, ex
         }}
       >
         {/* ⚠️ LOCAL TESTING ONLY - SUBSCRIPTION CHECK BYPASSED */}
-        {/* {userDetails?.subscriptionStatus !== SubscriptionStatusEnum.ACTIVE ? (
+        {userDetails?.subscriptionStatus !== SubscriptionStatusEnum.ACTIVE ? (
           <>
             <PageHeader toggleSideNav={toggleSideNav} />
             <Box
@@ -56,21 +60,21 @@ const DashboardLayout: React.FC<IProps> = ({ children, bgColor, sideNavColor, ex
               <NewSubscription />
             </Box>
           </>
-        ) : ( */}
-        <>
-          {!excludeHeader && (userDetails?.role === UserRoleEnum.ADMIN ? <AdminPageHeader toggleSideNav={toggleSideNav} /> : <PageHeader toggleSideNav={toggleSideNav} />)}
-          <div
-            style={{
-              backgroundColor: bgColor ?? themeColors.background,
-              maxWidth: '1800px',
-              marginRight: 'auto',
-              marginLeft: 'auto',
-            }}
-          >
-            {children}
-          </div>
-        </>
-        {/* )} */}
+        ) : (
+          <>
+            {!excludeHeader && (userDetails?.role === UserRoleEnum.ADMIN ? <AdminPageHeader toggleSideNav={toggleSideNav} /> : <PageHeader toggleSideNav={toggleSideNav} />)}
+            <div
+              style={{
+                backgroundColor: bgColor ?? themeColors.background,
+                maxWidth: '1800px',
+                marginRight: 'auto',
+                marginLeft: 'auto',
+              }}
+            >
+              {children}
+            </div>
+          </>
+        )}
       </div>
     </>
   );
