@@ -408,6 +408,7 @@ const ConversationLeadFormV2 = () => {
         // CLG Upgrade fields from auto-populate
         category_context: data.category_context || prev.category_context,
         implied_keywords: data.implied_keywords || prev.implied_keywords,
+        location: data.location || prev.location, // Geographic location filtering
       }));
       triggerToast('success', 'Fields updated using AI-generated suggestions');
     }
