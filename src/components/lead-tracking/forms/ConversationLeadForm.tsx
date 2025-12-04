@@ -224,7 +224,31 @@ const ConversationLeadFormV2 = () => {
         throw new Error('No job_id returned from server');
       }
 
-      // Poll for job status every 3 seconds
+      // HYBRID APPROACH: Simulate smooth progress + periodic backend checks
+      let simulatedProgress = 0;
+      let isJobComplete = false;
+
+      // Simulate smooth progress: 0% → 95% over 2 minutes (120 seconds)
+      // Update every 1 second = 120 steps, each step adds ~0.79%
+      const progressSimulation = setInterval(() => {
+        if (simulatedProgress < 95 && !isJobComplete) {
+          simulatedProgress += 0.79; // ~95% in 120 seconds
+          setFetchingProgress(Math.floor(simulatedProgress));
+
+          // Update status messages based on progress
+          if (simulatedProgress < 20) {
+            setFetchingStatus('🔍 Searching across social platforms...');
+          } else if (simulatedProgress < 50) {
+            setFetchingStatus('📊 Analyzing posts for intent signals...');
+          } else if (simulatedProgress < 80) {
+            setFetchingStatus('🎯 Filtering and scoring qualified leads...');
+          } else {
+            setFetchingStatus('✨ Finalizing results...');
+          }
+        }
+      }, 1000); // Update every 1 second for smooth animation
+
+      // Check backend status every 15 seconds (less aggressive polling)
       const pollInterval = setInterval(async () => {
         try {
           const statusResponse = await LeadFormService.getJobStatus(jobId);
@@ -233,19 +257,17 @@ const ConversationLeadFormV2 = () => {
             const jobData = statusResponse.responseData;
 
             if (!jobData) {
-              return; // Skip this poll iteration if no data
+              return;
             }
-
-            // Update progress and status from backend
-            setFetchingProgress(jobData.progress || 0);
-            setFetchingStatus(jobData.message || 'Processing...');
 
             // Check if job is complete
             if (jobData.status === 'completed') {
+              isJobComplete = true;
               clearInterval(pollInterval);
+              clearInterval(progressSimulation);
               clearInterval(tipInterval);
 
-              // Complete progress
+              // Jump to 100%
               setFetchingProgress(100);
               setFetchingStatus('✅ Analysis complete!');
 
@@ -259,35 +281,36 @@ const ConversationLeadFormV2 = () => {
                 triggerToast('success', jobData.message || 'Leads fetched and analyzed successfully!');
               }, 500);
 
-              // Stop polling
               setIsFetchingLeads(false);
             } else if (jobData.status === 'failed') {
+              isJobComplete = true;
               clearInterval(pollInterval);
+              clearInterval(progressSimulation);
               clearInterval(tipInterval);
 
               triggerToast('error', jobData.error || 'Lead generation failed');
               setIsFetchingLeads(false);
             }
-            // If status is still 'processing', continue polling
           }
         } catch (pollError) {
           console.error('Polling error:', pollError);
-          // Don't stop polling on individual errors, backend might be temporarily busy
+          // Continue with simulated progress even if backend polling fails
         }
-      }, 3000); // Poll every 3 seconds
+      }, 15000); // Poll every 15 seconds (reduced from 3 seconds)
 
-      // Safety timeout: Stop polling after 10 minutes
+      // Safety timeout: Stop after 10 minutes
       setTimeout(
         () => {
-          clearInterval(pollInterval);
-          clearInterval(tipInterval);
-          if (isFetchingLeads) {
+          if (!isJobComplete) {
+            clearInterval(pollInterval);
+            clearInterval(progressSimulation);
+            clearInterval(tipInterval);
             setIsFetchingLeads(false);
             triggerToast('error', 'Lead generation timed out. Please check your leads or try again.');
           }
         },
         10 * 60 * 1000
-      ); // 10 minutes
+      );
     } catch (error) {
       console.error('Error starting lead generation:', error);
       clearInterval(tipInterval);

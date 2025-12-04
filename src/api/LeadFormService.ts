@@ -175,7 +175,7 @@ export class LeadsService {
         }>
       >
     > = await UriHttpClient.getClient().get(`${leadFormApiRoutes.conversationalSearchJobStatus}/${job_id}`, {
-      timeout: 10000, // 10 seconds
+      timeout: 20000, // 20 seconds (increased for slower database queries)
     });
 
     return response.data;
