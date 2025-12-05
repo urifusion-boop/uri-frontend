@@ -199,18 +199,7 @@ const ConversationLeadFormV2 = () => {
       '🔍 Fun fact: 70% of posts are filtered out for being promotional',
     ];
 
-    // Status messages progression
-    const statusMessages = [
-      { msg: '🔍 Scanning social media platforms...', progress: 10 },
-      { msg: '📥 Fetching posts from selected platforms...', progress: 25 },
-      { msg: '🤖 AI is analyzing posts for intent...', progress: 40 },
-      { msg: '✨ Validating lead quality and relevance...', progress: 60 },
-      { msg: '🎯 Filtering and scoring results...', progress: 75 },
-      { msg: '🏁 Almost done! Finalizing results...', progress: 90 },
-    ];
-
     let currentTipIndex = 0;
-    let currentStatusIndex = 0;
 
     // Rotate tips every 4 seconds
     const tipInterval = setInterval(() => {
@@ -218,49 +207,114 @@ const ConversationLeadFormV2 = () => {
       currentTipIndex = (currentTipIndex + 1) % tips.length;
     }, 4000);
 
-    // Progress status messages
-    const statusInterval = setInterval(() => {
-      if (currentStatusIndex < statusMessages.length) {
-        setFetchingStatus(statusMessages[currentStatusIndex].msg);
-        setFetchingProgress(statusMessages[currentStatusIndex].progress);
-        currentStatusIndex++;
-      }
-    }, 3000);
-
     // Set initial state
     setCurrentTip(tips[0]);
-    setFetchingStatus(statusMessages[0].msg);
+    setFetchingStatus('🚀 Starting lead generation...');
 
     try {
-      // Call backend endpoint that handles platform fetching + intent analysis
+      // Start the async job (returns immediately with job_id)
       const response = await LeadFormService.fetchConversationalLeads(leadFormId, userId);
 
-      clearInterval(tipInterval);
-      clearInterval(statusInterval);
-
-      // Complete progress
-      setFetchingProgress(100);
-      setFetchingStatus('✅ Analysis complete!');
-
-      if (response.responseCode === 200) {
-        // Store the stats from the response
-        if (response.responseData?.stats) {
-          setLeadStats(response.responseData.stats);
-        }
-
-        setTimeout(() => {
-          setOpenSuccessModal(true);
-          triggerToast('success', 'Leads fetched and analyzed successfully!');
-        }, 500);
-      } else {
-        triggerToast('error', response.responseMessage || 'Failed to fetch leads');
+      if (response.responseCode !== 202) {
+        throw new Error(response.responseMessage || 'Failed to start lead generation');
       }
+
+      const jobId = response.responseData?.job_id;
+      if (!jobId) {
+        throw new Error('No job_id returned from server');
+      }
+
+      // HYBRID APPROACH: Simulate smooth progress + periodic backend checks
+      let simulatedProgress = 0;
+      let isJobComplete = false;
+
+      // Simulate smooth progress: 0% → 95% over 2 minutes (120 seconds)
+      // Update every 1 second = 120 steps, each step adds ~0.79%
+      const progressSimulation = setInterval(() => {
+        if (simulatedProgress < 95 && !isJobComplete) {
+          simulatedProgress += 0.79; // ~95% in 120 seconds
+          setFetchingProgress(Math.floor(simulatedProgress));
+
+          // Update status messages based on progress
+          if (simulatedProgress < 20) {
+            setFetchingStatus('🔍 Searching across social platforms...');
+          } else if (simulatedProgress < 50) {
+            setFetchingStatus('📊 Analyzing posts for intent signals...');
+          } else if (simulatedProgress < 80) {
+            setFetchingStatus('🎯 Filtering and scoring qualified leads...');
+          } else {
+            setFetchingStatus('✨ Finalizing results...');
+          }
+        }
+      }, 1000); // Update every 1 second for smooth animation
+
+      // Check backend status every 15 seconds (less aggressive polling)
+      const pollInterval = setInterval(async () => {
+        try {
+          const statusResponse = await LeadFormService.getJobStatus(jobId);
+
+          if (statusResponse.responseCode === 200 && statusResponse.responseData) {
+            const jobData = statusResponse.responseData;
+
+            if (!jobData) {
+              return;
+            }
+
+            // Check if job is complete
+            if (jobData.status === 'completed') {
+              isJobComplete = true;
+              clearInterval(pollInterval);
+              clearInterval(progressSimulation);
+              clearInterval(tipInterval);
+
+              // Jump to 100%
+              setFetchingProgress(100);
+              setFetchingStatus('✅ Analysis complete!');
+
+              // Store the stats
+              if (jobData.stats) {
+                setLeadStats(jobData.stats);
+              }
+
+              setTimeout(() => {
+                setOpenSuccessModal(true);
+                triggerToast('success', jobData.message || 'Leads fetched and analyzed successfully!');
+              }, 500);
+
+              setIsFetchingLeads(false);
+            } else if (jobData.status === 'failed') {
+              isJobComplete = true;
+              clearInterval(pollInterval);
+              clearInterval(progressSimulation);
+              clearInterval(tipInterval);
+
+              triggerToast('error', jobData.error || 'Lead generation failed');
+              setIsFetchingLeads(false);
+            }
+          }
+        } catch (pollError) {
+          console.error('Polling error:', pollError);
+          // Continue with simulated progress even if backend polling fails
+        }
+      }, 15000); // Poll every 15 seconds (reduced from 3 seconds)
+
+      // Safety timeout: Stop after 10 minutes
+      setTimeout(
+        () => {
+          if (!isJobComplete) {
+            clearInterval(pollInterval);
+            clearInterval(progressSimulation);
+            clearInterval(tipInterval);
+            setIsFetchingLeads(false);
+            triggerToast('error', 'Lead generation timed out. Please check your leads or try again.');
+          }
+        },
+        10 * 60 * 1000
+      );
     } catch (error) {
-      console.error('Error fetching leads:', error);
+      console.error('Error starting lead generation:', error);
       clearInterval(tipInterval);
-      clearInterval(statusInterval);
-      triggerToast('error', 'Error fetching leads. The analysis may have taken too long. Please try again.');
-    } finally {
+      triggerToast('error', 'Error starting lead generation. Please try again.');
       setIsFetchingLeads(false);
       setTimeout(() => {
         setFetchingStatus('');
@@ -377,6 +431,7 @@ const ConversationLeadFormV2 = () => {
         // CLG Upgrade fields from auto-populate
         category_context: data.category_context || prev.category_context,
         implied_keywords: data.implied_keywords || prev.implied_keywords,
+        location: data.location || prev.location, // Geographic location filtering
       }));
       triggerToast('success', 'Fields updated using AI-generated suggestions');
     }

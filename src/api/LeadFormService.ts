@@ -108,30 +108,75 @@ export class LeadsService {
   static async fetchConversationalLeads(
     lead_form_id: string,
     user_id: string
-  ): Promise<UriResponse<{
-    lead_form_id: string;
-    stats: {
-      total_fetched: number;
-      total_qualified: number;
-      new_leads_saved: number;
-      duplicates_skipped: number;
-    }
-  }>> {
-    const response: Awaited<AxiosResponse<UriResponse<{
+  ): Promise<
+    UriResponse<{
       lead_form_id: string;
-      stats: {
+      job_id: string;
+      status: string;
+      poll_url: string;
+    }>
+  > {
+    // Now returns immediately with job_id for polling (HTTP 202)
+    const response: Awaited<
+      AxiosResponse<
+        UriResponse<{
+          lead_form_id: string;
+          job_id: string;
+          status: string;
+          poll_url: string;
+        }>
+      >
+    > = await UriHttpClient.getClient().post(
+      `${leadFormApiRoutes.conversationalSearchFetchLeads}?lead_form_id=${lead_form_id}&user_id=${user_id}`,
+      {},
+      {
+        timeout: 10000, // 10 seconds - just to start the job
+      }
+    );
+
+    return response.data;
+  }
+
+  static async getJobStatus(job_id: string): Promise<
+    UriResponse<{
+      job_id: string;
+      lead_form_id: string;
+      status: string; // 'processing', 'completed', 'failed'
+      progress: number; // 0-100
+      message: string;
+      stats?: {
         total_fetched: number;
         total_qualified: number;
         new_leads_saved: number;
         duplicates_skipped: number;
-      }
-    }>>> = await UriHttpClient.getClient().post(
-      `${leadFormApiRoutes.conversationalSearchFetchLeads}?lead_form_id=${lead_form_id}&user_id=${user_id}`,
-      {},
-      {
-        timeout: 180000 // 3 minutes timeout for AI analysis
-      }
-    );
+      };
+      error?: string;
+      created_at: string;
+      updated_at: string;
+    }>
+  > {
+    const response: Awaited<
+      AxiosResponse<
+        UriResponse<{
+          job_id: string;
+          lead_form_id: string;
+          status: string;
+          progress: number;
+          message: string;
+          stats?: {
+            total_fetched: number;
+            total_qualified: number;
+            new_leads_saved: number;
+            duplicates_skipped: number;
+          };
+          error?: string;
+          created_at: string;
+          updated_at: string;
+        }>
+      >
+    > = await UriHttpClient.getClient().get(`${leadFormApiRoutes.conversationalSearchJobStatus}/${job_id}`, {
+      timeout: 20000, // 20 seconds (increased for slower database queries)
+    });
 
     return response.data;
   }

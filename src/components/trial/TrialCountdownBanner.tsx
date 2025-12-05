@@ -24,9 +24,10 @@ const TrialCountdownBanner: React.FC<TrialCountdownBannerProps> = ({ trialStatus
   }
 
   const { daysRemaining, usage } = trialStatus;
+  const displayMaxReports = usage.maxReports > 0 ? usage.maxReports : 5;
   const leadsProgress = (usage.leadsGenerated / usage.maxLeads) * 100;
   const signalsProgress = (usage.signalsUsed / usage.maxSignals) * 100;
-  const reportsProgress = usage.maxReports > 0 ? (usage.reportsGenerated / usage.maxReports) * 100 : 0;
+  const reportsProgress = (usage.reportsGenerated / displayMaxReports) * 100;
 
   return (
     <Box
@@ -81,7 +82,7 @@ const TrialCountdownBanner: React.FC<TrialCountdownBannerProps> = ({ trialStatus
                 color: '#8C8C8C',
               }}
             >
-              {usage.leadsGenerated}/{usage.maxLeads} leads • {usage.signalsUsed}/{usage.maxSignals} signals • {usage.reportsGenerated}/{usage.maxReports} reports
+              {usage.leadsGenerated}/{usage.maxLeads} leads • {usage.signalsUsed}/{usage.maxSignals} signals • {usage.reportsGenerated}/{displayMaxReports} reports
             </Typography>
           </Box>
         </Box>
@@ -162,7 +163,7 @@ const TrialCountdownBanner: React.FC<TrialCountdownBannerProps> = ({ trialStatus
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
             <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#6B6B6B' }}>Reports</Typography>
             <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#CD1B78' }}>
-              {usage.reportsGenerated}/{usage.maxReports}
+              {usage.reportsGenerated}/{displayMaxReports}
             </Typography>
           </Box>
           <LinearProgress

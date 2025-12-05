@@ -9,16 +9,6 @@ function Pricing() {
   const { isTablet } = useResponsiveness();
   const router = useRouter();
 
-  const handleSelectPlan = (plan: any) => {
-    // Redirect to checkout page with selected plan data
-    router.push({
-      pathname: '/checkout',
-      query: {
-        plan: encodeURIComponent(JSON.stringify(plan)),
-      },
-    });
-  };
-
   return (
     <div className="mx-4">
       <Grid mb={4} display={'grid'} justifyContent={isTablet ? 'start' : 'center'}>
@@ -31,7 +21,7 @@ function Pricing() {
           Whether you&apos;re just starting out or scaling up, we&apos;ve got the perfect plan.
         </p>
       </Grid>
-      <SubscriptionPlansList selectedPlan={'selectedPlan'} onSelectPlan={handleSelectPlan} />
+      <SubscriptionPlansList selectedPlan={'selectedPlan'} onSelectPlan={() => router.push('/settings?tab=subscription')} />
     </div>
   );
 }
