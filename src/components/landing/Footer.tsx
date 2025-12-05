@@ -22,11 +22,7 @@ const Footer = () => {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
               {/* Left: Headline + CTA */}
               <div className="flex-1">
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight mb-6">
-                  Go to market with unique data
-                  <br />
-                  <span className="text-foreground">—and the ability to act on it</span>
-                </h2>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight mb-6">Your customers are speaking, Are you listening?</h2>
                 <Button size="large" className="bg-foreground text-background hover:bg-foreground/90 text-base px-6 py-6 rounded-xl font-semibold group">
                   Start building for free
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
