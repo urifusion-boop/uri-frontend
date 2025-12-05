@@ -1,13 +1,15 @@
+import footerBackground from '@/assets/footer-background.png';
 import { Button } from '@mui/material';
 import { motion } from 'framer-motion';
 import { ArrowRight, Linkedin, Twitter, Youtube } from 'lucide-react';
+import Image from 'next/image';
 
 const Footer = () => {
   return (
     <footer className="relative">
       {/* Background Image Section */}
       <div className="relative h-[200px] sm:h-[280px] md:h-[320px] overflow-hidden">
-        <img src="/assets/images/bg.jpg" alt="" className="w-full h-full object-cover object-center" />
+        <Image src={footerBackground} alt="" fill priority className="object-cover object-center" />
         {/* Gradient overlay for smooth transition */}
         <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
       </div>
