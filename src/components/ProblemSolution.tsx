@@ -61,8 +61,8 @@ const ProblemSolution = () => {
                 </motion.div>
               ) : activeSection === 'find' ? (
                 <motion.div key="find" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
-                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">Find people anywhere and everywhere</h2>
-                  <p className="text-lg text-muted-foreground">
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-6">Find people anywhere and everywhere</h2>
+                  <p className="text-lg text-muted-foreground mb-6">
                     Unlock the power of precise, automated lead generation with Uri designed to help you reach the right prospects—no matter where they are. Instantly discover verified contacts,
                     enrich your pipeline with actionable data, and scale your outreach with confidence. Whether you’re targeting niche markets or broad audiences, our platform puts the world’s
                     professional network at your fingertips.
@@ -70,7 +70,7 @@ const ProblemSolution = () => {
                 </motion.div>
               ) : (
                 <motion.div key="listen" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
-                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">We Listen 24/7 So You Don't Have To</h2>
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-6">We Listen 24/7 So You Don't Have To</h2>
                   <p className="text-lg text-muted-foreground mb-6">You can't refresh social media every 5 minutes. URI monitors your prospects all day, every day, across every platform.</p>
                   <p className="text-lg text-muted-foreground mb-6">
                     The moment someone signals intent—whether it's a job change, a complaint, or an announcement—URI captures it and alerts you instantly.
@@ -88,15 +88,6 @@ const ProblemSolution = () => {
           </motion.div>
 
           <div className="space-y-10">
-            <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="relative" ref={findRef}>
-              <div className="relative bg-card rounded-2xl p-8 border border-border shadow-strong">
-                <div className="mb-6">
-                  <h3 className="text-xl font-bold mb-2">Find</h3>
-                  <p className="text-sm text-muted-foreground">Instantly discover verified leads and scale your outreach with precision and confidence.</p>
-                </div>
-                <img src="/assets/images/landing/Glbal_saas.png" alt="City skyline representing market movement" className="w-full h-full object-cover rounded-xl border border-border" />
-              </div>
-            </motion.div>
             <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="relative">
               <div className="relative bg-card rounded-2xl p-8 border border-border shadow-strong">
                 <div className="mb-6">
@@ -119,6 +110,15 @@ const ProblemSolution = () => {
                     </motion.div>
                   </div>
                 </div>
+              </div>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="relative" ref={findRef}>
+              <div className="relative bg-card rounded-2xl p-8 border border-border shadow-strong">
+                <div className="mb-6">
+                  <h3 className="text-xl font-bold mb-2">Find</h3>
+                  <p className="text-sm text-muted-foreground">Instantly discover verified leads and scale your outreach with precision and confidence.</p>
+                </div>
+                <img src="/assets/images/landing/Glbal_saas.png" alt="City skyline representing market movement" className="w-full h-full object-cover rounded-xl border border-border" />
               </div>
             </motion.div>
 
