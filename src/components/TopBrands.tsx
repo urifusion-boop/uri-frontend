@@ -19,7 +19,7 @@ const TopBrands = () => {
     <section className="py-10 sm:py-14">
       <div className="container mx-auto px-4 sm:px-6">
         <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
-          <p className="text-primary text-sm font-semibold tracking-wide">BRANDS</p>
+          {/* <p className="text-primary text-sm font-semibold tracking-wide">BRANDS</p> */}
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mt-2">
             Trusted by top <span className="text-primary">Companies</span>
           </h2>

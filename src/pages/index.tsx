@@ -21,10 +21,10 @@ export default function Home() {
       <Hero />
       <LivePulse />
       <TopBrands />
+      <ContextualIntelligence />
       <ProblemSolution />
       {/* <Features /> */}
       {/* <ShowcaseSections /> */}
-      <ContextualIntelligence />
       <CRMRevitalization />
       <HowItWorks />
       <CaseStudy />
