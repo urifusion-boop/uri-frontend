@@ -29,8 +29,7 @@ const ProblemSolution = () => {
                 <motion.div key="find" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
                   <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-6">Find people anywhere and everywhere</h2>
                   <p className="text-lg text-muted-foreground mb-6">
-                    Unlock the power of precise, automated lead generation with Uri designed to help you reach the right prospects—no matter where they are. Instantly discover verified contacts,
-                    enrich your pipeline with actionable data, and scale your outreach with confidence. Whether you’re targeting niche markets or broad audiences, our platform puts the world’s
+                    Uri helps you instantly discover verified contacts, enrich your pipeline, and reach the right prospects fast. Whether your audience is niche or broad, Uri puts the world’s
                     professional network at your fingertips.
                   </p>
                 </motion.div>
