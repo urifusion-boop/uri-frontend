@@ -66,9 +66,10 @@ const LeadsView = ({ leadType, label, icon, excludeTabs = [] }: LeadsViewProps) 
   const { subscriptionPlanType } = useAuth();
   const { userDetails } = useAuth();
   const userId = userDetails?.userId;
+  const wsDisabled = true;
 
   // Connect to realtime updates to auto-update stats and remaining leads
-  useRealtimeLeads({ userId, autoConnect: true });
+  useRealtimeLeads({ userId, autoConnect: !wsDisabled });
 
   const featureLimit = useFeatureLimitStore((state) => state.featureLimit);
   const isLimitInitialState = useFeatureLimitStore((state) => state.isInitialState);
