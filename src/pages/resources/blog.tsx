@@ -1,89 +1,102 @@
 import Navigation from '@/components/Navigation';
 import SeoHead from '@/components/atoms/SeoHead';
 import Footer from '@/components/landing/Footer';
-import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
-import { ArrowRight, Calendar, Clock } from 'lucide-react';
-import Link from 'next/link';
+import { BlogPost, getBlogPostBySlug } from '@/lib/blog';
+import Image from 'next/image';
+import { remark } from 'remark';
+import html from 'remark-html';
 
-const posts = [
-  {
-    title: 'How Intent Data is Revolutionizing B2B Sales in Africa',
-    excerpt: 'Discover how African businesses are using buying signals to find ready customers faster than ever before.',
-    category: 'Sales Strategy',
-    date: 'Dec 2, 2024',
-    readTime: '5 min read',
-  },
-  {
-    title: 'The Complete Guide to Lead Scoring with Buying Signals',
-    excerpt: 'Learn how to prioritize leads based on their intent signals and close more deals with less effort.',
-    category: 'Product Updates',
-    date: 'Nov 28, 2024',
-    readTime: '8 min read',
-  },
-  {
-    title: "Why Your Cold Outreach Isn't Working (And What to Do Instead)",
-    excerpt: "Cold emails have a 1% response rate. Here's how signal-based selling achieves 10x better results.",
-    category: 'Sales Strategy',
-    date: 'Nov 20, 2024',
-    readTime: '6 min read',
-  },
-  {
-    title: 'NDPR Compliance: What Nigerian Businesses Need to Know',
-    excerpt: 'A practical guide to Nigeria Data Protection Regulation and how it affects your sales processes.',
-    category: 'Compliance',
-    date: 'Nov 15, 2024',
-    readTime: '7 min read',
-  },
-  {
-    title: 'Case Study: How Sendsafe Increased Conversions by 300%',
-    excerpt: "A Lagos-based logistics company transformed their B2B sales with URI's intent signals.",
-    category: 'Case Studies',
-    date: 'Nov 10, 2024',
-    readTime: '6 min read',
-  },
-];
+export async function getStaticProps() {
+  const post = getBlogPostBySlug('billion-dollar-tweet-piggyvest');
 
-export default function ResourcesBlogPage() {
+  if (!post) {
+    return { notFound: true };
+  }
+
+  const processedContent = await remark().use(html).process(post.content);
+  const contentHtml = processedContent.toString();
+
+  return {
+    props: {
+      post: { ...post, contentHtml },
+    },
+  };
+}
+
+export default function ResourcesBlogPage({ post }: { post: BlogPost & { contentHtml: string } }) {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
+  const contentWithEmbeds = transformYouTubeLinksToEmbeds(post.contentHtml);
+
   return (
     <>
-      <SeoHead title="Blog" />
-      <Navigation />
-      <main className="pt-24 pb-16">
-        <section className="max-w-6xl mx-auto px-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-center mb-16">
-            <span className="text-primary font-medium mb-4 block">Blog</span>
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">Insights and Updates</h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Articles to help African sales teams master intent-based selling.</p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {posts.map((post) => (
-              <motion.article key={post.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="bg-card border border-border rounded-2xl p-6">
-                <span className="inline-block mb-3 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full">{post.category}</span>
-                <h3 className="text-lg font-semibold mb-2">{post.title}</h3>
-                <p className="text-sm text-muted-foreground mb-4">{post.excerpt}</p>
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    {post.date}
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    {post.readTime}
-                  </span>
-                </div>
-                <Button variant="ghost" className="text-primary hover:text-primary/80 mt-4 p-0" asChild>
-                  <Link href="/company/contact">
-                    Read More <ArrowRight className="w-4 h-4 ml-1" />
-                  </Link>
-                </Button>
-              </motion.article>
-            ))}
+      <SeoHead title={post.title} />
+      <div className="bg-[#FFFCFE] min-h-screen">
+        <Navigation />
+        <article className="max-w-[900px] mx-auto px-4 mt-24 mb-[100px]">
+          <div className="relative h-[300px] md:h-[400px] rounded-[16px] overflow-hidden mb-8">
+            <Image src={previewImageUrl} alt={post.title} fill className="object-cover" />
+            {post.category && <span className="absolute top-4 left-4 bg-[#CD1B78] text-white text-sm font-semibold px-4 py-2 rounded-full">{post.category}</span>}
           </div>
-        </section>
-      </main>
-      <Footer />
+          <h1 className="md:text-[48px] text-[32px] font-bold text-[#141416] mb-4">{post.title}</h1>
+          <div className="flex items-center gap-6 text-[#666] mb-8">
+            <span>{post.author}</span>
+            <span>{formatDate(post.date)}</span>
+          </div>
+          <div
+            className="prose prose-lg max-w-none prose-headings:text-[#141416] prose-p:text-[#363636] prose-a:text-[#CD1B78] prose-strong:text-[#141416] prose-ul:text-[#363636] prose-ol:text-[#363636]"
+            dangerouslySetInnerHTML={{ __html: contentWithEmbeds }}
+          />
+        </article>
+        <Footer />
+      </div>
     </>
   );
 }
+
+const transformYouTubeLinksToEmbeds = (input: string) => {
+  const replaceShort = input.replace(
+    /<a[^>]*href=["'](?:https?:\/\/)?(?:www\.)?youtu\.be\/([a-zA-Z0-9_-]{11})["'][^>]*>[^<]*<\/a>|(?:https?:\/\/)?(?:www\.)?youtu\.be\/([a-zA-Z0-9_-]{11})/g,
+    (_match, id1, id2) => {
+      const videoId = id1 || id2;
+      return `
+<div class="rounded-[16px] overflow-hidden my-6">
+  <iframe
+    width="100%"
+    height="360"
+    src="https://www.youtube.com/embed/${videoId}?autoplay=0"
+    title="YouTube video player"
+    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowfullscreen
+    style="border:0;border-radius:16px"
+  ></iframe>
+</div>`;
+    }
+  );
+
+  const replaceWatch = replaceShort.replace(
+    /<a[^>]*href=["'](?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})["'][^>]*>[^<]*<\/a>|(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/g,
+    (_match, id1, id2) => {
+      const videoId = id1 || id2;
+      return `
+<div class="rounded-[16px] overflow-hidden my-6">
+  <iframe
+    width="100%"
+    height="360"
+    src="https://www.youtube.com/embed/${videoId}?autoplay=0"
+    title="YouTube video player"
+    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowfullscreen
+    style="border:0;border-radius:16px"
+  ></iframe>
+</div>`;
+    }
+  );
+
+  return replaceWatch;
+};
+
+const previewImageUrl = 'https://source.unsplash.com/1200x675/?africa,business';

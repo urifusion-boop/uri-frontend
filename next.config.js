@@ -13,6 +13,20 @@ const nextConfig = withPWA({
   images: {
     domains: ['res.cloudinary.com', 'document.uricreative.com', 'salmon-mud-00dcf2503.4.azurestaticapps.net', 'media.licdn.com', 'images.unsplash.com', 'source.unsplash.com'],
   },
+  async redirects() {
+    return [
+      {
+        source: '/blog',
+        destination: '/resources/blog',
+        permanent: true,
+      },
+      {
+        source: '/blog/:path*',
+        destination: '/resources/blog',
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {

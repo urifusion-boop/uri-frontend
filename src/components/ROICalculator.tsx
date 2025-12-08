@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
@@ -36,7 +37,14 @@ const ROICalculator = () => {
       max: 100,
       suffix: 'reps',
     },
-    { title: 'Average Salary', description: "What's the average annual salary per rep?", icon: <DollarSign className="h-8 w-8" />, field: 'avgSalary' as keyof FormData, type: 'input', prefix: '$' },
+    {
+      title: 'Average Salary',
+      description: "What's the average annual salary per rep?",
+      icon: <DollarSign className="h-8 w-8" />,
+      field: 'avgSalary' as keyof FormData,
+      type: 'input',
+      prefix: '$',
+    },
     {
       title: 'Time Lost',
       description: 'Hours per week spent on data entry & manual tasks?',
@@ -57,21 +65,31 @@ const ROICalculator = () => {
       max: 50,
       suffix: '%',
     },
-    { title: 'Deal Size', description: "What's your average deal value?", icon: <Sparkles className="h-8 w-8" />, field: 'avgDealSize' as keyof FormData, type: 'input', prefix: '$' },
+    {
+      title: 'Deal Size',
+      description: "What's your average deal value?",
+      icon: <Sparkles className="h-8 w-8" />,
+      field: 'avgDealSize' as keyof FormData,
+      type: 'input',
+      prefix: '$',
+    },
   ];
 
   const calculateROI = () => {
     const hourlyRate = formData.avgSalary / 52 / 40;
     const annualHoursWasted = formData.hoursPerWeek * 52 * formData.salesReps;
     const costOfWastedTime = annualHoursWasted * hourlyRate;
-    const timeRecovered = annualHoursWasted * 0.75;
+
+    const timeRecovered = annualHoursWasted * 0.75; // URI recovers 75% of wasted time
     const hoursForSelling = timeRecovered;
-    const additionalLeads = (hoursForSelling / 2) * formData.salesReps;
-    const additionalDeals = additionalLeads * (formData.conversionRate / 100) * 1.3;
+    const additionalLeads = (hoursForSelling / 2) * formData.salesReps; // 1 lead per 2 hours
+    const additionalDeals = additionalLeads * (formData.conversionRate / 100) * 1.3; // 30% conversion boost
     const additionalRevenue = additionalDeals * formData.avgDealSize;
-    const uriCost = formData.salesReps * 99 * 12;
+
+    const uriCost = formData.salesReps * 99 * 12; // $99/user/month
     const netBenefit = additionalRevenue + costOfWastedTime - uriCost;
     const roi = (netBenefit / uriCost) * 100;
+
     return {
       costOfWastedTime: Math.round(costOfWastedTime),
       timeRecovered: Math.round(timeRecovered),
@@ -87,17 +105,26 @@ const ROICalculator = () => {
   const progress = ((step + 1) / steps.length) * 100;
 
   const handleNext = () => {
-    if (step < steps.length - 1) setStep(step + 1);
-    else setShowResults(true);
+    if (step < steps.length - 1) {
+      setStep(step + 1);
+    } else {
+      setShowResults(true);
+    }
   };
+
   const handleBack = () => {
-    if (showResults) setShowResults(false);
-    else if (step > 0) setStep(step - 1);
+    if (showResults) {
+      setShowResults(false);
+    } else if (step > 0) {
+      setStep(step - 1);
+    }
   };
+
   const handleReset = () => {
     setStep(0);
     setShowResults(false);
   };
+
   const updateFormData = (field: keyof FormData, value: number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -114,7 +141,8 @@ const ROICalculator = () => {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">Take the test and discover how much time and money you could save with URI</p>
         </motion.div>
 
-        <div className="p-8 bg-card shadow-2xl rounded-2xl border border-border">
+        <Card className="p-8 bg-card shadow-2xl">
+          {/* Progress Bar */}
           {!showResults && (
             <div className="mb-8">
               <div className="flex justify-between items-center mb-2">
@@ -132,43 +160,48 @@ const ROICalculator = () => {
           <AnimatePresence mode="wait">
             {!showResults ? (
               <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }} className="space-y-8">
+                {/* Step Content */}
                 <div className="text-center space-y-4">
                   <div className="inline-flex p-4 bg-primary/10 rounded-full text-primary">{steps[step].icon}</div>
                   <h3 className="text-2xl font-bold">{steps[step].title}</h3>
                   <p className="text-muted-foreground">{steps[step].description}</p>
                 </div>
+
+                {/* Input Field */}
                 <div className="space-y-4 max-w-md mx-auto">
                   {steps[step].type === 'slider' ? (
                     <div className="space-y-4">
                       <div className="text-center">
-                        <span className="text-4xl font-bold text-primary">{formData[steps[step].field] as number}</span>
-                        <span className="text-xl text-muted-foreground ml-2">{(steps[step] as any).suffix}</span>
+                        <span className="text-4xl font-bold text-primary">{formData[steps[step].field]}</span>
+                        <span className="text-xl text-muted-foreground ml-2">{steps[step].suffix}</span>
                       </div>
                       <Slider
-                        value={[formData[steps[step].field] as number]}
+                        value={[formData[steps[step].field]]}
                         onValueChange={(value) => updateFormData(steps[step].field, value[0])}
-                        min={(steps[step] as any).min}
-                        max={(steps[step] as any).max}
+                        min={steps[step].min}
+                        max={steps[step].max}
                         step={1}
                         className="w-full"
                       />
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <Label htmlFor={steps[step].field as string}>Amount</Label>
+                      <Label htmlFor={steps[step].field}>Amount</Label>
                       <div className="relative">
-                        {(steps[step] as any).prefix && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">{(steps[step] as any).prefix}</span>}
+                        {steps[step].prefix && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">{steps[step].prefix}</span>}
                         <Input
-                          id={steps[step].field as string}
+                          id={steps[step].field}
                           type="number"
-                          value={formData[steps[step].field] as number}
+                          value={formData[steps[step].field]}
                           onChange={(e) => updateFormData(steps[step].field, parseInt(e.target.value) || 0)}
-                          className={(steps[step] as any).prefix ? 'pl-8' : ''}
+                          className={steps[step].prefix ? 'pl-8' : ''}
                         />
                       </div>
                     </div>
                   )}
                 </div>
+
+                {/* Navigation Buttons */}
                 <div className="flex gap-4 justify-center pt-4">
                   {step > 0 && (
                     <Button variant="outline" onClick={handleBack} className="gap-2">
@@ -193,6 +226,7 @@ const ROICalculator = () => {
               </motion.div>
             ) : (
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} className="space-y-8">
+                {/* Results Header */}
                 <div className="text-center space-y-4">
                   <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring' }} className="inline-flex p-6 bg-primary/10 rounded-full text-primary">
                     <Trophy className="h-12 w-12" />
@@ -200,6 +234,8 @@ const ROICalculator = () => {
                   <h3 className="text-3xl font-bold">Your ROI Potential</h3>
                   <p className="text-muted-foreground">Here's what you could achieve with URI</p>
                 </div>
+
+                {/* Key Metrics */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -214,6 +250,7 @@ const ROICalculator = () => {
                     <div className="text-4xl font-bold text-primary mb-1">{results.roi.toLocaleString()}%</div>
                     <p className="text-sm text-muted-foreground">Return on Investment</p>
                   </motion.div>
+
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -227,6 +264,7 @@ const ROICalculator = () => {
                     <div className="text-4xl font-bold text-primary mb-1">${results.netBenefit.toLocaleString()}</div>
                     <p className="text-sm text-muted-foreground">Annual Savings</p>
                   </motion.div>
+
                   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="bg-secondary/50 p-6 rounded-lg">
                     <div className="flex items-center gap-3 mb-2">
                       <Clock className="h-5 w-5 text-foreground" />
@@ -235,6 +273,7 @@ const ROICalculator = () => {
                     <div className="text-3xl font-bold mb-1">{results.timeRecovered.toLocaleString()} hrs</div>
                     <p className="text-sm text-muted-foreground">Per Year</p>
                   </motion.div>
+
                   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="bg-secondary/50 p-6 rounded-lg">
                     <div className="flex items-center gap-3 mb-2">
                       <Sparkles className="h-5 w-5 text-foreground" />
@@ -244,6 +283,8 @@ const ROICalculator = () => {
                     <p className="text-sm text-muted-foreground">From {results.additionalDeals} new deals</p>
                   </motion.div>
                 </div>
+
+                {/* Breakdown */}
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="bg-secondary/30 p-6 rounded-lg space-y-3">
                   <h4 className="font-semibold mb-4">Cost Breakdown</h4>
                   <div className="flex justify-between items-center">
@@ -263,6 +304,8 @@ const ROICalculator = () => {
                     <span className="font-bold text-primary text-xl">${results.netBenefit.toLocaleString()}</span>
                   </div>
                 </motion.div>
+
+                {/* Achievement Badge */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -273,12 +316,14 @@ const ROICalculator = () => {
                   <p className="font-semibold mb-1">Assessment Complete!</p>
                   <p className="text-sm text-muted-foreground">Ready to unlock this potential? Let's talk.</p>
                 </motion.div>
+
+                {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
                   <Button variant="outline" onClick={handleReset} className="gap-2">
                     <ArrowLeft className="h-4 w-4" />
                     Start Over
                   </Button>
-                  <Button size="lg" className="gap-2" onClick={() => (window.location.hash = '#enterprise')}>
+                  <Button size="lg" className="gap-2" onClick={() => (window.location.href = '#enterprise')}>
                     Get Started
                     <ArrowRight className="h-4 w-4" />
                   </Button>
@@ -286,7 +331,7 @@ const ROICalculator = () => {
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </Card>
       </div>
     </section>
   );

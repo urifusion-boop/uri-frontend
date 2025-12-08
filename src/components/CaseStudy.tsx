@@ -86,8 +86,8 @@ const CaseStudy = () => {
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center text-xl font-bold">CM</div>
               <div>
-                <div className="font-semibold">Chidi Mbanefo</div>
-                <div className="text-sm text-muted-foreground">Head of Sales, Sendsafe Logistics</div>
+                <div className="font-semibold">David</div>
+                <div className="text-sm text-muted-foreground">CEO, Sendsafe Logistics</div>
               </div>
             </div>
           </motion.div>
