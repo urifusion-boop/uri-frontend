@@ -11,7 +11,7 @@ const nextConfig = withPWA({
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ['res.cloudinary.com', 'document.uricreative.com', 'salmon-mud-00dcf2503.4.azurestaticapps.net', 'media.licdn.com'],
+    domains: ['res.cloudinary.com', 'document.uricreative.com', 'salmon-mud-00dcf2503.4.azurestaticapps.net', 'media.licdn.com', 'images.unsplash.com', 'source.unsplash.com'],
   },
   async rewrites() {
     return [

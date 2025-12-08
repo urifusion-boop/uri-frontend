@@ -3,6 +3,7 @@ import { Button } from '@mui/material';
 import { motion } from 'framer-motion';
 import { ArrowRight, Linkedin, Twitter, Youtube } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const Footer = () => {
   return (
@@ -73,24 +74,24 @@ const Footer = () => {
                 <h4 className="font-semibold text-foreground mb-4">Product</h4>
                 <ul className="space-y-3 text-sm">
                   <li>
-                    <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/features" className="text-muted-foreground hover:text-foreground transition-colors">
                       Features
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#signals" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/signals" className="text-muted-foreground hover:text-foreground transition-colors">
                       Signals
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#integrations" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/integrations" className="text-muted-foreground hover:text-foreground transition-colors">
                       Integrations
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
                       Pricing
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -100,24 +101,24 @@ const Footer = () => {
                 <h4 className="font-semibold text-foreground mb-4">Tools</h4>
                 <ul className="space-y-3 text-sm">
                   <li>
-                    <a href="#lead-finder" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/tools/lead-finder" className="text-muted-foreground hover:text-foreground transition-colors">
                       Lead Finder
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#crm-sync" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/tools/crm-sync" className="text-muted-foreground hover:text-foreground transition-colors">
                       CRM Sync
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#roi-calculator" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/tools/roi-calculator" className="text-muted-foreground hover:text-foreground transition-colors">
                       ROI Calculator
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#chrome-extension" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/tools/chrome-extension" className="text-muted-foreground hover:text-foreground transition-colors">
                       Chrome Extension
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -127,24 +128,24 @@ const Footer = () => {
                 <h4 className="font-semibold text-foreground mb-4">Resources</h4>
                 <ul className="space-y-3 text-sm">
                   <li>
-                    <a href="#blog" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/resources/blog" className="text-muted-foreground hover:text-foreground transition-colors">
                       Blog
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#guides" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/resources/guides" className="text-muted-foreground hover:text-foreground transition-colors">
                       Guides
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#case-studies" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/resources/case-studies" className="text-muted-foreground hover:text-foreground transition-colors">
                       Case Studies
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#help-center" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/resources/help-center" className="text-muted-foreground hover:text-foreground transition-colors">
                       Help Center
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -154,25 +155,25 @@ const Footer = () => {
                 <h4 className="font-semibold text-foreground mb-4">Company</h4>
                 <ul className="space-y-3 text-sm">
                   <li>
-                    <a href="#about" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/company/about" className="text-muted-foreground hover:text-foreground transition-colors">
                       About Us
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#careers" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
+                    <Link href="/company/careers" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
                       Careers
                       <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-medium">Hiring!</span>
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#partners" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/company/partners" className="text-muted-foreground hover:text-foreground transition-colors">
                       Partners
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#contact" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/company/contact" className="text-muted-foreground hover:text-foreground transition-colors">
                       Contact
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -182,24 +183,24 @@ const Footer = () => {
                 <h4 className="font-semibold text-foreground mb-4">Legal</h4>
                 <ul className="space-y-3 text-sm">
                   <li>
-                    <a href="#privacy" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/legal/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
                       Privacy Policy
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#terms" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/legal/terms" className="text-muted-foreground hover:text-foreground transition-colors">
                       Terms of Service
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#security" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/legal/security" className="text-muted-foreground hover:text-foreground transition-colors">
                       Security
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#compliance" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/legal/ndpr-compliance" className="text-muted-foreground hover:text-foreground transition-colors">
                       NDPR Compliance
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>
