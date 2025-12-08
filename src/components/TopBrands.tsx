@@ -2,12 +2,16 @@ import { motion } from 'framer-motion';
 
 const brands = [
   { name: 'ALX', logo: '/assets/images/landing/alx.svg' },
-  { name: 'LSETF', logo: '/assets/images/landing/lseft.png' },
-  { name: 'REVVE', logo: '/assets/images/landing/logo.png' },
-  { name: 'Nike', logo: '/assets/images/landing/nike.png' },
-  { name: 'Massive', logo: '/assets/images/landing/ma.png' },
+  { name: 'LSETF', logo: '/assets/images/landing/lsetf.png' },
   { name: 'EA', logo: '/assets/images/landing/ea.png' },
-  { name: 'Techpoint', logo: '/assets/images/landing/logo.png' },
+  { name: 'Microsoft', logo: '/assets/images/landing/microsoft.png' },
+  { name: 'Massive', logo: '/assets/images/landing/ma.png' },
+  { name: 'ALU', logo: '/assets/images/landing/alu.png' },
+  { name: 'Culminate', logo: '/assets/images/landing/culminate.png' },
+  { name: 'Goajo', logo: '/assets/images/landing/goajo.png' },
+  { name: 'IAH', logo: '/assets/images/landing/iah.png' },
+  { name: 'Ingleswitch', logo: '/assets/images/landing/ingleswitch.png' },
+  { name: '3MTT', logo: '/assets/images/landing/3mtt.png' },
 ];
 
 const TopBrands = () => {
