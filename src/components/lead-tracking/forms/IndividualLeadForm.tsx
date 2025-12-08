@@ -5,6 +5,7 @@ import CustomCheckbox from '@/components/input/CustomCheckbox';
 import ListValuesInput from '@/components/input/ListValuesInput';
 import MultiSelectDropdown, { MultiSelectOption } from '@/components/input/MultiSelectDropdown';
 import SingleFieldInput from '@/components/input/SingleFieldInput';
+import { LimitExceededModal } from '@/components/modals/LimitExceededModal';
 import SmartModal from '@/components/modals/SmartModal';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
 import { IndividualLeadFormDto } from '@/models/dtos/LeadFormDto';
@@ -13,6 +14,7 @@ import { FormTypeEnum } from '@/models/enum-models/FormTypeEnum';
 import { LocationEnum } from '@/models/enum-models/LocationEnum';
 import { PersonSenioritiesEnum } from '@/models/enum-models/PersonSenioritiesEnum';
 import { useAuth } from '@/providers/AuthProvider';
+import { useFeatureLimitStore } from '@/store/useFeatureLimitStore';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import { Box, Button, IconButton, LinearProgress, Tooltip, Typography } from '@mui/material';
@@ -41,13 +43,15 @@ const IndividualLeadForm = () => {
 
   const [existingFormId, setExistingFormId] = useState<string | null>(null);
   const [openSuccessModal, setOpenSuccessModal] = useState(false);
+  const [showLimitExceededModal, setShowLimitExceededModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [savingProgress, setSavingProgress] = useState(0);
   const [savingStatus, setSavingStatus] = useState('');
   const [currentTip, setCurrentTip] = useState('');
 
-  const { userDetails } = useAuth();
+  const { userDetails, subscriptionPlanType } = useAuth();
   const userId = userDetails?.userId;
+  const featureLimit = useFeatureLimitStore((state) => state.featureLimit);
 
   const { createIndividualLeadForm, updateIndividualLeadForm, autoPopulateLeadForm, useGetExistingFormType, isAutoPopulating } = useLeadFormHooks();
   const [autoPopulateData, setAutoPopulateData] = useState<string>('');
@@ -134,6 +138,16 @@ const IndividualLeadForm = () => {
       return;
     }
 
+    // Check if user has exceeded lead generation limits
+    const leadLimit = featureLimit?.lead?.noOfLeads?.limit ?? 0;
+    const leadCount = featureLimit?.lead?.noOfLeads?.count ?? 0;
+    const isUnlimited = leadLimit === -1;
+
+    if (!existingFormId && !isUnlimited && leadCount >= leadLimit) {
+      setShowLimitExceededModal(true);
+      return;
+    }
+
     // Start progress indicator
     setIsSaving(true);
     setSavingProgress(0);
@@ -211,11 +225,15 @@ const IndividualLeadForm = () => {
               setOpenSuccessModal(true);
             }, 500);
           },
-          onError: () => {
+          onError: (error: any) => {
             clearInterval(tipInterval);
             clearInterval(statusInterval);
             setIsSaving(false);
-            triggerToast('error', 'Update failed. Please try again.');
+            if (error?.response?.data?.limit_exceeded) {
+              setShowLimitExceededModal(true);
+            } else {
+              triggerToast('error', 'Update failed. Please try again.');
+            }
           },
         }
       );
@@ -231,11 +249,15 @@ const IndividualLeadForm = () => {
             setOpenSuccessModal(true);
           }, 500);
         },
-        onError: () => {
+        onError: (error: any) => {
           clearInterval(tipInterval);
           clearInterval(statusInterval);
           setIsSaving(false);
-          triggerToast('error', 'Creation failed. Please try again.');
+          if (error?.response?.data?.limit_exceeded) {
+            setShowLimitExceededModal(true);
+          } else {
+            triggerToast('error', 'Creation failed. Please try again.');
+          }
         },
       });
     }
@@ -545,7 +567,7 @@ const IndividualLeadForm = () => {
         open={openSuccessModal}
         image={<Image src="/assets/images/success.png" alt="Success" width={64} height={64} />}
         mainText="Success! 🎉"
-        subText={'Your form was successfully saved. Your form is now setup and ready to generate leads. ' + 'We’ll email you each time new leads (individuals) come in.'}
+        subText={'Your form was successfully saved. Your form is now setup and ready to generate leads. ' + "We'll email you each time new leads (individuals) come in."}
         buttonText="View Leads"
         onClick={() => {
           setOpenSuccessModal(false);
@@ -553,6 +575,16 @@ const IndividualLeadForm = () => {
         }}
         onOutlineButtonClick={() => setOpenSuccessModal(false)}
         outlineButtonText="Cancel"
+      />
+
+      {/* Limit Exceeded Modal */}
+      <LimitExceededModal
+        isOpen={showLimitExceededModal}
+        onClose={() => setShowLimitExceededModal(false)}
+        featureType="lead"
+        currentUsage={featureLimit?.lead?.noOfLeads?.count ?? 0}
+        limit={featureLimit?.lead?.noOfLeads?.limit ?? 0}
+        planName={subscriptionPlanType ?? 'your current plan'}
       />
     </Box>
   );

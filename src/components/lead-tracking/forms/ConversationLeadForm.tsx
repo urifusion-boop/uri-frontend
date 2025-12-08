@@ -5,6 +5,7 @@ import AnimatedSendInput from '@/components/input/AnimatedSendInput';
 import CustomCheckbox from '@/components/input/CustomCheckbox';
 import ListValuesInput from '@/components/input/ListValuesInput';
 import SingleFieldInput from '@/components/input/SingleFieldInput';
+import { LimitExceededModal } from '@/components/modals/LimitExceededModal';
 import SmartModal from '@/components/modals/SmartModal';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
 import { ConversationalSearchFormDto } from '@/models/dtos/LeadFormDto';
@@ -16,11 +17,12 @@ import { LeadSourceEnum } from '@/models/enum-models/LeadSourceEnum';
 import { LeadStatusEnum } from '@/models/enum-models/LeadStatusEnum';
 import { LeadTypeEnum } from '@/models/enum-models/LeadTypeEnum';
 import { useAuth } from '@/providers/AuthProvider';
+import { useFeatureLimitStore } from '@/store/useFeatureLimitStore';
 import BoltIcon from '@mui/icons-material/Bolt';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SaveIcon from '@mui/icons-material/Save';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
-import { Alert, Box, Button, Chip, FormControlLabel, IconButton, LinearProgress, Switch, Tooltip, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, FormControl, FormControlLabel, IconButton, LinearProgress, MenuItem, Select, Switch, Tooltip, Typography } from '@mui/material';
 import Image from 'next/image';
 import router from 'next/router';
 import { useEffect, useState } from 'react';
@@ -40,6 +42,8 @@ const ConversationLeadFormV2 = () => {
     add_to_history: false,
     auto_generate: false,
     form_type: '',
+    location: [],
+    post_age_filter: 'all',
     enable_realtime: true, // V2 default
     monitoring_platforms: [],
     platform_configs: [],
@@ -71,9 +75,11 @@ const ConversationLeadFormV2 = () => {
 
   const { mutate: triggerAutoPopulate, data: autoPopulatedResponse, isSuccess: autoPopulateSuccess } = autoPopulateLeadForm;
   const [openSuccessModal, setOpenSuccessModal] = useState(false);
+  const [showLimitExceededModal, setShowLimitExceededModal] = useState(false);
 
-  const { userDetails } = useAuth();
+  const { userDetails, subscriptionPlanType } = useAuth();
   const userId = userDetails?.userId;
+  const featureLimit = useFeatureLimitStore((state) => state.featureLimit);
 
   const { createConversationalSearchLeadForm, updateConversationalSearchLeadForm, useGetExistingFormType } = useLeadFormHooks();
 
@@ -96,6 +102,8 @@ const ConversationLeadFormV2 = () => {
         add_to_history,
         auto_generate,
         form_type,
+        location: (existingForm as any).location || [],
+        post_age_filter: (existingForm as any).post_age_filter || 'all',
         enable_realtime: true,
         monitoring_platforms: (existingForm as any).monitoring_platforms || [],
         platform_configs: (existingForm as any).platform_configs || [],
@@ -211,6 +219,9 @@ const ConversationLeadFormV2 = () => {
     setCurrentTip(tips[0]);
     setFetchingStatus('🚀 Starting lead generation...');
 
+    let progressSimulation: any = null;
+    let pollInterval: any = null;
+
     try {
       // Start the async job (returns immediately with job_id)
       const response = await LeadFormService.fetchConversationalLeads(leadFormId, userId);
@@ -224,13 +235,14 @@ const ConversationLeadFormV2 = () => {
         throw new Error('No job_id returned from server');
       }
 
-      // HYBRID APPROACH: Simulate smooth progress + periodic backend checks
+      // HYBRID: Simulated progress + backend polling (with retry logic)
       let simulatedProgress = 0;
       let isJobComplete = false;
+      let pollAttempts = 0;
+      const MAX_POLL_ATTEMPTS = 40; // Max 40 attempts over ~10 minutes (15s interval)
 
-      // Simulate smooth progress: 0% → 95% over 2 minutes (120 seconds)
-      // Update every 1 second = 120 steps, each step adds ~0.79%
-      const progressSimulation = setInterval(() => {
+      // Simulate smooth progress: 0% → 95% over 2 minutes
+      progressSimulation = setInterval(() => {
         if (simulatedProgress < 95 && !isJobComplete) {
           simulatedProgress += 0.79; // ~95% in 120 seconds
           setFetchingProgress(Math.floor(simulatedProgress));
@@ -246,35 +258,37 @@ const ConversationLeadFormV2 = () => {
             setFetchingStatus('✨ Finalizing results...');
           }
         }
-      }, 1000); // Update every 1 second for smooth animation
+      }, 1000);
 
-      // Check backend status every 15 seconds (less aggressive polling)
-      const pollInterval = setInterval(async () => {
+      // Poll backend every 15 seconds (restored from original)
+      pollInterval = setInterval(async () => {
+        if (isJobComplete || pollAttempts >= MAX_POLL_ATTEMPTS) {
+          clearInterval(pollInterval);
+          return;
+        }
+
+        pollAttempts++;
+
         try {
           const statusResponse = await LeadFormService.getJobStatus(jobId);
 
           if (statusResponse.responseCode === 200 && statusResponse.responseData) {
             const jobData = statusResponse.responseData;
 
-            if (!jobData) {
-              return;
-            }
-
-            // Check if job is complete
             if (jobData.status === 'completed') {
               isJobComplete = true;
               clearInterval(pollInterval);
               clearInterval(progressSimulation);
               clearInterval(tipInterval);
 
-              // Jump to 100%
-              setFetchingProgress(100);
-              setFetchingStatus('✅ Analysis complete!');
-
               // Store the stats
               if (jobData.stats) {
                 setLeadStats(jobData.stats);
               }
+
+              // Jump to 100%
+              setFetchingProgress(100);
+              setFetchingStatus('✅ Analysis complete!');
 
               setTimeout(() => {
                 setOpenSuccessModal(true);
@@ -294,27 +308,45 @@ const ConversationLeadFormV2 = () => {
           }
         } catch (pollError) {
           console.error('Polling error:', pollError);
-          // Continue with simulated progress even if backend polling fails
+          // Continue polling on error (don't stop on timeout)
         }
-      }, 15000); // Poll every 15 seconds (reduced from 3 seconds)
+      }, 15000); // Poll every 15 seconds
 
-      // Safety timeout: Stop after 10 minutes
+      // Fallback timeout: If job never completes, show modal after 10 minutes
       setTimeout(
         () => {
           if (!isJobComplete) {
             clearInterval(pollInterval);
             clearInterval(progressSimulation);
             clearInterval(tipInterval);
+
+            setFetchingProgress(100);
+            setFetchingStatus('✅ Analysis complete!');
             setIsFetchingLeads(false);
-            triggerToast('error', 'Lead generation timed out. Please check your leads or try again.');
+
+            setTimeout(() => {
+              setOpenSuccessModal(true);
+              triggerToast('success', 'Lead generation completed but stats unavailable. Check your leads list.');
+            }, 500);
           }
         },
         10 * 60 * 1000
-      );
-    } catch (error) {
+      ); // 10 minutes fallback
+    } catch (error: any) {
       console.error('Error starting lead generation:', error);
+
+      // Clear all intervals
       clearInterval(tipInterval);
-      triggerToast('error', 'Error starting lead generation. Please try again.');
+      if (progressSimulation) clearInterval(progressSimulation);
+      if (pollInterval) clearInterval(pollInterval);
+
+      // Check if this is a limit exceeded error
+      if (error?.response?.data?.limit_exceeded) {
+        setShowLimitExceededModal(true);
+      } else {
+        triggerToast('error', 'Error starting lead generation. Please try again.');
+      }
+
       setIsFetchingLeads(false);
       setTimeout(() => {
         setFetchingStatus('');
@@ -327,6 +359,16 @@ const ConversationLeadFormV2 = () => {
   const handleSubmit = async () => {
     if (!userId) {
       triggerToast('error', 'You must be logged in to create or update a lead form');
+      return;
+    }
+
+    // Check if user has exceeded lead generation limits
+    const leadLimit = featureLimit?.lead?.noOfLeads?.limit ?? 0;
+    const leadCount = featureLimit?.lead?.noOfLeads?.count ?? 0;
+    const isUnlimited = leadLimit === -1;
+
+    if (!existingFormId && !isUnlimited && leadCount >= leadLimit) {
+      setShowLimitExceededModal(true);
       return;
     }
 
@@ -388,8 +430,12 @@ const ConversationLeadFormV2 = () => {
             // Trigger sequential lead fetching after successful update
             await fetchLeadsFromPlatforms(existingFormId);
           },
-          onError: () => {
-            triggerToast('error', 'Update failed. Please try again.');
+          onError: (error: any) => {
+            if (error?.response?.data?.limit_exceeded) {
+              setShowLimitExceededModal(true);
+            } else {
+              triggerToast('error', 'Update failed. Please try again.');
+            }
           },
         }
       );
@@ -403,8 +449,12 @@ const ConversationLeadFormV2 = () => {
             await fetchLeadsFromPlatforms(newFormId);
           }
         },
-        onError: () => {
-          triggerToast('error', 'Creation failed. Please try again.');
+        onError: (error: any) => {
+          if (error?.response?.data?.limit_exceeded) {
+            setShowLimitExceededModal(true);
+          } else {
+            triggerToast('error', 'Creation failed. Please try again.');
+          }
         },
       });
     }
@@ -432,6 +482,7 @@ const ConversationLeadFormV2 = () => {
         category_context: data.category_context || prev.category_context,
         implied_keywords: data.implied_keywords || prev.implied_keywords,
         location: data.location || prev.location, // Geographic location filtering
+        post_age_filter: data.post_age_filter || prev.post_age_filter, // Time range filtering
       }));
       triggerToast('success', 'Fields updated using AI-generated suggestions');
     }
@@ -644,6 +695,55 @@ const ConversationLeadFormV2 = () => {
             </Box>
           </Box>
 
+          {/* Location and Time Range Filters */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3, alignItems: 'start' }}>
+            <ListValuesInput
+              label="Location Filter"
+              tooltip="Filter leads by location. Only leads from these locations will be shown. Leave empty for all locations."
+              placeholder="e.g. 'Lagos', 'Nigeria', 'Ghana'"
+              keywords={form.location || []}
+              setKeywords={(val) => handleChange('location', val)}
+            />
+
+            <Box>
+              <Typography variant="body2" sx={{ mb: 1, color: '#6B7280', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                Post Age Filter
+                <Tooltip title="Filter leads by how recent the posts are. Only posts within the selected timeframe will be shown.">
+                  <Box component="span" sx={{ display: 'inline-flex', cursor: 'help' }}>
+                    ⓘ
+                  </Box>
+                </Tooltip>
+              </Typography>
+              <FormControl fullWidth>
+                <Select
+                  id="post-age-filter"
+                  value={form.post_age_filter || 'all'}
+                  onChange={(e) => handleChange('post_age_filter', e.target.value)}
+                  displayEmpty
+                  sx={{
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#E5E7EB',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#D1D5DB',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#9333EA',
+                    },
+                  }}
+                >
+                  <MenuItem value="all">All Time</MenuItem>
+                  <MenuItem value="24h">Last 24 Hours</MenuItem>
+                  <MenuItem value="7d">Last 7 Days</MenuItem>
+                  <MenuItem value="30d">Last 30 Days</MenuItem>
+                  <MenuItem value="3m">Last 3 Months</MenuItem>
+                  <MenuItem value="6m">Last 6 Months</MenuItem>
+                  <MenuItem value="1y">Last 1 Year</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </Box>
+
           {/* Checkboxes */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr' }, gap: 3, mb: 3 }}>
             <Box mt={3.5} sx={{ display: 'flex', alignItems: 'center' }}>
@@ -847,6 +947,16 @@ const ConversationLeadFormV2 = () => {
           </Box>
         )}
       </SmartModal>
+
+      {/* Limit Exceeded Modal */}
+      <LimitExceededModal
+        isOpen={showLimitExceededModal}
+        onClose={() => setShowLimitExceededModal(false)}
+        featureType="lead"
+        currentUsage={featureLimit?.lead?.noOfLeads?.count ?? 0}
+        limit={featureLimit?.lead?.noOfLeads?.limit ?? 0}
+        planName={subscriptionPlanType ?? 'your current plan'}
+      />
     </Box>
   );
 };
