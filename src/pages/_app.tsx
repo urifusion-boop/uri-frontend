@@ -71,7 +71,14 @@ const ProtectedRoutes = () => {
   useEffect(() => {
     if (isPending) return;
 
-    const pathIsProtected = !publicRoutes.includes(router.pathname) && !router.pathname.startsWith('/faqs/') && !router.pathname.startsWith('/blog/');
+    const pathIsProtected =
+      !publicRoutes.includes(router.pathname) &&
+      !router.pathname.startsWith('/faqs/') &&
+      !router.pathname.startsWith('/blog/') &&
+      !router.pathname.startsWith('/resources/') &&
+      !router.pathname.startsWith('/company/') &&
+      !router.pathname.startsWith('/tools/') &&
+      !router.pathname.startsWith('/legal/');
     if (!isAuthenticated && pathIsProtected) {
       if (logoutUser) {
         logoutUser();
