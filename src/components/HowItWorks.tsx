@@ -29,7 +29,7 @@ const HowItWorks = () => {
         <div className="grid md:grid-cols-2 gap-8 md:gap-10 items-stretch max-w-6xl mx-auto">
           <div>
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center md:text-left mb-12 sm:mb-16 px-4 md:px-0">
-              <p className="text-primary text-sm font-semibold tracking-wide">HOW IT WORKS?</p>
+              <p className="text-primary text-sm font-semibold tracking-wide">HOW IT WORKS</p>
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mt-2">
                 How It <span className="text-primary">Works ?</span>
               </h2>
