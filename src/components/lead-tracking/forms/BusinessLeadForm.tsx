@@ -3,11 +3,13 @@ import LoadingButton from '@/components/buttons/LoadingButton';
 import AnimatedSendInput from '@/components/input/AnimatedSendInput';
 import ListValuesInput from '@/components/input/ListValuesInput';
 import SingleFieldInput from '@/components/input/SingleFieldInput';
+import { LimitExceededModal } from '@/components/modals/LimitExceededModal';
 import SmartModal from '@/components/modals/SmartModal';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
 import { BusinessSearchFormDto } from '@/models/dtos/LeadFormDto';
 import { FormTypeEnum } from '@/models/enum-models/FormTypeEnum';
 import { useAuth } from '@/providers/AuthProvider';
+import { useFeatureLimitStore } from '@/store/useFeatureLimitStore';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import { Box, IconButton, Tooltip, Typography } from '@mui/material';
@@ -37,9 +39,11 @@ const BusinessLeadForm = () => {
 
   const { mutate: triggerAutoPopulate, data: autoPopulatedResponse, isSuccess: autoPopulateSuccess } = autoPopulateLeadForm;
   const [openSuccessModal, setOpenSuccessModal] = useState(false);
+  const [showLimitExceededModal, setShowLimitExceededModal] = useState(false);
 
-  const { userDetails } = useAuth();
+  const { userDetails, subscriptionPlanType } = useAuth();
   const userId = userDetails?.userId;
+  const featureLimit = useFeatureLimitStore((state) => state.featureLimit);
 
   const { createBusinessSearchLeadForm, updateBusinessSearchLeadForm, useGetExistingFormType } = useLeadFormHooks();
 
@@ -79,6 +83,18 @@ const BusinessLeadForm = () => {
       return;
     }
 
+    const leadLimit = featureLimit?.lead?.noOfLeads?.limit ?? 0;
+    const leadCount = featureLimit?.lead?.noOfLeads?.count ?? 0;
+    const isUnlimited = leadLimit === -1;
+    const disableLimitCheck = (process.env.NEXT_PUBLIC_DISABLE_LIMIT_CHECK ?? 'true') === 'true';
+
+    if (!disableLimitCheck) {
+      if (!existingFormId && !isUnlimited && leadCount >= leadLimit) {
+        setShowLimitExceededModal(true);
+        return;
+      }
+    }
+
     const payload: BusinessSearchFormDto = {
       ...form,
       user_id: userId,
@@ -103,8 +119,12 @@ const BusinessLeadForm = () => {
           onSuccess: () => {
             setOpenSuccessModal(true);
           },
-          onError: () => {
-            triggerToast('error', 'Update failed. Please try again.');
+          onError: (error: any) => {
+            if (error?.response?.data?.limit_exceeded) {
+              setShowLimitExceededModal(true);
+            } else {
+              triggerToast('error', 'Update failed. Please try again.');
+            }
           },
         }
       );
@@ -113,8 +133,12 @@ const BusinessLeadForm = () => {
         onSuccess: () => {
           setOpenSuccessModal(true);
         },
-        onError: () => {
-          triggerToast('error', 'Creation failed. Please try again.');
+        onError: (error: any) => {
+          if (error?.response?.data?.limit_exceeded) {
+            setShowLimitExceededModal(true);
+          } else {
+            triggerToast('error', 'Creation failed. Please try again.');
+          }
         },
       });
     }
@@ -296,6 +320,16 @@ const BusinessLeadForm = () => {
         }}
         onOutlineButtonClick={() => setOpenSuccessModal(false)}
         outlineButtonText="Cancel"
+      />
+
+      {/* Limit Exceeded Modal */}
+      <LimitExceededModal
+        isOpen={showLimitExceededModal}
+        onClose={() => setShowLimitExceededModal(false)}
+        featureType="lead"
+        currentUsage={featureLimit?.lead?.noOfLeads?.count ?? 0}
+        limit={featureLimit?.lead?.noOfLeads?.limit ?? 0}
+        planName={subscriptionPlanType ?? 'your current plan'}
       />
     </Box>
   );

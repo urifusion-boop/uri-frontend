@@ -206,6 +206,8 @@ export interface ConversationalSearchFormDto {
   add_to_history: boolean;
   auto_generate: boolean;
   form_type: string;
+  location?: string[]; // Geographic location filtering
+  post_age_filter?: string; // Time range filter: "24h", "7d", "30d", "3m", "6m", "1y", "all"
   // V2 fields for real-time monitoring
   enable_realtime?: boolean;
   monitoring_platforms?: string[];
