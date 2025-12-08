@@ -1,7 +1,7 @@
 import footerBackground from '@/assets/footer-background.png';
 import { Button } from '@mui/material';
 import { motion } from 'framer-motion';
-import { ArrowRight, Linkedin, Twitter, Youtube } from 'lucide-react';
+import { ArrowRight, Facebook, Linkedin, Twitter, Youtube } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -35,7 +35,16 @@ const Footer = () => {
                 <img src="/assets/images/landing/logo.png" alt="URI" className="h-10 sm:h-12" />
                 <div className="flex items-center gap-3">
                   <a
-                    href="https://linkedin.com"
+                    href="https://www.facebook.com/share/p/Cn19gyDHqVNni2ca/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
+                    aria-label="Facebook"
+                  >
+                    <Facebook className="h-5 w-5" />
+                  </a>
+                  <a
+                    href="https://www.linkedin.com/company/uri-creative/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
@@ -44,7 +53,7 @@ const Footer = () => {
                     <Linkedin className="h-5 w-5" />
                   </a>
                   <a
-                    href="https://youtube.com"
+                    href="https://www.youtube.com/@UriCreative"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
@@ -53,7 +62,7 @@ const Footer = () => {
                     <Youtube className="h-5 w-5" />
                   </a>
                   <a
-                    href="https://twitter.com"
+                    href="https://x.com/uricreative"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"

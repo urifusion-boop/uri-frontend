@@ -94,8 +94,10 @@ export default function ContactPage() {
               <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-2xl p-8">
                 <h3 className="text-lg font-semibold mb-3">Prefer a Quick Chat?</h3>
                 <p className="text-sm text-muted-foreground mb-4">Book a 15-minute call with our team to discuss your needs and see if URI is right for you.</p>
-                <Button variant="outline" className="rounded-full">
-                  Schedule a Call
+                <Button asChild variant="outline" className="rounded-full">
+                  <a href="https://calendly.com/d/cv8f-dc7-scf/let-s-talk-about-uri" target="_blank" rel="noopener noreferrer">
+                    Schedule a Call
+                  </a>
                 </Button>
               </div>
 
