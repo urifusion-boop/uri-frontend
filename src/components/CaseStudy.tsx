@@ -72,39 +72,6 @@ const CaseStudy = () => {
             </div>
           </motion.div>
 
-          {/* <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} className="mb-12">
-            <h3 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8">The Results</h3>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-              {metrics.map((metric, index) => (
-                <motion.div
-                  key={metric.label}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.4 + index * 0.1 }}
-                  className="bg-card border border-border rounded-xl p-6 shadow-lg hover-lift"
-                >
-                  <metric.icon className={`w-8 h-8 mb-4 ${metric.color}`} />
-                  <div className="text-sm text-muted-foreground mb-2">{metric.label}</div>
-                  <div className="space-y-2 mb-3">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Before:</span>
-                      <span className="font-semibold line-through opacity-60">{metric.before}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground text-sm">After:</span>
-                      <span className="text-2xl font-bold text-foreground">{metric.after}</span>
-                    </div>
-                  </div>
-                  <div className={`inline-flex items-center gap-1 bg-primary/10 ${metric.color} px-3 py-1 rounded-full text-sm font-bold`}>
-                    <ArrowRight className="w-3 h-3" />
-                    {metric.increase}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div> */}
-
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}

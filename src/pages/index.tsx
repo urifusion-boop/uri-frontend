@@ -1,5 +1,4 @@
 import CRMRevitalization from '@/components/CRMRevitalization';
-import CTA from '@/components/CTA';
 import CaseStudy from '@/components/CaseStudy';
 import ContextualIntelligence from '@/components/ContextualIntelligence';
 import FAQs from '@/components/FAQs';
@@ -32,7 +31,7 @@ export default function Home() {
       <Testimonials />
       <ROICalculator />
       <FAQs />
-      <CTA />
+      {/* <CTA /> */}
       <Footer />
     </div>
   );

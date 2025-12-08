@@ -10,31 +10,64 @@ import Link from 'next/link';
 
 const faqs = [
   {
-    question: 'How do I connect my CRM to URI?',
-    answer:
-      'Navigate to Settings > Integrations, select your CRM (Salesforce, HubSpot, or Pipedrive), and follow the OAuth authentication flow. Once connected, URI will automatically sync your contacts and begin monitoring for buying signals.',
+    question: 'What is URI?',
+    answer: 'URI is an AI-powered platform that detects buying intent, finds verified decision-makers, and generates sales opportunities automatically.',
   },
   {
-    question: 'What types of buying signals does URI detect?',
-    answer:
-      'URI detects various signal types including purchase intent, job changes, company events, pain point expressions, life events, growth signals, location-based signals, and recommendation requests. Each signal is scored based on relevance and urgency.',
+    question: 'How does URI find leads?',
+    answer: 'URI scans the internet — LinkedIn, X, Facebook, news platforms, forums, and company pages — to detect sales signals and high-intent triggers.',
   },
   {
-    question: "How accurate is URI's signal detection?",
-    answer: "URI's AI achieves 85%+ accuracy on signal classification. We continuously train our models on African market data to improve relevance for local businesses.",
+    question: 'What kind of signals does URI track?',
+    answer: [
+      'Direct requests and need',
+      'Complaints & service frustrations',
+      'Product launches',
+      'Expansion or relocation updates',
+      'Hashtag mentions',
+      'Keyword mentions',
+      'Company activities & market trends',
+    ],
   },
   {
-    question: 'Can I customize which signals trigger alerts?',
-    answer:
-      'Yes! In the Alert Settings, you can configure custom rules based on signal type, industry, location, company size, and more. You can also set different notification channels for different signal priorities.',
+    question: 'Who is URI built for?',
+    answer: 'Business owners, sales teams, marketers, founders, agencies, and anyone who needs a steady flow of verified leads and real-time market insights.',
   },
   {
-    question: 'Is my data secure and NDPR compliant?',
-    answer: 'Absolutely. URI is fully compliant with Nigeria Data Protection Regulation (NDPR) and GDPR. We use enterprise-grade encryption, and you can request data deletion at any time.',
+    question: 'Does URI provide verified contact details?',
+    answer: 'Yes — URI enriches leads with email, phone number, social links, role, company info, and more (based on availability).',
   },
   {
-    question: 'How do I export leads from URI?',
-    answer: 'You can export leads as CSV from the Leads dashboard, or use our CRM sync to automatically push leads to your connected CRM. API access is available on Enterprise plans.',
+    question: 'How fast are the alerts?',
+    answer: 'Instant. URI notifies you the moment a buying signal is detected.',
+  },
+  {
+    question: 'Can I customize my trackers?',
+    answer: 'Yes — you can customize keywords, hashtags, industries, decision-maker roles, and company types you want to track.',
+  },
+  {
+    question: 'Will URI work for my industry?',
+    answer: 'Absolutely. URI supports SaaS, logistics, HR, fintech, FMCGs, Marketing agencies, real estate, education, e-commerce, hospitality, and more.',
+  },
+  {
+    question: 'Is there a free trial?',
+    answer: 'Yes, new users get free credits with leads, signals, and trackers included.',
+  },
+  {
+    question: 'Does URI replace my sales team?',
+    answer: 'No — URI supports your sales team by eliminating manual research and delivering warm, high-intent opportunities every day.',
+  },
+  {
+    question: 'Is my data secure?',
+    answer: 'Yes — URI uses encrypted systems and strictly follows data protection regulations in all the markets we operate in.',
+  },
+  {
+    question: 'Can URI generate outreach messages?',
+    answer: 'Yes — URI’s AI Agent generates personalised outreach messages based on the signal detected.',
+  },
+  {
+    question: 'Can I integrate URI with my CRM?',
+    answer: 'CRM integration is currently in rollout — users can export leads while native integrations are being finalized.',
   },
 ];
 
@@ -81,7 +114,17 @@ export default function HelpCenterPage() {
               {faqs.map((faq, index) => (
                 <AccordionItem key={index} value={`item-${index}`} className="bg-card border border-border rounded-xl px-6">
                   <AccordionTrigger className="text-left hover:no-underline">{faq.question}</AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground">{faq.answer}</AccordionContent>
+                  <AccordionContent className="text-muted-foreground">
+                    {Array.isArray(faq.answer) ? (
+                      <ul className="list-disc pl-6">
+                        {faq.answer.map((item: string, idx: number) => (
+                          <li key={idx}>{item}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <span>{faq.answer}</span>
+                    )}
+                  </AccordionContent>
                 </AccordionItem>
               ))}
             </Accordion>

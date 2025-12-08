@@ -17,7 +17,7 @@ const TopBrands = () => {
         <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
           <p className="text-primary text-sm font-semibold tracking-wide">BRANDS</p>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mt-2">
-            Trusted by top <span className="text-primary">Brands</span>
+            Trusted by top <span className="text-primary">Companies</span>
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground mt-2">Logos scroll continuously; hover to pause.</p>
         </motion.div>
