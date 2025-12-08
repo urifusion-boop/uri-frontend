@@ -46,7 +46,16 @@ const SubscriptionPlansList = ({ onSelectPlan, selectedPlan }: ChoosePaymentProp
   const filteredSubscriptionPlans = useMemo(() => {
     if (!subscriptionPlans) return [];
 
-    return [...subscriptionPlans].sort((a, b) => a.amount - b.amount).filter((plan) => plan.interval === activeTab);
+    return [...subscriptionPlans]
+      .sort((a, b) => a.amount - b.amount)
+      .filter((plan) => {
+        // Filter by active tab interval
+        if (plan.interval !== activeTab) return false;
+
+        // Filter out plans that don't have matching plan features
+        const planType = plan.name.split('_')[0] as keyof typeof planFeatures;
+        return planFeatures[planType] !== undefined;
+      });
   }, [subscriptionPlans, activeTab]);
 
   const getPlanTypeIcon = (planType: string): IconType => {

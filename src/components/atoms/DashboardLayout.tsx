@@ -1,9 +1,9 @@
+import { Box } from '@mui/material';
 import React, { ReactNode, useState } from 'react';
 
 import useCustomTheme from '@/hooks/theme.hook';
 import { SubscriptionStatusEnum } from '@/models/enum-models/SubscriptionStatusEnum';
 import styles from '@/styles/Dashboard.module.css';
-import { Box } from '@mui/material';
 import { UserRoleEnum } from '../../models/enum-models/UserRoleEnums';
 import { useAuth } from '../../providers/AuthProvider';
 import AdminDashSideNav from '../admin/AdminDashSideNav';
@@ -45,7 +45,7 @@ const DashboardLayout: React.FC<IProps> = ({ children, bgColor, sideNavColor, ex
           backgroundColor: bgColor ?? themeColors.background,
         }}
       >
-        {/* {userDetails?.subscriptionStatus !== SubscriptionStatusEnum.ACTIVE ? (
+        {userDetails?.subscriptionStatus !== SubscriptionStatusEnum.ACTIVE && userDetails?.trialStatus !== 'active' ? (
           <>
             <PageHeader toggleSideNav={toggleSideNav} />
             <Box
@@ -59,7 +59,7 @@ const DashboardLayout: React.FC<IProps> = ({ children, bgColor, sideNavColor, ex
               <NewSubscription />
             </Box>
           </>
-        ) : ( */}
+        ) : (
           <>
             {!excludeHeader && (userDetails?.role === UserRoleEnum.ADMIN ? <AdminPageHeader toggleSideNav={toggleSideNav} /> : <PageHeader toggleSideNav={toggleSideNav} />)}
             <div
@@ -73,7 +73,7 @@ const DashboardLayout: React.FC<IProps> = ({ children, bgColor, sideNavColor, ex
               {children}
             </div>
           </>
-        {/* )} */}
+        )}
       </div>
     </>
   );

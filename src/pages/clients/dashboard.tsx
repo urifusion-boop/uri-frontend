@@ -10,20 +10,36 @@ import GuideTour from '@/components/guide-tour/guide-tour';
 import { DASHBOARD_TOUR_STEPS } from '@/components/guide-tour/tour-steps/dashboard-tour';
 import useGuideTour from '@/components/guide-tour/useGuideTour';
 import CustomModal from '@/components/modals/CustomModal';
+import TrialCountdownBanner from '@/components/trial/TrialCountdownBanner';
+import TrialExpiredModal from '@/components/trial/TrialExpiredModal';
 import { useClientsDashHook } from '@/hooks/clients/dashboard.hook';
+import { useTrialStatus } from '@/hooks/trial/useTrial.hook';
 import { useModal } from '@/hooks/utils.hook';
+import { useAuth } from '@/providers/AuthProvider';
 import SeoHead from '../../components/atoms/SeoHead';
 
 const ClientsDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [showExpiredModal, setShowExpiredModal] = useState(false);
 
   const { userDetails, tabButtons } = useClientsDashHook();
+  const { userDetails: authUser } = useAuth();
   const { open, openModal, closeModal, setOpen } = useModal();
   const { run, startTour, steps, handleTourFinish } = useGuideTour({
     initialRun: true,
     steps: DASHBOARD_TOUR_STEPS,
     tourKey: 'hasSeenDashboardTour',
   });
+
+  // Fetch trial status with automatic polling
+  const { data: trialStatus } = useTrialStatus(authUser?.userId);
+
+  // Show expired modal if trial expired
+  useEffect(() => {
+    if (trialStatus?.status === 'expired') {
+      setShowExpiredModal(true);
+    }
+  }, [trialStatus?.status]);
 
   useEffect(() => {
     const showWelcome = localStorage.getItem('URI_WELCOME');
@@ -52,6 +68,13 @@ const ClientsDashboard = () => {
       <Box sx={{ px: { xs: 1, md: 4 }, py: 2 }}>
         <Box sx={{ backgroundColor: '#fff', borderRadius: 2, padding: { xs: 2, md: 4 } }}>
           <DashboardCard startTour={startTour} username={userDetails?.firstName ?? ''} />
+
+          {/* Trial Countdown Banner */}
+          {trialStatus && trialStatus.status === 'active' && (
+            <Box sx={{ mt: 3 }}>
+              <TrialCountdownBanner trialStatus={trialStatus} />
+            </Box>
+          )}
 
           <Box display="flex" borderBottom="1px solid #E0E0E0" justifyContent="flex-start" width={'100%'} overflow="auto" mt={3} mb={3}>
             {tabButtons.map((tab) => (
@@ -107,6 +130,9 @@ const ClientsDashboard = () => {
             </CustomButton>
           </Box>
         </CustomModal>
+
+        {/* Trial Expired Modal */}
+        {trialStatus && <TrialExpiredModal open={showExpiredModal} onClose={() => setShowExpiredModal(false)} trialStatus={trialStatus} />}
       </Box>
     </DashboardLayout>
   );

@@ -1,335 +1,220 @@
-import { Box, Grid } from "@mui/material";
-import React, { useState } from "react";
-import Text from "../atoms/CustomText";
-import styles from "../../styles/landing.module.css";
-import Link from "next/link";
+import footerBackground from '@/assets/footer-background.png';
+import { Button } from '@mui/material';
+import { motion } from 'framer-motion';
+import { ArrowRight, Linkedin, Twitter, Youtube } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
 
-import { IoLogoInstagram } from "react-icons/io";
-import { LuTwitter } from "react-icons/lu";
-import { RiFacebookCircleLine } from "react-icons/ri";
-import CustomButton from "../atoms/CustomButton";
-import CustomModal from "../modals/CustomModal";
-import { useModal } from "../../hooks/utils.hook";
-import InputField from "../atoms/Input";
-import TextAreaField from "../atoms/CustomTextArea";
-import { ContactMessageService } from "../../api/ContactService";
-import { TextHelper } from "../../helpers/TextHelper";
-import { useRouter } from "next/router";
-import { AppleIcon, GooglePlayStoreIcon } from "@/components/atoms/Icons";
-
-interface IProps {
-  toggleTAndC: () => void;
-  toggleFAQs: () => void;
-}
-
-const Footer: React.FC<IProps> = ({ toggleTAndC, toggleFAQs }) => {
-  const router = useRouter();
-  const { open, setOpen, openModal } = useModal();
-  const [contactFormDetails, setContactFormDetails] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
-  const [messageSent, setMessageSent] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const sendContactMessage = async () => {
-    setIsLoading(true);
-    const response =
-      await ContactMessageService.createMessageApi(contactFormDetails);
-    if (response.status) setMessageSent(true);
-    setIsLoading(false);
-    setContactFormDetails({
-      name: "",
-      email: "",
-      message: "",
-    });
-  };
-
+const Footer = () => {
   return (
-    <Box className={styles.footerContainer}>
-      <Grid
-        container
-        spacing={2}
-        sx={{ mt: 2, pb: 3, borderBottom: "2px solid dimgray" }}
-      >
-        <Grid item xs={12} sm={3}>
-          <img
-            src="/assets/images/landing/logo-white.png"
-            alt="Image not found"
-            className={styles.footerLogo}
-          />
-        </Grid>
-        <Grid item xs={12} sm={3}>
-          <Text
-            className="pointer"
-            size={17}
-            weight={500}
-            color="white"
-            sx={{ mt: 2 }}
-            center
-            onClick={() => router.push("/terms-and-conditions")}
-          >
-            Terms & Conditions
-          </Text>
-        </Grid>
-        <Grid item xs={12} sm={3}>
-          <Text
-            className="pointer"
-            size={17}
-            weight={500}
-            color="white"
-            sx={{ mt: 2 }}
-            center
-            onClick={() => router.push("/privacy-policy")}
-          >
-            Privacy Policy
-          </Text>
-        </Grid>
-        <Grid item xs={12} sm={3}>
-          <Text
-            className="pointer"
-            size={17}
-            weight={500}
-            color="white"
-            sx={{ mt: 2 }}
-            center
-            onClick={() => toggleFAQs()}
-          >
-            FAQs
-          </Text>
-        </Grid>
-      </Grid>
+    <footer className="relative">
+      {/* Background Image Section */}
+      <div className="relative h-[200px] sm:h-[280px] md:h-[320px] overflow-hidden">
+        <Image src={footerBackground} alt="" fill priority className="object-cover object-center" />
+        {/* Gradient overlay for smooth transition */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
+      </div>
 
-      <Grid container spacing={2} sx={{ mt: 3 }}>
-        <Grid item xs={12} sm={5}>
-          <Box className="d-flex" mb={3}>
-            <Link href="https://www.instagram.com/uri.creative?igsh=OGQ5ZDc2ODk2ZA==">
-              <IoLogoInstagram
-                style={{
-                  color: "white",
-                  marginRight: "20px",
-                  width: "20px",
-                  height: "20px",
-                }}
-              />
-            </Link>
-            <Link href="https://twitter.com/uricreative?t=2H3TtMmJr8SiKELAzc2WkQ&s=08">
-              <LuTwitter
-                style={{
-                  color: "white",
-                  marginRight: "20px",
-                  width: "20px",
-                  height: "20px",
-                }}
-              />
-            </Link>
-            <Link href="https://www.facebook.com">
-              <RiFacebookCircleLine
-                style={{
-                  color: "white",
-                  marginRight: "20px",
-                  width: "20px",
-                  height: "20px",
-                }}
-              />
-            </Link>
-          </Box>
-          <Box mb={"30px"} maxWidth={"350px"} gap={"12px"} display={"flex"}>
-            <Box
-              bgcolor={"white"}
-              paddingY={"8px"}
-              paddingX={"12px"}
-              borderRadius={"5px"}
-              alignItems={"center"}
-              className="d-flex"
-              flexBasis={"100%"}
-              mt={2}
-              style={{ cursor: "pointer" }} // Add pointer cursor for better UX
-            >
-              <GooglePlayStoreIcon />
-              <Box marginLeft={"8px"}>
-                <Text size={10} weight={500} color="black">
-                  GET IT ON
-                </Text>
-                <Text size={13} weight={600} color="black">
-                  Google Play
-                </Text>
-              </Box>
-            </Box>
-            <Box
-              alignItems={"center"}
-              bgcolor={"white"}
-              paddingY={"8px"}
-              paddingX={"12px"}
-              borderRadius={"5px"}
-              className="d-flex"
-              flexBasis={"100%"}
-              mt={2}
-              style={{ cursor: "pointer" }} // Add pointer cursor for better UX
-            >
-              <AppleIcon />
-              <Box marginLeft={"8px"}>
-                <Text size={10} weight={500} color="black">
-                  Download on the
-                </Text>
-                <Text size={13} weight={600} color="black">
-                  App Store
-                </Text>
-              </Box>
-            </Box>
-          </Box>
+      {/* Main Footer Card */}
+      <div className="relative -mt-16 sm:-mt-24 md:-mt-32 px-4 sm:px-6 lg:px-8 pb-8">
+        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="max-w-7xl mx-auto bg-card rounded-3xl shadow-xl overflow-hidden">
+          {/* CTA Section */}
+          <div className="p-8 sm:p-12 lg:p-16 border-b border-border">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+              {/* Left: Headline + CTA */}
+              <div className="flex-1">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight mb-6">Your customers are speaking, Are you listening?</h2>
+                <Button size="large" className="bg-foreground text-background hover:bg-foreground/90 text-base px-6 py-6 rounded-xl font-semibold group">
+                  Start building for free
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </div>
 
-          <Text size={15} weight={500} color="white">
-            2024 Uzuri Creative Ltd . All Rights Reserved
-          </Text>
-        </Grid>
-        <Grid item xs={12} sm={7}>
-          <Box className="d-flex justify-end" mb={3}>
-            <Text
-              size={22}
-              weight={700}
-              style={{ color: "white", fontFamily: "poorich" }}
-            >
-              Have any questions? Reach out to us
-            </Text>
-          </Box>
-          <div>
-            <Box className="d-flex justify-end">
-              <CustomButton
-                mode="primary"
-                type="submit"
-                style={{
-                  width: "100%",
-                  maxWidth: "450px",
-                }}
-                loading={false}
-                onClick={() => openModal()}
-              >
-                Contact Us
-              </CustomButton>
-            </Box>
+              {/* Right: Logo + Social */}
+              <div className="flex flex-col items-start lg:items-end gap-6">
+                <img src="/assets/images/landing/logo.png" alt="URI" className="h-10 sm:h-12" />
+                <div className="flex items-center gap-3">
+                  <a
+                    href="https://linkedin.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
+                    aria-label="LinkedIn"
+                  >
+                    <Linkedin className="h-5 w-5" />
+                  </a>
+                  <a
+                    href="https://youtube.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
+                    aria-label="YouTube"
+                  >
+                    <Youtube className="h-5 w-5" />
+                  </a>
+                  <a
+                    href="https://twitter.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
+                    aria-label="Twitter"
+                  >
+                    <Twitter className="h-5 w-5" />
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
-        </Grid>
-      </Grid>
 
-      <CustomModal
-        width="556px"
-        open={open}
-        setOpen={setOpen}
-        closeOnOverlayClick={true}
-      >
-        {!messageSent ? (
-          <Box sx={{ padding: "10px 10px" }}>
-            <Text size={32} weight={700} center>
-              Reach out to us!
-            </Text>
-            <Text size={16} weight={500} sx={{ mb: 2 }} center>
-              {`We're always happy to hear from you.`}
-            </Text>
+          {/* Footer Links Grid */}
+          <div className="p-8 sm:p-12 lg:p-16">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 lg:gap-12">
+              {/* Product */}
+              <div>
+                <h4 className="font-semibold text-foreground mb-4">Product</h4>
+                <ul className="space-y-3 text-sm">
+                  <li>
+                    <Link href="/features" className="text-muted-foreground hover:text-foreground transition-colors">
+                      Features
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/signals" className="text-muted-foreground hover:text-foreground transition-colors">
+                      Signals
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/integrations" className="text-muted-foreground hover:text-foreground transition-colors">
+                      Integrations
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+                      Pricing
+                    </Link>
+                  </li>
+                </ul>
+              </div>
 
-            <Box mb={2}>
-              <InputField
-                placeholder="Your Full Name"
-                type="text"
-                value={contactFormDetails.name}
-                onChange={(e) => {
-                  setContactFormDetails({
-                    ...contactFormDetails,
-                    name: e.target.value,
-                  });
-                }}
-              />
-              {contactFormDetails.name.trim().length < 3 ? (
-                <Text size={12} weight={400} color="red">
-                  Full Name must be at least three characters.
-                </Text>
-              ) : null}
-            </Box>
-            <Box mb={2}>
-              <InputField
-                placeholder="Your Email Address"
-                type="email"
-                value={contactFormDetails.email}
-                onChange={(e) => {
-                  setContactFormDetails({
-                    ...contactFormDetails,
-                    email: e.target.value,
-                  });
-                }}
-                style={{ marginBottom: "20px" }}
-              />
-              {!TextHelper.containsEmail(contactFormDetails.email) ? (
-                <Text size={12} weight={400} color="red">
-                  Please input a valid email address.
-                </Text>
-              ) : null}
-            </Box>
-            <TextAreaField
-              style={{
-                padding: "30px",
-                fontSize: "15px",
-              }}
-              placeholder="Your message."
-              value={contactFormDetails.message}
-              onChange={(e) =>
-                setContactFormDetails({
-                  ...contactFormDetails,
-                  message: e.target.value,
-                })
-              }
-            />
-            {contactFormDetails.message.trim().length < 10 ? (
-              <Text size={12} weight={400} color="red">
-                Message must be at least ten characters.
-              </Text>
-            ) : null}
+              {/* Tools */}
+              <div>
+                <h4 className="font-semibold text-foreground mb-4">Tools</h4>
+                <ul className="space-y-3 text-sm">
+                  <li>
+                    <Link href="/tools/lead-finder" className="text-muted-foreground hover:text-foreground transition-colors">
+                      Lead Finder
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/tools/crm-sync" className="text-muted-foreground hover:text-foreground transition-colors">
+                      CRM Sync
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/tools/roi-calculator" className="text-muted-foreground hover:text-foreground transition-colors">
+                      ROI Calculator
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/tools/chrome-extension" className="text-muted-foreground hover:text-foreground transition-colors">
+                      Chrome Extension
+                    </Link>
+                  </li>
+                </ul>
+              </div>
 
-            <CustomButton
-              mode="primary"
-              style={{ margin: "35px 0px" }}
-              type="submit"
-              loading={isLoading}
-              disabled={
-                isLoading ||
-                contactFormDetails.name.trim().length < 3 ||
-                !TextHelper.containsEmail(contactFormDetails.email) ||
-                contactFormDetails.message.trim().length < 10
-              }
-              data-testid="close-request-sent-button"
-              onClick={() => {
-                sendContactMessage();
-              }}
-            >
-              Submit
-            </CustomButton>
-          </Box>
-        ) : (
-          <Box sx={{ padding: "10px 30px" }}>
-            <Text size={52} weight={700} center>
-              ✅
-            </Text>
-            <Text size={20} weight={500} sx={{ lineHeight: "50px" }} center>
-              Thank you for your message.
-              <br />
-              We will respond to you shortly.
-            </Text>
-            <CustomButton
-              mode="primary"
-              style={{ margin: "35px 0px" }}
-              type="submit"
-              data-testid="close-request-sent-button"
-              onClick={() => {
-                setOpen(false);
-                setMessageSent(false);
-              }}
-            >
-              Close
-            </CustomButton>
-          </Box>
-        )}
-      </CustomModal>
-    </Box>
+              {/* Resources */}
+              <div>
+                <h4 className="font-semibold text-foreground mb-4">Resources</h4>
+                <ul className="space-y-3 text-sm">
+                  <li>
+                    <Link href="/resources/blog" className="text-muted-foreground hover:text-foreground transition-colors">
+                      Blog
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/resources/guides" className="text-muted-foreground hover:text-foreground transition-colors">
+                      Guides
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/resources/case-studies" className="text-muted-foreground hover:text-foreground transition-colors">
+                      Case Studies
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/resources/help-center" className="text-muted-foreground hover:text-foreground transition-colors">
+                      Help Center
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Company */}
+              <div>
+                <h4 className="font-semibold text-foreground mb-4">Company</h4>
+                <ul className="space-y-3 text-sm">
+                  <li>
+                    <Link href="/company/about" className="text-muted-foreground hover:text-foreground transition-colors">
+                      About Us
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/company/careers" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
+                      Careers
+                      <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-medium">Hiring!</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/company/partners" className="text-muted-foreground hover:text-foreground transition-colors">
+                      Partners
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/company/contact" className="text-muted-foreground hover:text-foreground transition-colors">
+                      Contact
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Legal */}
+              <div>
+                <h4 className="font-semibold text-foreground mb-4">Legal</h4>
+                <ul className="space-y-3 text-sm">
+                  <li>
+                    <Link href="/legal/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
+                      Privacy Policy
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/legal/terms" className="text-muted-foreground hover:text-foreground transition-colors">
+                      Terms of Service
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/legal/security" className="text-muted-foreground hover:text-foreground transition-colors">
+                      Security
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/legal/ndpr-compliance" className="text-muted-foreground hover:text-foreground transition-colors">
+                      NDPR Compliance
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Bottom Bar */}
+            <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} URI. All rights reserved.</p>
+              <p className="text-sm text-muted-foreground">Built for Africa 🌍</p>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </footer>
   );
 };
 

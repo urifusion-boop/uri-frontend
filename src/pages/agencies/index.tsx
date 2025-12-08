@@ -1,34 +1,26 @@
-import {
-  ClimberIcon,
-  PersonalGrowthIcon,
-  WebAnalyticsIcon,
-} from "@/components/atoms/Icons";
-import SeoHead from "@/components/atoms/SeoHead";
-import FeatureCard from "@/components/landing/FeatureCard";
-import FeatureParentComponent from "@/components/landing/FeatureParentComponent";
-import Header from "@/components/landing/Header";
-import UpperFooter from "@/components/landing/UpperFooter";
-import Image from "next/image";
-import React from "react";
+import { ClimberIcon, PersonalGrowthIcon, WebAnalyticsIcon } from '@/components/atoms/Icons';
+import SeoHead from '@/components/atoms/SeoHead';
+import FeatureCard from '@/components/landing/FeatureCard';
+import FeatureParentComponent from '@/components/landing/FeatureParentComponent';
+import Footer from '@/components/landing/Footer';
+import Navigation from '@/components/Navigation';
+import Image from 'next/image';
 
 const connectCardData = [
   {
     icon: <ClimberIcon />,
-    title: "Enhancing brand effectiveness",
-    description:
-      "Utilize keyword tracking to monitor brand mentions, trending topics, and competitor strategies, enabling the creation of targeted, resonant campaigns.",
+    title: 'Enhancing brand effectiveness',
+    description: 'Utilize keyword tracking to monitor brand mentions, trending topics, and competitor strategies, enabling the creation of targeted, resonant campaigns.',
   },
   {
     icon: <WebAnalyticsIcon />,
-    title: "Optimizing client management",
-    description:
-      "Leverage account tracking to monitor client social media performance, identify growth opportunities, and maintain consistent messaging.",
+    title: 'Optimizing client management',
+    description: 'Leverage account tracking to monitor client social media performance, identify growth opportunities, and maintain consistent messaging.',
   },
   {
     icon: <PersonalGrowthIcon />,
-    title: "Driving new business opportunities",
-    description:
-      "Employ lead tracking to identify potential clients or collaborators through keyword analysis, expanding the agency network.",
+    title: 'Driving new business opportunities',
+    description: 'Employ lead tracking to identify potential clients or collaborators through keyword analysis, expanding the agency network.',
   },
 ];
 
@@ -38,7 +30,7 @@ function Index() {
       <SeoHead title="For Agencies" />
 
       <div className="bg-[#FFF]">
-        <Header />
+        <Navigation />
         <div className="container">
           <FeatureParentComponent className="items-center md:my-[60px]">
             <FeatureCard
@@ -49,22 +41,10 @@ function Index() {
               description="Unlock the secret to agency success with Uri’s game-changing insights. Dive deep into market trends, audience behavior, and brand performance to craft campaigns that captivate and convert."
               h2="Insights"
             />
-            <Image
-              alt=""
-              src={"/assets/images/empowering-agencies.png"}
-              width={669}
-              height={580}
-              className="object-contain flex-1"
-            />
+            <Image alt="" src={'/assets/images/empowering-agencies.png'} width={669} height={580} className="object-contain flex-1" />
           </FeatureParentComponent>
           <FeatureParentComponent className="items-center flex-col-reverse">
-            <Image
-              alt=""
-              src={"/assets/images/what-uri-does.png"}
-              width={669}
-              height={580}
-              className="h-full object-contain flex-1"
-            />
+            <Image alt="" src={'/assets/images/what-uri-does.png'} width={669} height={580} className="h-full object-contain flex-1" />
             <FeatureCard
               showFeaturesList={false}
               h1="What"
@@ -74,24 +54,11 @@ function Index() {
             />
           </FeatureParentComponent>
           <FeatureParentComponent className="items-center">
-            <FeatureCard
-              showFeatureTitle={false}
-              showFeaturesList={true}
-              h1="Key"
-              h1tinted=" Features"
-              h1middle=" Just For You"
-              data={connectCardData}
-            />
-            <Image
-              alt=""
-              src={"/assets/images/agency-key-features.png"}
-              width={669}
-              height={580}
-              className="h-full object-contain flex-1"
-            />
+            <FeatureCard showFeatureTitle={false} showFeaturesList={true} h1="Key" h1tinted=" Features" h1middle=" Just For You" data={connectCardData} />
+            <Image alt="" src={'/assets/images/agency-key-features.png'} width={669} height={580} className="h-full object-contain flex-1" />
           </FeatureParentComponent>
         </div>
-        <UpperFooter />
+        <Footer />
       </div>
     </>
   );

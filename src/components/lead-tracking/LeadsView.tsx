@@ -2,6 +2,7 @@ import { isFeatureUnlimited } from '@/configs/rules.config';
 import { LeadHelper } from '@/helpers/LeadHelper';
 import { TextHelper } from '@/helpers/TextHelper';
 import { useLeadTrackingHook } from '@/hooks/leads-tracking/leadsTracking.hook';
+import { useRealtimeLeads } from '@/hooks/leads-tracking/useRealtimeLeads.hook';
 import { LeadTypeEnum } from '@/models/enum-models/LeadTypeEnum';
 import { useAuth } from '@/providers/AuthProvider';
 import { useFeatureLimitStore } from '@/store/useFeatureLimitStore';
@@ -63,6 +64,12 @@ const LeadsView = ({ leadType, label, icon, excludeTabs = [] }: LeadsViewProps) 
   });
 
   const { subscriptionPlanType } = useAuth();
+  const { userDetails } = useAuth();
+  const userId = userDetails?.userId;
+  const wsDisabled = true;
+
+  // Connect to realtime updates to auto-update stats and remaining leads
+  useRealtimeLeads({ userId, autoConnect: !wsDisabled });
 
   const featureLimit = useFeatureLimitStore((state) => state.featureLimit);
   const isLimitInitialState = useFeatureLimitStore((state) => state.isInitialState);

@@ -4,11 +4,13 @@ import { SubscriptionTypeEnum } from '@/models/enum-models/SubscriptionStatusEnu
 import { useAuth } from '@/providers/AuthProvider';
 import CrownIcon from '@/utils/icon/CrownIcon';
 import { Box } from '@mui/material';
+import { useRouter } from 'next/router';
 import Text from '../atoms/CustomText';
 
 function CustomSubscriptionHeader({ subscribed = false }: Readonly<{ subscribed?: boolean }>) {
   const { isMobile } = useResponsiveness();
   const { subscriptionPlanType } = useAuth();
+  const router = useRouter();
 
   const getPlanColor = () => {
     console.log('subscriptionPlanType : ', subscriptionPlanType);
@@ -38,10 +40,16 @@ function CustomSubscriptionHeader({ subscribed = false }: Readonly<{ subscribed?
         bgcolor={'#CD1B78'}
         display={'flex'}
         alignItems={'center'}
+        onClick={() => !subscribed && router.push('/pricing')}
         sx={{
           gap: { xs: 1, sm: 2 },
           py: { xs: 1, sm: 1.5 },
           px: { xs: 1, sm: 3 },
+          cursor: subscribed ? 'default' : 'pointer',
+          '&:hover': {
+            bgcolor: subscribed ? '#CD1B78' : '#B81669',
+          },
+          transition: 'background-color 0.2s',
         }}
       >
         {/* <PremiumInverseIcon /> */}

@@ -1,11 +1,9 @@
 import { Box, Typography } from '@mui/material';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 
-import FreeTrialPlansList from '@/components/subscription/general/FreeTrialPlansList'; // Make sure this path is correct
 import SubscriptionPlansList from '@/components/subscription/general/SubscriptionPlansList';
 import { TextHelper } from '@/helpers/TextHelper';
 import { SubscriptionPlan as SubscriptionPlanDto } from '@/models/dtos/SubscriptionDto';
-import { useAuth } from '@/providers/AuthProvider';
 
 interface ChoosePaymentProps {
   setStep?: () => void;
@@ -14,9 +12,6 @@ interface ChoosePaymentProps {
 }
 
 const ChoosePayment = ({ setStep, onSelectPlan, selectedPlan }: ChoosePaymentProps) => {
-  const [showFreeTrial, setShowFreeTrial] = useState(false);
-  const { userDetails } = useAuth();
-
   const handleSelectPlan = useCallback(
     (plan: SubscriptionPlanDto) => {
       onSelectPlan({
@@ -55,49 +50,8 @@ const ChoosePayment = ({ setStep, onSelectPlan, selectedPlan }: ChoosePaymentPro
         Upgrade to a plan that fits your business needs
       </Typography>
 
-      {/* Toggle between Free Trial and Full Plans */}
-      <Box textAlign="center" mt={3}>
-        {!showFreeTrial ? (
-          <Typography
-            onClick={() => setShowFreeTrial(true)}
-            sx={{
-              cursor: 'pointer',
-              color: '#CD1B78',
-              fontWeight: 600,
-              fontSize: '16px',
-              textDecoration: 'underline',
-              '&:hover': {
-                opacity: 0.8,
-              },
-            }}
-          >
-            Or Try for Free
-          </Typography>
-        ) : (
-          <Typography
-            onClick={() => setShowFreeTrial(false)}
-            sx={{
-              cursor: 'pointer',
-              color: '#3B3B3B',
-              fontWeight: 500,
-              fontSize: '16px',
-              textDecoration: 'underline',
-              '&:hover': {
-                opacity: 0.8,
-              },
-            }}
-          >
-            Back to full plans
-          </Typography>
-        )}
-      </Box>
-
-      {/* Plan List */}
-      {showFreeTrial && !userDetails?.hasUsedFreeTrial ? (
-        <FreeTrialPlansList selectedPlan={selectedPlan} onSelectPlan={handleSelectPlan} />
-      ) : (
-        <SubscriptionPlansList selectedPlan={selectedPlan} onSelectPlan={handleSelectPlan} />
-      )}
+      {/* Plan List - Trial modal shows automatically in NewSubscription */}
+      <SubscriptionPlansList selectedPlan={selectedPlan} onSelectPlan={handleSelectPlan} />
     </Box>
   );
 };

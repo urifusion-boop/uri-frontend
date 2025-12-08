@@ -18,7 +18,7 @@ const HomePage = () => {
   return (
     <>
       <ClientsDashboard />
-      {/* {userDetails?.subscriptionStatus !== SubscriptionStatusEnum.ACTIVE && <PremiumPromptModal />} */}
+      {userDetails?.subscriptionStatus !== SubscriptionStatusEnum.ACTIVE && <PremiumPromptModal />}
     </>
   );
 };

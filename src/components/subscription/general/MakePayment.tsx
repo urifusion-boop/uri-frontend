@@ -6,7 +6,7 @@ import { DiscountResponseDto } from '@/models/dtos/DiscountResponseDto';
 import { SubscriptionPlan, SubscriptionResponseDto } from '@/models/dtos/SubscriptionDto';
 import { Box, Button, Divider, TextField, Typography } from '@mui/material';
 import { HttpStatusCode } from 'axios';
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 
 interface MakePaymentProps {
   setStep: () => void;
@@ -22,9 +22,17 @@ const MakePayment = ({ setStep, selectedPlan, setTransactionDetails }: MakePayme
   const [isCodeValid, setIsCodeValid] = useState<boolean | null>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
 
-  const planAmount = Number(selectedPlan?.amount ?? 0);
+  // Backend stores prices in kobo - convert to naira for display
+  const planAmount = Number(selectedPlan?.amount ?? 0) / 100;
 
-  const [totalAmount, setTotalAmount] = useState(planAmount);
+  const [totalAmount, setTotalAmount] = useState(0);
+
+  // Update total amount when plan changes
+  useEffect(() => {
+    if (planAmount > 0) {
+      setTotalAmount(planAmount);
+    }
+  }, [planAmount]);
 
   const handleDiscountValidation = (discountCode: string) => {
     applyDiscount.mutate(
@@ -33,8 +41,9 @@ const MakePayment = ({ setStep, selectedPlan, setTransactionDetails }: MakePayme
         onSuccess: (data: DiscountResponseDto | null | undefined) => {
           if (data && data.discountedAmount && data.isExpired != true) {
             setIsCodeValid(true);
-            setDiscountAmount(data.discountedAmount);
-            setTotalAmount(data.newTotalAmount);
+            // Convert kobo to naira for display
+            setDiscountAmount(data.discountedAmount / 100);
+            setTotalAmount(data.newTotalAmount / 100);
             return;
           }
           setIsCodeValid(false);
@@ -53,7 +62,8 @@ const MakePayment = ({ setStep, selectedPlan, setTransactionDetails }: MakePayme
   const handleProceed = () => {
     initializeSubscription.mutate(
       {
-        amount: totalAmount,
+        // Convert naira back to kobo for backend
+        amount: totalAmount * 100,
         plan: selectedPlan?.plan_code ?? '',
       },
       {
@@ -220,7 +230,10 @@ const MakePayment = ({ setStep, selectedPlan, setTransactionDetails }: MakePayme
           <Typography sx={{ color: '#1D1D1D', fontSize: '20px', fontWeight: 600 }}>{TextHelper.formatAmount(totalAmount)}</Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: '30px' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: '30px', flexWrap: 'wrap' }}>
+          <Button variant="outlined" onClick={() => window.history.back()} sx={{ maxWidth: '200px', width: '100%', py: '12px' }} disabled={initializeSubscription.isLoading}>
+            Go Back
+          </Button>
           <Button disabled={initializeSubscription.isLoading} onClick={handleProceed} variant="contained" sx={{ maxWidth: '200px', width: '100%', py: '12px' }}>
             {initializeSubscription.isLoading || getUserDetails.isLoading ? <Spinner color="#fff" /> : 'Proceed'}
           </Button>

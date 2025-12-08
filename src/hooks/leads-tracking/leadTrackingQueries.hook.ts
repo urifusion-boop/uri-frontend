@@ -1,10 +1,9 @@
-import { LeadsService } from '@/api/LeadsService';
 import { LeadsService as LeadFormService } from '@/api/LeadFormService';
+import { LeadsService } from '@/api/LeadsService';
 import { triggerToast } from '@/components/atoms/CustomToast';
-import { FIVE_MINUTES, THREE_MINUTES } from '@/data/time';
+import { LeadHelper } from '@/helpers/LeadHelper';
 import { EnrichLeadsDto, ExportLeadDto, LeadBusinessInfoDto } from '@/models/dtos/LeadsDto';
 import { LeadTypeEnum } from '@/models/enum-models/LeadTypeEnum';
-import { LeadHelper } from '@/helpers/LeadHelper';
 import { useAuth } from '@/providers/AuthProvider';
 import { useLeadTrackingStore } from '@/store/leads-tracking/useLeadTrackingStore';
 import { QueryClient, useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
@@ -60,7 +59,10 @@ export const useLeadQueries = (
 
       return result.responseData;
     },
-    refetchInterval: THREE_MINUTES,
+    refetchInterval: 30000, // Auto-refresh every 30 seconds
+    refetchIntervalInBackground: false, // Only refetch when tab is active
+    refetchOnWindowFocus: true, // Refetch when user returns to tab
+    keepPreviousData: true, // Keep showing old data while fetching new data
   });
 
   // Query for analytics data
@@ -71,10 +73,12 @@ export const useLeadQueries = (
       return response.responseData;
     },
     enabled: true, // Always enabled since analytics data is needed on the leads tab
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true, // Refetch when user returns to tab
     refetchOnMount: true,
-    staleTime: FIVE_MINUTES,
-    keepPreviousData: true,
+    refetchInterval: 30000, // Auto-refetch every 30 seconds to update stats
+    refetchIntervalInBackground: false, // Only refetch when tab is active
+    staleTime: 30000, // Consider data stale after 30 seconds
+    keepPreviousData: true, // Keep showing old data while fetching new data
   });
 
   // Query for business info
@@ -136,6 +140,8 @@ export const useLeadQueries = (
       if (response.status) {
         queryClient.invalidateQueries({ queryKey: ['leads-business-info'] });
         queryClient.invalidateQueries({ queryKey: ['leads-data'] });
+        queryClient.invalidateQueries({ queryKey: ['lead-analytics'] });
+        queryClient.invalidateQueries({ queryKey: ['feature-limit'] });
         onSuccessFunction();
       } else {
         triggerToast('error', response.responseMessage ?? `Failed to ${data.lead_business_info_id ? 'update' : 'create'} leads`, 'top-right');

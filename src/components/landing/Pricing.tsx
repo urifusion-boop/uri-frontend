@@ -21,7 +21,7 @@ function Pricing() {
           Whether you&apos;re just starting out or scaling up, we&apos;ve got the perfect plan.
         </p>
       </Grid>
-      <SubscriptionPlansList selectedPlan={'selectedPlan'} onSelectPlan={() => router.push('/dashboard')} />
+      <SubscriptionPlansList selectedPlan={'selectedPlan'} onSelectPlan={() => router.push('/settings?tab=subscription')} />
     </div>
   );
 }

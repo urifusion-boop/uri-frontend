@@ -2,8 +2,8 @@ import { ClimberIcon, PersonalGrowthIcon } from '@/components/atoms/Icons';
 import SeoHead from '@/components/atoms/SeoHead';
 import FeatureCard from '@/components/landing/FeatureCard';
 import FeatureParentComponent from '@/components/landing/FeatureParentComponent';
-import Header from '@/components/landing/Header';
-import UpperFooter from '@/components/landing/UpperFooter';
+import Footer from '@/components/landing/Footer';
+import Navigation from '@/components/Navigation';
 import Image from 'next/image';
 
 const connectCardData = [
@@ -29,7 +29,7 @@ function Index() {
     <>
       <SeoHead title="For Startups" />
       <div className="bg-[#FFF]">
-        <Header />
+        <Navigation />
         <div className="container">
           <FeatureParentComponent className="items-center md:my-[60px]">
             <FeatureCard
@@ -56,7 +56,7 @@ function Index() {
             <Image alt="" src={'/assets/images/startup-key-features.png'} width={669} height={622} className="h-full object-contain flex-1" />
           </FeatureParentComponent>
         </div>
-        <UpperFooter />
+        <Footer />
       </div>
     </>
   );

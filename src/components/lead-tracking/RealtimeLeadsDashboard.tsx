@@ -1,42 +1,30 @@
-import { useState, useEffect } from 'react';
-import { Box, Typography, Button, Badge, Tab, Tabs, Alert, CircularProgress } from '@mui/material';
-import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import { useRealtimeLeads } from '@/hooks/leads-tracking/useRealtimeLeads.hook';
-import { useAuth } from '@/providers/AuthProvider';
-import RealtimeLeadNotification from './RealtimeLeadNotification';
-import ConnectionStatusIndicator from './ConnectionStatusIndicator';
 import { RealtimeLeadDto } from '@/models/dtos/RealtimeLeadDto';
-import { BrowsercloudPlatformEnum } from '@/models/enum-models/BrowsercloudPlatformEnum';
+import { useAuth } from '@/providers/AuthProvider';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
+import { Alert, Badge, Box, Button, CircularProgress, Tab, Tabs, Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
+import ConnectionStatusIndicator from './ConnectionStatusIndicator';
+import RealtimeLeadNotification from './RealtimeLeadNotification';
 
 interface RealtimeLeadsDashboardProps {
   leadFormId?: string;
   onViewLeadDetails?: (lead: RealtimeLeadDto) => void;
 }
 
-const RealtimeLeadsDashboard: React.FC<RealtimeLeadsDashboardProps> = ({
-  leadFormId,
-  onViewLeadDetails,
-}) => {
+const RealtimeLeadsDashboard: React.FC<RealtimeLeadsDashboardProps> = ({ leadFormId, onViewLeadDetails }) => {
   const { userDetails } = useAuth();
   const userId = userDetails?.userId;
+  const wsDisabled = true;
 
   const [selectedPlatform, setSelectedPlatform] = useState<string>('all');
   const [dismissedLeads, setDismissedLeads] = useState<Set<string>>(new Set());
 
-  const {
-    realtimeLeads,
-    unreadCount,
-    connectionStatus,
-    status,
-    isConnected,
-    isConnecting,
-    clearUnreadCount,
-    reconnect,
-  } = useRealtimeLeads({
+  const { realtimeLeads, unreadCount, connectionStatus, status, isConnected, isConnecting, clearUnreadCount, reconnect } = useRealtimeLeads({
     userId,
     leadFormId,
-    autoConnect: true,
+    autoConnect: !wsDisabled,
     onNewLead: (lead) => {
       console.log('New lead received:', lead);
     },
@@ -65,9 +53,7 @@ const RealtimeLeadsDashboard: React.FC<RealtimeLeadsDashboardProps> = ({
     });
 
   // Get unique platforms from leads
-  const platforms = Array.from(
-    new Set(realtimeLeads.map((lead) => lead.source.platform))
-  );
+  const platforms = Array.from(new Set(realtimeLeads.map((lead) => lead.source.platform)));
 
   const monitoringPlatforms = connectionStatus?.monitoring_platforms || [];
 
@@ -103,16 +89,18 @@ const RealtimeLeadsDashboard: React.FC<RealtimeLeadsDashboardProps> = ({
       </Box>
 
       {/* Connection Status */}
-      <Box sx={{ mb: 3 }}>
-        <ConnectionStatusIndicator
-          status={status}
-          isConnected={isConnected}
-          isConnecting={isConnecting}
-          activeForms={connectionStatus?.active_forms}
-          monitoringPlatforms={monitoringPlatforms}
-          onReconnect={reconnect}
-        />
-      </Box>
+      {!wsDisabled && (
+        <Box sx={{ mb: 3 }}>
+          <ConnectionStatusIndicator
+            status={status}
+            isConnected={isConnected}
+            isConnecting={isConnecting}
+            activeForms={connectionStatus?.active_forms}
+            monitoringPlatforms={monitoringPlatforms}
+            onReconnect={reconnect}
+          />
+        </Box>
+      )}
 
       {/* Info Alert for V2 */}
       {isConnected && (
@@ -146,17 +134,7 @@ const RealtimeLeadsDashboard: React.FC<RealtimeLeadsDashboardProps> = ({
                 key={platform}
                 label={platform}
                 value={platform}
-                icon={
-                  <Badge
-                    badgeContent={
-                      realtimeLeads.filter(
-                        (l) => l.source.platform === platform && !dismissedLeads.has(l.lead_id)
-                      ).length
-                    }
-                    color="primary"
-                    sx={{ ml: 1 }}
-                  />
-                }
+                icon={<Badge badgeContent={realtimeLeads.filter((l) => l.source.platform === platform && !dismissedLeads.has(l.lead_id)).length} color="primary" sx={{ ml: 1 }} />}
                 iconPosition="end"
               />
             ))}
@@ -195,7 +173,7 @@ const RealtimeLeadsDashboard: React.FC<RealtimeLeadsDashboardProps> = ({
           </Box>
         )}
 
-        {!isConnected && !isConnecting && (
+        {!wsDisabled && !isConnected && !isConnecting && (
           <Box
             sx={{
               textAlign: 'center',
@@ -218,12 +196,7 @@ const RealtimeLeadsDashboard: React.FC<RealtimeLeadsDashboardProps> = ({
         )}
 
         {filteredLeads.map((lead) => (
-          <RealtimeLeadNotification
-            key={lead.lead_id}
-            lead={lead}
-            onDismiss={() => handleDismissLead(lead.lead_id)}
-            onViewDetails={onViewLeadDetails}
-          />
+          <RealtimeLeadNotification key={lead.lead_id} lead={lead} onDismiss={() => handleDismissLead(lead.lead_id)} onViewDetails={onViewLeadDetails} />
         ))}
       </Box>
 

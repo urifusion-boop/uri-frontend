@@ -6,20 +6,22 @@ import FeatureLimitLock from '@/components/atoms/FeatureLimitLock';
 import HorizontalSlider from '@/components/atoms/HorizontalSlider';
 import SeoHead from '@/components/atoms/SeoHead';
 import SwitchBox from '@/components/atoms/SwitchBox';
+import SummaryCard from '@/components/cards/SummaryCard';
 import GuideTour from '@/components/guide-tour/guide-tour';
 import { REPORT_TOUR_STEPS } from '@/components/guide-tour/tour-steps/report-tour';
-import { useModuleTour } from '@/hooks/useModuleTour.hook';
 import FeaturesHeader from '@/components/headers/FeaturesHeader';
 import MultiSelectDropdown from '@/components/input/MultiSelectDropdown';
 import BaseExportModal from '@/components/modals/BaseExportModal';
 import FeatureCard from '@/components/settings/FeatureCard';
 import TitleCard from '@/components/settings/TitleCard';
-import { isFeatureLocked } from '@/configs/rules.config';
+import { isFeatureLocked, isFeatureUnlimited } from '@/configs/rules.config';
 import { reportGenerationData } from '@/data/sentimentOverTimeData';
 import { TextHelper } from '@/helpers/TextHelper';
 import useFeatureOptions from '@/hooks/report-generation/featuresOptions.hook';
 import { useReportGeneration } from '@/hooks/report-generation/generateReports.hook';
+import { useModuleTour } from '@/hooks/useModuleTour.hook';
 import { TrackerTypeEnum } from '@/models/enum-models/TrackerTypeEnum';
+import { useAuth } from '@/providers/AuthProvider';
 import { useFeatureLimitStore } from '@/store/useFeatureLimitStore';
 import AlertOnFilled from '@/utils/icon/AlertOnFilled';
 import ChartLine from '@/utils/icon/ChartLine';
@@ -74,6 +76,7 @@ const FEATURES: { title: string; description: string; icon: React.ComponentType<
 const ReportGeneration = () => {
   const isMobile = useMediaQuery('(max-width:600px)');
   const featureLimit = useFeatureLimitStore((state) => state.featureLimit);
+  const { subscriptionPlanType } = useAuth();
 
   const { steps, startTour, run, handleTourFinish } = useModuleTour({
     moduleId: 'report-generation',
@@ -113,6 +116,39 @@ const ReportGeneration = () => {
         >
           {/* Header */}
           <FeaturesHeader startTour={startTour} title="Report Generation" titleIcon={<GoChecklist size={20} color="#fff" />} />
+
+          {/* Report Generation Summary */}
+          {!isFeatureLocked(featureLimit, 'reportGeneration') && (
+            <Grid container spacing={2} mb={2} mt={2} bgcolor="#f9fafb" p={2} borderRadius={2}>
+              <Grid item md={4} xs={12}>
+                <SummaryCard
+                  count={isFeatureUnlimited(featureLimit?.reportGeneration?.limit) ? 'Unlimited' : (featureLimit.reportGeneration?.limit ?? 0) - (featureLimit.reportGeneration?.count ?? 0)}
+                  label="Reports Remaining"
+                />
+              </Grid>
+              <Grid item md={8} xs={12}>
+                <Box
+                  sx={{
+                    backgroundColor: '#fff',
+                    borderRadius: '12px',
+                    p: 2,
+                    border: '1px solid #E0E0E0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                  }}
+                >
+                  <FaCircleExclamation size={24} color="#CD1B78" />
+                  <Typography sx={{ fontSize: '14px', color: '#484848' }}>
+                    {isFeatureUnlimited(featureLimit?.reportGeneration?.limit)
+                      ? `Your ${TextHelper.removeChar(subscriptionPlanType ?? '', '_')} plan includes unlimited AI-powered analytics reports.`
+                      : `You have ${(featureLimit.reportGeneration?.limit ?? 0) - (featureLimit.reportGeneration?.count ?? 0)} reports remaining in your trial. Upgrade to Premium for unlimited reports.`}
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          )}
+
           {/* main area */}
           {!isFeatureLocked(featureLimit, 'reportGeneration') ? (
             <Box

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export enum WebSocketStatus {
   CONNECTING = 'CONNECTING',
@@ -17,20 +17,8 @@ interface UseWebSocketOptions {
   onError?: (error: Event) => void;
 }
 
-export const useWebSocket = <T>(
-  onMessage: (data: T) => void,
-  url?: string,
-  options: UseWebSocketOptions = {}
-) => {
-  const {
-    reconnect = true,
-    reconnectInterval = 3000,
-    reconnectAttempts = 5,
-    heartbeatInterval = 30000,
-    onOpen,
-    onClose,
-    onError,
-  } = options;
+export function useWebSocket<T>(onMessage: (data: T) => void, url?: string, options: UseWebSocketOptions = {}) {
+  const { reconnect = true, reconnectInterval = 3000, reconnectAttempts = 5, heartbeatInterval = 30000, onOpen, onClose, onError } = options;
 
   const socket = useRef<WebSocket | null>(null);
   const reconnectCount = useRef(0);
@@ -158,4 +146,4 @@ export const useWebSocket = <T>(
     isConnected: status === WebSocketStatus.CONNECTED,
     isConnecting: status === WebSocketStatus.CONNECTING,
   };
-};
+}

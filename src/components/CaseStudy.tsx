@@ -1,0 +1,142 @@
+import { Button } from '@/components/ui/button';
+import { authRoutes } from '@/constants/ClientRoute';
+import { motion } from 'framer-motion';
+import { ArrowRight, Clock, DollarSign, TrendingUp, Users } from 'lucide-react';
+import { useRouter } from 'next/router';
+
+const CaseStudy = () => {
+  const router = useRouter();
+  const metrics = [
+    { label: 'Conversion Rate', before: '2.3%', after: '9.2%', increase: '+300%', icon: TrendingUp, color: 'text-green-500' },
+    { label: 'Response Time', before: '48 hours', after: '6 hours', increase: '-87%', icon: Clock, color: 'text-blue-500' },
+    { label: 'Monthly Revenue', before: '₦12M', after: '₦48M', increase: '+300%', icon: DollarSign, color: 'text-primary' },
+    { label: 'Qualified Leads', before: '150/month', after: '620/month', increase: '+313%', icon: Users, color: 'text-purple-500' },
+  ];
+
+  return (
+    <section className="py-12 sm:py-20 bg-gradient-to-b from-background to-muted/30">
+      <div className="container mx-auto px-4 sm:px-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12 sm:mb-16 px-4">
+          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold mb-4">
+            <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
+            Customer Success Story
+          </div>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4">How Sendsafe Increased Conversions by 300%</h2>
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
+            A leading Nigerian logistics company transformed their lead generation strategy and closed deals 4x faster with URI's contextual intelligence.
+          </p>
+        </motion.div>
+
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="bg-card border border-border rounded-2xl p-8 mb-12 shadow-lg"
+          >
+            <div className="flex flex-col md:flex-row gap-8">
+              <div className="flex-1">
+                <h3 className="text-2xl font-bold mb-4">The Challenge</h3>
+                <p className="text-muted-foreground mb-4">
+                  Sendsafe, a fast-growing logistics company serving 500+ businesses across Lagos, was struggling to identify when companies needed their services. Their sales team spent countless
+                  hours cold calling and manually searching social media for potential leads.
+                </p>
+                <div className="bg-muted/50 border-l-4 border-destructive p-4 rounded">
+                  <p className="text-sm font-semibold mb-2">The Problem:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Missing real-time buying signals from potential customers</li>
+                    <li>• 48-hour average response time to market opportunities</li>
+                    <li>• Low conversion rates from cold outreach (2.3%)</li>
+                    <li>• Sales team overwhelmed with manual research</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="flex-1">
+                <h3 className="text-2xl font-bold mb-4">The Solution</h3>
+                <p className="text-muted-foreground mb-4">
+                  Sendsafe implemented URI to monitor the Nigerian market 24/7 for companies announcing expansion, relocation, inventory issues, or expressing frustration with current logistics
+                  providers.
+                </p>
+                <div className="bg-primary/5 border-l-4 border-primary p-4 rounded">
+                  <p className="text-sm font-semibold mb-2">What URI Did:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Detected buying signals in real-time across social platforms</li>
+                    <li>• Identified companies complaining about logistics delays</li>
+                    <li>• Flagged businesses announcing warehouse expansions</li>
+                    <li>• Auto-generated personalized outreach messages</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} className="mb-12">
+            <h3 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8">The Results</h3>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              {metrics.map((metric, index) => (
+                <motion.div
+                  key={metric.label}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.4 + index * 0.1 }}
+                  className="bg-card border border-border rounded-xl p-6 shadow-lg hover-lift"
+                >
+                  <metric.icon className={`w-8 h-8 mb-4 ${metric.color}`} />
+                  <div className="text-sm text-muted-foreground mb-2">{metric.label}</div>
+                  <div className="space-y-2 mb-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Before:</span>
+                      <span className="font-semibold line-through opacity-60">{metric.before}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground text-sm">After:</span>
+                      <span className="text-2xl font-bold text-foreground">{metric.after}</span>
+                    </div>
+                  </div>
+                  <div className={`inline-flex items-center gap-1 bg-primary/10 ${metric.color} px-3 py-1 rounded-full text-sm font-bold`}>
+                    <ArrowRight className="w-3 h-3" />
+                    {metric.increase}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div> */}
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.5 }}
+            className="bg-card rounded-2xl p-8 md:p-12 border border-border mb-12 shadow-lg"
+          >
+            <div className="text-6xl text-primary mb-4 font-serif">"</div>
+            <blockquote className="text-xl md:text-2xl font-medium mb-6 leading-relaxed">
+              URI changed everything for us. We went from chasing cold leads to having qualified prospects reaching out to us. Our sales team now focuses on closing deals, not finding them.
+            </blockquote>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center text-xl font-bold">CM</div>
+              <div>
+                <div className="font-semibold">Chidi Mbanefo</div>
+                <div className="text-sm text-muted-foreground">Head of Sales, Sendsafe Logistics</div>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.7 }} className="text-center">
+            <h3 className="text-2xl font-bold mb-4">Ready to Transform Your Lead Generation?</h3>
+            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">Join Sendsafe and hundreds of other businesses using URI to capture leads that others miss.</p>
+            <Button size="lg" className="text-lg px-8 hover-scale" onClick={() => router.push(authRoutes.signupAs)}>
+              Start Your Free Trial
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default CaseStudy;
