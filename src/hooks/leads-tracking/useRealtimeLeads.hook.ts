@@ -14,6 +14,7 @@ interface UseRealtimeLeadsOptions {
 
 export const useRealtimeLeads = (options: UseRealtimeLeadsOptions = {}) => {
   const { userId, leadFormId, onNewLead, autoConnect = true } = options;
+  const wsDisabled = true;
   const { tokenDetails } = useAuth();
 
   const [realtimeLeads, setRealtimeLeads] = useState<RealtimeLeadDto[]>([]);
@@ -23,7 +24,7 @@ export const useRealtimeLeads = (options: UseRealtimeLeadsOptions = {}) => {
 
   // Construct WebSocket URL based on environment
   const getWebSocketUrl = useCallback(() => {
-    if (typeof window === 'undefined' || !userId || !autoConnect) return undefined;
+    if (typeof window === 'undefined' || !userId || !autoConnect || wsDisabled) return undefined;
 
     const apiBase = process.env.NEXT_PUBLIC_URI_API_BASE_URL || window.location.origin;
     const parsed = new URL(apiBase);
@@ -35,7 +36,7 @@ export const useRealtimeLeads = (options: UseRealtimeLeadsOptions = {}) => {
     if (tokenDetails?.accessToken) url.searchParams.set('token', tokenDetails.accessToken);
 
     return url.toString();
-  }, [userId, leadFormId, autoConnect, tokenDetails?.accessToken]);
+  }, [userId, leadFormId, autoConnect, tokenDetails?.accessToken, wsDisabled]);
 
   const handleMessage = useCallback(
     (notification: RealtimeLeadNotificationDto) => {
@@ -104,6 +105,7 @@ export const useRealtimeLeads = (options: UseRealtimeLeadsOptions = {}) => {
       console.log('[RealtimeLeads] WebSocket closed');
     },
     onError: (error: Event) => {
+      if (wsDisabled) return;
       console.error('[RealtimeLeads] WebSocket error:', error);
       const now = Date.now();
       if (now - lastErrorToastRef.current > 20000) {
