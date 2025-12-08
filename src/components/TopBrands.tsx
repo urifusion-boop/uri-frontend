@@ -19,7 +19,6 @@ const TopBrands = () => {
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mt-2">
             Trusted by top <span className="text-primary">Companies</span>
           </h2>
-          <p className="text-sm sm:text-base text-muted-foreground mt-2">Logos scroll continuously; hover to pause.</p>
         </motion.div>
 
         <div className="relative mt-6 sm:mt-8 overflow-hidden group" aria-label="Trusted brands logos - auto-scrolling">

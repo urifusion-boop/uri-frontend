@@ -1,11 +1,13 @@
 import { Button } from '@/components/ui/button';
 import { authRoutes } from '@/constants/ClientRoute';
+import { useAuth } from '@/providers/AuthProvider';
 import { motion } from 'framer-motion';
 import { ArrowRight, Clock, DollarSign, TrendingUp, Users } from 'lucide-react';
 import { useRouter } from 'next/router';
 
 const CaseStudy = () => {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const metrics = [
     { label: 'Conversion Rate', before: '2.3%', after: '9.2%', increase: '+300%', icon: TrendingUp, color: 'text-green-500' },
     { label: 'Response Time', before: '48 hours', after: '6 hours', increase: '-87%', icon: Clock, color: 'text-blue-500' },
@@ -95,10 +97,12 @@ const CaseStudy = () => {
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.7 }} className="text-center">
             <h3 className="text-2xl font-bold mb-4">Ready to Transform Your Lead Generation?</h3>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">Join Sendsafe and hundreds of other businesses using URI to capture leads that others miss.</p>
-            <Button size="lg" className="text-lg px-8 hover-scale" onClick={() => router.push(authRoutes.signupAs)}>
-              Start Your Free Trial
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
+            {!isAuthenticated && (
+              <Button size="lg" className="text-lg px-8 hover-scale" onClick={() => router.push(authRoutes.login)}>
+                Start Your Free Trial
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            )}
           </motion.div>
         </div>
       </div>
