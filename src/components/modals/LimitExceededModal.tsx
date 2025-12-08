@@ -147,7 +147,7 @@ export const LimitExceededModal: React.FC<LimitExceededModalProps> = ({ isOpen, 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
               <Typography sx={{ fontSize: '13px', color: '#6b7280', fontWeight: 500 }}>Current Usage</Typography>
               <Typography sx={{ fontSize: '20px', fontWeight: 700, color: '#CD1B78' }}>
-                {currentUsage} / {limit === -1 ? '∞' : limit}
+                {currentUsage} / {limit <= 0 ? '∞' : limit}
               </Typography>
             </Box>
 
@@ -163,7 +163,7 @@ export const LimitExceededModal: React.FC<LimitExceededModalProps> = ({ isOpen, 
             >
               <Box
                 sx={{
-                  width: limit === -1 ? '100%' : `${Math.min((currentUsage / limit) * 100, 100)}%`,
+                  width: limit <= 0 ? '100%' : `${Math.min((currentUsage / limit) * 100, 100)}%`,
                   height: '100%',
                   backgroundColor: '#CD1B78',
                   transition: 'width 0.3s ease',

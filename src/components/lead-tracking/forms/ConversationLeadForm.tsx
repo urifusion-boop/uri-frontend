@@ -7,6 +7,7 @@ import ListValuesInput from '@/components/input/ListValuesInput';
 import SingleFieldInput from '@/components/input/SingleFieldInput';
 import { LimitExceededModal } from '@/components/modals/LimitExceededModal';
 import SmartModal from '@/components/modals/SmartModal';
+import { isFeatureUnlimited } from '@/configs/rules.config';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
 import { ConversationalSearchFormDto } from '@/models/dtos/LeadFormDto';
 import { LeadDto } from '@/models/dtos/LeadsDto';
@@ -365,11 +366,14 @@ const ConversationLeadFormV2 = () => {
     // Check if user has exceeded lead generation limits
     const leadLimit = featureLimit?.lead?.noOfLeads?.limit ?? 0;
     const leadCount = featureLimit?.lead?.noOfLeads?.count ?? 0;
-    const isUnlimited = leadLimit === -1;
+    const isUnlimited = isFeatureUnlimited(leadLimit);
+    const disableLimitCheck = (process.env.NEXT_PUBLIC_DISABLE_LIMIT_CHECK ?? 'true') === 'true';
 
-    if (!existingFormId && !isUnlimited && leadCount >= leadLimit) {
-      setShowLimitExceededModal(true);
-      return;
+    if (!disableLimitCheck) {
+      if (!existingFormId && !isUnlimited && leadLimit > 0 && leadCount >= leadLimit) {
+        setShowLimitExceededModal(true);
+        return;
+      }
     }
 
     const twitterEnabled = form.platform_configs?.some((config) => config.platform === BrowsercloudPlatformEnum.TWITTER && config.enabled);

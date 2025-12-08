@@ -138,14 +138,16 @@ const IndividualLeadForm = () => {
       return;
     }
 
-    // Check if user has exceeded lead generation limits
     const leadLimit = featureLimit?.lead?.noOfLeads?.limit ?? 0;
     const leadCount = featureLimit?.lead?.noOfLeads?.count ?? 0;
     const isUnlimited = leadLimit === -1;
+    const disableLimitCheck = (process.env.NEXT_PUBLIC_DISABLE_LIMIT_CHECK ?? 'true') === 'true';
 
-    if (!existingFormId && !isUnlimited && leadCount >= leadLimit) {
-      setShowLimitExceededModal(true);
-      return;
+    if (!disableLimitCheck) {
+      if (!existingFormId && !isUnlimited && leadCount >= leadLimit) {
+        setShowLimitExceededModal(true);
+        return;
+      }
     }
 
     // Start progress indicator
