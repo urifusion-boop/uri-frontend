@@ -15,6 +15,13 @@ interface Props {
 const Error: NextPage<Props> = ({ statusCode }) => {
   const matches = useMediaQuery('(max-width: 500px)');
   const route = useRouter();
+  const handleReturn = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      route.back();
+    } else {
+      route.push('/');
+    }
+  };
 
   if (statusCode === 404) {
     return (
@@ -29,8 +36,8 @@ const Error: NextPage<Props> = ({ statusCode }) => {
               This page you were looking for was either removed or doesn{"'"}t exist
             </Text>
             <Box width={'300px'} mt={2}>
-              <CustomButton mode="primary" onClick={() => route.push('/dashboard')}>
-                Return to Dashboard
+              <CustomButton mode="primary" onClick={handleReturn}>
+                Return
               </CustomButton>
             </Box>
           </Box>
