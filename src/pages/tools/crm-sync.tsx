@@ -1,6 +1,7 @@
 import hubspotLogo from '@/assets/logos/hubspot.svg';
 import pipedriveLogo from '@/assets/logos/pipedrive.svg';
 import salesforceLogo from '@/assets/logos/salesforce.svg';
+import slackLogo from '@/assets/logos/slack.svg';
 import Navigation from '@/components/Navigation';
 import SeoHead from '@/components/atoms/SeoHead';
 import Footer from '@/components/landing/Footer';
@@ -59,6 +60,7 @@ export default function CrmSyncPage() {
               { name: 'Salesforce', logo: salesforceLogo },
               { name: 'HubSpot', logo: hubspotLogo },
               { name: 'Pipedrive', logo: pipedriveLogo },
+              { name: 'Slack', logo: slackLogo },
             ].map((integration, index) => (
               <motion.div
                 key={integration.name}
@@ -69,7 +71,10 @@ export default function CrmSyncPage() {
               >
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-16 h-16 rounded-xl bg-white border border-border flex items-center justify-center p-3">
-                    <img src={integration.logo as any} alt={integration.name} className="w-full h-full object-contain" />
+                    {(() => {
+                      const Logo = integration.logo as React.ComponentType<React.SVGProps<SVGSVGElement>>;
+                      return <Logo className="w-full h-full" aria-label={integration.name} />;
+                    })()}
                   </div>
                   <h3 className="text-xl font-semibold">{integration.name}</h3>
                 </div>

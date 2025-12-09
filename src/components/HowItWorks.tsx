@@ -31,7 +31,7 @@ const HowItWorks = () => {
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center md:text-left mb-12 sm:mb-16 px-4 md:px-0">
               <p className="text-primary text-sm font-semibold tracking-wide">HOW IT WORKS</p>
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mt-2">
-                How It <span className="text-primary">Works</span>
+                How It <span className="text-primary">Works ?</span>
               </h2>
               <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl md:max-w-none mx-auto md:mx-0 mt-3">Three simple steps to start closing more deals.</p>
             </motion.div>
@@ -60,7 +60,7 @@ const HowItWorks = () => {
 
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.15 }} className="px-4 md:px-0 h-full">
             <div className="bg-card rounded-2xl border border-border shadow-strong overflow-hidden h-full">
-              <img src="/assets/images/landing/Agriculture_Financing_Needs.png" alt="Agriculture Financing Needs" className="w-full h-full object-contain" />
+              <img src="/assets/images/landing/agrc2.png" alt="Agriculture Financing Needs" className="w-full h-full object-contain" />
             </div>
           </motion.div>
         </div>

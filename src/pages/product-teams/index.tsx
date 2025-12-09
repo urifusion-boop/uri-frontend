@@ -1,66 +1,92 @@
-import { ClimberIcon, PersonalGrowthIcon, WebAnalyticsIcon } from '@/components/atoms/Icons';
-import SeoHead from '@/components/atoms/SeoHead';
-import FeatureCard from '@/components/landing/FeatureCard';
-import FeatureParentComponent from '@/components/landing/FeatureParentComponent';
-import Footer from '@/components/landing/Footer';
 import Navigation from '@/components/Navigation';
-import Image from 'next/image';
+import SeoHead from '@/components/atoms/SeoHead';
+import Footer from '@/components/landing/Footer';
+import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
+import { BarChart3, CheckCircle, Lightbulb, Target, Users } from 'lucide-react';
+import Link from 'next/link';
 
-const connectCardData = [
-  {
-    icon: <ClimberIcon />,
-    title: 'Enhancing brand effectiveness',
-    description: 'Utilize keyword tracking to monitor brand mentions, trending topics, and competitor strategies, enabling the creation of targeted, resonant campaigns.',
-  },
-  {
-    icon: <WebAnalyticsIcon />,
-    title: 'Optimizing client management',
-    description: 'Leverage account tracking to monitor client social media performance, identify growth opportunities, and maintain consistent messaging.',
-  },
-  {
-    icon: <PersonalGrowthIcon />,
-    title: 'Driving new business opportunities',
-    description: 'Employ lead tracking to identify potential clients or collaborators through keyword analysis, expanding the agencys network.',
-  },
+const benefits = [
+  { icon: Lightbulb, title: 'Inform Product Decisions', description: 'Understand what features customers are asking for by monitoring real conversations and intent signals.' },
+  { icon: Users, title: 'Understand User Needs', description: "Get direct insight into pain points and desired solutions from your target market's actual discussions." },
+  { icon: BarChart3, title: 'Track Competitive Landscape', description: 'Monitor how users talk about competitors and identify opportunities for differentiation.' },
+  { icon: Target, title: 'Validate Before Building', description: 'Test demand for new features by tracking intent signals before investing development resources.' },
 ];
 
-function Index() {
+const features = ['Feature request tracking', 'Competitive intelligence dashboard', 'User sentiment analysis', 'Market trend monitoring', 'Integration with product tools', 'Custom keyword tracking'];
+
+export default function ProductTeamsPage() {
   return (
     <>
       <SeoHead title="For Product Teams" />
-      <div className="bg-[#FFF]">
-        <Navigation />
-        <div className="container">
-          <FeatureParentComponent className="items-center md:my-[60px]">
-            <FeatureCard
-              showFeaturesList={false}
-              h1="Enhancing"
-              h1tinted=" Product"
-              h2tinted=" Developments"
-              description="Unlock the key to successful product launches with Uri, the ultimate tool that equips product teams with customer insights, customer sentiments, and seamless communication strategies."
-            />
-            <Image alt="" src={'/assets/images/empowering-agencies.png'} width={669} height={580} className="h-full object-contain flex-1" />
-          </FeatureParentComponent>
-          <FeatureParentComponent className="items-center flex-col-reverse">
-            <Image alt="" src={'/assets/images/what-uri-does-product.png'} width={669} height={580} className="h-full object-contain flex-1" />
-            <FeatureCard
-              showFeaturesList={false}
-              h1="What"
-              h1tinted=" Uri"
-              h1middle=" Does for"
-              h2=" Products Teams"
-              description="Keep your brand center stage with Uri’s powerful insights. Monitor audience sentiment in real time to gauge how your content resonates and adapt quickly to trends."
-            />
-          </FeatureParentComponent>
-          <FeatureParentComponent className="items-center">
-            <FeatureCard showFeatureTitle={false} showFeaturesList={true} h1="How" h1tinted=" Uri" h1middle=" Supports" h2=" Product Teams" data={connectCardData} />
-            <Image alt="" src={'/assets/images/agency-key-features.png'} width={669} height={580} className="h-full object-contain flex-1" />
-          </FeatureParentComponent>
-        </div>
-        <Footer />
-      </div>
+      <Navigation />
+      <main className="pt-24 pb-16 md:pt-32 md:pb-24">
+        <section className="container mx-auto px-4 sm:px-6">
+          <div className="max-w-4xl mx-auto text-center mb-16">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+              <span className="inline-block px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm mb-6">For Product Teams</span>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-6">
+                <span className="text-primary">Inform Product Decisions</span> with Real Data
+              </h1>
+              <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+                Build what users actually want. URI gives you direct insight into customer needs, competitive gaps, and market trends—all in real-time.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-hover">
+                  Start Free Trial
+                </Button>
+                <Button size="lg" variant="outline">
+                  See Product Use Cases
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto mb-16">
+            {benefits.map((benefit, index) => (
+              <motion.div
+                key={benefit.title}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="bg-card border border-border rounded-2xl p-6 md:p-8"
+              >
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                  <benefit.icon className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-2">{benefit.title}</h3>
+                <p className="text-muted-foreground">{benefit.description}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="max-w-3xl mx-auto bg-card border border-border rounded-2xl p-8 md:p-12"
+          >
+            <h2 className="text-2xl font-bold text-foreground mb-6 text-center">Product Intelligence Features</h2>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {features.map((feature) => (
+                <div key={feature} className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
+                  <span className="text-foreground">{feature}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          <div className="text-center mt-16">
+            <Link href="/pricing">
+              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-hover">
+                View Pricing Plans
+              </Button>
+            </Link>
+          </div>
+        </section>
+      </main>
+      <Footer />
     </>
   );
 }
-
-export default Index;

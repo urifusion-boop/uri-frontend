@@ -4,8 +4,11 @@ import pipedriveLogo from '@/assets/logos/pipedrive.svg';
 import salesforceLogo from '@/assets/logos/salesforce.svg';
 import slackLogo from '@/assets/logos/slack.svg';
 import { Button } from '@/components/ui/button';
+import { authRoutes } from '@/constants/ClientRoute';
+import { useAuth } from '@/providers/AuthProvider';
 import { motion } from 'framer-motion';
 import { ArrowRight, Bell, Eye, Plug, Zap } from 'lucide-react';
+import { useRouter } from 'next/router';
 const uriLogo = '/assets/images/landing/logo.png';
 
 const integrations = [
@@ -16,6 +19,8 @@ const integrations = [
 ];
 
 const CRMRevitalization = () => {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
   return (
     <section className="py-16 sm:py-24 overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6">
@@ -214,10 +219,12 @@ const CRMRevitalization = () => {
               <h3 className="text-xl sm:text-2xl md:text-3xl font-bold">Get Alerted When They're Ready</h3>
               <p className="text-muted-foreground">The moment a dead lead shows buying signals, you get notified instantly. Strike while the iron is hot.</p>
 
-              <Button className="mt-4 group">
-                Start Reviving Leads
-                <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
+              {!isAuthenticated && (
+                <Button className="mt-4 group" onClick={() => router.push(authRoutes.login)}>
+                  Start Reviving Leads
+                  <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              )}
             </div>
 
             {/* Alert Notification Visual */}

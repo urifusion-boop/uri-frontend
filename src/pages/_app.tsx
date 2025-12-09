@@ -60,6 +60,9 @@ const publicRoutes = [
   '/product-teams',
   '/business-owners',
   '/dummy-dashboard',
+  '/features',
+  '/signals',
+  '/integrations',
 ];
 
 const ProtectedRoutes = () => {
