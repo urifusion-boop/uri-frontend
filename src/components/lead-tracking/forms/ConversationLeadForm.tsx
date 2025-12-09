@@ -7,7 +7,6 @@ import ListValuesInput from '@/components/input/ListValuesInput';
 import SingleFieldInput from '@/components/input/SingleFieldInput';
 import { LimitExceededModal } from '@/components/modals/LimitExceededModal';
 import SmartModal from '@/components/modals/SmartModal';
-import { isFeatureUnlimited } from '@/configs/rules.config';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
 import { ConversationalSearchFormDto } from '@/models/dtos/LeadFormDto';
 import { LeadDto } from '@/models/dtos/LeadsDto';
@@ -227,6 +226,14 @@ const ConversationLeadFormV2 = () => {
       // Start the async job (returns immediately with job_id)
       const response = await LeadFormService.fetchConversationalLeads(leadFormId, userId);
 
+      // Check for limit exceeded error
+      if (response.responseCode === 403 && (response.responseData as any)?.limit_exceeded) {
+        clearInterval(tipInterval);
+        setShowLimitExceededModal(true);
+        setIsFetchingLeads(false);
+        return;
+      }
+
       if (response.responseCode !== 202) {
         throw new Error(response.responseMessage || 'Failed to start lead generation');
       }
@@ -363,18 +370,8 @@ const ConversationLeadFormV2 = () => {
       return;
     }
 
-    // Check if user has exceeded lead generation limits
-    const leadLimit = featureLimit?.lead?.noOfLeads?.limit ?? 0;
-    const leadCount = featureLimit?.lead?.noOfLeads?.count ?? 0;
-    const isUnlimited = isFeatureUnlimited(leadLimit);
-    const disableLimitCheck = (process.env.NEXT_PUBLIC_DISABLE_LIMIT_CHECK ?? 'true') === 'true';
-
-    if (!disableLimitCheck) {
-      if (!existingFormId && !isUnlimited && leadLimit > 0 && leadCount >= leadLimit) {
-        setShowLimitExceededModal(true);
-        return;
-      }
-    }
+    // Frontend limit check removed - now handled by backend with proper validation
+    // Backend will return 403 with limit_exceeded flag if user exceeds quota
 
     const twitterEnabled = form.platform_configs?.some((config) => config.platform === BrowsercloudPlatformEnum.TWITTER && config.enabled);
     const linkedinEnabled = false;
