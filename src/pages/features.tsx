@@ -3,7 +3,7 @@ import SeoHead from '@/components/atoms/SeoHead';
 import Footer from '@/components/landing/Footer';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { BarChart3, Bell, Globe, RefreshCw, Search, Shield, Target, Zap } from 'lucide-react';
+import { BarChart3, Bell, Globe, RefreshCw, Search, Shield, Target } from 'lucide-react';
 import Link from 'next/link';
 
 const features = [
@@ -42,12 +42,6 @@ const features = [
     title: 'African Market Focus',
     description: 'Deep coverage of Lagos, Nairobi, Accra, and other key African business hubs.',
     link: '/company/about',
-  },
-  {
-    icon: Zap,
-    title: 'Chrome Extension',
-    description: 'Access URI insights directly in your browser while browsing LinkedIn, X, and more.',
-    link: '/tools/chrome-extension',
   },
   {
     icon: Shield,

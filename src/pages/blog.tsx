@@ -23,7 +23,7 @@ export async function getStaticProps() {
   };
 }
 
-export default function ResourcesBlogPage({ post }: { post: BlogPost & { contentHtml: string } }) {
+export default function BlogPage({ post }: { post: BlogPost & { contentHtml: string } }) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });

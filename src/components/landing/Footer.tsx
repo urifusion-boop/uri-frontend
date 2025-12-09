@@ -124,11 +124,6 @@ const Footer = () => {
                       ROI Calculator
                     </Link>
                   </li>
-                  <li>
-                    <Link href="/tools/chrome-extension" className="text-muted-foreground hover:text-foreground transition-colors">
-                      Chrome Extension
-                    </Link>
-                  </li>
                 </ul>
               </div>
 
@@ -137,7 +132,7 @@ const Footer = () => {
                 <h4 className="font-semibold text-foreground mb-4">Resources</h4>
                 <ul className="space-y-3 text-sm">
                   <li>
-                    <Link href="/resources/blog" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors">
                       Blog
                     </Link>
                   </li>

@@ -16,13 +16,13 @@ const nextConfig = withPWA({
   async redirects() {
     return [
       {
-        source: '/blog',
-        destination: '/resources/blog',
+        source: '/resources/blog',
+        destination: '/blog',
         permanent: true,
       },
       {
-        source: '/blog/:path*',
-        destination: '/resources/blog',
+        source: '/resources/blog/:path*',
+        destination: '/blog',
         permanent: true,
       },
     ];

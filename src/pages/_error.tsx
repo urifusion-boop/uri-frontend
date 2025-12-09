@@ -20,23 +20,21 @@ const Error: NextPage<Props> = ({ statusCode }) => {
     return (
       <>
         <SeoHead title="Page Not Found" />
-        <DashboardLayout>
-          <Box height={'80svh'}>
-            <Box display="flex" flexDirection="column" alignItems="center" height={'100%'} justifyContent={'center'}>
-              <Text size={matches ? 80 : 120} weight={800}>
-                404
-              </Text>
-              <Text size={16} weight={500}>
-                This page you were looking for was either removed or doesn{"'"}t exist
-              </Text>
-              <Box width={'300px'} mt={2}>
-                <CustomButton mode="primary" onClick={() => route.push('/dashboard')}>
-                  Return to Dashboard
-                </CustomButton>
-              </Box>
+        <Box height={'80svh'}>
+          <Box display="flex" flexDirection="column" alignItems="center" height={'100%'} justifyContent={'center'}>
+            <Text size={matches ? 80 : 120} weight={800}>
+              404
+            </Text>
+            <Text size={16} weight={500}>
+              This page you were looking for was either removed or doesn{"'"}t exist
+            </Text>
+            <Box width={'300px'} mt={2}>
+              <CustomButton mode="primary" onClick={() => route.push('/dashboard')}>
+                Return to Dashboard
+              </CustomButton>
             </Box>
           </Box>
-        </DashboardLayout>
+        </Box>
       </>
     );
   }
