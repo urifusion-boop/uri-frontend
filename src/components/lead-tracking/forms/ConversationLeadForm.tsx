@@ -420,6 +420,8 @@ const ConversationLeadFormV2 = () => {
         enable_realtime: true,
         monitoring_platforms: payload.monitoring_platforms || [],
         platform_configs: payload.platform_configs || [],
+        location: payload.location || [],
+        post_age_filter: payload.post_age_filter || 'all',
         // CLG Upgrade fields
         category_context: payload.category_context || '',
         implied_keywords: payload.implied_keywords || [],
