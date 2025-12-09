@@ -120,10 +120,10 @@ const BusinessLeadForm = () => {
             setOpenSuccessModal(true);
           },
           onError: (error: any) => {
-            if (error?.response?.data?.limit_exceeded) {
+            if (error?.response?.status === 403 || error?.response?.data?.limit_exceeded) {
               setShowLimitExceededModal(true);
             } else {
-              triggerToast('error', 'Update failed. Please try again.');
+              triggerToast('error', error?.response?.data?.message || 'Update failed. Please try again.');
             }
           },
         }
@@ -134,10 +134,10 @@ const BusinessLeadForm = () => {
           setOpenSuccessModal(true);
         },
         onError: (error: any) => {
-          if (error?.response?.data?.limit_exceeded) {
+          if (error?.response?.status === 403 || error?.response?.data?.limit_exceeded) {
             setShowLimitExceededModal(true);
           } else {
-            triggerToast('error', 'Creation failed. Please try again.');
+            triggerToast('error', error?.response?.data?.message || 'Creation failed. Please try again.');
           }
         },
       });

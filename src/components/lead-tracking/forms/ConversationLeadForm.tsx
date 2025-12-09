@@ -348,11 +348,11 @@ const ConversationLeadFormV2 = () => {
       if (progressSimulation) clearInterval(progressSimulation);
       if (pollInterval) clearInterval(pollInterval);
 
-      // Check if this is a limit exceeded error
-      if (error?.response?.data?.limit_exceeded) {
+      // Check if this is a limit exceeded error (403 status or limit_exceeded flag)
+      if (error?.response?.status === 403 || error?.response?.data?.limit_exceeded) {
         setShowLimitExceededModal(true);
       } else {
-        triggerToast('error', 'Error starting lead generation. Please try again.');
+        triggerToast('error', error?.response?.data?.message || 'Error starting lead generation. Please try again.');
       }
 
       setIsFetchingLeads(false);
