@@ -10,7 +10,7 @@ import { Clock, Mail, MapPin, Phone, Send } from 'lucide-react';
 
 const contactInfo = [
   { icon: MapPin, title: 'Office', details: ['14 Admiralty Way', 'Lekki Phase 1', 'Lagos, Nigeria'] },
-  { icon: Mail, title: 'Email', details: ['hello@uri.africa', 'support@uri.africa'] },
+  { icon: Mail, title: 'Email', details: ['hello@uricreative.com'] },
   { icon: Phone, title: 'Phone', details: ['+234 810 123 4567', '+234 812 987 6543'] },
   { icon: Clock, title: 'Hours', details: ['Monday - Friday', '9:00 AM - 6:00 PM WAT'] },
 ];
@@ -104,7 +104,7 @@ export default function ContactPage() {
               <div className="bg-muted/30 rounded-2xl p-8">
                 <h3 className="text-lg font-semibold mb-3">Enterprise Inquiries</h3>
                 <p className="text-sm text-muted-foreground mb-4">For organizations with 50+ sales reps, contact our enterprise team for custom pricing and dedicated support.</p>
-                <p className="text-sm font-medium text-primary">enterprise@uri.africa</p>
+                <p className="text-sm font-medium text-primary">hello@uricreative.com</p>
               </div>
             </motion.div>
           </div>

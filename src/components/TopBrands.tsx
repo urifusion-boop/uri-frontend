@@ -10,7 +10,6 @@ const brands = [
   { name: 'Culminate', logo: '/assets/images/landing/culminate.png' },
   { name: 'Goajo', logo: '/assets/images/landing/goajo.png' },
   { name: 'IAH', logo: '/assets/images/landing/iah.png' },
-  { name: 'Ingleswitch', logo: '/assets/images/landing/ingleswitch.png' },
   { name: '3MTT', logo: '/assets/images/landing/3mtt.png' },
 ];
 
