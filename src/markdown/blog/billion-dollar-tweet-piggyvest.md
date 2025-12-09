@@ -3,7 +3,7 @@ title: "The Billion-Dollar Tweet: How Big Banks Missed a Revolution (And PiggyVe
 excerpt: "How a viral ‘kolo’ tweet sparked PiggyVest’s savings revolution—and what big banks missed."
 date: "2025-12-08"
 author: "Uri Team"
-image: "https://images.unsplash.com/photo-1483478550801-ceba5fe50e8e?q=80&w=1600&auto=format&fit=crop"
+image: "https://cdn.prod.website-files.com/668458270cb55dcf37c69577/66e65226f04fad8bb5babbd1_05-piggyvest.webp"
 category: "Insights"
 ---
 
