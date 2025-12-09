@@ -8,7 +8,7 @@ import Link from 'next/link';
 
 const steps = [
   { icon: Filter, title: 'Set Your Criteria', description: 'Define your ideal customer profile: industry, location, company size, and buying signals you want to track.' },
-  { icon: Search, title: 'AI Scans the Web', description: "URI's AI continuously monitors social media, forums, and websites across Africa for matching prospects." },
+  { icon: Search, title: 'AI Scans the Web', description: 'URI continuously monitors social media, forums, and websites across Africa for matching prospects.' },
   { icon: Users, title: 'Get Qualified Leads', description: 'Receive a curated list of prospects who match your criteria and have shown recent buying intent.' },
   { icon: Download, title: 'Export & Engage', description: 'Export leads to your CRM or engage directly with personalized outreach based on their signals.' },
 ];

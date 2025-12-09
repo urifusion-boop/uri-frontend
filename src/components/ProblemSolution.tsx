@@ -473,7 +473,7 @@ const ProblemSolution = () => {
     <section className="bg-background">
       <div ref={containerRef} className="hidden lg:block relative" style={{ height: `${totalSubStages * 60}vh` }}>
         <div className="sticky top-0 h-screen flex items-center overflow-hidden">
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-6 lg:px-8">
             <div className="grid grid-cols-2 gap-16 items-center">
               <div className="relative h-[500px]">
                 {stages.map((stage, index) => (
@@ -500,7 +500,7 @@ const ProblemSolution = () => {
       </div>
 
       <div className="lg:hidden py-10 sm:py-16">
-        <div className="container mx-auto px-4 sm:px-6">
+        <div className="container mx-auto px-6 md:px-8">
           {stages.map((stage) => (
             <motion.div
               key={stage.id}

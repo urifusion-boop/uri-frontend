@@ -75,7 +75,7 @@ const Navigation = () => {
         items: [
           { icon: BookOpen, name: 'How It Works', desc: 'Uri in action', href: '/#how-it-works' },
           { icon: FileText, name: 'FAQs', desc: 'Answers to common questions', href: '/faqs' },
-          { icon: Newspaper, name: 'Blog', desc: 'Insights and updates', href: '/resources/blog' },
+          { icon: Newspaper, name: 'Blog', desc: 'Insights and updates', href: '/blog' },
           { icon: Video, name: 'Getting Started', desc: 'Step-by-step video', href: '/resources/get-started' },
         ],
       },

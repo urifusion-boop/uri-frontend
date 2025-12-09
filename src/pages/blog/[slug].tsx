@@ -1,13 +1,19 @@
 import Navigation from '@/components/Navigation';
 import SeoHead from '@/components/atoms/SeoHead';
 import Footer from '@/components/landing/Footer';
-import { BlogPost, getBlogPostBySlug } from '@/lib/blog';
+import { BlogPost, getAllBlogPosts, getBlogPostBySlug } from '@/lib/blog';
 import Image from 'next/image';
 import { remark } from 'remark';
 import html from 'remark-html';
 
-export async function getStaticProps() {
-  const post = getBlogPostBySlug('billion-dollar-tweet-piggyvest');
+export async function getStaticPaths() {
+  const posts = getAllBlogPosts();
+  const paths = posts.map((p) => ({ params: { slug: p.slug } }));
+  return { paths, fallback: false };
+}
+
+export async function getStaticProps({ params }: { params: { slug: string } }) {
+  const post = getBlogPostBySlug(params.slug);
 
   if (!post) {
     return { notFound: true };
@@ -23,13 +29,15 @@ export async function getStaticProps() {
   };
 }
 
-export default function ResourcesBlogPage({ post }: { post: BlogPost & { contentHtml: string } }) {
+export default function PostPage({ post }: { post: BlogPost & { contentHtml: string } }) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
-  const contentWithEmbeds = transformYouTubeLinksToEmbeds(post.contentHtml);
+  const previewImageUrl = post.image || 'https://source.unsplash.com/1200x675/?africa,business';
+  const contentWithSpacing = addParagraphSpacing(post.contentHtml);
+  const contentWithEmbeds = transformYouTubeLinksToEmbeds(contentWithSpacing);
 
   return (
     <>
@@ -47,7 +55,7 @@ export default function ResourcesBlogPage({ post }: { post: BlogPost & { content
             <span>{formatDate(post.date)}</span>
           </div>
           <div
-            className="prose prose-lg max-w-none prose-headings:text-[#141416] prose-p:text-[#363636] prose-a:text-[#CD1B78] prose-strong:text-[#141416] prose-ul:text-[#363636] prose-ol:text-[#363636]"
+            className="prose prose-lg max-w-none prose-headings:text-[#141416] prose-headings:mt-8 prose-headings:mb-4 prose-p:text-[#363636] prose-p:leading-relaxed prose-p:mb-6 prose-a:text-[#CD1B78] prose-strong:text-[#141416] prose-ul:text-[#363636] prose-ol:text-[#363636] prose-li:mb-2"
             dangerouslySetInnerHTML={{ __html: contentWithEmbeds }}
           />
         </article>
@@ -56,6 +64,10 @@ export default function ResourcesBlogPage({ post }: { post: BlogPost & { content
     </>
   );
 }
+
+const addParagraphSpacing = (html: string) => {
+  return html.replace(/<\/p>/g, '</p><br />');
+};
 
 const transformYouTubeLinksToEmbeds = (input: string) => {
   const replaceShort = input.replace(
@@ -98,5 +110,3 @@ const transformYouTubeLinksToEmbeds = (input: string) => {
 
   return replaceWatch;
 };
-
-const previewImageUrl = 'https://source.unsplash.com/1200x675/?africa,business';
