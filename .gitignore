@@ -42,3 +42,4 @@ public/workbox-e43f5367.js
 public/workbox-e43f5367.js.map
 
 *.md
+!src/markdown/blog/*.md

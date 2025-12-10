@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { CheckCircle, Megaphone, TrendingUp, Users, Video } from 'lucide-react';
 import Link from 'next/link';
 
+const mediaEntertainmentCartoon = '/assets/images/landing/media-entertainment-cartoon.png';
 const benefits = [
   { icon: Users, title: 'Engage Audiences', description: 'Discover what your audience is talking about and create content that resonates with their interests.' },
   { icon: TrendingUp, title: 'Track Trending Topics', description: 'Stay ahead of the curve by monitoring emerging trends and conversations in real-time.' },
@@ -41,6 +42,12 @@ export default function MediaAndEntertainmentPage() {
               </div>
             </motion.div>
           </div>
+
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="max-w-5xl mx-auto mb-16">
+            <div className="rounded-2xl overflow-hidden shadow-2xl border border-border bg-gradient-to-br from-primary/5 to-primary/10">
+              <img src={mediaEntertainmentCartoon} alt="Media team engaging audiences with trending content" className="w-full h-auto" />
+            </div>
+          </motion.div>
 
           <div className="grid sm:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto mb-16">
             {benefits.map((benefit, index) => (
