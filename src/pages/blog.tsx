@@ -28,8 +28,21 @@ export default function BlogPage({ posts }: { posts: BlogPost[] }) {
       <SeoHead title="Blog" />
       <div className="bg-[#FFFCFE] min-h-screen">
         <Navigation />
-        <section className="max-w-[1100px] mx-auto px-4 mt-24 mb-[100px]">
-          <h1 className="md:text-[40px] text-[28px] font-bold text-[#141416] mb-6 underline">Insights</h1>
+        <section className="max-w-[1100px] mx-auto px-4 mt-20">
+          <div className="relative overflow-hidden rounded-[20px] border border-[#F0E6F6] bg-gradient-to-br from-[#F8E9FF] via-[#FFF2FA] to-[#FFFCFE] p-8 md:p-12 text-center">
+            <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-[#CD1B78]/10 blur-2xl" />
+            <div className="absolute -bottom-12 -left-12 h-44 w-44 rounded-full bg-[#3b0aa0]/10 blur-2xl" />
+
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#CD1B78]/10 border border-[#CD1B78]/20 text-[#CD1B78] text-sm font-medium mb-6">
+              <span className="h-2 w-2 rounded-full bg-[#CD1B78]" />
+              Insights for the African market
+            </span>
+
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight text-[#3b0aa0]">URI Blog</h1>
+            <p className="mt-4 text-[#4b5563] text-base sm:text-lg max-w-2xl mx-auto">Stories, playbooks, and signal-driven growth tactics for founders and teams building for Africa.</p>
+          </div>
+        </section>
+        <section className="max-w-[1100px] mx-auto px-4 mt-10 mb-[100px]">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {posts.map((post) => (
               <Link key={post.slug} href={`/blog/${post.slug}`} className="block group">
