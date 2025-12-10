@@ -1,9 +1,12 @@
 import Navigation from '@/components/Navigation';
 import SeoHead from '@/components/atoms/SeoHead';
 import Footer from '@/components/landing/Footer';
+import { Button } from '@/components/ui/button';
 import { BlogPost, getAllBlogPosts } from '@/lib/blog';
+import { Share2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { toast } from 'react-hot-toast';
 
 export async function getStaticProps() {
   const posts = getAllBlogPosts();
@@ -22,6 +25,23 @@ export default function BlogPage({ posts }: { posts: BlogPost[] }) {
   };
 
   const getImageUrl = (post: BlogPost) => post.image || 'https://source.unsplash.com/600x400/?africa,business';
+
+  const handleShare = (post: BlogPost) => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const url = `${origin}/blog/${post.slug}`;
+    if (typeof navigator !== 'undefined' && (navigator as any).share) {
+      (navigator as any).share({ title: post.title, text: post.excerpt || post.title, url }).catch(() => {});
+      return;
+    }
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard
+        .writeText(url)
+        .then(() => toast('Link copied to clipboard'))
+        .catch(() => toast('Unable to copy link'));
+      return;
+    }
+    toast('Sharing not supported on this device');
+  };
 
   return (
     <>
@@ -52,9 +72,25 @@ export default function BlogPage({ posts }: { posts: BlogPost[] }) {
                 </div>
                 <h2 className="text-[18px] font-semibold text-[#141416] mt-3">{post.title}</h2>
                 <p className="text-[#666] text-sm mt-1">{post.excerpt}</p>
-                <div className="flex items-center gap-4 text-[#666] text-xs mt-2">
-                  <span>{post.author}</span>
-                  <span>{formatDate(post.date)}</span>
+                <div className="flex items-center justify-between mt-2">
+                  <div className="flex items-center gap-4 text-[#666] text-xs">
+                    <span>{post.author}</span>
+                    <span>{formatDate(post.date)}</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Share post"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleShare(post);
+                    }}
+                    className="text-[#3b0aa0] hover:text-[#3b0aa0]"
+                  >
+                    <Share2 />
+                    Share
+                  </Button>
                 </div>
               </Link>
             ))}

@@ -6,96 +6,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 const Footer = () => {
-  const detections = [
-    { x: 320, y: 140, delay: 0.2 },
-    { x: 80, y: 180, delay: 0.8 },
-    { x: 290, y: 280, delay: 1.2 },
-    { x: 120, y: 280, delay: 1.6 },
-    { x: 200, y: 60, delay: 2.0 },
-  ];
   return (
     <footer className="relative">
       {/* Background Image Section */}
       <div className="relative h-[200px] sm:h-[280px] md:h-[320px] overflow-hidden">
         <Image src={footerBackground} alt="" fill priority className="object-cover object-center" />
         <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
-        <div className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center">
-          <div className="relative w-[260px] sm:w-[340px] md:w-[420px] h-[260px] sm:h-[340px] md:h-[420px]">
-            <svg viewBox="0 0 400 400" className="absolute inset-0">
-              <circle cx="200" cy="200" r="180" className="stroke-foreground/10" fill="none" strokeWidth="1.5" />
-              <circle cx="200" cy="200" r="120" className="stroke-foreground/10" fill="none" strokeWidth="1.5" />
-              <circle cx="200" cy="200" r="60" className="stroke-foreground/10" fill="none" strokeWidth="1.5" />
-              <motion.line
-                x1={200}
-                y1={200}
-                x2={200}
-                y2={30}
-                className="stroke-primary/60"
-                strokeWidth={2}
-                style={{ originX: 200, originY: 200 }}
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 8, ease: 'linear' }}
-              />
-              <motion.circle
-                cx={200}
-                cy={200}
-                r={60}
-                className="stroke-primary/30"
-                fill="none"
-                strokeWidth={2}
-                initial={{ scale: 0.8, opacity: 0.6 }}
-                animate={{ scale: 1.6, opacity: 0 }}
-                transition={{ repeat: Infinity, duration: 3, ease: 'easeOut' }}
-                style={{ originX: 200, originY: 200 }}
-              />
-              <motion.circle
-                cx={200}
-                cy={200}
-                r={100}
-                className="stroke-primary/20"
-                fill="none"
-                strokeWidth={2}
-                initial={{ scale: 0.8, opacity: 0.5 }}
-                animate={{ scale: 1.4, opacity: 0 }}
-                transition={{ repeat: Infinity, duration: 4, ease: 'easeOut', delay: 0.6 }}
-                style={{ originX: 200, originY: 200 }}
-              />
-              {detections.map((d) => (
-                <g key={`d-${d.x}-${d.y}`}>
-                  <motion.line
-                    x1={d.x}
-                    y1={d.y}
-                    x2={200}
-                    y2={200}
-                    className="stroke-primary/30"
-                    strokeWidth={1}
-                    strokeDasharray="6 4"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: [0, 0.4, 0] }}
-                    transition={{ repeat: Infinity, duration: 3, delay: d.delay }}
-                  />
-                  <motion.circle
-                    cx={d.x}
-                    cy={d.y}
-                    r={4}
-                    className="fill-primary"
-                    initial={{ opacity: 0, scale: 0.6 }}
-                    animate={{ opacity: [0, 1, 0], scale: [0.6, 1.1, 0.6] }}
-                    transition={{ repeat: Infinity, duration: 3, delay: d.delay }}
-                  />
-                </g>
-              ))}
-            </svg>
-            <motion.div
-              className="absolute -bottom-4 right-0 bg-primary text-primary-foreground rounded-full px-3 py-1 text-xs sm:text-sm font-medium shadow-lg"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 }}
-            >
-              Start tracking leads
-            </motion.div>
-          </div>
-        </div>
       </div>
 
       {/* Main Footer Card */}
