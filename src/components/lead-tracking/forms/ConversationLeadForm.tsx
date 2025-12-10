@@ -349,12 +349,16 @@ const ConversationLeadFormV2 = () => {
       if (pollInterval) clearInterval(pollInterval);
 
       // Check if this is a limit exceeded error (403 status or limit_exceeded flag)
-      if (error?.response?.status === 403 || error?.response?.data?.limit_exceeded) {
+      const is403Error = error?.response?.status === 403;
+      const hasLimitExceededFlag = error?.response?.data?.limit_exceeded || error?.data?.limit_exceeded;
+
+      if (is403Error || hasLimitExceededFlag) {
         setShowLimitExceededModal(true);
-      } else {
-        triggerToast('error', error?.response?.data?.message || 'Error starting lead generation. Please try again.');
+        setIsFetchingLeads(false);
+        return;
       }
 
+      triggerToast('error', error?.response?.data?.message || error?.data?.message || 'Error starting lead generation. Please try again.');
       setIsFetchingLeads(false);
       setTimeout(() => {
         setFetchingStatus('');
@@ -434,10 +438,10 @@ const ConversationLeadFormV2 = () => {
             await fetchLeadsFromPlatforms(existingFormId);
           },
           onError: (error: any) => {
-            if (error?.response?.data?.limit_exceeded) {
+            if (error?.response?.status === 403 || error?.response?.data?.limit_exceeded) {
               setShowLimitExceededModal(true);
             } else {
-              triggerToast('error', 'Update failed. Please try again.');
+              triggerToast('error', error?.response?.data?.message || 'Update failed. Please try again.');
             }
           },
         }
@@ -453,10 +457,10 @@ const ConversationLeadFormV2 = () => {
           }
         },
         onError: (error: any) => {
-          if (error?.response?.data?.limit_exceeded) {
+          if (error?.response?.status === 403 || error?.response?.data?.limit_exceeded) {
             setShowLimitExceededModal(true);
           } else {
-            triggerToast('error', 'Creation failed. Please try again.');
+            triggerToast('error', error?.response?.data?.message || 'Creation failed. Please try again.');
           }
         },
       });
