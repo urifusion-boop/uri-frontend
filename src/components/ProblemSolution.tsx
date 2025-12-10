@@ -27,8 +27,8 @@ const stages: ExtendedStoryStage[] = [
       { icon: Filter, text: 'Signal Detection' },
       { icon: TrendingUp, text: 'Real-Time Intelligence' },
     ],
-    image: '/assets/images/landing/Glbal_saas.png',
-    image2: '/assets/images/landing/product_screenshot.png',
+    image: '/assets/images/landing/Top companies & Roles (Uri).png',
+    image2: '/assets/images/landing/Individual Leads(Uri).png',
     secondaryVisual: 'chart-metrics',
   },
   {
@@ -36,8 +36,8 @@ const stages: ExtendedStoryStage[] = [
     subtitle: 'Enrichment',
     title: 'Contextual Enrichment',
     description: 'Signals are enriched with company, role, and sentiment to help you prioritize.',
-    image: '/assets/images/landing/product_screenshot.png',
-    image2: '/assets/images/landing/Glbal_saas.png',
+    image: '/assets/images/landing/How_to_generate_reports.png',
+    image2: '/assets/images/landing/Report (uri).png',
     secondaryVisual: 'chart-metrics',
     customContent: (
       <div className="space-y-3">
@@ -66,8 +66,8 @@ const stages: ExtendedStoryStage[] = [
       { icon: Bot, text: 'Personalized Messages' },
       { icon: Sparkles, text: 'Contextual Responses' },
     ],
-    image: '/assets/images/landing/Glbal_saas.png',
-    image2: '/assets/images/landing/product_screenshot.png',
+    image: '/assets/images/landing/Individual Leads(Uri).png',
+    image2: '/assets/images/landing/Top companies & Roles (Uri).png',
     secondaryVisual: 'ai-messages',
     // customContent: (
     //   <div className="space-y-4">
@@ -126,8 +126,8 @@ const stages: ExtendedStoryStage[] = [
     description:
       "You can't refresh social media every 5 minutes. URI monitors your prospects all day, every day, across every platform. The moment someone signals intent—whether it's a job change, a complaint, or an announcement—URI captures it and alerts you instantly.",
     features: [{ icon: TrendingUp, text: 'Real-Time Intelligence' }],
-    image: '/assets/images/landing/product_screenshot.png',
-    image2: '/assets/images/landing/Glbal_saas.png',
+    image: '/assets/images/landing/Report (uri).png',
+    image2: '/assets/images/landing/How_to_generate_reports.png',
     secondaryVisual: 'live-monitoring',
   },
 ];
@@ -422,9 +422,6 @@ const StageImages = ({ stage, index, scrollYProgress, totalStages }: StageCompon
           <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border/50 bg-card">
             <img src={stage.image} alt={`${stage.title} - View 1`} className="w-full h-auto" />
           </div>
-          <motion.div className="absolute -bottom-6 -right-6 w-44 xl:w-52 z-10" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <SecondaryVisual type={stage.secondaryVisual} />
-          </motion.div>
         </div>
       </motion.div>
 
@@ -434,9 +431,6 @@ const StageImages = ({ stage, index, scrollYProgress, totalStages }: StageCompon
           <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border/50 bg-card">
             <img src={stage.image2} alt={`${stage.title} - View 2`} className="w-full h-auto" />
           </div>
-          <motion.div className="absolute -bottom-6 -left-6 w-44 xl:w-52 z-10" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <SecondaryVisual2 type={stage.secondaryVisual} />
-          </motion.div>
         </div>
       </motion.div>
     </>
@@ -530,17 +524,11 @@ const ProblemSolution = () => {
                 <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-xl border border-border/50">
                   <img src={stage.image} alt={`${stage.title} - View 1`} className="w-full h-auto" />
                 </div>
-                <div className="mt-3 sm:mt-4 max-w-[280px] sm:max-w-xs">
-                  <SecondaryVisual type={stage.secondaryVisual} />
-                </div>
               </div>
 
               <motion.div className="relative" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }} viewport={{ once: true }}>
                 <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-xl border border-border/50">
                   <img src={stage.image2} alt={`${stage.title} - View 2`} className="w-full h-auto" />
-                </div>
-                <div className="mt-3 sm:mt-4 max-w-[280px] sm:max-w-xs ml-auto">
-                  <SecondaryVisual2 type={stage.secondaryVisual} />
                 </div>
               </motion.div>
 

@@ -19,6 +19,7 @@ const nextConfig = withPWA({
       'images.unsplash.com',
       'source.unsplash.com',
       'cdn.prod.website-files.com',
+      'www.bellanaija.com',
     ],
   },
   async redirects() {
