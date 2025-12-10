@@ -77,7 +77,7 @@ class UriHttpClient {
           const responseData = error.response.data as any;
           if (responseData?.limit_exceeded) {
             // Feature limit exceeded - do NOT log out user
-            return await Promise.reject(error.response);
+            return await Promise.reject(error);
           } else {
             // Authentication/authorization error - log out user
             this.clearUserData();
