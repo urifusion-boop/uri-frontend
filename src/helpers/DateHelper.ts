@@ -1,34 +1,22 @@
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 
 export class DateHelper {
   static formatDate(input: string): string {
-    const date = new Date(input);
+    // Convert UTC to local timezone first
+    const localDate = dayjs.utc(input).local();
 
-    const day = date.getUTCDate();
-    const monthNames = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-    const month = monthNames[date.getUTCMonth()];
-    const year = date.getUTCFullYear();
+    const day = localDate.date();
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = monthNames[localDate.month()];
+    const year = localDate.year();
 
-    let hours = date.getUTCHours();
-    const minutes = date.getUTCMinutes();
-    const ampm = hours >= 12 ? "PM" : "AM";
+    let hours = localDate.hour();
+    const minutes = localDate.minute();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
     hours = hours % 12;
     hours = hours || 12;
 
-    const minutesStr = minutes < 10 ? "0" + minutes : minutes;
+    const minutesStr = minutes < 10 ? '0' + minutes : minutes;
 
     return `${day} ${month} ${year} ${hours}:${minutesStr}${ampm}`;
   }
@@ -36,9 +24,7 @@ export class DateHelper {
   static convertUTCDateToLocalDate(date: string) {
     const dateObject = new Date(date);
 
-    const localDate = new Date(
-      dateObject.getTime() - dateObject.getTimezoneOffset() * 60 * 1000
-    );
+    const localDate = new Date(dateObject.getTime() - dateObject.getTimezoneOffset() * 60 * 1000);
     return localDate.toISOString();
   }
 
@@ -103,25 +89,22 @@ export class DateHelper {
   }
 
   static convertTimeTo12HourFormat(timeString: string): string {
-    const [hours, minutes] = timeString.split(":").map(Number);
+    const [hours, minutes] = timeString.split(':').map(Number);
 
     const date = new Date();
     date.setHours(hours);
     date.setMinutes(minutes);
 
-    const formattedTime = date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "numeric",
+    const formattedTime = date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: 'numeric',
       hour12: true,
     });
 
     return formattedTime;
   }
 
-  static generateUnixTimestampRange(
-    until: Date = new Date(),
-    daysToSubtract: number = 700
-  ): { since: number; until: number } {
+  static generateUnixTimestampRange(until: Date = new Date(), daysToSubtract: number = 700): { since: number; until: number } {
     const now = new Date();
     const since = new Date();
 
@@ -142,19 +125,19 @@ export class DateHelper {
   static getCurrentDate = () => {
     const date = new Date();
     const options: Intl.DateTimeFormatOptions = {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
     };
-    return date.toLocaleDateString("en-US", options);
+    return date.toLocaleDateString('en-US', options);
   };
 
   static convertTo12Hour(time: string): string {
-    const [hours, minutes] = time.split(":").map(Number);
-    const period = hours >= 12 ? "PM" : "AM";
+    const [hours, minutes] = time.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
     const convertedHours = hours % 12 || 12; // Convert 0 to 12 for 12 AM case
-    return `${convertedHours}:${minutes?.toString().padStart(2, "0")} ${period}`;
+    return `${convertedHours}:${minutes?.toString().padStart(2, '0')} ${period}`;
   }
 
   static convertUtcToLocal(utcTime: string): string {
@@ -163,6 +146,6 @@ export class DateHelper {
     // // Convert to local time
     // const localTime = utcDateTime.local().format("YYYY-MM-DD HH:mm:ss");
 
-    return dayjs.utc(utcTime).local().format("YYYY-MM-DD hh:mm A");
+    return dayjs.utc(utcTime).local().format('YYYY-MM-DD hh:mm A');
   }
 }
