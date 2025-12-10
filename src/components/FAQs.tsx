@@ -8,23 +8,63 @@ import { motion } from 'framer-motion';
 const faqs = [
   {
     q: 'What is URI?',
-    a: 'A platform to connect data insights, tracking, and lead generation to business outcomes.',
+    a: 'URI is an AI-powered platform that detects buying intent, finds verified decision-makers, and generates sales opportunities automatically.',
   },
   {
-    q: 'Is it free?',
-    a: 'We offer a free trial and tiered plans; some features are paid.',
+    q: 'How does URI find leads?',
+    a: 'URI scans the internet — LinkedIn, X, Facebook, news platforms, forums, and company pages — to detect sales signals and high-intent triggers.',
   },
   {
-    q: 'Can I edit my profile or workflows?',
-    a: 'Yes — profiles, trackers, and forms are customizable.',
+    q: 'What kind of signals does URI track?',
+    a: [
+      'Direct requests and need',
+      'Complaints & service frustrations',
+      'Product launches',
+      'Expansion or relocation updates',
+      'Hashtag mentions',
+      'Keyword mentions',
+      'Company activities & market trends',
+    ],
   },
   {
-    q: 'How do reviews/ratings work?',
-    a: 'Feedback systems promote transparency and trust.',
+    q: 'Who is URI built for?',
+    a: 'Business owners, sales teams, marketers, founders, agencies, and anyone who needs a steady flow of verified leads and real-time market insights.',
   },
   {
-    q: 'Which creatives or categories are supported?',
-    a: 'A broad range — tailor trackers to your industry and goals.',
+    q: 'Does URI provide verified contact details?',
+    a: 'Yes — URI enriches leads with email, phone number, social links, role, company info, and more (based on availability).',
+  },
+  {
+    q: 'How fast are the alerts?',
+    a: 'Instant. URI notifies you the moment a buying signal is detected.',
+  },
+  {
+    q: 'Can I customize my trackers?',
+    a: 'Yes — you can customize keywords, hashtags, industries, decision-maker roles, and company types you want to track.',
+  },
+  {
+    q: 'Will URI work for my industry?',
+    a: 'Absolutely. URI supports SaaS, logistics, HR, fintech, FMCGs, Marketing agencies, real estate, education, e-commerce, hospitality, and more.',
+  },
+  {
+    q: 'Is there a free trial?',
+    a: 'Yes, new users get free credits with leads, signals, and trackers included.',
+  },
+  {
+    q: 'Does URI replace my sales team?',
+    a: 'No — URI supports your sales team by eliminating manual research and delivering warm, high-intent opportunities every day.',
+  },
+  {
+    q: 'Is my data secure?',
+    a: 'Yes — URI uses encrypted systems and strictly follows data protection regulations in all the markets we operate in.',
+  },
+  {
+    q: 'Can URI generate outreach messages?',
+    a: 'Yes — URI’s AI Agent generates personalised outreach messages based on the signal detected.',
+  },
+  {
+    q: 'Can I integrate URI with my CRM?',
+    a: 'CRM integration is currently in rollout — users can export leads while native integrations are being finalized.',
   },
 ];
 
@@ -47,7 +87,15 @@ const FAQs = () => {
                 <Typography>{f.q}</Typography>
               </AccordionSummary>
               <AccordionDetails>
-                <Typography className="text-muted-foreground">{f.a}</Typography>
+                {Array.isArray(f.a) ? (
+                  <ul className="list-disc pl-6 text-muted-foreground">
+                    {f.a.map((item, idx) => (
+                      <li key={idx}>{item}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <Typography className="text-muted-foreground">{f.a}</Typography>
+                )}
               </AccordionDetails>
             </Accordion>
           ))}

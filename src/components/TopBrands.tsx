@@ -2,12 +2,15 @@ import { motion } from 'framer-motion';
 
 const brands = [
   { name: 'ALX', logo: '/assets/images/landing/alx.svg' },
-  { name: 'LSETF', logo: '/assets/images/landing/lseft.png' },
-  { name: 'REVVE', logo: '/assets/images/landing/logo.png' },
-  { name: 'Nike', logo: '/assets/images/landing/nike.png' },
-  { name: 'Massive', logo: '/assets/images/landing/ma.png' },
+  { name: 'LSETF', logo: '/assets/images/landing/lsetf.png' },
   { name: 'EA', logo: '/assets/images/landing/ea.png' },
-  { name: 'Techpoint', logo: '/assets/images/landing/logo.png' },
+  { name: 'Microsoft', logo: '/assets/images/landing/microsoft.png' },
+  { name: 'Massive', logo: '/assets/images/landing/ma.png' },
+  { name: 'ALU', logo: '/assets/images/landing/alu.png' },
+  { name: 'Culminate', logo: '/assets/images/landing/culminate.png' },
+  { name: 'Goajo', logo: '/assets/images/landing/goajo.png' },
+  { name: 'IAH', logo: '/assets/images/landing/iah.png' },
+  { name: '3MTT', logo: '/assets/images/landing/3mtt.png' },
 ];
 
 const TopBrands = () => {
@@ -15,11 +18,10 @@ const TopBrands = () => {
     <section className="py-10 sm:py-14">
       <div className="container mx-auto px-4 sm:px-6">
         <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
-          <p className="text-primary text-sm font-semibold tracking-wide">BRANDS</p>
+          {/* <p className="text-primary text-sm font-semibold tracking-wide">BRANDS</p> */}
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mt-2">
-            Trusted by top <span className="text-primary">Brands</span>
+            Trusted by top <span className="text-primary">Companies</span>
           </h2>
-          <p className="text-sm sm:text-base text-muted-foreground mt-2">Logos scroll continuously; hover to pause.</p>
         </motion.div>
 
         <div className="relative mt-6 sm:mt-8 overflow-hidden group" aria-label="Trusted brands logos - auto-scrolling">

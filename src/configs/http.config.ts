@@ -68,10 +68,22 @@ class UriHttpClient {
 
           return await Promise.reject(error.response);
         case 401:
-        case 403:
+          // 401 is always an authentication error - log out user
           this.clearUserData();
           window.dispatchEvent(new CustomEvent('unauthorized'));
           return await Promise.reject(error.response);
+        case 403:
+          // Check if this is a feature limit error or auth error
+          const responseData = error.response.data as any;
+          if (responseData?.limit_exceeded) {
+            // Feature limit exceeded - do NOT log out user
+            return await Promise.reject(error);
+          } else {
+            // Authentication/authorization error - log out user
+            this.clearUserData();
+            window.dispatchEvent(new CustomEvent('unauthorized'));
+            return await Promise.reject(error.response);
+          }
         default:
           return await Promise.resolve(error.response);
       }

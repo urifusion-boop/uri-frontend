@@ -1,6 +1,4 @@
 import CRMRevitalization from '@/components/CRMRevitalization';
-import CTA from '@/components/CTA';
-import CaseStudy from '@/components/CaseStudy';
 import ContextualIntelligence from '@/components/ContextualIntelligence';
 import FAQs from '@/components/FAQs';
 import Hero from '@/components/Hero';
@@ -22,17 +20,17 @@ export default function Home() {
       <Hero />
       <LivePulse />
       <TopBrands />
+      <ContextualIntelligence />
       <ProblemSolution />
       {/* <Features /> */}
       {/* <ShowcaseSections /> */}
-      <ContextualIntelligence />
       <CRMRevitalization />
       <HowItWorks />
-      <CaseStudy />
+      {/* <CaseStudy /> */}
       <Testimonials />
       <ROICalculator />
       <FAQs />
-      <CTA />
+      {/* <CTA /> */}
       <Footer />
     </div>
   );

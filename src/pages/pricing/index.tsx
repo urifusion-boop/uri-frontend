@@ -45,7 +45,7 @@ function PricingPage() {
   return (
     <div className="bg-[#FFFCFE]">
       <Navigation />
-      <div className="container">
+      <div className="container pt-20">
         {/* Trial Banner for Eligible Users - Compact Version */}
         {!checkingEligibility && isTrialEligible && userDetails && (
           <Box

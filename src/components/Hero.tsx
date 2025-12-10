@@ -1,6 +1,9 @@
 import { Button } from '@/components/ui/button';
+import { authRoutes } from '@/constants/ClientRoute';
+import { useAuth } from '@/providers/AuthProvider';
 import { motion } from 'framer-motion';
 import { Globe, Search } from 'lucide-react';
+import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
 const queries = [
@@ -10,6 +13,8 @@ const queries = [
 ];
 
 const Hero = () => {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const [currentQuery, setCurrentQuery] = useState('');
   const [queryIndex, setQueryIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -63,9 +68,9 @@ const Hero = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight px-4"
+            className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight px-4 text-[#401372]"
           >
-            You have built the solution. <span className="text-gradient">Let Us find the people who need it!</span>
+            You have built the solution. Let us find the people who need it!
           </motion.h1>
 
           {/* Sub-headline */}
@@ -104,12 +109,18 @@ const Hero = () => {
           </motion.p>
 
           {/* CTA */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="px-4">
-            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-hover text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-xl shadow-strong hover-lift font-semibold">
-              Start Free
-              <span className="ml-2 text-xs opacity-70 hidden sm:inline">No credit card required</span>
-            </Button>
-          </motion.div>
+          {!isAuthenticated && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="px-4">
+              <Button
+                size="lg"
+                className="bg-primary text-primary-foreground hover:bg-primary-hover text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-xl shadow-strong hover-lift font-semibold"
+                onClick={() => router.push(authRoutes.login)}
+              >
+                Start Free
+                <span className="ml-2 text-xs opacity-70 hidden sm:inline">No credit card required</span>
+              </Button>
+            </motion.div>
+          )}
         </motion.div>
       </div>
     </section>

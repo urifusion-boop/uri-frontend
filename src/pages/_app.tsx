@@ -59,7 +59,11 @@ const publicRoutes = [
   '/media-and-entertainment',
   '/product-teams',
   '/business-owners',
+  '/nonprofits',
   '/dummy-dashboard',
+  '/features',
+  '/signals',
+  '/integrations',
 ];
 
 const ProtectedRoutes = () => {

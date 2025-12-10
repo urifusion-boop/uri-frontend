@@ -160,9 +160,9 @@ const ExportLeadsModal: React.FC<ExportLeadsModalProps> = ({ open, toggleModal, 
               {/* this should not be set if not provided and there is no default value */}
               <SingleSelectDropdown
                 label="Lead Source"
-                options={Object.values(LeadSourceEnum).map((type) => ({ label: type.toString(), value: type }))}
-                selectedValue={leadSource ? { label: leadSource.toString(), value: leadSource } : null}
-                onChange={(e) => setLeadSource(e.value as unknown as LeadSourceEnum)}
+                options={[{ label: 'All', value: 'All' }, ...Object.values(LeadSourceEnum).map((type) => ({ label: type.toString(), value: type }))]}
+                selectedValue={leadSource ? { label: leadSource.toString(), value: leadSource } : { label: 'All', value: 'All' }}
+                onChange={(e) => setLeadSource(e.value === 'All' ? null : (e.value as unknown as LeadSourceEnum))}
                 placeholder="All"
                 tooltip="The source of the leads to export"
               />

@@ -1,7 +1,7 @@
 import footerBackground from '@/assets/footer-background.png';
 import { Button } from '@mui/material';
 import { motion } from 'framer-motion';
-import { ArrowRight, Linkedin, Twitter, Youtube } from 'lucide-react';
+import { ArrowRight, Facebook, Linkedin, Twitter, Youtube } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -11,7 +11,6 @@ const Footer = () => {
       {/* Background Image Section */}
       <div className="relative h-[200px] sm:h-[280px] md:h-[320px] overflow-hidden">
         <Image src={footerBackground} alt="" fill priority className="object-cover object-center" />
-        {/* Gradient overlay for smooth transition */}
         <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
       </div>
 
@@ -23,9 +22,9 @@ const Footer = () => {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
               {/* Left: Headline + CTA */}
               <div className="flex-1">
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight mb-6">Your customers are speaking, Are you listening?</h2>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight mb-6">Don’t miss another buying signal</h2>
                 <Button size="large" className="bg-foreground text-background hover:bg-foreground/90 text-base px-6 py-6 rounded-xl font-semibold group">
-                  Start building for free
+                  Turn real-time intent signals into revenue. Start tracking leads today.
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </div>
@@ -35,7 +34,16 @@ const Footer = () => {
                 <img src="/assets/images/landing/logo.png" alt="URI" className="h-10 sm:h-12" />
                 <div className="flex items-center gap-3">
                   <a
-                    href="https://linkedin.com"
+                    href="https://www.facebook.com/share/p/Cn19gyDHqVNni2ca/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
+                    aria-label="Facebook"
+                  >
+                    <Facebook className="h-5 w-5" />
+                  </a>
+                  <a
+                    href="https://www.linkedin.com/company/uri-creative/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
@@ -44,7 +52,7 @@ const Footer = () => {
                     <Linkedin className="h-5 w-5" />
                   </a>
                   <a
-                    href="https://youtube.com"
+                    href="https://www.youtube.com/@UriCreative"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
@@ -53,7 +61,7 @@ const Footer = () => {
                     <Youtube className="h-5 w-5" />
                   </a>
                   <a
-                    href="https://twitter.com"
+                    href="https://x.com/uricreative"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
@@ -115,11 +123,6 @@ const Footer = () => {
                       ROI Calculator
                     </Link>
                   </li>
-                  <li>
-                    <Link href="/tools/chrome-extension" className="text-muted-foreground hover:text-foreground transition-colors">
-                      Chrome Extension
-                    </Link>
-                  </li>
                 </ul>
               </div>
 
@@ -128,7 +131,7 @@ const Footer = () => {
                 <h4 className="font-semibold text-foreground mb-4">Resources</h4>
                 <ul className="space-y-3 text-sm">
                   <li>
-                    <Link href="/resources/blog" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors">
                       Blog
                     </Link>
                   </li>

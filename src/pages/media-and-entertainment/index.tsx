@@ -1,73 +1,92 @@
-import { ClimberIcon, PersonalGrowthIcon, WebAnalyticsIcon } from '@/components/atoms/Icons';
-import SeoHead from '@/components/atoms/SeoHead';
-import FeatureCard from '@/components/landing/FeatureCard';
-import FeatureParentComponent from '@/components/landing/FeatureParentComponent';
-import Footer from '@/components/landing/Footer';
 import Navigation from '@/components/Navigation';
-import Image from 'next/image';
+import SeoHead from '@/components/atoms/SeoHead';
+import Footer from '@/components/landing/Footer';
+import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
+import { CheckCircle, Megaphone, TrendingUp, Users, Video } from 'lucide-react';
+import Link from 'next/link';
 
-const connectCardData = [
-  {
-    icon: <ClimberIcon />,
-    title: 'Tracking audience sentiment',
-    description: 'Capture real-time feedback on shows, events, or campaigns through keyword tracking to understand audience preferences.',
-  },
-  {
-    icon: <WebAnalyticsIcon />,
-    title: 'Enhancing fan engagement',
-    description: 'Use account tracking to analyze fan interactions and foster stronger connections.',
-  },
-  {
-    icon: <PersonalGrowthIcon />,
-    title: 'Simplifying content scheduling',
-    description: 'Plan and post updates using content management tools for consistent communication.',
-  },
-  {
-    icon: <PersonalGrowthIcon />,
-    title: 'Identifying Collaboration Opportunities',
-    description: 'Discover potential partnerships or sponsorships through lead tracking.',
-  },
+const benefits = [
+  { icon: Users, title: 'Engage Audiences', description: 'Discover what your audience is talking about and create content that resonates with their interests.' },
+  { icon: TrendingUp, title: 'Track Trending Topics', description: 'Stay ahead of the curve by monitoring emerging trends and conversations in real-time.' },
+  { icon: Megaphone, title: 'Amplify Campaigns', description: 'Identify influencers and key voices in your space to maximize campaign reach and impact.' },
+  { icon: Video, title: 'Content Intelligence', description: 'Understand what content formats and topics drive the most engagement in your market.' },
 ];
 
-function Index() {
+const features = ['Real-time trend monitoring', 'Audience sentiment analysis', 'Influencer identification', 'Content performance tracking', 'Competitor content analysis', 'Custom topic alerts'];
+
+export default function MediaAndEntertainmentPage() {
   return (
     <>
       <SeoHead title="For Media and Entertainment" />
-      <div className="bg-[#FFF]">
-        <Navigation />
-        <div className="container">
-          <FeatureParentComponent className="items-center md:my-[60px]">
-            <FeatureCard
-              showFeaturesList={false}
-              h1="Elevating"
-              h1tinted=" Media"
-              h1middle=" and"
-              h2=" Entertainment"
-              h2tinted=" Brands"
-              description="Stay in the spotlight with Uri, the ultimate tool for media and entertainment brands to track trends, understand audience sentiment, and uncover fresh engagement opportunities. "
-            />
-            <Image alt="" src={'/assets/images/elevating-media-features.png'} width={669} height={580} className="h-full object-contain flex-1" />
-          </FeatureParentComponent>
-          <FeatureParentComponent className="items-center flex-col-reverse">
-            <Image alt="" src={'/assets/images/what-uri-does-startup.png'} width={669} height={580} className="h-full object-contain flex-1" />
-            <FeatureCard
-              showFeaturesList={false}
-              h1="What"
-              h1tinted=" Uri"
-              h1middle=" Does for Media"
-              h2middle="and Entertainment"
-              description="Keep your brand center stage with Uri’s powerful insights. Monitor audience sentiment in real time to gauge how your content resonates and adapt quickly to trends."
-            />
-          </FeatureParentComponent>
-          <FeatureParentComponent className="items-center">
-            <FeatureCard showFeatureTitle={false} showFeaturesList={true} h1="Key" h1tinted=" Features" h1middle=" Just For You" data={connectCardData} />
-            <Image alt="" src={'/assets/images/media-key-features.png'} width={669} height={580} className="h-full object-contain flex-1" />
-          </FeatureParentComponent>
-        </div>
-        <Footer />
-      </div>
+      <Navigation />
+      <main className="pt-24 pb-16 md:pt-32 md:pb-24">
+        <section className="container mx-auto px-4 sm:px-6">
+          <div className="max-w-4xl mx-auto text-center mb-16">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+              <span className="inline-block px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm mb-6">For Media & Entertainment</span>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-6">
+                <span className="text-primary">Engage Audiences</span> Like Never Before
+              </h1>
+              <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+                Create content that captivates. URI helps you understand what your audience wants, track trending topics, and amplify your reach with data-driven insights.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-hover">
+                  Start Free Trial
+                </Button>
+                <Button size="lg" variant="outline">
+                  See Media Use Cases
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto mb-16">
+            {benefits.map((benefit, index) => (
+              <motion.div
+                key={benefit.title}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="bg-card border border-border rounded-2xl p-6 md:p-8"
+              >
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                  <benefit.icon className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-2">{benefit.title}</h3>
+                <p className="text-muted-foreground">{benefit.description}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="max-w-3xl mx-auto bg-card border border-border rounded-2xl p-8 md:p-12"
+          >
+            <h2 className="text-2xl font-bold text-foreground mb-6 text-center">Media Intelligence Features</h2>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {features.map((feature) => (
+                <div key={feature} className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
+                  <span className="text-foreground">{feature}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          <div className="text-center mt-16">
+            <Link href="/pricing">
+              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-hover">
+                View Pricing Plans
+              </Button>
+            </Link>
+          </div>
+        </section>
+      </main>
+      <Footer />
     </>
   );
 }
-
-export default Index;
