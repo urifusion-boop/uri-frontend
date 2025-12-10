@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const fetchUserData = () => {
       setIsPending(true);
-      setIsAuthenticated(false);
+      // Don't reset isAuthenticated here to prevent UI flash
 
       const storedUserDetails = localStorage.getItem(STORE_KEYS.USER_DETAILS);
       const storedUserTokens = localStorage.getItem(STORE_KEYS.USER_TOKENS);
@@ -78,6 +78,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const tokens: ITokenDetails = JSON.parse(storedUserTokens);
         setTokenDetails(tokens);
         setIsAuthenticated(tokens?.accessToken.length > 0 && tokens?.refreshToken.length > 0);
+      } else {
+        // No tokens found, user is not authenticated
+        setIsAuthenticated(false);
+        setTokenDetails(null);
       }
 
       if (storedUserDetails) {
