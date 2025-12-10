@@ -27,35 +27,46 @@ const stages: ExtendedStoryStage[] = [
       { icon: Filter, text: 'Signal Detection' },
       { icon: TrendingUp, text: 'Real-Time Intelligence' },
     ],
-    image: '/assets/images/landing/Top companies & Roles (Uri).png',
-    image2: '/assets/images/landing/Individual Leads(Uri).png',
+    image: '/assets/images/landing/Skincare tweet (Uri).png',
+    image2: '/assets/images/landing/Top companies & Roles (Uri).png',
     secondaryVisual: 'chart-metrics',
   },
   {
-    id: 'contextual-enrichment',
-    subtitle: 'Enrichment',
-    title: 'Contextual Enrichment',
-    description: 'Signals are enriched with company, role, and sentiment to help you prioritize.',
-    image: '/assets/images/landing/How_to_generate_reports.png',
+    id: 'listen-247',
+    subtitle: 'Always-On Monitoring',
+    title: "We Listen 24/7 So You Don't Have To",
+    description:
+      "You can't refresh social media every 5 minutes. URI monitors your prospects all day, every day, across every platform. The moment someone signals intent—whether it's a job change, a complaint, or an announcement—URI captures it and alerts you instantly.",
+    features: [{ icon: TrendingUp, text: 'Real-Time Intelligence' }],
+    image: '/assets/images/landing/Skincare tweet (Uri).png',
     image2: '/assets/images/landing/Report (uri).png',
-    secondaryVisual: 'chart-metrics',
-    customContent: (
-      <div className="space-y-3">
-        <div className="bg-muted/50 rounded-lg p-3 opacity-40 line-through">
-          <p className="text-sm">Random social media post...</p>
-        </div>
-        <div className="bg-muted/50 rounded-lg p-3 opacity-40 line-through">
-          <p className="text-sm">Unrelated content...</p>
-        </div>
-        <motion.div animate={{ scale: [1, 1.02, 1] }} transition={{ duration: 2, repeat: Infinity }} className="bg-primary/20 rounded-lg p-3 border-2 border-primary">
-          <p className="text-sm font-semibold">🎯 High Intent: "Looking for a new CRM solution..."</p>
-        </motion.div>
-        <motion.div animate={{ scale: [1, 1.02, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }} className="bg-primary/20 rounded-lg p-3 border-2 border-primary">
-          <p className="text-sm font-semibold">🎯 High Intent: "Just started at Company X as Head of..."</p>
-        </motion.div>
-      </div>
-    ),
+    secondaryVisual: 'live-monitoring',
   },
+  // {
+  //   id: 'contextual-enrichment',
+  //   subtitle: 'Enrichment',
+  //   title: 'Contextual Enrichment',
+  //   description: 'Signals are enriched with company, role, and sentiment to help you prioritize.',
+  //   image: '/assets/images/landing/Report (uri).png',
+  //   image2: '/assets/images/landing/Individual Leads(Uri).png',
+  //   secondaryVisual: 'chart-metrics',
+  //   customContent: (
+  //     <div className="space-y-3">
+  //       <div className="bg-muted/50 rounded-lg p-3 opacity-40 line-through">
+  //         <p className="text-sm">Random social media post...</p>
+  //       </div>
+  //       <div className="bg-muted/50 rounded-lg p-3 opacity-40 line-through">
+  //         <p className="text-sm">Unrelated content...</p>
+  //       </div>
+  //       <motion.div animate={{ scale: [1, 1.02, 1] }} transition={{ duration: 2, repeat: Infinity }} className="bg-primary/20 rounded-lg p-3 border-2 border-primary">
+  //         <p className="text-sm font-semibold">🎯 High Intent: "Looking for a new CRM solution..."</p>
+  //       </motion.div>
+  //       <motion.div animate={{ scale: [1, 1.02, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }} className="bg-primary/20 rounded-lg p-3 border-2 border-primary">
+  //         <p className="text-sm font-semibold">🎯 High Intent: "Just started at Company X as Head of..."</p>
+  //       </motion.div>
+  //     </div>
+  //   ),
+  // },
   {
     id: 'dera-ai-outreach',
     subtitle: 'Outreach',
@@ -118,17 +129,6 @@ const stages: ExtendedStoryStage[] = [
     //     </div>
     //   </div>
     // ),
-  },
-  {
-    id: 'listen-247',
-    subtitle: 'Always-On Monitoring',
-    title: "We Listen 24/7 So You Don't Have To",
-    description:
-      "You can't refresh social media every 5 minutes. URI monitors your prospects all day, every day, across every platform. The moment someone signals intent—whether it's a job change, a complaint, or an announcement—URI captures it and alerts you instantly.",
-    features: [{ icon: TrendingUp, text: 'Real-Time Intelligence' }],
-    image: '/assets/images/landing/Report (uri).png',
-    image2: '/assets/images/landing/How_to_generate_reports.png',
-    secondaryVisual: 'live-monitoring',
   },
 ];
 
