@@ -16,8 +16,9 @@ const Navigation = () => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileActiveMenu, setMobileActiveMenu] = useState<string | null>(null);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, userDetails, userRoutes, logoutUser } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -280,7 +281,7 @@ const Navigation = () => {
 
           {/* Right Actions */}
           <div className="flex items-center gap-2 sm:gap-4">
-            {!isAuthenticated && (
+            {!isAuthenticated ? (
               <>
                 <Link href={authRoutes.login} className="text-foreground/70 hover:text-foreground transition-colors font-medium hidden lg:block text-sm">
                   Login
@@ -292,6 +293,46 @@ const Navigation = () => {
                   Start Free
                 </Button>
               </>
+            ) : (
+              <div className="relative">
+                <button
+                  className="flex items-center gap-2 text-foreground/80 hover:text-foreground font-medium"
+                  onClick={() => setUserMenuOpen((prev) => !prev)}
+                  onBlur={() => setTimeout(() => setUserMenuOpen(false), 200)}
+                >
+                  {userDetails?.firstName || userDetails?.email || 'Account'}
+                  <ChevronDown className={`w-4 h-4 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+                <AnimatePresence>
+                  {userMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 top-full mt-2 w-48 z-50"
+                    >
+                      <div className="bg-background border border-border rounded-xl shadow-strong p-2">
+                        <Link href={userRoutes.dashboard} className="block px-3 py-2 rounded-lg hover:bg-accent text-sm" onClick={() => setUserMenuOpen(false)}>
+                          Dashboard
+                        </Link>
+                        <Link href={userRoutes.profile} className="block px-3 py-2 rounded-lg hover:bg-accent text-sm" onClick={() => setUserMenuOpen(false)}>
+                          Profile
+                        </Link>
+                        <button
+                          className="w-full text-left px-3 py-2 rounded-lg hover:bg-accent text-sm text-destructive"
+                          onClick={() => {
+                            setUserMenuOpen(false);
+                            logoutUser();
+                          }}
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             )}
 
             {/* Mobile Menu */}
@@ -427,7 +468,7 @@ const Navigation = () => {
 
                   {/* Mobile Actions */}
                   <div className="flex flex-col gap-3 pt-4 border-t border-border">
-                    {!isAuthenticated && (
+                    {!isAuthenticated ? (
                       <>
                         <Link href={authRoutes.login} className="text-center py-2 text-foreground/70 hover:text-foreground transition-colors font-medium" onClick={() => setMobileMenuOpen(false)}>
                           Login
@@ -440,6 +481,25 @@ const Navigation = () => {
                           }}
                         >
                           Start Free
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Link href={userRoutes.dashboard} className="text-center py-2 font-medium" onClick={() => setMobileMenuOpen(false)}>
+                          Dashboard
+                        </Link>
+                        <Link href={userRoutes.profile} className="text-center py-2 font-medium" onClick={() => setMobileMenuOpen(false)}>
+                          Profile
+                        </Link>
+                        <Button
+                          variant="outline"
+                          className="font-semibold rounded-xl shadow-soft w-full"
+                          onClick={() => {
+                            logoutUser();
+                            setMobileMenuOpen(false);
+                          }}
+                        >
+                          Logout
                         </Button>
                       </>
                     )}
