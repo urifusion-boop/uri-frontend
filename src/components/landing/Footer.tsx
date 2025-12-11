@@ -1,5 +1,6 @@
 import footerBackground from '@/assets/footer-background.png';
-import { Button } from '@mui/material';
+import { Button } from '@/components/ui/button';
+import { authRoutes } from '@/constants/ClientRoute';
 import { motion } from 'framer-motion';
 import { ArrowRight, Facebook, Linkedin, Twitter, Youtube } from 'lucide-react';
 import Image from 'next/image';
@@ -22,10 +23,13 @@ const Footer = () => {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
               {/* Left: Headline + CTA */}
               <div className="flex-1">
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight mb-6">Don’t miss another buying signal</h2>
-                <Button size="large" className="bg-foreground text-background hover:bg-foreground/90 text-base px-6 py-6 rounded-xl font-semibold group">
-                  Turn real-time intent signals into revenue. Start tracking leads today.
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight mb-3">Don’t miss another buying signal</h2>
+                <p className="text-muted-foreground text-base mb-6">Turn real-time intent signals into revenue.</p>
+                <Button size="lg" className="bg-foreground text-background hover:bg-foreground/90 text-base px-6 py-6 rounded-xl font-semibold group" asChild>
+                  <Link href={authRoutes.login}>
+                    Start tracking leads today
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </Link>
                 </Button>
               </div>
 
