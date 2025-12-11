@@ -6,6 +6,8 @@ import { motion } from 'framer-motion';
 import { BarChart3, CheckCircle, Target, TrendingUp, Users } from 'lucide-react';
 import Link from 'next/link';
 
+const businessOwnersCartoon = '/assets/images/landing/business-owners-cartoon.png';
+
 const benefits = [
   { icon: TrendingUp, title: 'Drive Growth with Insights', description: 'Get real-time buying signals that help you identify and capture new opportunities before your competitors.' },
   { icon: Target, title: 'Find Your Ideal Customers', description: 'AI-powered signal detection identifies prospects who match your ideal customer profile and are actively looking.' },
@@ -47,6 +49,12 @@ export default function BusinessOwnersPage() {
               </div>
             </motion.div>
           </div>
+
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="max-w-5xl mx-auto mb-16">
+            <div className="rounded-2xl overflow-hidden shadow-2xl border border-border bg-gradient-to-br from-primary/5 to-primary/10">
+              <img src={businessOwnersCartoon} alt="Business owners analyzing growth metrics" className="w-full h-auto" />
+            </div>
+          </motion.div>
 
           <div className="grid sm:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto mb-16">
             {benefits.map((benefit, index) => (

@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
 import { Clock, Mail, MapPin, Phone, Send } from 'lucide-react';
 
 const contactInfo = [
-  { icon: MapPin, title: 'Office', details: ['14 Admiralty Way', 'Lekki Phase 1', 'Lagos, Nigeria'] },
+  { icon: MapPin, title: 'Office', details: ['5th Floor ', 'ITF Building', 'Costain Lagos, Nigeria'] },
   { icon: Mail, title: 'Email', details: ['hello@uricreative.com'] },
   { icon: Phone, title: 'Phone', details: ['+234 810 123 4567', '+234 812 987 6543'] },
   { icon: Clock, title: 'Hours', details: ['Monday - Friday', '9:00 AM - 6:00 PM WAT'] },

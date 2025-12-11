@@ -6,6 +6,8 @@ import { motion } from 'framer-motion';
 import { BarChart3, CheckCircle, Target, Users, Zap } from 'lucide-react';
 import Link from 'next/link';
 
+const agenciesCartoon = '/assets/images/landing/agencies-cartoon.png';
+
 const benefits = [
   { icon: BarChart3, title: 'Create Data-Led Campaigns', description: "Leverage real-time buying signals to craft campaigns that resonate with your clients' target audiences." },
   { icon: Users, title: 'Scale Client Success', description: 'Deliver measurable results across multiple client accounts with unified signal tracking and reporting.' },
@@ -48,6 +50,12 @@ export default function AgenciesPage() {
               </div>
             </motion.div>
           </div>
+
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="max-w-5xl mx-auto mb-16">
+            <div className="rounded-2xl overflow-hidden shadow-2xl border border-border bg-gradient-to-br from-primary/5 to-primary/10">
+              <img src={agenciesCartoon} alt="Agency team collaborating" className="w-full h-auto" />
+            </div>
+          </motion.div>
 
           <div className="grid sm:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto mb-16">
             {benefits.map((benefit, index) => (

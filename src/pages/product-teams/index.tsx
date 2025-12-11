@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { BarChart3, CheckCircle, Lightbulb, Target, Users } from 'lucide-react';
 import Link from 'next/link';
 
+const productTeamsCartoon = '/assets/images/landing/product-teams-cartoon.png';
 const benefits = [
   { icon: Lightbulb, title: 'Inform Product Decisions', description: 'Understand what features customers are asking for by monitoring real conversations and intent signals.' },
   { icon: Users, title: 'Understand User Needs', description: "Get direct insight into pain points and desired solutions from your target market's actual discussions." },
@@ -41,6 +42,12 @@ export default function ProductTeamsPage() {
               </div>
             </motion.div>
           </div>
+
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="max-w-5xl mx-auto mb-16">
+            <div className="rounded-2xl overflow-hidden shadow-2xl border border-border bg-gradient-to-br from-primary/5 to-primary/10">
+              <img src={productTeamsCartoon} alt="Product team reviewing user feedback and trends" className="w-full h-auto" />
+            </div>
+          </motion.div>
 
           <div className="grid sm:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto mb-16">
             {benefits.map((benefit, index) => (
