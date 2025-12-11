@@ -73,7 +73,7 @@ const Hero = () => {
           >
             You have built the solution.
             <br />
-            <span className="text-gradient">Let us find the people who need it!</span>
+            <span className="text-primary">Let us find the people who need it!</span>
           </motion.h1>
 
           {/* Sub-headline */}
