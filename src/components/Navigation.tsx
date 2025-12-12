@@ -294,45 +294,12 @@ const Navigation = () => {
                 </Button>
               </>
             ) : (
-              <div className="relative">
-                <button
-                  className="flex items-center gap-2 text-foreground/80 hover:text-foreground font-medium"
-                  onClick={() => setUserMenuOpen((prev) => !prev)}
-                  onBlur={() => setTimeout(() => setUserMenuOpen(false), 200)}
-                >
-                  {userDetails?.firstName || userDetails?.email || 'Account'}
-                  <ChevronDown className={`w-4 h-4 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
-                </button>
-                <AnimatePresence>
-                  {userMenuOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute right-0 top-full mt-2 w-48 z-50"
-                    >
-                      <div className="bg-background border border-border rounded-xl shadow-strong p-2">
-                        <Link href={userRoutes.dashboard} className="block px-3 py-2 rounded-lg hover:bg-accent text-sm" onClick={() => setUserMenuOpen(false)}>
-                          Dashboard
-                        </Link>
-                        <Link href={userRoutes.profile} className="block px-3 py-2 rounded-lg hover:bg-accent text-sm" onClick={() => setUserMenuOpen(false)}>
-                          Profile
-                        </Link>
-                        <button
-                          className="w-full text-left px-3 py-2 rounded-lg hover:bg-accent text-sm text-destructive"
-                          onClick={() => {
-                            setUserMenuOpen(false);
-                            logoutUser();
-                          }}
-                        >
-                          Logout
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              <Button
+                className="bg-primary text-primary-foreground hover:bg-primary-hover font-semibold rounded-xl shadow-soft text-xs sm:text-sm px-3 sm:px-4 py-2"
+                onClick={() => router.push('/dashboard')}
+              >
+                Dashboard
+              </Button>
             )}
 
             {/* Mobile Menu */}
@@ -485,22 +452,9 @@ const Navigation = () => {
                       </>
                     ) : (
                       <>
-                        <Link href={userRoutes.dashboard} className="text-center py-2 font-medium" onClick={() => setMobileMenuOpen(false)}>
+                        <Link href="/dashboard" className="text-center py-2 font-medium" onClick={() => setMobileMenuOpen(false)}>
                           Dashboard
                         </Link>
-                        <Link href={userRoutes.profile} className="text-center py-2 font-medium" onClick={() => setMobileMenuOpen(false)}>
-                          Profile
-                        </Link>
-                        <Button
-                          variant="outline"
-                          className="font-semibold rounded-xl shadow-soft w-full"
-                          onClick={() => {
-                            logoutUser();
-                            setMobileMenuOpen(false);
-                          }}
-                        >
-                          Logout
-                        </Button>
                       </>
                     )}
                   </div>
