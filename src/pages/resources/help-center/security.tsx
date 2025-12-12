@@ -122,7 +122,7 @@ export default function SecurityHelpPage() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }} className="mt-12 grid md:grid-cols-2 gap-6">
-            <Link href="/resources/help-center/billing" className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors group">
+            <Link href="/pricing" className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors group">
               <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors">Previous: Billing & Plans</h3>
               <p className="text-sm text-muted-foreground mb-4">Manage your subscription and payments.</p>
               <span className="text-primary text-sm flex items-center">

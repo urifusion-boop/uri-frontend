@@ -75,7 +75,7 @@ const categories = [
   { name: 'Getting Started', count: 12, link: '/resources/help-center/getting-started' },
   { name: 'CRM Integration', count: 8, link: '/resources/help-center/crm-integration' },
   { name: 'Signal Detection', count: 15, link: '/resources/help-center/signal-detection' },
-  { name: 'Billing & Plans', count: 6, link: '/resources/help-center/billing' },
+  { name: 'Billing & Plans', count: 6, link: '/pricing' },
   { name: 'Security & Privacy', count: 9, link: '/resources/help-center/security' },
   { name: 'API & Technical', count: 11, link: '/resources/help-center/api' },
 ];
