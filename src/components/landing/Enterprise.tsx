@@ -18,7 +18,7 @@ function Enterprise() {
           mode="primary"
           textColor="#fff"
           className="mt-[32px] max-w-[244px] mx-auto md:mt-[52px]"
-          onClick={() => window.open('https://calendly.com/uricreative-sales/uri-social-listening-tool-demo', '_blank')}
+          onClick={() => window.open('https://calendly.com/precious-zino-uricreative/let-s-talk-about-uri', '_blank')}
         >
           Book a Demo
         </CustomButton>
