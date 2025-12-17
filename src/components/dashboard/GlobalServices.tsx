@@ -1,17 +1,16 @@
-import { Box, Button, Typography, styled, Grid, Collapse, Chip } from '@mui/material';
-import { useState, useEffect } from 'react';
 import { UserModuleService } from '@/api/UserModuleService';
 import { LightThemeColors } from '@/configs/colors.config';
+import { useWorkflowFilter } from '@/contexts/WorkflowFilterContext';
 import { useUserModules } from '@/hooks/useUserModules.hook';
 import { useAuth } from '@/providers/AuthProvider';
-import { useWorkflowFilter } from '@/contexts/WorkflowFilterContext';
 import ChartLine from '@/utils/icon/ChartLine';
 import HeartRateSearch from '@/utils/icon/HeartRateSearch';
+import { Box, Button, Chip, Collapse, Grid, Typography, styled } from '@mui/material';
 import { useRouter } from 'next/router';
 import React from 'react';
-import { FaFolder, FaUser, FaBuilding, FaComments } from 'react-icons/fa';
-import { HiHashtag } from 'react-icons/hi';
 import { BsGraphUp } from 'react-icons/bs';
+import { FaBuilding, FaComments, FaFolder, FaUser } from 'react-icons/fa';
+import { HiHashtag } from 'react-icons/hi';
 import { MdRecordVoiceOver } from 'react-icons/md';
 
 const Container = styled(Box)({
@@ -109,7 +108,7 @@ const workflowData = [
       },
       {
         id: 'conversational-leads',
-        title: 'Conversational Leads',
+        title: 'Sales Signals',
         description: 'Track leads from conversations.',
         icon: <FaComments size={40} color={LightThemeColors.uriColor} />,
         href: '/leads-tracking/forms/leads?type=conversational',
@@ -139,7 +138,7 @@ const GlobalServices: React.FC = () => {
 
     if (isCurrentlyExpanded) {
       // Remove from selection (deselect)
-      newExpandedWorkflows = selectedWorkflows.filter(w => w !== workflowId);
+      newExpandedWorkflows = selectedWorkflows.filter((w) => w !== workflowId);
     } else {
       // Add to selection (multi-select)
       newExpandedWorkflows = [...selectedWorkflows, workflowId];
@@ -152,7 +151,7 @@ const GlobalServices: React.FC = () => {
     if (newExpandedWorkflows.length === 0) {
       router.push('/dashboard', undefined, { shallow: true });
     } else {
-      router.push(`/dashboard?workflow=${newExpandedWorkflows.join(',') }`, undefined, { shallow: true });
+      router.push(`/dashboard?workflow=${newExpandedWorkflows.join(',')}`, undefined, { shallow: true });
     }
   };
 
@@ -169,14 +168,12 @@ const GlobalServices: React.FC = () => {
 
   // Filter workflows based on user's enabled modules
   // Show all workflows but filter modules, and always show coming soon workflows
-  const filteredWorkflows = workflowData.map((workflow) => ({
-    ...workflow,
-    modules: workflow.comingSoon
-      ? []
-      : workflow.modules.filter(
-          (module) => selectedModules.length === 0 || selectedModules.includes(module.id)
-        ),
-  })).filter((workflow) => workflow.comingSoon || workflow.modules.length > 0);
+  const filteredWorkflows = workflowData
+    .map((workflow) => ({
+      ...workflow,
+      modules: workflow.comingSoon ? [] : workflow.modules.filter((module) => selectedModules.length === 0 || selectedModules.includes(module.id)),
+    }))
+    .filter((workflow) => workflow.comingSoon || workflow.modules.length > 0);
 
   return (
     <Container>
@@ -194,12 +191,8 @@ const GlobalServices: React.FC = () => {
                 p: 3,
                 borderRadius: '20px',
                 boxShadow: '1px 1px 6px 3px #00000011',
-                border: selectedWorkflows.includes(workflow.id)
-                  ? `2px solid ${LightThemeColors.uriColor}`
-                  : '2px solid transparent',
-                backgroundColor: selectedWorkflows.includes(workflow.id)
-                  ? `${LightThemeColors.uriColor}10`
-                  : '#fff',
+                border: selectedWorkflows.includes(workflow.id) ? `2px solid ${LightThemeColors.uriColor}` : '2px solid transparent',
+                backgroundColor: selectedWorkflows.includes(workflow.id) ? `${LightThemeColors.uriColor}10` : '#fff',
                 opacity: workflow.comingSoon ? 0.6 : 1,
                 transition: 'all 0.3s ease-in-out',
                 position: 'relative',

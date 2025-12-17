@@ -32,7 +32,7 @@ import PlatformSelector from '../PlatformSelector';
 const ConversationLeadFormV2 = () => {
   const [form, setForm] = useState<ConversationalSearchFormDto>({
     user_id: '',
-    form_title: 'Conversational Lead Form V2',
+    form_title: 'Sales Signal Form V2',
     ai_response_guide: '',
     keywords: [],
     competitors: [],
@@ -512,7 +512,7 @@ const ConversationLeadFormV2 = () => {
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1 }}>
           <Typography variant="h6" sx={{ textAlign: 'center', fontWeight: 600, color: '#1f2937' }}>
-            Conversational Lead Form
+            Sales Signal Form
           </Typography>
           <Chip
             label="V2"
