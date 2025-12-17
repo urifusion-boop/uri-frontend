@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { CheckCircle, Rocket, Target, TrendingUp, Zap } from 'lucide-react';
 import Link from 'next/link';
 
+const startupsCartoon = '/assets/images/landing/startups-cartoon.png';
 const benefits = [
   { icon: Rocket, title: 'Accelerate Traction', description: 'Find your first 100 customers faster by identifying prospects actively searching for solutions like yours.' },
   { icon: Target, title: 'Validate Product-Market Fit', description: 'Understand real market demand by tracking intent signals and conversations in your target space.' },
@@ -48,6 +49,12 @@ export default function StartupsPage() {
               </div>
             </motion.div>
           </div>
+
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="max-w-5xl mx-auto mb-16">
+            <div className="rounded-2xl overflow-hidden shadow-2xl border border-border bg-gradient-to-br from-primary/5 to-primary/10">
+              <img src={startupsCartoon} alt="Startup team launching product" className="w-full h-auto" />
+            </div>
+          </motion.div>
 
           <div className="grid sm:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto mb-16">
             {benefits.map((benefit, index) => (

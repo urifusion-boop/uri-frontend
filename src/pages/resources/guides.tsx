@@ -12,36 +12,42 @@ const guides = [
     description: 'A comprehensive 50-page guide covering everything from signal identification to closing techniques.',
     pages: '50 pages',
     type: 'PDF Guide',
+    link: '/resources/guides/intent-based-selling',
   },
   {
     title: 'African B2B Sales Playbook',
     description: 'Strategies and tactics specifically designed for selling to businesses across Africa.',
     pages: '35 pages',
     type: 'PDF Guide',
+    link: '/resources/guides/african-b2b-sales',
   },
   {
     title: 'CRM Integration Best Practices',
     description: 'Step-by-step instructions for connecting URI with Salesforce, HubSpot, and Pipedrive.',
     pages: '20 pages',
     type: 'Technical Guide',
+    link: '/resources/guides/crm-integration',
   },
   {
     title: 'Lead Scoring Framework Template',
     description: 'A ready-to-use spreadsheet template for scoring leads based on intent signals.',
     pages: 'Excel/Sheets',
     type: 'Template',
+    link: '/resources/guides/lead-scoring-template',
   },
   {
     title: 'NDPR Compliance Checklist',
     description: 'Ensure your sales processes comply with Nigeria Data Protection Regulation.',
     pages: '10 pages',
     type: 'Checklist',
+    link: '/resources/guides/ndpr-checklist',
   },
   {
     title: 'Signal-to-Sale Conversion Guide',
     description: 'How to turn buying signals into closed deals with personalized outreach strategies.',
     pages: '25 pages',
     type: 'PDF Guide',
+    link: '/resources/guides/signal-to-sale',
   },
 ];
 
@@ -62,26 +68,22 @@ export default function GuidesPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {guides.map((guide, index) => (
-              <motion.div
-                key={guide.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-card border border-border rounded-2xl p-6 hover:border-primary/50 transition-all duration-300 group"
-              >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                  {guide.type === 'Template' ? <FileText className="w-6 h-6 text-primary" /> : <BookOpen className="w-6 h-6 text-primary" />}
-                </div>
-                <span className="text-xs font-medium text-primary">{guide.type}</span>
-                <h3 className="text-lg font-semibold mt-2 mb-3">{guide.title}</h3>
-                <p className="text-sm text-muted-foreground mb-4">{guide.description}</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">{guide.pages}</span>
-                  <Button size="sm" variant="ghost" className="text-primary hover:text-primary/80">
-                    <Download className="w-4 h-4 mr-1" />
-                    Download
-                  </Button>
-                </div>
+              <motion.div key={guide.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }}>
+                <Link href={guide.link} className="block bg-card border border-border rounded-2xl p-6 hover:border-primary/50 transition-all duration-300 group h-full">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                    {guide.type === 'Template' ? <FileText className="w-6 h-6 text-primary" /> : <BookOpen className="w-6 h-6 text-primary" />}
+                  </div>
+                  <span className="text-xs font-medium text-primary">{guide.type}</span>
+                  <h3 className="text-lg font-semibold mt-2 mb-3 group-hover:text-primary transition-colors">{guide.title}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">{guide.description}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">{guide.pages}</span>
+                    <span className="text-primary text-sm flex items-center">
+                      <Download className="w-4 h-4 mr-1" />
+                      View Guide
+                    </span>
+                  </div>
+                </Link>
               </motion.div>
             ))}
           </div>

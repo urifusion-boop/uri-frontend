@@ -11,7 +11,8 @@ interface ExtendedStoryStage {
   description: string;
   features?: Feature[];
   image: string;
-  image2: string;
+  image2?: string;
+  image3?: string;
   secondaryVisual: 'chart-metrics' | 'live-monitoring' | 'lead-cards' | 'ai-messages';
   customContent?: React.ReactNode;
 }
@@ -27,97 +28,10 @@ const stages: ExtendedStoryStage[] = [
       { icon: Filter, text: 'Signal Detection' },
       { icon: TrendingUp, text: 'Real-Time Intelligence' },
     ],
-    image: '/assets/images/landing/Top companies & Roles (Uri).png',
+    image: '/assets/images/landing/Find_people_asset.png',
     image2: '/assets/images/landing/Individual Leads(Uri).png',
+    image3: '/assets/images/landing/Top companies & Roles (Uri).png',
     secondaryVisual: 'chart-metrics',
-  },
-  {
-    id: 'contextual-enrichment',
-    subtitle: 'Enrichment',
-    title: 'Contextual Enrichment',
-    description: 'Signals are enriched with company, role, and sentiment to help you prioritize.',
-    image: '/assets/images/landing/How_to_generate_reports.png',
-    image2: '/assets/images/landing/Report (uri).png',
-    secondaryVisual: 'chart-metrics',
-    customContent: (
-      <div className="space-y-3">
-        <div className="bg-muted/50 rounded-lg p-3 opacity-40 line-through">
-          <p className="text-sm">Random social media post...</p>
-        </div>
-        <div className="bg-muted/50 rounded-lg p-3 opacity-40 line-through">
-          <p className="text-sm">Unrelated content...</p>
-        </div>
-        <motion.div animate={{ scale: [1, 1.02, 1] }} transition={{ duration: 2, repeat: Infinity }} className="bg-primary/20 rounded-lg p-3 border-2 border-primary">
-          <p className="text-sm font-semibold">🎯 High Intent: "Looking for a new CRM solution..."</p>
-        </motion.div>
-        <motion.div animate={{ scale: [1, 1.02, 1] }} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }} className="bg-primary/20 rounded-lg p-3 border-2 border-primary">
-          <p className="text-sm font-semibold">🎯 High Intent: "Just started at Company X as Head of..."</p>
-        </motion.div>
-      </div>
-    ),
-  },
-  {
-    id: 'dera-ai-outreach',
-    subtitle: 'Outreach',
-    title: 'Dera AI',
-    description:
-      "Dera AI learns your tone, understands the context, and crafts messages that sound human—not robotic. Every message is tailored to the prospect's exact situation, increasing response rates by up to 5x.",
-    features: [
-      { icon: Bot, text: 'Personalized Messages' },
-      { icon: Sparkles, text: 'Contextual Responses' },
-    ],
-    image: '/assets/images/landing/Individual Leads(Uri).png',
-    image2: '/assets/images/landing/Top companies & Roles (Uri).png',
-    secondaryVisual: 'ai-messages',
-    // customContent: (
-    //   <div className="space-y-4">
-    //     <div className="mb-4 flex items-center gap-2">
-    //       <Mail className="w-5 h-5 text-muted-foreground" />
-    //       <h3 className="font-semibold text-lg">Before: Generic Outreach</h3>
-    //     </div>
-    //     <div className="space-y-3">
-    //       <div className="bg-muted/50 p-4 rounded-lg">
-    //         <p className="text-xs text-muted-foreground mb-2">
-    //           Subject: <span className="line-through">Quick Question</span>
-    //         </p>
-    //         <p className="text-sm opacity-60">Hi [First Name], I hope this email finds you well...</p>
-    //       </div>
-    //       <div className="bg-muted/50 p-4 rounded-lg">
-    //         <p className="text-xs text-muted-foreground mb-2">
-    //           Subject: <span className="line-through">Following Up</span>
-    //         </p>
-    //         <p className="text-sm opacity-60">Just circling back on my previous email...</p>
-    //       </div>
-    //       <div className="bg-destructive/10 p-3 rounded-lg border border-destructive/30">
-    //         <p className="text-xs font-semibold text-destructive">❌ Low Response Rate</p>
-    //       </div>
-    //     </div>
-    //     <div className="bg-background p-4 rounded-xl mb-4">
-    //       <p className="text-xs text-muted-foreground mb-2">
-    //         Subject: <span className="font-semibold">Congrats on the wedding, Sarah! 💍</span>
-    //       </p>
-    //       <p className="text-sm leading-relaxed">
-    //         Hi Sarah,
-    //         <br />
-    //         <br />
-    //         Saw your exciting news about getting married in August! Congratulations!
-    //         <br />
-    //         <br />
-    //         As you plan your special day, I thought you might appreciate [Your Service]. We've helped over 500 couples in Lagos create their dream [Product/Service].
-    //         <br />
-    //         <br />
-    //         Would love to share some ideas. Free to chat this week?
-    //       </p>
-    //     </div>
-    //     <div className="flex items-center gap-3">
-    //       <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 2, repeat: Infinity }} className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-semibold">
-    //         ✅ Personalized
-    //       </motion.div>
-    //       <div className="bg-primary/20 text-primary px-4 py-2 rounded-lg text-sm font-semibold">✅ Contextual</div>
-    //       <div className="bg-primary/20 text-primary px-4 py-2 rounded-lg text-sm font-semibold">✅ Timely</div>
-    //     </div>
-    //   </div>
-    // ),
   },
   {
     id: 'listen-247',
@@ -126,11 +40,26 @@ const stages: ExtendedStoryStage[] = [
     description:
       "You can't refresh social media every 5 minutes. URI monitors your prospects all day, every day, across every platform. The moment someone signals intent—whether it's a job change, a complaint, or an announcement—URI captures it and alerts you instantly.",
     features: [{ icon: TrendingUp, text: 'Real-Time Intelligence' }],
-    image: '/assets/images/landing/Report (uri).png',
-    image2: '/assets/images/landing/How_to_generate_reports.png',
+    image: '/assets/images/landing/Skincare tweet (Uri).png',
+    image2: '/assets/images/landing/We_Listen_2.png',
+    secondaryVisual: 'live-monitoring',
+  },
+  {
+    id: 'dera-ai-outreach',
+    subtitle: 'Outreach',
+    title: 'Dera AI',
+    description:
+      "Dera AI learns your tone, understands the context, and crafts messages that sound human—not robotic. Every message is tailored to the prospect's exact situation, increasing response rates by up to 5x.",
+    features: [{ icon: Bot, text: 'Personalized Messages' }],
+    image: '/assets/images/landing/Dera_1.png',
     secondaryVisual: 'live-monitoring',
   },
 ];
+
+const getSubStageCount = (stage: ExtendedStoryStage) => {
+  if (stage.image3) return 3;
+  return stage.image2 && stage.image2 !== stage.image ? 2 : 1;
+};
 
 const ChartMetricsVisual = () => (
   <div className="bg-card/90 backdrop-blur-sm rounded-xl border border-border/50 p-3 sm:p-4 shadow-lg">
@@ -358,11 +287,15 @@ interface StageComponentProps {
   index: number;
   scrollYProgress: MotionValue<number>;
   totalStages: number;
+  subStageCounts: number[];
+  totalSubStages: number;
 }
 
-const StageText = ({ stage, index, scrollYProgress, totalStages }: StageComponentProps) => {
-  const stageStart = (index * 2) / (totalStages * 2);
-  const stageEnd = ((index + 1) * 2) / (totalStages * 2);
+const StageText = ({ stage, index, scrollYProgress, totalStages, subStageCounts, totalSubStages }: StageComponentProps) => {
+  const prefix = subStageCounts.slice(0, index).reduce((a, b) => a + b, 0);
+  const count = subStageCounts[index];
+  const stageStart = prefix / totalSubStages;
+  const stageEnd = (prefix + count) / totalSubStages;
 
   const opacity = useTransform(
     scrollYProgress,
@@ -393,26 +326,42 @@ const StageText = ({ stage, index, scrollYProgress, totalStages }: StageComponen
   );
 };
 
-const StageImages = ({ stage, index, scrollYProgress, totalStages }: StageComponentProps) => {
-  const stageStart = (index * 2) / (totalStages * 2);
-  const stageMid = (index * 2 + 1) / (totalStages * 2);
-  const stageEnd = ((index + 1) * 2) / (totalStages * 2);
+const StageImages = ({ stage, index, scrollYProgress, totalStages, subStageCounts, totalSubStages }: StageComponentProps) => {
+  const prefix = subStageCounts.slice(0, index).reduce((a, b) => a + b, 0);
+  const count = subStageCounts[index];
+  const stageStart = prefix / totalSubStages;
+  const segment1End = (prefix + 1) / totalSubStages;
+  const segment2End = count === 3 ? (prefix + 2) / totalSubStages : (prefix + count) / totalSubStages;
+  const stageEnd = (prefix + count) / totalSubStages;
 
   const opacity1 = useTransform(
     scrollYProgress,
-    index === 0 ? [0, 0.02, stageMid - 0.03, stageMid] : [stageStart, stageStart + 0.02, stageMid - 0.03, stageMid],
+    index === 0 ? [0, 0.02, segment1End - 0.03, segment1End] : [stageStart, stageStart + 0.02, segment1End - 0.03, segment1End],
     index === 0 ? [1, 1, 1, 0] : [0, 1, 1, 0]
   );
-  const scale1 = useTransform(scrollYProgress, [stageStart, stageMid], [1, 0.95]);
-  const y1 = useTransform(scrollYProgress, [stageStart, stageMid], [0, -30]);
+  const scale1 = useTransform(scrollYProgress, [stageStart, segment1End], [1, 0.95]);
+  const y1 = useTransform(scrollYProgress, [stageStart, segment1End], [0, -30]);
 
-  const opacity2 = useTransform(
-    scrollYProgress,
-    index === totalStages - 1 ? [stageMid - 0.02, stageMid + 0.02, 1] : [stageMid - 0.02, stageMid + 0.02, stageEnd - 0.02, stageEnd],
-    index === totalStages - 1 ? [0, 1, 1] : [0, 1, 1, 0]
-  );
-  const scale2 = useTransform(scrollYProgress, [stageMid, stageEnd], [0.95, 1]);
-  const y2 = useTransform(scrollYProgress, [stageMid, stageEnd], [30, 0]);
+  const opacity2 = useTransform(scrollYProgress, [segment1End - 0.02, segment1End + 0.02, segment2End - 0.02, segment2End], [0, 1, 1, 0]);
+  const scale2 = useTransform(scrollYProgress, [segment1End, segment2End], [0.95, 1]);
+  const y2 = useTransform(scrollYProgress, [segment1End, segment2End], [30, 0]);
+
+  const opacity3 = useTransform(scrollYProgress, [segment2End - 0.02, segment2End + 0.02, stageEnd - 0.02, stageEnd], [0, 1, 1, 0]);
+  const scale3 = useTransform(scrollYProgress, [segment2End, stageEnd], [0.95, 1]);
+  const y3 = useTransform(scrollYProgress, [segment2End, stageEnd], [30, 0]);
+
+  if (count === 1) {
+    return (
+      <motion.div className="absolute inset-0 flex items-center justify-center" style={{ opacity: opacity1, scale: scale1, y: y1 }}>
+        <div className="relative w-full max-w-xl">
+          <div className="absolute -inset-4 bg-primary/15 rounded-3xl blur-2xl opacity-60" />
+          <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border/50 bg-card">
+            <img src={stage.image} alt={`${stage.title} - View 1`} className="w-full h-auto" />
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <>
@@ -433,6 +382,17 @@ const StageImages = ({ stage, index, scrollYProgress, totalStages }: StageCompon
           </div>
         </div>
       </motion.div>
+
+      {count === 3 && stage.image3 && (
+        <motion.div className="absolute inset-0 flex items-center justify-center" style={{ opacity: opacity3, scale: scale3, y: y3 }}>
+          <div className="relative w-full max-w-xl">
+            <div className="absolute -inset-4 bg-primary/15 rounded-3xl blur-2xl opacity-60" />
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border/50 bg-card">
+              <img src={stage.image3} alt={`${stage.title} - View 3`} className="w-full h-auto" />
+            </div>
+          </div>
+        </motion.div>
+      )}
     </>
   );
 };
@@ -442,11 +402,13 @@ interface StageIndicatorProps {
   subIndex: number;
   scrollYProgress: MotionValue<number>;
   totalStages: number;
+  subStageCounts: number[];
+  totalSubStages: number;
 }
 
-const StageIndicator = ({ index, subIndex, scrollYProgress, totalStages }: StageIndicatorProps) => {
-  const subStageIndex = index * 2 + subIndex;
-  const totalSubStages = totalStages * 2;
+const StageIndicator = ({ index, subIndex, scrollYProgress, totalStages, subStageCounts, totalSubStages }: StageIndicatorProps) => {
+  const prefix = subStageCounts.slice(0, index).reduce((a, b) => a + b, 0);
+  const subStageIndex = prefix + subIndex;
   const subStageStart = subStageIndex / totalSubStages;
   const subStageEnd = (subStageIndex + 1) / totalSubStages;
   const subStageMid = (subStageStart + subStageEnd) / 2;
@@ -461,7 +423,8 @@ const StageIndicator = ({ index, subIndex, scrollYProgress, totalStages }: Stage
 const ProblemSolution = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ['start start', 'end end'] });
-  const totalSubStages = stages.length * 2;
+  const subStageCounts = stages.map(getSubStageCount);
+  const totalSubStages = subStageCounts.reduce((a, b) => a + b, 0);
 
   return (
     <section className="bg-background">
@@ -471,12 +434,20 @@ const ProblemSolution = () => {
             <div className="grid grid-cols-2 gap-16 items-center">
               <div className="relative h-[500px]">
                 {stages.map((stage, index) => (
-                  <StageText key={stage.id} stage={stage} index={index} scrollYProgress={scrollYProgress} totalStages={stages.length} />
+                  <StageText key={stage.id} stage={stage} index={index} scrollYProgress={scrollYProgress} totalStages={stages.length} subStageCounts={subStageCounts} totalSubStages={totalSubStages} />
                 ))}
               </div>
               <div className="relative h-[500px]">
                 {stages.map((stage, index) => (
-                  <StageImages key={stage.id} stage={stage} index={index} scrollYProgress={scrollYProgress} totalStages={stages.length} />
+                  <StageImages
+                    key={stage.id}
+                    stage={stage}
+                    index={index}
+                    scrollYProgress={scrollYProgress}
+                    totalStages={stages.length}
+                    subStageCounts={subStageCounts}
+                    totalSubStages={totalSubStages}
+                  />
                 ))}
               </div>
             </div>
@@ -486,14 +457,23 @@ const ProblemSolution = () => {
         <div className="fixed right-8 top-1/2 -translate-y-1/2 z-50 hidden xl:flex flex-col gap-2">
           {stages.map((stage, index) => (
             <div key={stage.id} className="flex flex-col gap-1">
-              <StageIndicator index={index} subIndex={0} scrollYProgress={scrollYProgress} totalStages={stages.length} />
-              <StageIndicator index={index} subIndex={1} scrollYProgress={scrollYProgress} totalStages={stages.length} />
+              {Array.from({ length: subStageCounts[index] }).map((_, subIndex) => (
+                <StageIndicator
+                  key={subIndex}
+                  index={index}
+                  subIndex={subIndex}
+                  scrollYProgress={scrollYProgress}
+                  totalStages={stages.length}
+                  subStageCounts={subStageCounts}
+                  totalSubStages={totalSubStages}
+                />
+              ))}
             </div>
           ))}
         </div>
       </div>
 
-      <div className="lg:hidden py-10 sm:py-16">
+      <div className="lg:hidden py-6 sm:py-10">
         <div className="container mx-auto px-6 md:px-8">
           {stages.map((stage) => (
             <motion.div
@@ -504,37 +484,73 @@ const ProblemSolution = () => {
               transition={{ duration: 0.6 }}
               viewport={{ once: true, margin: '-50px' }}
             >
-              <span className="text-primary font-medium text-xs sm:text-sm uppercase tracking-wider mb-2 sm:mb-4 block">{stage.subtitle}</span>
-              <h3 className="text-xl sm:text-3xl font-bold text-foreground leading-tight mb-2 sm:mb-4">{stage.title}</h3>
-              <p className="text-muted-foreground text-sm sm:text-lg leading-relaxed mb-4 sm:mb-6">{stage.description}</p>
-              {stage.features && (
-                <div className="space-y-2 sm:space-y-3 mb-5 sm:mb-8">
-                  {stage.features.map((feature, idx) => (
-                    <div key={idx} className="flex items-center gap-2 sm:gap-3">
-                      <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <feature.icon className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-primary" />
+              {(() => {
+                const c = getSubStageCount(stage);
+                return (
+                  <>
+                    <span className="text-primary font-medium text-xs sm:text-sm uppercase tracking-wider mb-2 sm:mb-4 block">{stage.subtitle}</span>
+                    <h3 className="text-xl sm:text-3xl font-bold text-foreground leading-tight mb-2 sm:mb-4">{stage.title}</h3>
+                    <p className="text-muted-foreground text-sm sm:text-lg leading-relaxed mb-4 sm:mb-6">{stage.description}</p>
+                    {stage.features && (
+                      <div className="space-y-2 sm:space-y-3 mb-5 sm:mb-8">
+                        {stage.features.map((feature, idx) => (
+                          <div key={idx} className="flex items-center gap-2 sm:gap-3">
+                            <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <feature.icon className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-primary" />
+                            </div>
+                            <span className="text-foreground text-xs sm:text-base font-medium">{feature.text}</span>
+                          </div>
+                        ))}
                       </div>
-                      <span className="text-foreground text-xs sm:text-base font-medium">{feature.text}</span>
+                    )}
+
+                    <div className="relative mb-6 sm:mb-8">
+                      <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-xl border border-border/50">
+                        <img src={stage.image} alt={`${stage.title} - View 1`} className="w-full h-auto" />
+                      </div>
                     </div>
-                  ))}
-                </div>
-              )}
 
-              <div className="relative mb-6 sm:mb-8">
-                <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-xl border border-border/50">
-                  <img src={stage.image} alt={`${stage.title} - View 1`} className="w-full h-auto" />
-                </div>
-              </div>
+                    {c >= 2 && (
+                      <motion.div className="relative" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }} viewport={{ once: true }}>
+                        <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-xl border border-border/50">
+                          <img src={stage.image2} alt={`${stage.title} - View 2`} className="w-full h-auto" />
+                        </div>
+                      </motion.div>
+                    )}
 
-              <motion.div className="relative" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }} viewport={{ once: true }}>
-                <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-xl border border-border/50">
-                  <img src={stage.image2} alt={`${stage.title} - View 2`} className="w-full h-auto" />
-                </div>
-              </motion.div>
+                    {c === 3 && stage.image3 && (
+                      <motion.div
+                        className="relative mt-6 sm:mt-8"
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.4 }}
+                        viewport={{ once: true }}
+                      >
+                        <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-xl border border-border/50">
+                          <img src={stage.image3} alt={`${stage.title} - View 3`} className="w-full h-auto" />
+                        </div>
+                      </motion.div>
+                    )}
 
-              {stage.customContent && <div className="mt-6">{stage.customContent}</div>}
+                    {stage.customContent && <div className="mt-6">{stage.customContent}</div>}
+                  </>
+                );
+              })()}
             </motion.div>
           ))}
+        </div>
+      </div>
+
+      <div className="py-6 sm:py-8 border-b border-border/50">
+        <div className="container mx-auto px-4 lg:px-6">
+          <h4 className="text-center text-xs sm:text-sm font-medium tracking-wider text-muted-foreground uppercase mb-4">Supported By</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 sm:gap-6 items-center">
+            <img src="/assets/images/landing/MTN_logo_PNG_(3).png" alt="MTN" className="h-10 sm:h-12 object-contain mx-auto" />
+            <img src="/assets/images/landing/alx.svg" alt="ALX" className="h-10 sm:h-12 object-contain mx-auto" />
+            <img src="/assets/images/landing/lago_innovates.png" alt="Lagos Innovate" className="h-10 sm:h-12 object-contain mx-auto" />
+            <img src="/assets/images/landing/Datamellon.png" alt="Datamellon" className="h-10 sm:h-12 object-contain mx-auto" />
+            <img src="/assets/images/landing/The Tony Elumelu Foundation Logo.png" alt="Tony Elumelu Foundation" className="h-10 sm:h-12 object-contain mx-auto" />
+          </div>
         </div>
       </div>
     </section>

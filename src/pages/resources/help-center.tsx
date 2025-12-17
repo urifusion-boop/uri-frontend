@@ -72,12 +72,12 @@ const faqs = [
 ];
 
 const categories = [
-  { name: 'Getting Started', count: 12 },
-  { name: 'CRM Integration', count: 8 },
-  { name: 'Signal Detection', count: 15 },
-  { name: 'Billing & Plans', count: 6 },
-  { name: 'Security & Privacy', count: 9 },
-  { name: 'API & Technical', count: 11 },
+  { name: 'Getting Started', count: 12, link: '/resources/help-center/getting-started' },
+  { name: 'CRM Integration', count: 8, link: '/resources/help-center/crm-integration' },
+  { name: 'Signal Detection', count: 15, link: '/resources/help-center/signal-detection' },
+  { name: 'Billing & Plans', count: 6, link: '/resources/help-center/billing' },
+  { name: 'Security & Privacy', count: 9, link: '/resources/help-center/security' },
+  { name: 'API & Technical', count: 11, link: '/resources/help-center/api' },
 ];
 
 export default function HelpCenterPage() {
@@ -100,11 +100,11 @@ export default function HelpCenterPage() {
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-16">
             {categories.map((category) => (
-              <button key={category.name} className="bg-card border border-border rounded-xl p-4 text-left hover:border-primary/50 transition-all duration-300">
+              <Link key={category.name} href={category.link} className="bg-card border border-border rounded-xl p-4 text-left hover:border-primary/50 transition-all duration-300">
                 <Book className="w-5 h-5 text-primary mb-2" />
                 <h3 className="font-medium text-sm">{category.name}</h3>
                 <p className="text-xs text-muted-foreground">{category.count} articles</p>
-              </button>
+              </Link>
             ))}
           </motion.div>
 
