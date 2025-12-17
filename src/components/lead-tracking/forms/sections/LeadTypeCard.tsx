@@ -75,9 +75,9 @@ const LeadTypeCard = ({ colorMap }: LeadTypeCardProps) => {
     //   total_new_leads: 0,
     // },
     {
-      form_type: 'Conversational',
+      form_type: 'Sales Signals',
       typeKey: 'conversational',
-      description: 'Detect sales signals andconversations about your business, products or services.',
+      description: 'Public online conversations indicating buying intent, pain, or opportunity.',
       created_date: '',
       total_leads: 0,
       total_new_leads: 0,

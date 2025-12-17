@@ -88,7 +88,7 @@ export const useLeadFormHooks = () => {
     mutationFn: async (data: ConversationalSearchFormDto): Promise<UriResponse<any>> => {
       const res = await LeadFormService.createConversationalSearchLeadForm(data);
       if (!res.status) {
-        throw new Error(res.responseMessage || 'Failed to create conversational search lead form');
+        throw new Error(res.responseMessage || 'Failed to create Sales Signals lead form');
       }
       return res;
     },
@@ -98,7 +98,7 @@ export const useLeadFormHooks = () => {
     mutationFn: async ({ lead_form_id, data }: { lead_form_id: string; data: ConversationalSearchFormDto }): Promise<UriResponse<LeadFormResponseDto>> => {
       const res = await LeadFormService.updateConversationalSearchLeadForm(lead_form_id, data);
       if (!res.status) {
-        throw new Error(res.responseMessage || 'Failed to update conversational search lead form');
+        throw new Error(res.responseMessage || 'Failed to update Sales Signals lead form');
       }
       return res;
     },

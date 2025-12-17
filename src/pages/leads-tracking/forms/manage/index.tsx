@@ -1,20 +1,20 @@
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { UserModuleService } from '@/api/UserModuleService';
 import DashboardLayout from '@/components/atoms/DashboardLayout';
-import GenerateLeadForm from '@/components/lead-tracking/forms/GenerateLeadForm';
 import GuideTour from '@/components/guide-tour/guide-tour';
 import useGuideTour from '@/components/guide-tour/useGuideTour';
-import { Box, Container } from '@mui/material';
-import { UserModuleService } from '@/api/UserModuleService';
+import GenerateLeadForm from '@/components/lead-tracking/forms/GenerateLeadForm';
 import { useAuth } from '@/providers/AuthProvider';
-import { RiAddBoxLine } from 'react-icons/ri';
+import { Box, Container } from '@mui/material';
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 import { MdOutlineTipsAndUpdates } from 'react-icons/md';
+import { RiAddBoxLine } from 'react-icons/ri';
 
 const tourSteps = [
   {
     target: '.tour-form-type-selector',
     content: 'Select Lead Type',
-    description: 'Choose the type of leads you want to generate - Individual, Organization, Business, or Conversational.',
+    description: 'Choose the type of leads you want to generate - Individual, Organization, Business, or Sales Signals.',
     placement: 'bottom' as const,
     icon: RiAddBoxLine,
   },
@@ -50,9 +50,9 @@ const LeadsManagePage = () => {
       if (!userDetails?.userId || !type) return;
 
       const moduleIdMap: Record<string, string> = {
-        'individual': 'individual-leads',
-        'organization': 'organization-leads',
-        'conversational': 'conversational-leads',
+        individual: 'individual-leads',
+        organization: 'organization-leads',
+        conversational: 'conversational-leads',
       };
 
       const moduleId = moduleIdMap[type as string];

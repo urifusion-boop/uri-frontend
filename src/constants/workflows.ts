@@ -84,7 +84,7 @@ export const WORKFLOWS: Record<string, Workflow> = {
       {
         id: 'conversational-leads',
         name: 'Sales Signals',
-        description: 'Track leads from conversations',
+        description: 'Public online conversations indicating buying intent, pain, or opportunity',
         route: '/leads-tracking/forms/leads?type=conversational',
         icon: FaComments,
       },

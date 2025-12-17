@@ -109,7 +109,7 @@ const workflowData = [
       {
         id: 'conversational-leads',
         title: 'Sales Signals',
-        description: 'Track leads from conversations.',
+        description: 'Public online conversations indicating buying intent, pain, or opportunity.',
         icon: <FaComments size={40} color={LightThemeColors.uriColor} />,
         href: '/leads-tracking/forms/leads?type=conversational',
       },
