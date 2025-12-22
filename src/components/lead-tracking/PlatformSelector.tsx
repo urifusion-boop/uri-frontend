@@ -1,10 +1,11 @@
-import { BrowsercloudPlatformEnum, PlatformDisplayNames } from '@/models/enum-models/BrowsercloudPlatformEnum';
 import { PlatformConfigFormDto } from '@/models/dtos/LeadFormDto';
-import { Box, Typography, Checkbox, FormControlLabel, Tooltip, IconButton, SvgIcon } from '@mui/material';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import TwitterIcon from '@mui/icons-material/Twitter';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import { BrowsercloudPlatformEnum, PlatformDisplayNames } from '@/models/enum-models/BrowsercloudPlatformEnum';
 import FacebookIcon from '@mui/icons-material/Facebook';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import { Box, Checkbox, FormControlLabel, IconButton, SvgIcon, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 
 interface PlatformSelectorProps {
@@ -16,35 +17,31 @@ const PlatformIcons: Record<BrowsercloudPlatformEnum, React.ReactNode> = {
   [BrowsercloudPlatformEnum.TWITTER]: <TwitterIcon sx={{ fontSize: 20 }} />,
   [BrowsercloudPlatformEnum.LINKEDIN]: <LinkedInIcon sx={{ fontSize: 20 }} />,
   [BrowsercloudPlatformEnum.FACEBOOK]: <FacebookIcon sx={{ fontSize: 20 }} />,
-  [BrowsercloudPlatformEnum.THREADS]: (
-    <Box sx={{ fontSize: 20, fontWeight: 'bold', fontFamily: 'monospace' }}>@</Box>
-  ),
+  [BrowsercloudPlatformEnum.THREADS]: <Box sx={{ fontSize: 20, fontWeight: 'bold', fontFamily: 'monospace' }}>@</Box>,
   [BrowsercloudPlatformEnum.TIKTOK]: (
     <SvgIcon sx={{ fontSize: 20 }} viewBox="0 0 24 24">
       <path d="M16.5 6.5c1.1 1 2.4 1.7 3.9 1.9v3.1c-1.5-.1-2.9-.6-4.2-1.4v6.3c0 3.7-3 6.6-6.7 6.6-1.7 0-3.2-.6-4.4-1.7-1.2-1.1-2-2.6-2.2-4.3-.3-2.1.4-4.1 1.8-5.6 1.4-1.5 3.4-2.4 5.5-2.4.3 0 .6 0 .9.1v3.4c-.3-.1-.6-.1-.9-.1-2.1 0-3.8 1.7-3.8 3.7 0 2.1 1.7 3.7 3.8 3.7 2.1 0 3.8-1.7 3.8-3.7V3h3.3c.2 1.3.8 2.5 1.7 3.5z" />
     </SvgIcon>
   ),
+  [BrowsercloudPlatformEnum.JOB_BOARDS]: <WorkOutlineIcon sx={{ fontSize: 20 }} />,
+};
+
+const PlatformTooltips: Partial<Record<BrowsercloudPlatformEnum, string>> = {
+  [BrowsercloudPlatformEnum.JOB_BOARDS]: 'Detects companies hiring for roles related to your service. Hiring indicates active business problems and budget readiness.',
 };
 
 const PlatformSelector: React.FC<PlatformSelectorProps> = ({ platformConfigs, setPlatformConfigs }) => {
   const [expandedPlatform, setExpandedPlatform] = useState<string | null>(null);
 
   // Temporarily disable specific platforms in the form UI
-  const disabledPlatforms = new Set<BrowsercloudPlatformEnum>([
-    BrowsercloudPlatformEnum.THREADS,
-    BrowsercloudPlatformEnum.LINKEDIN,
-  ]);
+  const disabledPlatforms = new Set<BrowsercloudPlatformEnum>([BrowsercloudPlatformEnum.THREADS, BrowsercloudPlatformEnum.LINKEDIN]);
 
   const togglePlatform = (platform: BrowsercloudPlatformEnum) => {
     const existingConfig = platformConfigs.find((c) => c.platform === platform);
 
     if (existingConfig) {
       // Toggle enabled status
-      setPlatformConfigs(
-        platformConfigs.map((c) =>
-          c.platform === platform ? { ...c, enabled: !c.enabled } : c
-        )
-      );
+      setPlatformConfigs(platformConfigs.map((c) => (c.platform === platform ? { ...c, enabled: !c.enabled } : c)));
     } else {
       // Add new platform config
       setPlatformConfigs([
@@ -62,11 +59,7 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({ platformConfigs, se
   };
 
   const updatePlatformConfig = (platform: string, field: keyof PlatformConfigFormDto, value: any) => {
-    setPlatformConfigs(
-      platformConfigs.map((c) =>
-        c.platform === platform ? { ...c, [field]: value } : c
-      )
-    );
+    setPlatformConfigs(platformConfigs.map((c) => (c.platform === platform ? { ...c, [field]: value } : c)));
   };
 
   const isPlatformEnabled = (platform: BrowsercloudPlatformEnum): boolean => {
@@ -143,11 +136,16 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({ platformConfigs, se
                         (Coming soon)
                       </Typography>
                     )}
+                    {PlatformTooltips[platform] && (
+                      <Tooltip title={PlatformTooltips[platform]} arrow>
+                        <IconButton size="small" sx={{ ml: 0.5 }}>
+                          <InfoOutlinedIcon sx={{ fontSize: 14, color: '#6b7280' }} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                   </Box>
                 }
               />
-
-              
             </Box>
           );
         })}

@@ -550,7 +550,9 @@ const OrganizationLeadForm = () => {
         open={openSuccessModal}
         image={<Image src="/assets/images/success.png" alt="Success" width={64} height={64} />}
         mainText="Success! 🎉"
-        subText={'Your form was successfully saved. Your form is now setup and ready to generate leads. ' + "We'll email you each time new leads (companies) come in."}
+        subText={
+          'Your organization lead form has been successfully saved. Please wait approximately 5 minutes for your first set of leads to be generated and check your email for updates. Going forward, you will automatically receive email notifications each time new organizations matching your criteria are discovered.'
+        }
         buttonText="View Leads"
         onClick={() => {
           setOpenSuccessModal(false);

@@ -55,6 +55,9 @@ const ConversationLeadFormV2 = () => {
       relevance_score_min: 0.5,
       final_score_min: 0.6,
     },
+    // Job Boards fields
+    solution_context: '',
+    job_keywords: [],
   });
 
   const [existingFormId, setExistingFormId] = useState<string | null>(null);
@@ -115,11 +118,41 @@ const ConversationLeadFormV2 = () => {
           relevance_score_min: 0.5,
           final_score_min: 0.6,
         },
+        // Job Boards fields
+        solution_context: (existingForm as any).solution_context || '',
+        job_keywords: (existingForm as any).job_keywords || [],
       });
 
       setExistingFormId(lead_form_id);
     }
   }, [existingForm, isSuccess, userId]);
+
+  // PRD Section 5: Auto-generate job keywords when Job Boards platform is enabled
+  useEffect(() => {
+    const isJobBoardsEnabled = form.platform_configs?.some((config) => config.platform === 'JOB_BOARDS' && config.enabled);
+
+    // Only generate if Job Boards is enabled, we don't have job keywords yet, and we have context or onboarding data
+    if (isJobBoardsEnabled && (!form.job_keywords || form.job_keywords.length === 0) && userId) {
+      // Use either auto-populate data or solution context
+      const context = autoPopulateData || form.solution_context || '';
+
+      if (context.trim()) {
+        // Generate job keywords
+        LeadFormService.generateJobKeywords(userId, context)
+          .then((response) => {
+            if (response.status && response.responseData?.job_keywords) {
+              const keywords = response.responseData.job_keywords;
+              console.log(`✅ Auto-generated ${keywords.length} job keywords from ${response.responseData.source}:`, keywords);
+              setForm((prev) => ({ ...prev, job_keywords: keywords }));
+              triggerToast('success', `Generated ${keywords.length} job role keywords for job board search`);
+            }
+          })
+          .catch((error) => {
+            console.error('Error auto-generating job keywords:', error);
+          });
+      }
+    }
+  }, [form.platform_configs, userId, autoPopulateData, form.solution_context]);
 
   // Merge newly fetched Twitter results with previously cached ones
   const mergeTwitterResults = (prev: TwitterFetchResponseDto | null, next: TwitterFetchResponseDto): TwitterFetchResponseDto => {
@@ -427,6 +460,9 @@ const ConversationLeadFormV2 = () => {
         category_context: payload.category_context || '',
         implied_keywords: payload.implied_keywords || [],
         scoring_thresholds: payload.scoring_thresholds,
+        // Job Boards fields
+        solution_context: payload.solution_context || '',
+        job_keywords: payload.job_keywords || [],
       };
 
       updateConversationalSearchLeadForm.mutate(
@@ -606,6 +642,33 @@ const ConversationLeadFormV2 = () => {
             <Box sx={{ mb: 4 }}>
               <PlatformSelector platformConfigs={form.platform_configs || []} setPlatformConfigs={(configs) => handleChange('platform_configs', configs)} />
             </Box>
+          )}
+
+          {/* Solution Context (Job Boards) - Show only if Job Boards is selected */}
+          {form.platform_configs?.some((config) => config.platform === 'JOB_BOARDS' && config.enabled) && (
+            <>
+              <Box sx={{ mb: 3 }}>
+                <SingleFieldInput
+                  label="Solution Context"
+                  tooltip="What problem does your product or service solve? This helps us identify relevant hiring signals from job postings."
+                  placeholder="e.g., 'We provide cloud infrastructure that reduces DevOps costs'"
+                  value={form.solution_context || ''}
+                  setValue={(val) => handleChange('solution_context', val)}
+                  required={false}
+                />
+              </Box>
+
+              {/* Job Keywords - Auto-generated from solution context */}
+              <Box sx={{ mb: 3 }}>
+                <ListValuesInput
+                  label="Job Role Keywords"
+                  tooltip="Job titles to search for on LinkedIn Jobs and Jobberman. These are auto-generated when you add Solution Context. E.g., 'DevOps Engineer', 'Cloud Architect'"
+                  placeholder="e.g. 'DevOps Engineer', 'Cloud Architect', 'Platform Engineer'"
+                  keywords={form.job_keywords || []}
+                  setKeywords={(val) => handleChange('job_keywords', val)}
+                />
+              </Box>
+            </>
           )}
 
           {/* Category Context (CLG Upgrade) */}

@@ -1,0 +1,141 @@
+import BusinessIcon from '@mui/icons-material/Business';
+import CloseIcon from '@mui/icons-material/Close';
+import EmailIcon from '@mui/icons-material/Email';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import PhoneIcon from '@mui/icons-material/Phone';
+import { Avatar, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Link, Typography } from '@mui/material';
+
+interface DecisionMaker {
+  name?: string;
+  title?: string;
+  email?: string;
+  phone?: string;
+  linkedin_url?: string;
+  organization_name?: string;
+  id?: string;
+}
+
+interface DecisionMakerModalProps {
+  open: boolean;
+  onClose: () => void;
+  decisionMakers: DecisionMaker[];
+  jobTitle?: string;
+  companyName?: string;
+}
+
+const DecisionMakerModal = ({ open, onClose, decisionMakers, jobTitle, companyName }: DecisionMakerModalProps) => {
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="h6" fontWeight={600}>
+            Decision-Makers Found
+          </Typography>
+          <IconButton onClick={onClose} size="small">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        {jobTitle && (
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            For job posting: <strong>{jobTitle}</strong>
+            {companyName && ` at ${companyName}`}
+          </Typography>
+        )}
+      </DialogTitle>
+
+      <DialogContent dividers>
+        {decisionMakers.length === 0 ? (
+          <Box sx={{ py: 4, textAlign: 'center' }}>
+            <Typography variant="body1" color="text.secondary">
+              No decision-makers found for this job posting.
+            </Typography>
+          </Box>
+        ) : (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {decisionMakers.map((dm, index) => (
+              <Box
+                key={dm.id || index}
+                sx={{
+                  p: 2,
+                  border: '1px solid #e0e0e0',
+                  borderRadius: 2,
+                  backgroundColor: '#fafafa',
+                }}
+              >
+                <Box display="flex" gap={2} alignItems="flex-start">
+                  <Avatar
+                    sx={{
+                      width: 56,
+                      height: 56,
+                      bgcolor: '#CD1B78',
+                      fontSize: '20px',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {dm.name?.charAt(0) || '?'}
+                  </Avatar>
+
+                  <Box flex={1}>
+                    <Typography variant="h6" fontWeight={600}>
+                      {dm.name || 'Unknown'}
+                    </Typography>
+
+                    {dm.title && <Chip label={dm.title} size="small" sx={{ mt: 0.5, fontWeight: 500 }} />}
+
+                    {dm.organization_name && (
+                      <Box display="flex" alignItems="center" gap={0.5} sx={{ mt: 1 }}>
+                        <BusinessIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                        <Typography variant="body2" color="text.secondary">
+                          {dm.organization_name}
+                        </Typography>
+                      </Box>
+                    )}
+
+                    <Divider sx={{ my: 1.5 }} />
+
+                    <Box display="flex" flexDirection="column" gap={1}>
+                      {dm.email && (
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <EmailIcon sx={{ fontSize: 18, color: '#CD1B78' }} />
+                          <Link href={`mailto:${dm.email}`} underline="hover" sx={{ fontSize: '14px', color: 'text.primary' }}>
+                            {dm.email}
+                          </Link>
+                        </Box>
+                      )}
+
+                      {dm.phone && (
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <PhoneIcon sx={{ fontSize: 18, color: '#CD1B78' }} />
+                          <Link href={`tel:${dm.phone}`} underline="hover" sx={{ fontSize: '14px', color: 'text.primary' }}>
+                            {dm.phone}
+                          </Link>
+                        </Box>
+                      )}
+
+                      {dm.linkedin_url && (
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <LinkedInIcon sx={{ fontSize: 18, color: '#0077B5' }} />
+                          <Link href={dm.linkedin_url} target="_blank" rel="noopener noreferrer" underline="hover" sx={{ fontSize: '14px', color: 'text.primary' }}>
+                            View LinkedIn Profile
+                          </Link>
+                        </Box>
+                      )}
+                    </Box>
+                  </Box>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        )}
+      </DialogContent>
+
+      <DialogActions sx={{ px: 3, py: 2 }}>
+        <Button onClick={onClose} variant="outlined">
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+export default DecisionMakerModal;

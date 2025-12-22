@@ -1,18 +1,25 @@
+import { LeadsService } from '@/api/LeadFormService';
 import { Table, TableColumn } from '@/components/atoms/AlertTable';
+import { triggerToast } from '@/components/atoms/CustomToast';
 import { accountIcons } from '@/constants/accountIcons';
 import { PlatformHelper } from '@/helpers/PlatformHelper';
 import useClipboard from '@/hooks/clipboard';
 import { LeadDto } from '@/models/dtos/LeadsDto';
 import { TwitterFetchResponseDto } from '@/models/dtos/TwitterDto';
 import { LeadOpportunityTypeEnum } from '@/models/enum-models/LeadOpportunityTypeEnum';
+import { LeadSourceEnum } from '@/models/enum-models/LeadSourceEnum';
 import { LeadStatusEnum } from '@/models/enum-models/LeadStatusEnum';
 import { CampaignPlatformEnum } from '@/models/enum-models/PlatformEnum';
+import { canFindDecisionMakers, getSignalLabel, isLowConfidence } from '@/utils/jobSignalHelpers';
+import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import TurnedInIcon from '@mui/icons-material/TurnedIn';
-import { Box, FormControl, MenuItem, Pagination, Select, Typography } from '@mui/material';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import { Box, Button, Chip, FormControl, MenuItem, Pagination, Select, Tooltip, Typography } from '@mui/material';
+import { useState } from 'react';
 import IconContentBox from '../boxes/IconContentBox';
 import IdentityBox from '../boxes/IdentityBox';
+import DecisionMakerModal from '../modals/DecisionMakerModal';
 import TwitterDetailsModal from '../modals/TwitterDetailsModal';
-import { useState } from 'react';
 interface ConversationalTableColumnProps {
   data: LeadDto[];
   total: number;
@@ -29,37 +36,43 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
   const { copyToClipboard } = useClipboard();
   const [selectedLead, setSelectedLead] = useState<LeadDto | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loadingDecisionMaker, setLoadingDecisionMaker] = useState<string | null>(null);
+  const [decisionMakersData, setDecisionMakersData] = useState<any>(null);
+  const [isDecisionMakerModalOpen, setIsDecisionMakerModalOpen] = useState(false);
 
   // Convert Twitter data to LeadDto format for display
   const convertTwitterDataToLeads = (twitterData: TwitterFetchResponseDto): LeadDto[] => {
-    return twitterData.responseData.tweets.map((tweet, index) => ({
-      id: `twitter-${index}`,
-      first_name: tweet.author || 'Twitter User',
-      last_name: '',
-      username: tweet.author || '',
-      lead_reason: tweet.text,
-      lead_status: LeadStatusEnum.NEW,
-      opportunity_type: LeadOpportunityTypeEnum.Other,
-      tags: [],
-      twitter_url: `https://twitter.com/${tweet.author}`,
-      lead_link: tweet.url,
-      picture_url: '',
-      created_date: tweet.created_at,
-      lead_type: 'CONVERSATIONAL',
-      website_url: tweet.url,
-      sentiment: tweet.sentiment,
-      confidence: tweet.confidence,
-      // Optional fields can be undefined
-      lead_email: undefined,
-      phone: undefined,
-      company_name: undefined,
-      job_title: undefined,
-      industry: undefined,
-      linkedin_url: undefined,
-      facebook_url: undefined,
-      github_url: undefined,
-      location: undefined,
-    } as LeadDto));
+    return twitterData.responseData.tweets.map(
+      (tweet, index) =>
+        ({
+          id: `twitter-${index}`,
+          first_name: tweet.author || 'Twitter User',
+          last_name: '',
+          username: tweet.author || '',
+          lead_reason: tweet.text,
+          lead_status: LeadStatusEnum.NEW,
+          opportunity_type: LeadOpportunityTypeEnum.Other,
+          tags: [],
+          twitter_url: `https://twitter.com/${tweet.author}`,
+          lead_link: tweet.url,
+          picture_url: '',
+          created_date: tweet.created_at,
+          lead_type: 'CONVERSATIONAL',
+          website_url: tweet.url,
+          sentiment: tweet.sentiment,
+          confidence: tweet.confidence,
+          // Optional fields can be undefined
+          lead_email: undefined,
+          phone: undefined,
+          company_name: undefined,
+          job_title: undefined,
+          industry: undefined,
+          linkedin_url: undefined,
+          facebook_url: undefined,
+          github_url: undefined,
+          location: undefined,
+        }) as LeadDto
+    );
   };
 
   const handleRowClick = (lead: LeadDto) => {
@@ -72,15 +85,47 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
     setSelectedLead(null);
   };
 
+  const handleFindDecisionMaker = async (lead: LeadDto) => {
+    if (!lead.lead_id) {
+      triggerToast('error', 'Lead ID not found');
+      return;
+    }
+
+    setLoadingDecisionMaker(lead.lead_id);
+    try {
+      const response = await LeadsService.findDecisionMakers(lead.lead_id);
+      if (response.status && response.responseData) {
+        const count = response.responseData.decision_makers?.length || 0;
+        triggerToast('success', `Found ${count} decision-maker(s)`);
+
+        // Open modal with decision-makers
+        setDecisionMakersData({
+          ...response.responseData,
+          jobTitle: lead.job_title,
+          companyName: lead.company_name,
+        });
+        setIsDecisionMakerModalOpen(true);
+      } else {
+        triggerToast('error', response.responseMessage || 'Failed to find decision-makers');
+      }
+    } catch (error: any) {
+      triggerToast('error', error.message || 'Error finding decision-makers');
+    } finally {
+      setLoadingDecisionMaker(null);
+    }
+  };
+
   // Use Twitter data if available, otherwise use regular lead data
   const displayData = twitterData ? convertTwitterDataToLeads(twitterData) : data;
-  
+
   // Sort by newest first using created_date
-  const sortedDisplayData = [...(displayData ?? [])].map((lead, index) => ({ ...lead, originalIndex: index })).sort((a, b) => {
-    const aTime = a?.created_date ? new Date(a.created_date).getTime() : 0;
-    const bTime = b?.created_date ? new Date(b.created_date).getTime() : 0;
-    return aTime === bTime ? a.originalIndex - b.originalIndex : bTime - aTime;
-  });
+  const sortedDisplayData = [...(displayData ?? [])]
+    .map((lead, index) => ({ ...lead, originalIndex: index }))
+    .sort((a, b) => {
+      const aTime = a?.created_date ? new Date(a.created_date).getTime() : 0;
+      const bTime = b?.created_date ? new Date(b.created_date).getTime() : 0;
+      return aTime === bTime ? a.originalIndex - b.originalIndex : bTime - aTime;
+    });
   const displayTotal = twitterData ? twitterData.responseData.total_tweets : total;
 
   const getCompanyOrJobOrIndustry = (row: LeadDto) => {
@@ -102,7 +147,40 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
     {
       key: 'lead_reason',
       title: 'Lead Reason',
-      render: (_, row) => <IconContentBox content={row.lead_reason ?? '-'} type={row.opportunity_type as LeadOpportunityTypeEnum} />,
+      render: (_, row) => (
+        <Box>
+          <IconContentBox content={row.lead_reason ?? '-'} type={row.opportunity_type as LeadOpportunityTypeEnum} />
+          {/* Signal Label for Job Board Signals */}
+          {row.lead_source === LeadSourceEnum.JOB_BOARDS && row.commercial_relevance !== undefined && (
+            <Box sx={{ mt: 1 }}>
+              <Chip
+                label={`${getSignalLabel(row.commercial_relevance).emoji} ${getSignalLabel(row.commercial_relevance).label}`}
+                size="small"
+                color={getSignalLabel(row.commercial_relevance).color}
+                sx={{ fontWeight: 600, fontSize: '11px' }}
+              />
+            </Box>
+          )}
+          {/* Low Confidence Warning */}
+          {row.lead_source === LeadSourceEnum.JOB_BOARDS && isLowConfidence(row.company_confidence) && (
+            <Box sx={{ mt: 1 }}>
+              <Tooltip title="Company identity not verified — decision-maker lookup unavailable">
+                <Chip
+                  icon={<WarningAmberIcon sx={{ fontSize: 14 }} />}
+                  label="Low Confidence"
+                  size="small"
+                  sx={{
+                    backgroundColor: '#fef3c7',
+                    color: '#92400e',
+                    fontWeight: 600,
+                    fontSize: '11px',
+                  }}
+                />
+              </Tooltip>
+            </Box>
+          )}
+        </Box>
+      ),
     },
     {
       key: 'lead_status',
@@ -165,6 +243,53 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
         </Typography>
       ),
     },
+    {
+      key: 'lead_id',
+      title: 'Actions',
+      render: (_, row) => {
+        // Only show Find Decision-Maker button for job board signals
+        if (row.lead_source !== LeadSourceEnum.JOB_BOARDS) return null;
+
+        const eligibility = canFindDecisionMakers(row);
+        const isLoading = loadingDecisionMaker === row.lead_id;
+
+        return (
+          <Box>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<PersonSearchIcon />}
+              disabled={!eligibility.eligible || isLoading}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleFindDecisionMaker(row);
+              }}
+              sx={{
+                textTransform: 'none',
+                borderRadius: 2,
+                fontSize: '12px',
+                px: 2,
+                py: 0.5,
+              }}
+            >
+              {isLoading ? 'Finding...' : 'Find the decision-maker'}
+            </Button>
+            {/* PRD Section 8.2: Subtext */}
+            {eligibility.eligible && !isLoading && (
+              <Typography variant="caption" display="block" sx={{ mt: 0.5, color: 'text.secondary', fontSize: '10px', fontStyle: 'italic' }}>
+                We'll find the person responsible for this problem.
+              </Typography>
+            )}
+            {/* Show reason when ineligible */}
+            {!eligibility.eligible && (
+              <Typography variant="caption" display="block" sx={{ mt: 0.5, color: 'error.main', fontSize: '10px' }}>
+                {eligibility.reason}
+              </Typography>
+            )}
+          </Box>
+        );
+      },
+    },
   ];
 
   return (
@@ -195,6 +320,15 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
 
       {/* Twitter Details Modal */}
       <TwitterDetailsModal open={isModalOpen} onClose={handleCloseModal} lead={selectedLead} />
+
+      {/* Decision-Maker Modal */}
+      <DecisionMakerModal
+        open={isDecisionMakerModalOpen}
+        onClose={() => setIsDecisionMakerModalOpen(false)}
+        decisionMakers={decisionMakersData?.decision_makers || []}
+        jobTitle={decisionMakersData?.jobTitle}
+        companyName={decisionMakersData?.companyName}
+      />
 
       {/* Pagination Controls */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mx: 3, my: 2 }}>

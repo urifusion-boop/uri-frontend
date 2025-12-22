@@ -194,4 +194,31 @@ export class LeadsService {
       return false;
     }
   }
+
+  /**
+   * Generate job keywords from business context (PRD Section 5)
+   * AI uses onboarding information to pre-fill keyword logic
+   */
+  static async generateJobKeywords(userId: string, context?: string): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post('/api/v1/leads/generate-job-keywords', null, {
+      params: {
+        user_id: userId,
+        context: context || undefined,
+      },
+    });
+    return response.data;
+  }
+
+  /**
+   * Find decision-makers for a job board signal (PRD Section 8)
+   * Maps job role to decision-maker titles and searches Apollo
+   */
+  static async findDecisionMakers(leadId: string): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post('/api/v1/leads/find-decision-makers', null, {
+      params: {
+        lead_id: leadId,
+      },
+    });
+    return response.data;
+  }
 }

@@ -60,6 +60,9 @@ export interface LeadDto {
   company_size_range?: string;
   sentiment?: string;
   confidence?: number;
+  commercial_relevance?: number;
+  problem_solution_match?: number;
+  company_confidence?: number;
 }
 
 export interface GetByFiltersLeadsDtoParameters {

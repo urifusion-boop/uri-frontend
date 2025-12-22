@@ -30,13 +30,13 @@ export const profileSetupRoutes: Record<IProfileSetupRoutes, string> = {
 export type IUserRoutes = 'dashboard' | 'profileSetup' | 'profile';
 
 export const clientUserRoutes: Record<IUserRoutes, string> = {
-  dashboard: '/dashboard/clients',
+  dashboard: '/dashboard',
   profileSetup: '/profile_setup/client',
   profile: '/clients/',
 };
 
 export const creativeUserRoutes: Record<IUserRoutes, string> = {
-  dashboard: '/dashboard/creatives',
+  dashboard: '/dashboard',
   profileSetup: '/profile_setup/creative',
   profile: '/creatives/',
 };

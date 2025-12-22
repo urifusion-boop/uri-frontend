@@ -216,6 +216,9 @@ export interface ConversationalSearchFormDto {
   category_context?: string; // Industry/category context (e.g., "skincare", "fintech")
   implied_keywords?: string[]; // Indirect signals (e.g., "harmattan", "dry skin", "winter")
   scoring_thresholds?: ScoringThresholdsDto; // Custom qualification thresholds
+  // Job Boards fields (PRD Section 5)
+  solution_context?: string; // What problem does your product/service solve? (for job board analysis)
+  job_keywords?: string[]; // AI-generated job role keywords for job board scanning
 }
 
 export interface PlatformConfigFormDto {
