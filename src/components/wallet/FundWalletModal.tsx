@@ -72,7 +72,19 @@ const FundWalletModal: React.FC<IProps> = ({ open, onClose }) => {
           Enter the amount you want to add to your wallet. Minimum amount is ₦5,000.
         </Text>
 
-        <InputField label="Amount (₦)" value={amount} onChange={(e) => setAmount(e.target.value)} formatNumber placeholder="5,000" type="text" />
+        <InputField
+          label="Amount (₦)"
+          value={amount}
+          onChange={(e) => {
+            const digitsOnly = e.target.value.replace(/[^\d]/g, '');
+            setAmount(digitsOnly);
+          }}
+          formatNumber
+          placeholder="5,000"
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+        />
 
         {error && <ErrorText style={{ marginTop: 8 }}>{error}</ErrorText>}
 
