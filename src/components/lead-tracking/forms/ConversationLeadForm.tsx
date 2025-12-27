@@ -133,8 +133,8 @@ const ConversationLeadFormV2 = () => {
 
     // Only generate if Job Boards is enabled, we don't have job keywords yet, and we have context or onboarding data
     if (isJobBoardsEnabled && (!form.job_keywords || form.job_keywords.length === 0) && userId) {
-      // Use either auto-populate data or solution context
-      const context = autoPopulateData || form.solution_context || '';
+      // Priority: 1) Auto-populate data, 2) Solution context, 3) Onboarding data (businessDetails.whatYouSell)
+      const context = autoPopulateData || form.solution_context || userDetails?.businessDetails?.whatYouSell || '';
 
       if (context.trim()) {
         // Generate job keywords
@@ -150,9 +150,15 @@ const ConversationLeadFormV2 = () => {
           .catch((error) => {
             console.error('Error auto-generating job keywords:', error);
           });
+      } else {
+        // No context available - show helpful message
+        console.warn('⚠️ No business context found. Please either:');
+        console.warn('   1. Complete onboarding with "What you sell" information, OR');
+        console.warn('   2. Use AI Auto-Populate to describe your solution, OR');
+        console.warn('   3. Enter job keywords manually');
       }
     }
-  }, [form.platform_configs, userId, autoPopulateData, form.solution_context]);
+  }, [form.platform_configs, userId, autoPopulateData, form.solution_context, userDetails]);
 
   // Merge newly fetched Twitter results with previously cached ones
   const mergeTwitterResults = (prev: TwitterFetchResponseDto | null, next: TwitterFetchResponseDto): TwitterFetchResponseDto => {
