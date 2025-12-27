@@ -63,6 +63,12 @@ export interface LeadDto {
   commercial_relevance?: number;
   problem_solution_match?: number;
   company_confidence?: number;
+  implied_problems?: string[];
+  job_posting_url?: string;
+  job_title_field?: string;
+  hiring_company?: string;
+  hiring_intent_score?: number;
+  job_source?: string;
 }
 
 export interface GetByFiltersLeadsDtoParameters {

@@ -10,6 +10,7 @@ import { LeadOpportunityTypeEnum } from '@/models/enum-models/LeadOpportunityTyp
 import { LeadSourceEnum } from '@/models/enum-models/LeadSourceEnum';
 import { LeadStatusEnum } from '@/models/enum-models/LeadStatusEnum';
 import { CampaignPlatformEnum } from '@/models/enum-models/PlatformEnum';
+import { JobSignalAnalytics } from '@/utils/analytics';
 import { canFindDecisionMakers, getSignalLabel, isLowConfidence } from '@/utils/jobSignalHelpers';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import TurnedInIcon from '@mui/icons-material/TurnedIn';
@@ -76,6 +77,17 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
   };
 
   const handleRowClick = (lead: LeadDto) => {
+    // PRD Section 12: Track job signal clicked
+    if (lead.lead_source === LeadSourceEnum.JOB_BOARDS) {
+      JobSignalAnalytics.trackJobSignalClicked({
+        lead_id: lead.lead_id || '',
+        company_name: lead.hiring_company || lead.company_name,
+        commercial_relevance: lead.commercial_relevance,
+        problem_solution_match: lead.problem_solution_match,
+        job_source: lead.job_source,
+        timestamp: lead.created_date ? new Date(lead.created_date).getTime() : undefined,
+      });
+    }
     setSelectedLead(lead);
     setIsModalOpen(true);
   };
@@ -91,11 +103,34 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
       return;
     }
 
+    // PRD Section 12: Track decision-maker requested
+    JobSignalAnalytics.trackDecisionMakerRequested({
+      lead_id: lead.lead_id,
+      company_name: lead.hiring_company || lead.company_name,
+      commercial_relevance: lead.commercial_relevance,
+      problem_solution_match: lead.problem_solution_match,
+      job_source: lead.job_source,
+    });
+
+    const searchStartTime = Date.now();
     setLoadingDecisionMaker(lead.lead_id);
     try {
       const response = await LeadsService.findDecisionMakers(lead.lead_id);
       if (response.status && response.responseData) {
         const count = response.responseData.decision_makers?.length || 0;
+        const searchDuration = Date.now() - searchStartTime;
+
+        // PRD Section 12: Track decision-makers found
+        JobSignalAnalytics.trackDecisionMakerFound({
+          lead_id: lead.lead_id,
+          company_name: lead.hiring_company || lead.company_name,
+          commercial_relevance: lead.commercial_relevance,
+          problem_solution_match: lead.problem_solution_match,
+          job_source: lead.job_source,
+          decision_makers_found: count,
+          search_duration_ms: searchDuration,
+        });
+
         triggerToast('success', `Found ${count} decision-maker(s)`);
 
         // Open modal with decision-makers
@@ -149,7 +184,31 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
       title: 'Lead Reason',
       render: (_, row) => (
         <Box>
-          <IconContentBox content={row.lead_reason ?? '-'} type={row.opportunity_type as LeadOpportunityTypeEnum} />
+          {/* For Job Board Signals - show AI explanation prominently */}
+          {row.lead_source === LeadSourceEnum.JOB_BOARDS && row.lead_reason ? (
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: '#1f2937', mb: 0.5 }}>
+                💡 Why this is a signal:
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#4b5563', mb: 1 }}>
+                {row.lead_reason}
+              </Typography>
+              {/* Show job details if available */}
+              {(row.hiring_company || row.job_title_field) && (
+                <Typography variant="caption" sx={{ color: '#6b7280', display: 'block', mt: 0.5 }}>
+                  {row.hiring_company && (
+                    <>
+                      <strong>{row.hiring_company}</strong>
+                    </>
+                  )}
+                  {row.hiring_company && row.job_title_field && ' • '}
+                  {row.job_title_field && <>{row.job_title_field}</>}
+                </Typography>
+              )}
+            </Box>
+          ) : (
+            <IconContentBox content={row.lead_reason ?? '-'} type={row.opportunity_type as LeadOpportunityTypeEnum} />
+          )}
           {/* Signal Label for Job Board Signals */}
           {row.lead_source === LeadSourceEnum.JOB_BOARDS && row.commercial_relevance !== undefined && (
             <Box sx={{ mt: 1 }}>
