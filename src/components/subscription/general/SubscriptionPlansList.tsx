@@ -125,6 +125,8 @@ const SubscriptionPlansList = ({ onSelectPlan, selectedPlan }: ChoosePaymentProp
         sx={{
           mt: { xs: '30px', md: '60px' },
           width: '100%',
+          maxWidth: '100vw',
+          overflowX: 'auto',
         }}
       >
         <LoaderWrapper
@@ -142,6 +144,8 @@ const SubscriptionPlansList = ({ onSelectPlan, selectedPlan }: ChoosePaymentProp
                   display: 'flex',
                   gap: 2,
                   p: { xs: 1, sm: 2 },
+                  minWidth: 'max-content',
+                  justifyContent: 'center',
                 }}
               >
                 {filteredSubscriptionPlans?.map((plan) => {
