@@ -131,13 +131,25 @@ const ConversationLeadFormV2 = () => {
   useEffect(() => {
     const isJobBoardsEnabled = form.platform_configs?.some((config) => config.platform === 'JOB_BOARDS' && config.enabled);
 
+    console.log('🔍 Job Boards Auto-Generation Check:', {
+      isJobBoardsEnabled,
+      hasJobKeywords: form.job_keywords && form.job_keywords.length > 0,
+      userId,
+      autoPopulateData,
+      solution_context: form.solution_context,
+      whatYouSell: userDetails?.businessDetails?.whatYouSell,
+    });
+
     // Only generate if Job Boards is enabled, we don't have job keywords yet, and we have context or onboarding data
     if (isJobBoardsEnabled && (!form.job_keywords || form.job_keywords.length === 0) && userId) {
       // Priority: 1) Auto-populate data, 2) Solution context, 3) Onboarding data (businessDetails.whatYouSell)
       const context = autoPopulateData || form.solution_context || userDetails?.businessDetails?.whatYouSell || '';
 
+      console.log('📝 Context for keyword generation:', context ? `"${context.substring(0, 100)}..."` : 'EMPTY');
+
       if (context.trim()) {
         // Generate job keywords
+        console.log('🚀 Starting job keyword generation...');
         LeadFormService.generateJobKeywords(userId, context)
           .then((response) => {
             if (response.status && response.responseData?.job_keywords) {
@@ -145,10 +157,12 @@ const ConversationLeadFormV2 = () => {
               console.log(`✅ Auto-generated ${keywords.length} job keywords from ${response.responseData.source}:`, keywords);
               setForm((prev) => ({ ...prev, job_keywords: keywords }));
               triggerToast('success', `Generated ${keywords.length} job role keywords for job board search`);
+            } else {
+              console.error('❌ Invalid response from keyword generation:', response);
             }
           })
           .catch((error) => {
-            console.error('Error auto-generating job keywords:', error);
+            console.error('❌ Error auto-generating job keywords:', error);
           });
       } else {
         // No context available - show helpful message
