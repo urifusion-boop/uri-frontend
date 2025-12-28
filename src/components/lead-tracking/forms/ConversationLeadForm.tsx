@@ -25,11 +25,17 @@ import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import { Alert, Box, Button, Chip, FormControl, FormControlLabel, IconButton, LinearProgress, MenuItem, Select, Switch, Tooltip, Typography } from '@mui/material';
 import Image from 'next/image';
 import router from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { HiPencil } from 'react-icons/hi';
 import PlatformSelector from '../PlatformSelector';
 
 const ConversationLeadFormV2 = () => {
+  const [debugInfo, setDebugInfo] = useState<string>('Waiting...');
+
+  useEffect(() => {
+    setDebugInfo('✅ Component loaded successfully');
+  }, []);
+
   const [form, setForm] = useState<ConversationalSearchFormDto>({
     user_id: '',
     form_title: 'Sales Signal Form V2',
@@ -41,7 +47,7 @@ const ConversationLeadFormV2 = () => {
     excluded_keywords: [],
     add_to_history: false,
     auto_generate: false,
-    form_type: '',
+    form_type: FormTypeEnum.CONVERSATIONAL,
     location: [],
     post_age_filter: 'all',
     enable_realtime: true, // V2 default
@@ -83,6 +89,32 @@ const ConversationLeadFormV2 = () => {
   const { userDetails, subscriptionPlanType } = useAuth();
   const userId = userDetails?.userId;
   const featureLimit = useFeatureLimitStore((state) => state.featureLimit);
+
+  // Fetch user's business details from uri-insights backend
+  const [userBusinessDetails, setUserBusinessDetails] = useState<any>(null);
+
+  useEffect(() => {
+    if (userId) {
+      console.log('🔍 Fetching business details for userId:', userId);
+      // Fetch business details via proper service endpoint
+      LeadFormService.getUserBusinessDetails(userId)
+        .then((response) => {
+          console.log('📦 Business details response:', response);
+          if (response.status && response.responseData) {
+            console.log('✅ Business details loaded:', response.responseData);
+            setUserBusinessDetails(response.responseData);
+            setDebugInfo(`✅ Loaded: ${JSON.stringify(response.responseData)}`);
+          } else {
+            console.warn('⚠️ No business details in response');
+            setDebugInfo(`⚠️ Response: ${JSON.stringify(response)}`);
+          }
+        })
+        .catch((error) => {
+          console.error('❌ Business details error:', error);
+          setDebugInfo(`❌ Error: ${error.message}`);
+        });
+    }
+  }, [userId]);
 
   const { createConversationalSearchLeadForm, updateConversationalSearchLeadForm, useGetExistingFormType } = useLeadFormHooks();
 
@@ -127,10 +159,15 @@ const ConversationLeadFormV2 = () => {
     }
   }, [existingForm, isSuccess, userId]);
 
+  // Track if Job Boards is enabled using useMemo
+  const isJobBoardsEnabled = useMemo(() => {
+    const enabled = form.platform_configs?.some((config) => config.platform === 'JOB_BOARDS' && config.enabled) || false;
+    console.log('🔄 Job Boards enabled state changed:', enabled);
+    return enabled;
+  }, [form.platform_configs]);
+
   // PRD Section 5: Auto-generate job keywords when Job Boards platform is enabled
   useEffect(() => {
-    const isJobBoardsEnabled = form.platform_configs?.some((config) => config.platform === 'JOB_BOARDS' && config.enabled);
-
     console.log('🔍 Job Boards Auto-Generation Check:', {
       isJobBoardsEnabled,
       hasJobKeywords: form.job_keywords && form.job_keywords.length > 0,
@@ -172,7 +209,7 @@ const ConversationLeadFormV2 = () => {
         console.warn('   3. Enter job keywords manually');
       }
     }
-  }, [form.platform_configs, userId, autoPopulateData, form.solution_context, userDetails]);
+  }, [isJobBoardsEnabled, userId, autoPopulateData, form.solution_context, userDetails]);
 
   // Merge newly fetched Twitter results with previously cached ones
   const mergeTwitterResults = (prev: TwitterFetchResponseDto | null, next: TwitterFetchResponseDto): TwitterFetchResponseDto => {
@@ -239,6 +276,70 @@ const ConversationLeadFormV2 = () => {
   };
 
   const handleChange = (field: keyof ConversationalSearchFormDto, value: any) => {
+    console.log('🔧 Form field changed:', field, value);
+
+    // If platform_configs changed, trigger job keyword generation
+    if (field === 'platform_configs') {
+      const isJobBoardsNowEnabled = value?.some((config: any) => config.platform === 'JOB_BOARDS' && config.enabled);
+      console.log('📋 Platform configs changed, Job Boards enabled:', isJobBoardsNowEnabled);
+
+      if (isJobBoardsNowEnabled && userId && userBusinessDetails) {
+        // Auto-populate Job Boards-related fields from onboarding data
+        const context = autoPopulateData || form.solution_context || userBusinessDetails?.whatYouSell || '';
+
+        // Auto-populate form fields
+        const updates: any = { [field]: value };
+
+        // 1. Form Title - Make it descriptive
+        if (!form.form_title || form.form_title === 'Sales Signal Form V2') {
+          updates.form_title = `Job Signals - ${userBusinessDetails.businessName || 'Tech & Web3 Hiring'}`;
+        }
+
+        // 2. Solution Context - Use whatYouSell
+        if (!form.solution_context && userBusinessDetails.whatYouSell) {
+          updates.solution_context = userBusinessDetails.whatYouSell;
+        }
+
+        // 3. Category Context - Use industry
+        if (!form.category_context && userBusinessDetails.industry) {
+          updates.category_context = userBusinessDetails.industry;
+        }
+
+        // 4. Location - Use businessLocation
+        if ((!form.location || form.location.length === 0) && userBusinessDetails.businessLocation) {
+          updates.location = [userBusinessDetails.businessLocation];
+        }
+
+        // 5. Intent Type - Smart default
+        if (!form.intent_type) {
+          updates.intent_type = `Companies hiring for roles related to ${userBusinessDetails.industry || 'our services'}`;
+        }
+
+        // 6. AI Response Guide - Smart default
+        if (!form.ai_response_guide) {
+          updates.ai_response_guide = `Professional outreach for hiring managers in ${userBusinessDetails.industry || 'tech'} companies`;
+        }
+
+        // Apply updates first
+        setForm((prev) => ({ ...prev, ...updates }));
+
+        // 7. Job Keywords - Generate via API
+        if (context.trim() && (!form.job_keywords || form.job_keywords.length === 0)) {
+          LeadFormService.generateJobKeywords(userId, context)
+            .then((response) => {
+              if (response.status && response.responseData?.job_keywords) {
+                const keywords = response.responseData.job_keywords;
+                setForm((prev) => ({ ...prev, job_keywords: keywords }));
+                triggerToast('success', `Auto-populated form with your business details`);
+              }
+            })
+            .catch((error) => {
+              console.error('Keyword generation error:', error);
+            });
+        }
+      }
+    }
+
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -661,6 +762,53 @@ const ConversationLeadFormV2 = () => {
           {form.enable_realtime && (
             <Box sx={{ mb: 4 }}>
               <PlatformSelector platformConfigs={form.platform_configs || []} setPlatformConfigs={(configs) => handleChange('platform_configs', configs)} />
+
+              {/* DEBUG BUTTON */}
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => {
+                  const isJobBoardsEnabled = form.platform_configs?.some((config) => config.platform === 'JOB_BOARDS' && config.enabled);
+                  const context = autoPopulateData || form.solution_context || userBusinessDetails?.whatYouSell || '';
+
+                  setDebugInfo(`
+🔍 DEBUG INFO:
+- Job Boards Enabled: ${isJobBoardsEnabled}
+- Has userId: ${!!userId}
+- Has Context: ${!!context}
+- Context Preview: ${context ? context.substring(0, 100) : 'EMPTY'}
+- Current Keywords: ${form.job_keywords?.length || 0}
+- Business Details Loaded: ${!!userBusinessDetails}
+- whatYouSell: ${userBusinessDetails?.whatYouSell || 'NOT FOUND'}
+                  `);
+
+                  if (context.trim() && userId) {
+                    setDebugInfo('🚀 Calling API...');
+                    LeadFormService.generateJobKeywords(userId, context)
+                      .then((response) => {
+                        if (response.status && response.responseData?.job_keywords) {
+                          const keywords = response.responseData.job_keywords;
+                          setDebugInfo(`✅ SUCCESS! Generated ${keywords.length} keywords: ${keywords.join(', ')}`);
+                          setForm((prev) => ({ ...prev, job_keywords: keywords }));
+                          triggerToast('success', `Generated ${keywords.length} keywords`);
+                        } else {
+                          setDebugInfo(`❌ API returned invalid response: ${JSON.stringify(response)}`);
+                        }
+                      })
+                      .catch((error) => {
+                        setDebugInfo(`❌ API Error: ${error.message || error}`);
+                      });
+                  } else {
+                    setDebugInfo(`❌ Cannot generate - UserId: ${!!userId}, Context: ${!!context}`);
+                  }
+                }}
+                sx={{ mt: 2 }}
+              >
+                🐛 DEBUG: Test Auto-Generation
+              </Button>
+
+              {/* Debug Info Display */}
+              <Box sx={{ mt: 2, p: 2, backgroundColor: '#f0f0f0', borderRadius: 1, whiteSpace: 'pre-wrap', fontSize: '12px', fontFamily: 'monospace' }}>{debugInfo}</Box>
             </Box>
           )}
 

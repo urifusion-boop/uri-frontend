@@ -1,5 +1,6 @@
 import { UriHttpClient } from '@/configs/http.config';
 import { leadFormApiRoutes } from '@/constants/routes/leadFormRoutes';
+import { leadsApiRoutes } from '@/constants/routes/leadsRoutes';
 import { ObjectHelper } from '@/helpers/ObjectHelper';
 import {
   AutoPopulateDto,
@@ -200,7 +201,7 @@ export class LeadsService {
    * AI uses onboarding information to pre-fill keyword logic
    */
   static async generateJobKeywords(userId: string, context?: string): Promise<UriResponse<any>> {
-    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post('/api/v1/leads/generate-job-keywords', null, {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post(leadsApiRoutes.generateJobKeywords, null, {
       params: {
         user_id: userId,
         context: context || undefined,
@@ -219,6 +220,15 @@ export class LeadsService {
         lead_id: leadId,
       },
     });
+    return response.data;
+  }
+
+  /**
+   * Get user's business details from uri-backend
+   * Used for auto-generating job keywords from onboarding data
+   */
+  static async getUserBusinessDetails(userId: string): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().get(`${leadsApiRoutes.getUserBusinessDetails}/${userId}`);
     return response.data;
   }
 }

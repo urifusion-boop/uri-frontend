@@ -37,14 +37,18 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({ platformConfigs, se
   const disabledPlatforms = new Set<BrowsercloudPlatformEnum>([BrowsercloudPlatformEnum.THREADS, BrowsercloudPlatformEnum.LINKEDIN]);
 
   const togglePlatform = (platform: BrowsercloudPlatformEnum) => {
+    console.log('🎯 Platform toggle clicked:', platform);
     const existingConfig = platformConfigs.find((c) => c.platform === platform);
+    console.log('📦 Existing config:', existingConfig);
 
     if (existingConfig) {
       // Toggle enabled status
-      setPlatformConfigs(platformConfigs.map((c) => (c.platform === platform ? { ...c, enabled: !c.enabled } : c)));
+      const newConfigs = platformConfigs.map((c) => (c.platform === platform ? { ...c, enabled: !c.enabled } : c));
+      console.log('🔄 Toggling existing platform, new configs:', newConfigs);
+      setPlatformConfigs(newConfigs);
     } else {
       // Add new platform config
-      setPlatformConfigs([
+      const newConfigs = [
         ...platformConfigs,
         {
           platform,
@@ -54,7 +58,9 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({ platformConfigs, se
           verified_only: false,
           content_types: [],
         },
-      ]);
+      ];
+      console.log('➕ Adding new platform config:', newConfigs);
+      setPlatformConfigs(newConfigs);
     }
   };
 

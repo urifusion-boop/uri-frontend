@@ -25,9 +25,7 @@ export class LeadsService {
   }
 
   static async multipleCreate(leads: LeadDto[], leadFormId?: string): Promise<UriResponse<any>> {
-    const url = leadFormId
-      ? `${leadsApiRoutes.multipleCreate}?lead_form_id=${leadFormId}`
-      : leadsApiRoutes.multipleCreate;
+    const url = leadFormId ? `${leadsApiRoutes.multipleCreate}?lead_form_id=${leadFormId}` : leadsApiRoutes.multipleCreate;
     const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post(url, leads);
     return response.data;
   }
@@ -125,6 +123,11 @@ export class LeadsService {
   static async starLead(lead_id: string): Promise<UriResponse<LeadDto>> {
     const response: Awaited<AxiosResponse<UriResponse<LeadDto>>> = await UriHttpClient.getClient().post(`${leadsApiRoutes.star}?lead_id=${lead_id}`);
 
+    return response.data;
+  }
+
+  static async getUserBusinessDetails(userId: string): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().get(`${leadsApiRoutes.getUserBusinessDetails}/${userId}`);
     return response.data;
   }
 }
