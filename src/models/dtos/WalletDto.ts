@@ -6,6 +6,9 @@ export interface WalletBalanceResponseDto {
 export interface FundWalletRequestDto {
   amount: number;
   currency: string;
+  userId?: string;
+  email?: string;
+  callbackUrl?: string;
 }
 
 export interface FundWalletResponseDto {
@@ -30,4 +33,11 @@ export interface WalletHistoryResponseDto {
   total: number;
   page: number;
   limit: number;
+}
+
+export interface WalletResponseDto {
+  userId?: string;
+  balance?: number;
+  currency?: string;
+  transactions?: WalletTransactionDto[];
 }

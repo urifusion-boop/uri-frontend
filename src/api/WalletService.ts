@@ -1,126 +1,84 @@
-import { ObjectHelper } from '@/helpers/ObjectHelper';
-import { FundWalletRequestDto, FundWalletResponseDto, WalletBalanceResponseDto, WalletHistoryResponseDto } from '@/models/dtos/WalletDto';
+import { UriHttpClient } from '@/configs/http.config';
+import { walletRoutes } from '@/constants/routes/walletRoutes';
+import { FundWalletRequestDto, FundWalletResponseDto, WalletResponseDto, WalletTransactionDto } from '@/models/dtos/WalletDto';
+import { BackendUrlEnum } from '@/models/enum-models/BackendUrlEnum';
 import { UriResponse } from '@/models/responses/UriResponse';
-
-// MOCK DATA FOR TESTING
-const MOCK_BALANCE = {
-  balance: 25000,
-  currency: 'NGN',
-};
-
-const MOCK_HISTORY = {
-  transactions: [
-    {
-      id: '1',
-      type: 'credit',
-      amount: 50000,
-      currency: 'NGN',
-      description: 'Wallet Funding',
-      date: new Date().toISOString(),
-      status: 'success',
-      reference: 'REF-123456',
-    },
-    {
-      id: '2',
-      type: 'debit',
-      amount: 750,
-      currency: 'NGN',
-      description: 'Lead Scan',
-      date: new Date(Date.now() - 86400000).toISOString(),
-      status: 'success',
-      reference: 'REF-123457',
-    },
-    {
-      id: '3',
-      type: 'debit',
-      amount: 225,
-      currency: 'NGN',
-      description: 'Lead Purchase',
-      date: new Date(Date.now() - 172800000).toISOString(),
-      status: 'success',
-      reference: 'REF-123458',
-    },
-  ],
-  total: 3,
-  page: 1,
-  limit: 10,
-};
+import { AxiosResponse } from 'axios';
 
 export class WalletService {
-  static async getBalance(): Promise<UriResponse<WalletBalanceResponseDto>> {
-    // UNCOMMENT FOR REAL API
-    // const response: Awaited<AxiosResponse<UriResponse<WalletBalanceResponseDto>>> = await UriHttpClient.getClient().get(walletRoutes.balance);
-    // return response.data;
+  private static isDirectTransactionsBaseUrl(apiBaseUrl: string): boolean {
+    const normalized = (apiBaseUrl ?? '').toLowerCase();
+    return normalized.includes('localhost:9001') || normalized.includes('127.0.0.1:9001') || normalized.endsWith(':9001') || normalized.includes(':9001/');
+  }
 
-    // MOCK RESPONSE
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          status: true,
-          responseCode: 200,
-          responseMessage: 'Success',
-          responseData: MOCK_BALANCE,
-        } as UriResponse<WalletBalanceResponseDto>);
-      }, 500);
-    });
+  private static getTransactionsBaseUrlForDirect(): string {
+    const apiBaseUrl = (process.env.NEXT_PUBLIC_URI_API_BASE_URL ?? '').replace(/\/$/, '');
+
+    return apiBaseUrl
+      .replace(/\/uri-transactions\/api\/v1$/i, '')
+      .replace(/\/uri-transactions$/i, '')
+      .replace(/\/api\/v1$/i, '')
+      .replace(/\/api$/i, '');
+  }
+
+  private static buildTransactionsUrl(path: string): string {
+    const apiBaseUrl = process.env.NEXT_PUBLIC_URI_API_BASE_URL ?? '';
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+
+    if (this.isDirectTransactionsBaseUrl(apiBaseUrl)) {
+      const directBaseUrl = this.getTransactionsBaseUrlForDirect();
+      return `${directBaseUrl}${normalizedPath}`;
+    }
+
+    return `${BackendUrlEnum.TRANSACTIONS}${normalizedPath}`;
+  }
+
+  static async getWallet(userId: string): Promise<UriResponse<WalletResponseDto>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().get(this.buildTransactionsUrl(`${walletRoutes.getWallet}/${userId}`));
+
+    if (!response.data?.status || !response.data.responseData) {
+      return response.data as UriResponse<WalletResponseDto>;
+    }
+
+    const wallet = response.data.responseData as any;
+    const transactions = Array.isArray(wallet.transactions) ? wallet.transactions : [];
+
+    return {
+      ...response.data,
+      responseData: {
+        userId: wallet.userId,
+        balance: wallet.balance ?? 0,
+        currency: wallet.currency ?? 'NGN',
+        transactions: transactions.map((tx: any): WalletTransactionDto => {
+          const status = String(tx.status ?? '').toLowerCase();
+          const txType = String(tx.transaction_type ?? '').toLowerCase();
+          const normalizedStatus: WalletTransactionDto['status'] = status.includes('success') ? 'success' : status.includes('fail') ? 'failed' : 'pending';
+          const normalizedType: WalletTransactionDto['type'] = txType.includes('income') ? 'credit' : 'debit';
+
+          const amount = typeof tx.amount === 'number' ? tx.amount : Number(tx.amount ?? 0);
+
+          return {
+            id: String(tx.reference ?? tx.id ?? ''),
+            type: normalizedType,
+            amount,
+            currency: String(tx.currency ?? wallet.currency ?? 'NGN'),
+            description: String(tx.narration ?? 'Transaction'),
+            date: tx.transaction_date ? new Date(tx.transaction_date).toISOString() : new Date().toISOString(),
+            status: normalizedStatus,
+            reference: String(tx.reference ?? ''),
+          };
+        }),
+      },
+    };
   }
 
   static async initiateFunding(data: FundWalletRequestDto): Promise<UriResponse<FundWalletResponseDto>> {
-    // const response: Awaited<AxiosResponse<UriResponse<FundWalletResponseDto>>> = await UriHttpClient.getClient().post(walletRoutes.fund, data);
-    // return response.data;
-
-    // MOCK RESPONSE
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          status: true,
-          responseCode: 200,
-          responseMessage: 'Success',
-          responseData: {
-            authorization_url: 'https://checkout.paystack.com/fake-url',
-            access_code: 'fake-access-code',
-            reference: 'fake-ref-' + Date.now(),
-          },
-        } as UriResponse<FundWalletResponseDto>);
-      }, 1000);
-    });
+    const response: Awaited<AxiosResponse<UriResponse<FundWalletResponseDto>>> = await UriHttpClient.getClient().post(this.buildTransactionsUrl(walletRoutes.fund), data);
+    return response.data;
   }
 
-  static async verifyFunding(reference: string): Promise<UriResponse<WalletBalanceResponseDto>> {
-    // const response: Awaited<AxiosResponse<UriResponse<WalletBalanceResponseDto>>> = await UriHttpClient.getClient().post(`${walletRoutes.verify}/${reference}`);
-    // return response.data;
-
-    // MOCK RESPONSE
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          status: true,
-          responseCode: 200,
-          responseMessage: 'Success',
-          responseData: {
-            balance: MOCK_BALANCE.balance + 5000,
-            currency: 'NGN',
-          },
-        } as UriResponse<WalletBalanceResponseDto>);
-      }, 1000);
-    });
-  }
-
-  static async getTransactions(page: number = 1, limit: number = 10): Promise<UriResponse<WalletHistoryResponseDto>> {
-    const queryString = ObjectHelper.filterMap({ page, limit });
-    // const response: Awaited<AxiosResponse<UriResponse<WalletHistoryResponseDto>>> = await UriHttpClient.getClient().get(`${walletRoutes.transactions}?${queryString}`);
-    // return response.data;
-
-    // MOCK RESPONSE
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          status: true,
-          responseCode: 200,
-          responseMessage: 'Success',
-          responseData: MOCK_HISTORY as any,
-        } as UriResponse<WalletHistoryResponseDto>);
-      }, 800);
-    });
+  static async verifyFunding(reference: string): Promise<UriResponse<WalletResponseDto>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post(this.buildTransactionsUrl(`${walletRoutes.verify}/${reference}`));
+    return response.data as UriResponse<WalletResponseDto>;
   }
 }
