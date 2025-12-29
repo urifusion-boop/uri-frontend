@@ -9,6 +9,7 @@ import RedditIcon from '@mui/icons-material/Reddit';
 import TelegramIcon from '@mui/icons-material/Telegram';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import WorkIcon from '@mui/icons-material/Work';
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import SvgIcon from '@mui/material/SvgIcon';
 import { ReactElement } from 'react';
@@ -42,4 +43,8 @@ export const accountIcons: Record<string, JSX.Element> = {
   X: <XBrandIcon style={{ color: '#000' }} />,
   Website: <LanguageIcon color="action" />,
   Telegram: <TelegramIcon color="secondary" />,
+  // Job Boards
+  Jobberman: <WorkIcon style={{ color: '#00A550' }} />,
+  LinkedIn_Jobs: <WorkIcon style={{ color: '#0077B5' }} />,
+  Indeed: <WorkIcon style={{ color: '#2164F3' }} />,
 };

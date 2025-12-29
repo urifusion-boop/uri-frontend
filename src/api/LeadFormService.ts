@@ -215,7 +215,7 @@ export class LeadsService {
    * Maps job role to decision-maker titles and searches Apollo
    */
   static async findDecisionMakers(leadId: string): Promise<UriResponse<any>> {
-    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post(`/api/v1/leads/job-boards/${leadId}/find-decision-makers`);
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post(leadsApiRoutes.findDecisionMakers.replace(':lead_id', leadId));
     return response.data;
   }
 

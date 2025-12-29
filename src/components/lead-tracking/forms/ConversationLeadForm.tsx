@@ -81,7 +81,8 @@ const ConversationLeadFormV2 = () => {
     social_duplicates?: number;
 
     // Job board stats
-    job_signals_found?: number;
+    job_boards_total_fetched?: number; // Total jobs fetched (before AI filtering)
+    job_signals_found?: number; // Qualified job signals (after AI filtering)
     job_signals_saved?: number;
     job_signals_high_match?: number;
     job_signals_medium_match?: number;
@@ -1366,7 +1367,7 @@ const ConversationLeadFormV2 = () => {
 
                 // ONLY job boards
                 if (!hasSocial && hasJobBoards) {
-                  return `Found ${leadStats.job_signals_saved || leadStats.new_leads_saved} hiring signal${(leadStats.job_signals_saved || leadStats.new_leads_saved) > 1 ? 's' : ''} from ${leadStats.job_signals_found || 0} job posting${(leadStats.job_signals_found || 0) > 1 ? 's' : ''}.`;
+                  return `Found ${leadStats.job_signals_saved || leadStats.new_leads_saved} hiring signal${(leadStats.job_signals_saved || leadStats.new_leads_saved) > 1 ? 's' : ''} from ${leadStats.job_boards_total_fetched || 0} job posting${(leadStats.job_boards_total_fetched || 0) > 1 ? 's' : ''} analyzed.`;
                 }
 
                 // Fallback
@@ -1436,7 +1437,7 @@ const ConversationLeadFormV2 = () => {
                       <Typography variant="body2" sx={{ fontWeight: 600, color: '#2e7d32', mb: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         💼 Job Board Signals
                       </Typography>
-                      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1 }}>
+                      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 1 }}>
                         <Box sx={{ textAlign: 'center' }}>
                           <Typography variant="h6" sx={{ fontWeight: 700, color: '#388e3c' }}>
                             {leadStats.job_signals_saved || 0}
@@ -1447,10 +1448,18 @@ const ConversationLeadFormV2 = () => {
                         </Box>
                         <Box sx={{ textAlign: 'center' }}>
                           <Typography variant="h6" sx={{ fontWeight: 700, color: '#424242' }}>
+                            {leadStats.job_boards_total_fetched || 0}
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: '#5a5a5a', fontSize: '10px' }}>
+                            Jobs Analyzed
+                          </Typography>
+                        </Box>
+                        <Box sx={{ textAlign: 'center' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 700, color: '#1976d2' }}>
                             {leadStats.job_signals_found || 0}
                           </Typography>
                           <Typography variant="caption" sx={{ color: '#5a5a5a', fontSize: '10px' }}>
-                            Jobs Found
+                            Qualified
                           </Typography>
                         </Box>
                         <Box sx={{ textAlign: 'center' }}>
@@ -1489,10 +1498,10 @@ const ConversationLeadFormV2 = () => {
                     </Box>
                     <Box sx={{ textAlign: 'center' }}>
                       <Typography variant="h4" sx={{ fontWeight: 700, color: '#495057', mb: 0.5 }}>
-                        {leadStats.total_fetched}
+                        {hasJobBoards ? leadStats.job_boards_total_fetched || 0 : leadStats.total_fetched}
                       </Typography>
                       <Typography variant="caption" sx={{ color: '#6c757d', fontSize: '12px' }}>
-                        {hasJobBoards ? 'Jobs Found' : 'Posts Analyzed'}
+                        {hasJobBoards ? 'Jobs Analyzed' : 'Posts Analyzed'}
                       </Typography>
                     </Box>
                     {leadStats.total_qualified > 0 && (

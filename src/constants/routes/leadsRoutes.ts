@@ -26,7 +26,8 @@ type ILeadsApi =
   | 'enrich'
   | 'getUserBusinessDetails'
   | 'generateJobKeywords'
-  | 'validateSearchContext';
+  | 'validateSearchContext'
+  | 'findDecisionMakers';
 
 const rawLeadsApiRoutes: Record<ILeadsApi, string> = {
   create: '/lead/create',
@@ -52,6 +53,7 @@ const rawLeadsApiRoutes: Record<ILeadsApi, string> = {
   getUserBusinessDetails: '/lead/user-business-details',
   generateJobKeywords: '/lead/generate-job-keywords',
   validateSearchContext: '/lead/validate-search-context',
+  findDecisionMakers: '/lead/job-boards/:lead_id/find-decision-makers',
 };
 
 export const leadsApiRoutes: Record<ILeadsApi, string> = RouteHelper.createRoutes(URI_BACKEND_SVC_PATH, rawLeadsApiRoutes);
