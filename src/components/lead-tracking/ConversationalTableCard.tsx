@@ -138,6 +138,7 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
           ...response.responseData,
           jobTitle: lead.job_title,
           companyName: lead.company_name,
+          parentJobSignalId: lead.lead_id, // Link back to job signal for Individual Lead creation
         });
         setIsDecisionMakerModalOpen(true);
       } else {

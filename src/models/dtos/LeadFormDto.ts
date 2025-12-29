@@ -212,6 +212,7 @@ export interface ConversationalSearchFormDto {
   enable_realtime?: boolean;
   monitoring_platforms?: string[];
   platform_configs?: PlatformConfigFormDto[];
+  monitoring_interval_hours?: number; // How often to check for new leads (1, 3, 6, 12, 24 hours)
   // CLG Upgrade fields - Intent Analysis
   category_context?: string; // Industry/category context (e.g., "skincare", "fintech")
   implied_keywords?: string[]; // Indirect signals (e.g., "harmattan", "dry skin", "winter")

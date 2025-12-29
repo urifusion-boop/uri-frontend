@@ -1,9 +1,14 @@
+import { LeadsService as LeadFormService } from '@/api/LeadFormService';
+import { triggerToast } from '@/components/atoms/CustomToast';
+import { useAuth } from '@/providers/AuthProvider';
 import BusinessIcon from '@mui/icons-material/Business';
 import CloseIcon from '@mui/icons-material/Close';
 import EmailIcon from '@mui/icons-material/Email';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import PhoneIcon from '@mui/icons-material/Phone';
-import { Avatar, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Link, Typography } from '@mui/material';
+import { Avatar, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Link, Typography } from '@mui/material';
+import { useState } from 'react';
 
 interface DecisionMaker {
   name?: string;
@@ -21,9 +26,55 @@ interface DecisionMakerModalProps {
   decisionMakers: DecisionMaker[];
   jobTitle?: string;
   companyName?: string;
+  parentJobSignalId?: string; // Link back to job signal lead
 }
 
-const DecisionMakerModal = ({ open, onClose, decisionMakers, jobTitle, companyName }: DecisionMakerModalProps) => {
+const DecisionMakerModal = ({ open, onClose, decisionMakers, jobTitle, companyName, parentJobSignalId }: DecisionMakerModalProps) => {
+  const { userDetails } = useAuth();
+  const [adding, setAdding] = useState<string | null>(null); // Track which decision-maker is being added
+
+  const handleAddToIndividualLeads = async (dm: DecisionMaker) => {
+    if (!dm.name || !dm.email) {
+      triggerToast('error', 'Decision-maker must have name and email');
+      return;
+    }
+
+    if (!userDetails?.userId) {
+      triggerToast('error', 'User ID not found');
+      return;
+    }
+
+    if (!parentJobSignalId) {
+      triggerToast('error', 'Parent job signal ID missing');
+      return;
+    }
+
+    setAdding(dm.id || dm.email);
+    try {
+      const response = await LeadFormService.addDecisionMakerToIndividualLeads({
+        name: dm.name,
+        email: dm.email,
+        phone: dm.phone,
+        linkedin_url: dm.linkedin_url,
+        job_title: dm.title || '',
+        company: dm.organization_name || companyName || '',
+        user_id: userDetails.userId,
+        parent_job_signal_id: parentJobSignalId,
+        notes: `Decision-maker for ${jobTitle || 'job posting'} at ${dm.organization_name || companyName}. Contact regarding hiring needs.`,
+      });
+
+      if (response.status) {
+        triggerToast('success', `${dm.name} added to Individual Leads`);
+      } else {
+        triggerToast('error', response.responseMessage || 'Failed to add decision-maker');
+      }
+    } catch (error: any) {
+      triggerToast('error', error.message || 'Error adding decision-maker');
+    } finally {
+      setAdding(null);
+    }
+  };
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
@@ -120,6 +171,25 @@ const DecisionMakerModal = ({ open, onClose, decisionMakers, jobTitle, companyNa
                           </Link>
                         </Box>
                       )}
+                    </Box>
+
+                    {/* Add to Individual Leads Button - PRD Section 8.4 */}
+                    <Box sx={{ mt: 2 }}>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        startIcon={adding === (dm.id || dm.email) ? <CircularProgress size={16} color="inherit" /> : <PersonAddIcon />}
+                        onClick={() => handleAddToIndividualLeads(dm)}
+                        disabled={adding === (dm.id || dm.email)}
+                        sx={{
+                          backgroundColor: '#CD1B78',
+                          '&:hover': { backgroundColor: '#b31665' },
+                          textTransform: 'none',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {adding === (dm.id || dm.email) ? 'Adding...' : 'Add to Individual Leads'}
+                      </Button>
                     </Box>
                   </Box>
                 </Box>
