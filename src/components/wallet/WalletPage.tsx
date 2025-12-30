@@ -33,6 +33,7 @@ import {
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import { FaPlus, FaTimes, FaWallet } from 'react-icons/fa';
+import { CreditBundleSection } from './CreditBundleSection';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   fontWeight: 'bold',
@@ -471,6 +472,9 @@ export const WalletPage = () => {
           </Box>
         </DialogContent>
       </Dialog>
+
+      {/* Credit Bundles Section */}
+      <CreditBundleSection />
     </Box>
   );
 };
