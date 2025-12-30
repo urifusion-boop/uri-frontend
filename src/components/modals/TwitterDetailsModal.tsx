@@ -60,6 +60,13 @@ const platformConfigs: Record<string, PlatformConfig> = {
     contentLabel: 'Job Description',
     urlLabel: 'Job Posting URL',
   },
+  'job boards': {
+    name: 'Job Board',
+    icon: WorkIcon,
+    color: '#2563eb',
+    contentLabel: 'Job Description',
+    urlLabel: 'Job Posting URL',
+  },
 };
 
 const TwitterDetailsModal = ({ open, onClose, lead }: TwitterDetailsModalProps) => {
