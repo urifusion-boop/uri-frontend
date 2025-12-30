@@ -139,10 +139,24 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
           jobTitle: lead.job_title,
           companyName: lead.company_name,
           parentJobSignalId: lead.lead_id, // Link back to job signal for Individual Lead creation
+          errorMessage: null,
+          suggestion: null,
         });
         setIsDecisionMakerModalOpen(true);
       } else {
-        triggerToast('error', response.responseMessage || 'Failed to find decision-makers');
+        // API returned error - show modal with error message
+        const errorMsg = response.responseMessage || 'Unable to find decision-makers at this time';
+        const suggestion = response.responseData?.suggestion;
+
+        setDecisionMakersData({
+          decision_makers: [],
+          jobTitle: lead.job_title || lead.job_title_field,
+          companyName: lead.company_name || lead.hiring_company,
+          parentJobSignalId: lead.lead_id,
+          errorMessage: errorMsg,
+          suggestion: suggestion,
+        });
+        setIsDecisionMakerModalOpen(true);
       }
     } catch (error: any) {
       triggerToast('error', error.message || 'Error finding decision-makers');
@@ -388,6 +402,9 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
         decisionMakers={decisionMakersData?.decision_makers || []}
         jobTitle={decisionMakersData?.jobTitle}
         companyName={decisionMakersData?.companyName}
+        parentJobSignalId={decisionMakersData?.parentJobSignalId}
+        errorMessage={decisionMakersData?.errorMessage}
+        suggestion={decisionMakersData?.suggestion}
       />
 
       {/* Pagination Controls */}

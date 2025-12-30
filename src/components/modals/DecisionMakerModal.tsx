@@ -27,9 +27,11 @@ interface DecisionMakerModalProps {
   jobTitle?: string;
   companyName?: string;
   parentJobSignalId?: string; // Link back to job signal lead
+  errorMessage?: string | null; // Error message from API
+  suggestion?: string | null; // Helpful suggestion for user
 }
 
-const DecisionMakerModal = ({ open, onClose, decisionMakers, jobTitle, companyName, parentJobSignalId }: DecisionMakerModalProps) => {
+const DecisionMakerModal = ({ open, onClose, decisionMakers, jobTitle, companyName, parentJobSignalId, errorMessage, suggestion }: DecisionMakerModalProps) => {
   const { userDetails } = useAuth();
   const [adding, setAdding] = useState<string | null>(null); // Track which decision-maker is being added
 
@@ -95,7 +97,18 @@ const DecisionMakerModal = ({ open, onClose, decisionMakers, jobTitle, companyNa
       </DialogTitle>
 
       <DialogContent dividers>
-        {decisionMakers.length === 0 ? (
+        {errorMessage ? (
+          <Box sx={{ py: 4, textAlign: 'center' }}>
+            <Typography variant="body1" color="error" sx={{ mb: 2, fontWeight: 500 }}>
+              {errorMessage}
+            </Typography>
+            {suggestion && (
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 2, fontStyle: 'italic' }}>
+                💡 {suggestion}
+              </Typography>
+            )}
+          </Box>
+        ) : decisionMakers.length === 0 ? (
           <Box sx={{ py: 4, textAlign: 'center' }}>
             <Typography variant="body1" color="text.secondary">
               No decision-makers found for this job posting.
