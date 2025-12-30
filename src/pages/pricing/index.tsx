@@ -1,9 +1,8 @@
 import { TrialService } from '@/api/TrialService';
-import Enterprise from '@/components/landing/Enterprise';
 import Footer from '@/components/landing/Footer';
-import Pricing from '@/components/landing/Pricing';
-import PricingTable from '@/components/landing/PricingTable';
 import Navigation from '@/components/Navigation';
+import LeadGenPricingSection from '@/components/pricing/LeadGenPricingSection';
+import UserJourneyCards from '@/components/pricing/UserJourneyCards';
 import TrialActivationModal from '@/components/trial/TrialActivationModal';
 import { useAuth } from '@/providers/AuthProvider';
 import { Box, Button, Typography } from '@mui/material';
@@ -28,7 +27,6 @@ function PricingPage() {
         const response = await TrialService.getTrialStatus(userDetails.userId);
         if (response.status && response.responseData) {
           const { hasUsedFreeTrial, status } = response.responseData;
-          // User is eligible if they haven't used trial and it's not started
           const eligible = !hasUsedFreeTrial && status === 'not_started';
           setIsTrialEligible(eligible);
         }
@@ -46,7 +44,7 @@ function PricingPage() {
     <div className="bg-[#FFFCFE]">
       <Navigation />
       <div className="container pt-20">
-        {/* Trial Banner for Eligible Users - Compact Version */}
+        {/* Trial Banner for Eligible Users */}
         {!checkingEligibility && isTrialEligible && userDetails && (
           <Box
             sx={{
@@ -91,9 +89,37 @@ function PricingPage() {
           </Box>
         )}
 
-        <Pricing />
-        <Enterprise />
-        <PricingTable />
+        {/* Page Header */}
+        <Box textAlign="center" mb={2}>
+          <Typography
+            variant="h3"
+            sx={{
+              fontWeight: 800,
+              color: '#000',
+              fontSize: { xs: '32px', md: '48px' },
+              mb: 1,
+            }}
+          >
+            Simple, <span style={{ color: '#CD1B78' }}>Transparent</span> Pricing
+          </Typography>
+          <Typography
+            sx={{
+              color: '#080808',
+              fontSize: { xs: '16px', md: '20px' },
+              fontWeight: 500,
+              maxWidth: 700,
+              mx: 'auto',
+            }}
+          >
+            Pay only for what you use. No hidden fees, no long-term commitments.
+          </Typography>
+        </Box>
+
+        {/* User Journey Cards - Shows the 4 user types */}
+        <UserJourneyCards />
+
+        {/* Lead Generation Pricing Section */}
+        <LeadGenPricingSection />
       </div>
 
       <Footer />
