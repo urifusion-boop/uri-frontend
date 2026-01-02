@@ -6,21 +6,11 @@
  */
 
 import { UriHttpClient } from '@/configs/http.config';
+import { spamLeadsApiRoutes } from '@/constants/routes/spamLeadsRoutes';
 import { ObjectHelper } from '@/helpers/ObjectHelper';
 import { GetSpamLeadsParams, SpamLeadDto, SpamLeadsResponse, SpamStatsResponse } from '@/models/dtos/SpamLeadDto';
 import { UriResponse } from '@/models/responses/UriResponse';
 import { AxiosResponse } from 'axios';
-
-/**
- * API Routes for Spam Leads (matches backend endpoints)
- */
-const SPAM_API_ROUTES = {
-  getSpamLeads: '/lead-insights/spam-leads',
-  promoteToLead: (spamId: string) => `/lead-insights/spam-leads/${spamId}/promote`,
-  moveToSpam: (leadId: string) => `/lead-insights/leads/${leadId}/move-to-spam`,
-  getStats: '/lead-insights/spam-leads/stats',
-  updateNotes: (spamId: string) => `/lead-insights/spam-leads/${spamId}/notes`,
-} as const;
 
 export class SpamLeadService {
   /**
@@ -29,7 +19,7 @@ export class SpamLeadService {
    */
   static async getSpamLeads(params: GetSpamLeadsParams): Promise<SpamLeadsResponse> {
     const queryString = ObjectHelper.filterMap(params);
-    const response: AxiosResponse<SpamLeadsResponse> = await UriHttpClient.getClient().get(`${SPAM_API_ROUTES.getSpamLeads}?${queryString}`);
+    const response: AxiosResponse<SpamLeadsResponse> = await UriHttpClient.getClient().get(`${spamLeadsApiRoutes.getSpamLeads}?${queryString}`);
 
     // Map spam_id to id for Table component compatibility
     if (response.data.responseData?.spam_leads) {
@@ -47,7 +37,7 @@ export class SpamLeadService {
    * PRD Section 3.5: "Add to Leads" action
    */
   static async promoteSpamToLead(spamId: string): Promise<UriResponse<any>> {
-    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().post(SPAM_API_ROUTES.promoteToLead(spamId));
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().post(spamLeadsApiRoutes.promoteToLead.replace(':spam_id', spamId));
 
     return response.data;
   }
@@ -57,7 +47,7 @@ export class SpamLeadService {
    * PRD Section 3.6: Flag lead as spam
    */
   static async moveLeadToSpam(leadId: string, spamReason: string, spamReasonDetail?: string): Promise<UriResponse<any>> {
-    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().post(SPAM_API_ROUTES.moveToSpam(leadId), {
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().post(spamLeadsApiRoutes.moveToSpam.replace(':lead_id', leadId), {
       spam_reason: spamReason,
       spam_reason_detail: spamReasonDetail,
     });
@@ -72,7 +62,7 @@ export class SpamLeadService {
   static async getSpamStats(userId: string, leadFormSnapshotId?: string): Promise<SpamStatsResponse> {
     const params = leadFormSnapshotId ? `user_id=${userId}&lead_form_snapshot_id=${leadFormSnapshotId}` : `user_id=${userId}`;
 
-    const response: AxiosResponse<SpamStatsResponse> = await UriHttpClient.getClient().get(`${SPAM_API_ROUTES.getStats}?${params}`);
+    const response: AxiosResponse<SpamStatsResponse> = await UriHttpClient.getClient().get(`${spamLeadsApiRoutes.getStats}?${params}`);
 
     return response.data;
   }
@@ -81,7 +71,7 @@ export class SpamLeadService {
    * Update user notes on a spam lead
    */
   static async updateSpamNotes(spamId: string, notes: string): Promise<UriResponse<any>> {
-    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().patch(SPAM_API_ROUTES.updateNotes(spamId), { user_notes: notes });
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().patch(spamLeadsApiRoutes.updateNotes.replace(':spam_id', spamId), { user_notes: notes });
 
     return response.data;
   }
@@ -90,7 +80,7 @@ export class SpamLeadService {
    * Get spam lead by ID (for details modal)
    */
   static async getSpamLeadById(spamId: string): Promise<UriResponse<SpamLeadDto>> {
-    const response: AxiosResponse<UriResponse<SpamLeadDto>> = await UriHttpClient.getClient().get(`${SPAM_API_ROUTES.getSpamLeads}/${spamId}`);
+    const response: AxiosResponse<UriResponse<SpamLeadDto>> = await UriHttpClient.getClient().get(spamLeadsApiRoutes.getSpamLeadById.replace(':spam_id', spamId));
 
     return response.data;
   }
