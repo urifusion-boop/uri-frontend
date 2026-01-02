@@ -31,7 +31,22 @@ export const useSpamLeads = (userId: string, initialParams?: Partial<GetSpamLead
     refetch,
   } = useQuery<SpamLeadsResponse>({
     queryKey: ['spam-leads', params],
-    queryFn: () => SpamLeadService.getSpamLeads(params),
+    queryFn: async () => {
+      console.log('🔍 [useSpamLeads] Fetching spam leads with params:', params);
+      const result = await SpamLeadService.getSpamLeads(params);
+      console.log('✅ [useSpamLeads] Spam leads response:', result);
+      console.log('📊 [useSpamLeads] Response data structure:', {
+        status: result.status,
+        responseCode: result.responseCode,
+        responseMessage: result.responseMessage,
+        hasResponseData: !!result.responseData,
+        responseDataKeys: result.responseData ? Object.keys(result.responseData) : [],
+        dataArray: result.responseData?.data,
+        dataLength: result.responseData?.data?.length,
+        total: result.responseData?.total,
+      });
+      return result;
+    },
     enabled: !!userId,
     staleTime: 30000, // 30 seconds
   });
@@ -39,7 +54,12 @@ export const useSpamLeads = (userId: string, initialParams?: Partial<GetSpamLead
   // Fetch spam stats
   const { data: statsData, refetch: refetchStats } = useQuery<SpamStatsResponse>({
     queryKey: ['spam-stats', userId, params.lead_form_snapshot_id],
-    queryFn: () => SpamLeadService.getSpamStats(userId, params.lead_form_snapshot_id),
+    queryFn: async () => {
+      console.log('📈 [useSpamLeads] Fetching spam stats for user:', userId, 'snapshot:', params.lead_form_snapshot_id);
+      const result = await SpamLeadService.getSpamStats(userId, params.lead_form_snapshot_id);
+      console.log('✅ [useSpamLeads] Spam stats response:', result);
+      return result;
+    },
     enabled: !!userId,
     staleTime: 60000, // 1 minute
   });
@@ -127,13 +147,24 @@ export const useSpamLeads = (userId: string, initialParams?: Partial<GetSpamLead
     updateNotesMutation.mutate({ spamId, notes });
   };
 
+  const extractedSpamLeads = spamData?.responseData?.data || [];
+  const extractedTotal = spamData?.responseData?.total || 0;
+  const extractedStats = statsData?.responseData;
+
+  console.log('🎯 [useSpamLeads] Returning data:', {
+    spamLeadsCount: extractedSpamLeads.length,
+    total: extractedTotal,
+    stats: extractedStats,
+    firstSpamLead: extractedSpamLeads[0],
+  });
+
   return {
     // Data
-    spamLeads: spamData?.responseData?.spam_leads || [],
-    total: spamData?.responseData?.total || 0,
+    spamLeads: extractedSpamLeads,
+    total: extractedTotal,
     page: params.page || 1,
     pageSize: params.page_size || 50,
-    stats: statsData?.responseData,
+    stats: extractedStats,
 
     // Loading states
     isLoading,

@@ -22,6 +22,8 @@ const UnqualifiedTab = ({ userId, leadFormSnapshotId }: UnqualifiedTabProps) => 
   const [reasonFilter, setReasonFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
+  console.log('🚀 [UnqualifiedTab] Rendering with userId:', userId, 'leadFormSnapshotId:', leadFormSnapshotId);
+
   const { spamLeads, total, page, pageSize, isLoading, setPage, setPageSize, promoteToLead, updateNotes, isPromoting, stats } = useSpamLeads(userId, {
     lead_form_snapshot_id: leadFormSnapshotId,
     lead_source: sourceFilter !== 'all' ? sourceFilter : undefined,
@@ -35,11 +37,26 @@ const UnqualifiedTab = ({ userId, leadFormSnapshotId }: UnqualifiedTabProps) => 
   // Calculate stats from spam leads
   const totalSpam = stats?.total_spam || total || 0;
   const bySource = stats?.by_source || {};
-  const byReason = stats?.by_reason || {};
+  const byReason = stats?.by_spam_reason || {};
 
   // Get unique sources and reasons from stats
   const sources = Object.keys(bySource);
   const reasons = Object.keys(byReason);
+
+  console.log('📋 [UnqualifiedTab] Component state:', {
+    spamLeadsCount: spamLeads.length,
+    filteredCount: filteredSpamLeads.length,
+    total,
+    totalSpam,
+    isLoading,
+    sourceFilter,
+    reasonFilter,
+    searchQuery,
+    bySource,
+    byReason,
+    sources,
+    reasons,
+  });
 
   return (
     <Box className="bg-white h-full p-4">

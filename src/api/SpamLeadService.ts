@@ -22,8 +22,8 @@ export class SpamLeadService {
     const response: AxiosResponse<SpamLeadsResponse> = await UriHttpClient.getClient().get(`${spamLeadsApiRoutes.getSpamLeads}?${queryString}`);
 
     // Map spam_id to id for Table component compatibility
-    if (response.data.responseData?.spam_leads) {
-      response.data.responseData.spam_leads = response.data.responseData.spam_leads.map((spam) => ({
+    if (response.data.responseData?.data) {
+      response.data.responseData.data = response.data.responseData.data.map((spam) => ({
         ...spam,
         id: spam.spam_id,
       }));

@@ -91,10 +91,10 @@ export interface SpamLeadsResponse {
   responseCode: number;
   responseMessage: string;
   responseData: {
-    spam_leads: SpamLeadDto[];
+    data: SpamLeadDto[];
     total: number;
     page: number;
-    page_size: number;
+    pageSize: number;
   };
 }
 
@@ -108,9 +108,11 @@ export interface SpamStatsResponse {
   responseData: {
     total_spam: number;
     by_source: Record<string, number>;
-    by_reason: Record<string, number>;
+    by_spam_reason: Record<string, number>;
     by_filter_stage: Record<string, number>;
-    recent_spam_count: number; // Last 7 days
+    promoted_count: number;
+    reviewed_count: number;
+    unreviewed_count: number;
   };
 }
 
