@@ -38,6 +38,10 @@ export interface SpamLeadDto {
   relevance_score?: number;
   final_score?: number;
   sentiment?: string;
+  intent_reasoning?: string; // AI explanation for why intent failed
+
+  // Job Board AI reasoning
+  job_board_reasoning?: string; // AI explanation for job board analysis
 
   // User Actions (PRD 3.5, 3.6)
   user_reviewed: boolean;

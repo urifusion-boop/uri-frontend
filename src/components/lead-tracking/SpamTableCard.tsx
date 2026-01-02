@@ -10,8 +10,12 @@ import { accountIcons } from '@/constants/accountIcons';
 import { DateHelper } from '@/helpers/DateHelper';
 import { useSpamReasonColor } from '@/hooks/spam/useSpamLeads.hook';
 import { SpamLeadDto } from '@/models/dtos/SpamLeadDto';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import { Box, Button, Chip, Pagination, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
+import ConfirmBulkDeleteModal from '../modals/ConfirmBulkDeleteModal';
+import ConfirmPromoteModal from '../modals/ConfirmPromoteModal';
 import SpamDetailsModal from '../modals/SpamDetailsModal';
 
 interface SpamTableCardProps {
@@ -22,14 +26,21 @@ interface SpamTableCardProps {
   setPage: (value: number) => void;
   setPageSize: (value: number) => void;
   onPromote: (spamId: string) => void;
+  onDelete?: (spamId: string) => void;
+  onBulkDelete?: (spamIds: string[]) => void;
   onUpdateNotes?: (spamId: string, notes: string) => void;
   isPromoting?: boolean;
+  isDeleting?: boolean;
 }
 
-const SpamTableCard = ({ data, total, page, pageSize, setPage, setPageSize, onPromote, onUpdateNotes, isPromoting = false }: SpamTableCardProps) => {
+const SpamTableCard = ({ data, total, page, pageSize, setPage, setPageSize, onPromote, onDelete, onBulkDelete, onUpdateNotes, isPromoting = false, isDeleting = false }: SpamTableCardProps) => {
   const { getReasonColor } = useSpamReasonColor();
   const [selectedSpam, setSelectedSpam] = useState<SpamLeadDto | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [spamToPromote, setSpamToPromote] = useState<SpamLeadDto | null>(null);
+  const [showPromoteConfirm, setShowPromoteConfirm] = useState(false);
 
   const handleRowClick = (spam: SpamLeadDto) => {
     setSelectedSpam(spam);
@@ -42,8 +53,33 @@ const SpamTableCard = ({ data, total, page, pageSize, setPage, setPageSize, onPr
   };
 
   const handlePromoteClick = (e: React.MouseEvent, spam: SpamLeadDto) => {
-    e.stopPropagation(); // Prevent row click
-    onPromote(spam.spam_id);
+    e.stopPropagation();
+    setSpamToPromote(spam);
+    setShowPromoteConfirm(true);
+  };
+
+  const handleConfirmPromote = () => {
+    if (spamToPromote) {
+      onPromote(spamToPromote.spam_id);
+      setShowPromoteConfirm(false);
+      setSpamToPromote(null);
+    }
+  };
+
+  const handleBulkDeleteClick = () => {
+    setShowBulkDeleteConfirm(true);
+  };
+
+  const handleConfirmBulkDelete = () => {
+    if (onBulkDelete && selectedIds.length > 0) {
+      onBulkDelete(selectedIds);
+      setSelectedIds([]);
+      setShowBulkDeleteConfirm(false);
+    }
+  };
+
+  const handleTableSelect = (selectedRows: SpamLeadDto[]) => {
+    setSelectedIds(selectedRows.map((spam) => spam.spam_id));
   };
 
   const columns: TableColumn<SpamLeadDto>[] = [
@@ -127,31 +163,58 @@ const SpamTableCard = ({ data, total, page, pageSize, setPage, setPageSize, onPr
       ),
     },
     {
-      key: 'spam_id' as keyof SpamLeadDto,
+      key: 'actions' as keyof SpamLeadDto,
       title: 'Actions',
-      render: (_value, spam) => (
-        <Box display="flex" gap={1} onClick={(e) => e.stopPropagation()}>
-          <Button size="small" variant="outlined" onClick={() => handleRowClick(spam)} sx={{ textTransform: 'none', fontSize: '12px', minWidth: 60 }}>
-            View
-          </Button>
-          <Button
-            size="small"
-            variant="contained"
-            onClick={(e) => handlePromoteClick(e, spam)}
-            sx={{
-              backgroundColor: '#10B981',
-              textTransform: 'none',
-              fontSize: '12px',
-              minWidth: 80,
-              '&:hover': {
-                backgroundColor: '#059669',
-              },
-            }}
-          >
-            Add
-          </Button>
-        </Box>
-      ),
+      render: (_value, spam) => {
+        const isPromoted = spam.promoted_to_leads === true;
+        return (
+          <Box display="flex" gap={1} alignItems="center" onClick={(e) => e.stopPropagation()}>
+            <Button size="small" variant="outlined" onClick={() => handleRowClick(spam)} sx={{ textTransform: 'none', fontSize: '12px', minWidth: 60 }}>
+              View
+            </Button>
+            {isPromoted ? (
+              <Tooltip title="Already promoted to leads">
+                <Button
+                  size="small"
+                  variant="contained"
+                  disabled
+                  startIcon={<CheckCircleIcon sx={{ fontSize: 16 }} />}
+                  sx={{
+                    backgroundColor: '#10B981',
+                    textTransform: 'none',
+                    fontSize: '12px',
+                    minWidth: 95,
+                    '&.Mui-disabled': {
+                      backgroundColor: '#10B981',
+                      color: '#fff',
+                      opacity: 0.9,
+                    },
+                  }}
+                >
+                  Promoted
+                </Button>
+              </Tooltip>
+            ) : (
+              <Button
+                size="small"
+                variant="contained"
+                onClick={(e) => handlePromoteClick(e, spam)}
+                sx={{
+                  backgroundColor: '#10B981',
+                  textTransform: 'none',
+                  fontSize: '12px',
+                  minWidth: 80,
+                  '&:hover': {
+                    backgroundColor: '#059669',
+                  },
+                }}
+              >
+                Add
+              </Button>
+            )}
+          </Box>
+        );
+      },
     },
   ];
 
@@ -185,7 +248,43 @@ const SpamTableCard = ({ data, total, page, pageSize, setPage, setPageSize, onPr
   return (
     <>
       <Box>
-        <Table columns={columns} data={data} onRowClick={handleRowClick} />
+        {/* Bulk Actions Bar */}
+        {selectedIds.length > 0 && onBulkDelete && (
+          <Box
+            sx={{
+              backgroundColor: '#FEF2F2',
+              border: '1px solid #FCA5A5',
+              borderRadius: '8px',
+              p: 2,
+              mb: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Typography fontSize="14px" fontWeight={600} color="#374151">
+              {selectedIds.length} {selectedIds.length === 1 ? 'item' : 'items'} selected
+            </Typography>
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<DeleteSweepIcon />}
+              onClick={handleBulkDeleteClick}
+              disabled={isDeleting}
+              sx={{
+                backgroundColor: '#EF4444',
+                textTransform: 'none',
+                '&:hover': {
+                  backgroundColor: '#DC2626',
+                },
+              }}
+            >
+              {isDeleting ? 'Deleting...' : `Delete ${selectedIds.length} ${selectedIds.length === 1 ? 'Item' : 'Items'}`}
+            </Button>
+          </Box>
+        )}
+
+        <Table columns={columns} data={data} onRowClick={handleRowClick} onSelect={handleTableSelect} />
 
         {/* Pagination */}
         {totalPages > 1 && (
@@ -199,7 +298,28 @@ const SpamTableCard = ({ data, total, page, pageSize, setPage, setPageSize, onPr
       </Box>
 
       {/* Details Modal */}
-      <SpamDetailsModal open={isModalOpen} onClose={handleCloseModal} spam={selectedSpam} onPromote={onPromote} onUpdateNotes={onUpdateNotes} isPromoting={isPromoting} />
+      <SpamDetailsModal
+        open={isModalOpen}
+        onClose={handleCloseModal}
+        spam={selectedSpam}
+        onPromote={onPromote}
+        onDelete={onDelete}
+        onUpdateNotes={onUpdateNotes}
+        isPromoting={isPromoting}
+        isDeleting={isDeleting}
+      />
+
+      {/* Promote Confirmation from Table */}
+      <ConfirmPromoteModal
+        open={showPromoteConfirm}
+        onClose={() => setShowPromoteConfirm(false)}
+        onConfirm={handleConfirmPromote}
+        spamTitle={spamToPromote?.display_title}
+        isProcessing={isPromoting}
+      />
+
+      {/* Bulk Delete Confirmation */}
+      <ConfirmBulkDeleteModal open={showBulkDeleteConfirm} onClose={() => setShowBulkDeleteConfirm(false)} onConfirm={handleConfirmBulkDelete} count={selectedIds.length} isProcessing={isDeleting} />
     </>
   );
 };

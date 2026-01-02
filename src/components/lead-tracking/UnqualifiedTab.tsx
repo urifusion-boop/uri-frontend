@@ -7,7 +7,10 @@
 
 import { useSpamLeads } from '@/hooks/spam/useSpamLeads.hook';
 import { SpamReasonEnum } from '@/models/dtos/SpamLeadDto';
+import BlockIcon from '@mui/icons-material/Block';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import SourceIcon from '@mui/icons-material/Source';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { Box, Grid, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 import SpamTableCard from './SpamTableCard';
@@ -24,7 +27,7 @@ const UnqualifiedTab = ({ userId, leadFormSnapshotId }: UnqualifiedTabProps) => 
 
   console.log('🚀 [UnqualifiedTab] Rendering with userId:', userId, 'leadFormSnapshotId:', leadFormSnapshotId);
 
-  const { spamLeads, total, page, pageSize, isLoading, setPage, setPageSize, promoteToLead, updateNotes, isPromoting, stats } = useSpamLeads(userId, {
+  const { spamLeads, total, page, pageSize, isLoading, setPage, setPageSize, promoteToLead, updateNotes, deleteSpamLead, bulkDeleteSpamLeads, isPromoting, isDeleting, stats } = useSpamLeads(userId, {
     lead_form_snapshot_id: leadFormSnapshotId,
     lead_source: sourceFilter !== 'all' ? sourceFilter : undefined,
     spam_reason: reasonFilter !== 'all' ? reasonFilter : undefined,
@@ -67,19 +70,34 @@ const UnqualifiedTab = ({ userId, leadFormSnapshotId }: UnqualifiedTabProps) => 
             sx={{
               backgroundColor: '#fff',
               borderRadius: '12px',
-              p: 2.5,
+              p: 3,
               border: '1px solid #E5E7EB',
               boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
               flex: 1,
             }}
           >
-            <Typography fontSize="13px" color="#6C727F" fontWeight={500} mb={0.5}>
-              Total Unqualified
-            </Typography>
-            <Typography fontSize="28px" fontWeight={700} color="#374151">
+            <Box display="flex" alignItems="center" gap={1} mb={1.5}>
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '10px',
+                  backgroundColor: '#FFF0F7',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <BlockIcon sx={{ color: '#C91A79', fontSize: 22 }} />
+              </Box>
+              <Typography fontSize="14px" color="#6C727F" fontWeight={600}>
+                Total Unqualified
+              </Typography>
+            </Box>
+            <Typography fontSize="32px" fontWeight={700} color="#374151" lineHeight={1.2}>
               {totalSpam.toLocaleString()}
             </Typography>
-            <Typography fontSize="11px" color="#9CA3AF" mt={0.5}>
+            <Typography fontSize="12px" color="#9CA3AF" mt={0.5}>
               Filtered leads analyzed
             </Typography>
           </Box>
@@ -90,28 +108,43 @@ const UnqualifiedTab = ({ userId, leadFormSnapshotId }: UnqualifiedTabProps) => 
             sx={{
               backgroundColor: '#fff',
               borderRadius: '12px',
-              p: 2.5,
+              p: 3,
               border: '1px solid #E5E7EB',
               boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
               flex: 1,
             }}
           >
-            <Typography fontSize="13px" color="#6C727F" fontWeight={500} mb={1}>
-              By Source
-            </Typography>
+            <Box display="flex" alignItems="center" gap={1} mb={2}>
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '10px',
+                  backgroundColor: '#F0F9FF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <SourceIcon sx={{ color: '#0EA5E9', fontSize: 22 }} />
+              </Box>
+              <Typography fontSize="14px" color="#6C727F" fontWeight={600}>
+                By Source
+              </Typography>
+            </Box>
             {sources.length > 0 ? (
-              sources.slice(0, 3).map((source) => (
-                <Box key={source} display="flex" justifyContent="space-between" mb={0.5}>
-                  <Typography fontSize="12px" color="#374151">
+              sources.slice(0, 3).map((source, index) => (
+                <Box key={source} display="flex" justifyContent="space-between" alignItems="center" mb={index < 2 ? 1 : 0}>
+                  <Typography fontSize="13px" color="#374151" fontWeight={500}>
                     {source}
                   </Typography>
-                  <Typography fontSize="12px" fontWeight={600} color="#6C727F">
+                  <Typography fontSize="13px" fontWeight={700} color="#C91A79">
                     {bySource[source]}
                   </Typography>
                 </Box>
               ))
             ) : (
-              <Typography fontSize="12px" color="#9CA3AF">
+              <Typography fontSize="13px" color="#9CA3AF">
                 No data
               </Typography>
             )}
@@ -123,28 +156,43 @@ const UnqualifiedTab = ({ userId, leadFormSnapshotId }: UnqualifiedTabProps) => 
             sx={{
               backgroundColor: '#fff',
               borderRadius: '12px',
-              p: 2.5,
+              p: 3,
               border: '1px solid #E5E7EB',
               boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
               flex: 1,
             }}
           >
-            <Typography fontSize="13px" color="#6C727F" fontWeight={500} mb={1}>
-              Top Filter Reasons
-            </Typography>
+            <Box display="flex" alignItems="center" gap={1} mb={2}>
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '10px',
+                  backgroundColor: '#FEF3C7',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <WarningAmberIcon sx={{ color: '#F59E0B', fontSize: 22 }} />
+              </Box>
+              <Typography fontSize="14px" color="#6C727F" fontWeight={600}>
+                Top Filter Reasons
+              </Typography>
+            </Box>
             {reasons.length > 0 ? (
-              reasons.slice(0, 3).map((reason) => (
-                <Box key={reason} display="flex" justifyContent="space-between" mb={0.5}>
-                  <Typography fontSize="12px" color="#374151" noWrap sx={{ maxWidth: 180 }}>
+              reasons.slice(0, 3).map((reason, index) => (
+                <Box key={reason} display="flex" justifyContent="space-between" alignItems="center" mb={index < 2 ? 1 : 0}>
+                  <Typography fontSize="13px" color="#374151" fontWeight={500} noWrap sx={{ maxWidth: 200 }}>
                     {reason}
                   </Typography>
-                  <Typography fontSize="12px" fontWeight={600} color="#6C727F">
+                  <Typography fontSize="13px" fontWeight={700} color="#C91A79" sx={{ ml: 1 }}>
                     {byReason[reason]}
                   </Typography>
                 </Box>
               ))
             ) : (
-              <Typography fontSize="12px" color="#9CA3AF">
+              <Typography fontSize="13px" color="#9CA3AF">
                 No data
               </Typography>
             )}
@@ -267,8 +315,11 @@ const UnqualifiedTab = ({ userId, leadFormSnapshotId }: UnqualifiedTabProps) => 
             setPage={setPage}
             setPageSize={setPageSize}
             onPromote={promoteToLead}
+            onDelete={deleteSpamLead}
+            onBulkDelete={bulkDeleteSpamLeads}
             onUpdateNotes={updateNotes}
             isPromoting={isPromoting}
+            isDeleting={isDeleting}
           />
         )}
       </Box>

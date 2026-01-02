@@ -7,27 +7,37 @@
 
 import { useSpamReasonColor } from '@/hooks/spam/useSpamLeads.hook';
 import { SpamLeadDto } from '@/models/dtos/SpamLeadDto';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, LinearProgress, Link, TextField, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
+import ConfirmDeleteModal from './ConfirmDeleteModal';
+import ConfirmPromoteModal from './ConfirmPromoteModal';
 
 interface SpamDetailsModalProps {
   open: boolean;
   onClose: () => void;
   spam: SpamLeadDto | null;
   onPromote: (spamId: string) => void;
+  onDelete?: (spamId: string) => void;
   onUpdateNotes?: (spamId: string, notes: string) => void;
   isPromoting?: boolean;
+  isDeleting?: boolean;
 }
 
-const SpamDetailsModal = ({ open, onClose, spam, onPromote, onUpdateNotes, isPromoting = false }: SpamDetailsModalProps) => {
+const SpamDetailsModal = ({ open, onClose, spam, onPromote, onDelete, onUpdateNotes, isPromoting = false, isDeleting = false }: SpamDetailsModalProps) => {
   const { getReasonColor } = useSpamReasonColor();
   const [notes, setNotes] = useState(spam?.user_notes || '');
+  const [showConfirmPromote, setShowConfirmPromote] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
   if (!spam) return null;
+
+  const isPromoted = spam.promoted_to_leads === true;
 
   const handleCopyLink = () => {
     if (spam.display_link) {
@@ -35,9 +45,26 @@ const SpamDetailsModal = ({ open, onClose, spam, onPromote, onUpdateNotes, isPro
     }
   };
 
-  const handlePromote = () => {
+  const handlePromoteClick = () => {
+    setShowConfirmPromote(true);
+  };
+
+  const handleConfirmPromote = () => {
     onPromote(spam.spam_id);
+    setShowConfirmPromote(false);
     onClose();
+  };
+
+  const handleDeleteClick = () => {
+    setShowConfirmDelete(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (onDelete) {
+      onDelete(spam.spam_id);
+      setShowConfirmDelete(false);
+      onClose();
+    }
   };
 
   const handleSaveNotes = () => {
@@ -142,8 +169,8 @@ const SpamDetailsModal = ({ open, onClose, spam, onPromote, onUpdateNotes, isPro
               Why This Was Filtered
             </Typography>
           </Box>
-          <Typography fontSize="13px" color="#856404">
-            {spam.spam_reason_detail || spam.spam_reason}
+          <Typography fontSize="13px" color="#856404" sx={{ whiteSpace: 'pre-wrap' }}>
+            {spam.intent_reasoning || spam.job_board_reasoning || spam.spam_reason_detail || spam.spam_reason}
           </Typography>
         </Box>
 
@@ -229,32 +256,80 @@ const SpamDetailsModal = ({ open, onClose, spam, onPromote, onUpdateNotes, isPro
         {/* Search Context */}
         <Box mt={2}>
           <Typography fontSize="12px" color="#9CA3AF">
-            Search Keyword: <strong>{spam.search_keyword}</strong> • {new Date(spam.created_at).toLocaleString()}
+            Search Keyword: <strong>{spam.search_keyword}</strong> • {spam.created_at ? new Date(spam.created_at).toLocaleString() : ''}
           </Typography>
         </Box>
       </DialogContent>
 
       <Divider />
 
-      <DialogActions sx={{ p: 2.5 }}>
-        <Button onClick={onClose} variant="outlined" sx={{ textTransform: 'none' }}>
-          Close
-        </Button>
-        <Button
-          onClick={handlePromote}
-          variant="contained"
-          disabled={isPromoting}
-          sx={{
-            backgroundColor: '#10B981',
-            textTransform: 'none',
-            '&:hover': {
-              backgroundColor: '#059669',
-            },
-          }}
-        >
-          {isPromoting ? 'Promoting...' : 'Add to Leads'}
-        </Button>
+      <DialogActions sx={{ p: 2.5, justifyContent: 'space-between' }}>
+        <Box display="flex" gap={1}>
+          {onDelete && (
+            <Button
+              onClick={handleDeleteClick}
+              variant="outlined"
+              disabled={isDeleting}
+              startIcon={<DeleteOutlineIcon />}
+              sx={{
+                textTransform: 'none',
+                color: '#EF4444',
+                borderColor: '#EF4444',
+                '&:hover': {
+                  borderColor: '#DC2626',
+                  backgroundColor: '#FEF2F2',
+                },
+              }}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </Button>
+          )}
+        </Box>
+
+        <Box display="flex" gap={1}>
+          <Button onClick={onClose} variant="outlined" sx={{ textTransform: 'none' }}>
+            Close
+          </Button>
+          {isPromoted ? (
+            <Button
+              variant="contained"
+              disabled
+              startIcon={<CheckCircleIcon />}
+              sx={{
+                backgroundColor: '#10B981',
+                textTransform: 'none',
+                '&.Mui-disabled': {
+                  backgroundColor: '#10B981',
+                  color: '#fff',
+                  opacity: 0.9,
+                },
+              }}
+            >
+              Promoted
+            </Button>
+          ) : (
+            <Button
+              onClick={handlePromoteClick}
+              variant="contained"
+              disabled={isPromoting}
+              sx={{
+                backgroundColor: '#10B981',
+                textTransform: 'none',
+                '&:hover': {
+                  backgroundColor: '#059669',
+                },
+              }}
+            >
+              {isPromoting ? 'Adding...' : 'Add to Leads'}
+            </Button>
+          )}
+        </Box>
       </DialogActions>
+
+      {/* Confirmation Modals */}
+      <ConfirmPromoteModal open={showConfirmPromote} onClose={() => setShowConfirmPromote(false)} onConfirm={handleConfirmPromote} spamTitle={spam.display_title} isProcessing={isPromoting} />
+
+      <ConfirmDeleteModal open={showConfirmDelete} onClose={() => setShowConfirmDelete(false)} onConfirm={handleConfirmDelete} spamTitle={spam.display_title} isProcessing={isDeleting} />
     </Dialog>
   );
 };

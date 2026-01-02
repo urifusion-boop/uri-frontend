@@ -114,6 +114,41 @@ export const useSpamLeads = (userId: string, initialParams?: Partial<GetSpamLead
     },
   });
 
+  // Delete spam lead mutation
+  const deleteSpamMutation = useMutation({
+    mutationFn: (spamId: string) => SpamLeadService.deleteSpamLead(spamId),
+    onSuccess: (response) => {
+      if (response.status) {
+        triggerToast('success', 'Spam lead deleted successfully');
+        queryClient.invalidateQueries({ queryKey: ['spam-leads'] });
+        queryClient.invalidateQueries({ queryKey: ['spam-stats'] });
+      } else {
+        triggerToast('error', response.responseMessage || 'Failed to delete spam lead');
+      }
+    },
+    onError: (error: any) => {
+      triggerToast('error', error?.message || 'Error deleting spam lead');
+    },
+  });
+
+  // Bulk delete spam leads mutation
+  const bulkDeleteSpamMutation = useMutation({
+    mutationFn: (spamIds: string[]) => SpamLeadService.bulkDeleteSpamLeads(spamIds),
+    onSuccess: (response) => {
+      if (response.status) {
+        const count = response.responseData?.deleted_count || 0;
+        triggerToast('success', `Successfully deleted ${count} spam lead${count !== 1 ? 's' : ''}`);
+        queryClient.invalidateQueries({ queryKey: ['spam-leads'] });
+        queryClient.invalidateQueries({ queryKey: ['spam-stats'] });
+      } else {
+        triggerToast('error', response.responseMessage || 'Failed to delete spam leads');
+      }
+    },
+    onError: (error: any) => {
+      triggerToast('error', error?.message || 'Error deleting spam leads');
+    },
+  });
+
   // Helper functions
   const updateParams = (newParams: Partial<GetSpamLeadsParams>) => {
     setParams((prev) => ({ ...prev, ...newParams }));
@@ -147,6 +182,14 @@ export const useSpamLeads = (userId: string, initialParams?: Partial<GetSpamLead
     updateNotesMutation.mutate({ spamId, notes });
   };
 
+  const deleteSpamLead = (spamId: string) => {
+    deleteSpamMutation.mutate(spamId);
+  };
+
+  const bulkDeleteSpamLeads = (spamIds: string[]) => {
+    bulkDeleteSpamMutation.mutate(spamIds);
+  };
+
   const extractedSpamLeads = spamData?.responseData?.data || [];
   const extractedTotal = spamData?.responseData?.total || 0;
   const extractedStats = statsData?.responseData;
@@ -171,6 +214,7 @@ export const useSpamLeads = (userId: string, initialParams?: Partial<GetSpamLead
     isPromoting: promoteMutation.isPending,
     isMovingToSpam: moveToSpamMutation.isPending,
     isUpdatingNotes: updateNotesMutation.isPending,
+    isDeleting: deleteSpamMutation.isPending || bulkDeleteSpamMutation.isPending,
 
     // Error
     error,
@@ -179,6 +223,8 @@ export const useSpamLeads = (userId: string, initialParams?: Partial<GetSpamLead
     promoteToLead,
     moveLeadToSpam,
     updateNotes,
+    deleteSpamLead,
+    bulkDeleteSpamLeads,
     refetch,
     refetchStats,
 

@@ -84,4 +84,24 @@ export class SpamLeadService {
 
     return response.data;
   }
+
+  /**
+   * Delete a single spam lead
+   * Enhanced UX: Allow users to remove individual spam items
+   */
+  static async deleteSpamLead(spamId: string): Promise<UriResponse<any>> {
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().delete(spamLeadsApiRoutes.deleteSpamLead.replace(':spam_id', spamId));
+
+    return response.data;
+  }
+
+  /**
+   * Bulk delete spam leads
+   * Enhanced UX: Allow users to remove multiple spam items at once
+   */
+  static async bulkDeleteSpamLeads(spamIds: string[]): Promise<UriResponse<any>> {
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().post(spamLeadsApiRoutes.bulkDeleteSpamLeads, { spam_ids: spamIds });
+
+    return response.data;
+  }
 }
