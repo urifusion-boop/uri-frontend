@@ -118,6 +118,7 @@
     "@types/react-dom": "^18",
     "@types/react-draft-wysiwyg": "^1.13.8",
     "@types/react-modal-video": "^1.2.3",
+    "@types/uuid": "^10.0.0",
     "@types/wordcloud": "^1.2.2",
     "autoprefixer": "^10",
     "eslint": "^8.57.1",
