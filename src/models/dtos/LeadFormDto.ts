@@ -115,6 +115,7 @@ export class IndividualLeadFormDto {
   add_to_history?: boolean;
   auto_generate?: boolean;
   per_page?: number;
+  lead_generation_goal?: string; // AI Next Steps - User's business goal
 }
 
 export class OrganizationLeadFormDto {
@@ -131,6 +132,7 @@ export class OrganizationLeadFormDto {
   add_to_history?: boolean;
   auto_generate?: boolean;
   per_page?: number;
+  lead_generation_goal?: string; // AI Next Steps - User's business goal
 }
 
 export interface LeadFormResponseDto {
@@ -187,6 +189,7 @@ export interface BusinessSearchFormDto {
   ai_response_guide: string;
   keywords: string[];
   competitors: string[];
+  lead_generation_goal?: string; // AI Next Steps - User's business goal
 }
 export interface ScoringThresholdsDto {
   intent_score_min: number;
@@ -220,6 +223,8 @@ export interface ConversationalSearchFormDto {
   // Job Boards fields (PRD Section 5)
   solution_context?: string; // What problem does your product/service solve? (for job board analysis)
   job_keywords?: string[]; // AI-generated job role keywords for job board scanning
+  // AI Next Steps
+  lead_generation_goal?: string; // User's business goal/reason for generating leads
 }
 
 export interface PlatformConfigFormDto {

@@ -188,6 +188,66 @@ export const useLeadFormHooks = () => {
     },
   });
 
+  // Multi-form hooks
+  const useGetFormsByUserAndType = (userId: string, formType: string) => {
+    return useQuery({
+      queryKey: ['lead-forms-by-type', userId, formType],
+      queryFn: async () => {
+        const res = await LeadFormService.getFormsByUserAndType(userId, formType);
+        if (!res.status) {
+          triggerToast('error', res.responseMessage || 'Failed to fetch forms');
+        }
+        return res.responseData || [];
+      },
+      enabled: !!userId && !!formType,
+    });
+  };
+
+  const setDefaultForm = useMutation({
+    mutationFn: async ({ userId, formType, formId }: { userId: string; formType: string; formId: string }) => {
+      const res = await LeadFormService.setDefaultForm(userId, formType, formId);
+      if (!res.status) {
+        throw new Error(res.responseMessage || 'Failed to set default form');
+      }
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lead-forms'] });
+      queryClient.invalidateQueries({ queryKey: ['lead-forms-by-type'] });
+      triggerToast('success', 'Default form updated successfully');
+    },
+  });
+
+  const togglePause = useMutation({
+    mutationFn: async ({ formId, disabled }: { formId: string; disabled: boolean }) => {
+      const res = await LeadFormService.togglePause(formId, disabled);
+      if (!res.status) {
+        throw new Error(res.responseMessage || 'Failed to toggle pause');
+      }
+      return res;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['lead-forms'] });
+      queryClient.invalidateQueries({ queryKey: ['lead-forms-by-type'] });
+      triggerToast('success', variables.disabled ? 'Form paused' : 'Form resumed');
+    },
+  });
+
+  const toggleAutoGenerate = useMutation({
+    mutationFn: async ({ formId, autoGenerate }: { formId: string; autoGenerate: boolean }) => {
+      const res = await LeadFormService.toggleAutoGenerate(formId, autoGenerate);
+      if (!res.status) {
+        throw new Error(res.responseMessage || 'Failed to toggle auto-generate');
+      }
+      return res;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['lead-forms'] });
+      queryClient.invalidateQueries({ queryKey: ['lead-forms-by-type'] });
+      triggerToast('success', variables.autoGenerate ? 'Auto-generate enabled' : 'Auto-generate disabled');
+    },
+  });
+
   return {
     createIndividualLeadForm,
     createOrganizationLeadForm,
@@ -205,5 +265,10 @@ export const useLeadFormHooks = () => {
     deleteLeadForm,
     autoPopulateLeadForm,
     isAutoPopulating: autoPopulateLeadForm.isLoading,
+    // Multi-form exports
+    useGetFormsByUserAndType,
+    setDefaultForm,
+    togglePause,
+    toggleAutoGenerate,
   };
 };

@@ -290,4 +290,36 @@ export class LeadsService {
     const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post(leadsApiRoutes.validateSearchContext, data);
     return response.data;
   }
+
+  /**
+   * Get all forms for a user by form type (for multi-form support)
+   */
+  static async getFormsByUserAndType(userId: string, formType: string): Promise<UriResponse<LeadFormDto[]>> {
+    const response: Awaited<AxiosResponse<UriResponse<LeadFormDto[]>>> = await UriHttpClient.getClient().get(`${leadFormApiRoutes.getByUserAndType}?user_id=${userId}&form_type=${formType}`);
+    return response.data;
+  }
+
+  /**
+   * Set a form as the default for a user and form type
+   */
+  static async setDefaultForm(userId: string, formType: string, formId: string): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post(`${leadFormApiRoutes.setDefault}?user_id=${userId}&form_type=${formType}&lead_form_id=${formId}`);
+    return response.data;
+  }
+
+  /**
+   * Toggle pause/resume for a lead form
+   */
+  static async togglePause(formId: string, disabled: boolean): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().patch(`${leadFormApiRoutes.togglePause}/${formId}?disabled=${disabled}`);
+    return response.data;
+  }
+
+  /**
+   * Toggle auto-generate for a lead form
+   */
+  static async toggleAutoGenerate(formId: string, autoGenerate: boolean): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().patch(`${leadFormApiRoutes.toggleAutoGen}/${formId}?auto_generate=${autoGenerate}`);
+    return response.data;
+  }
 }

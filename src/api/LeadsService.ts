@@ -130,4 +130,30 @@ export class LeadsService {
     const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().get(`${leadsApiRoutes.getUserBusinessDetails}/${userId}`);
     return response.data;
   }
+
+  /**
+   * Mark a next step as complete or incomplete
+   */
+  static async markNextStepComplete(leadId: string, stepId: string, completed: boolean = true): Promise<UriResponse<any>> {
+    const url = leadsApiRoutes.markNextStepComplete.replace(':lead_id', leadId).replace(':step_id', stepId);
+
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().patch(`${url}?completed=${completed}`);
+    return response.data;
+  }
+
+  /**
+   * Get aggregated next steps summary for user
+   */
+  static async getNextStepsSummary(userId: string): Promise<
+    UriResponse<{
+      total_pending_actions: number;
+      by_priority: { high: number; medium: number; low: number };
+      leads_requiring_action: number;
+      completed_actions_today: number;
+      top_actions: Array<{ action: string; count: number }>;
+    }>
+  > {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().get(`${leadsApiRoutes.nextStepsSummary}?user_id=${userId}`);
+    return response.data;
+  }
 }

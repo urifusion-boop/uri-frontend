@@ -1,4 +1,5 @@
 import { LeadsService } from '@/api/LeadFormService';
+import { LeadsService as LeadsAPI } from '@/api/LeadsService';
 import { Table, TableColumn } from '@/components/atoms/AlertTable';
 import { triggerToast } from '@/components/atoms/CustomToast';
 import { accountIcons } from '@/constants/accountIcons';
@@ -12,6 +13,7 @@ import { LeadStatusEnum } from '@/models/enum-models/LeadStatusEnum';
 import { CampaignPlatformEnum } from '@/models/enum-models/PlatformEnum';
 import { JobSignalAnalytics } from '@/utils/analytics';
 import { canFindDecisionMakers, getSignalLabel, isLowConfidence } from '@/utils/jobSignalHelpers';
+import ListAltIcon from '@mui/icons-material/ListAlt';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import TurnedInIcon from '@mui/icons-material/TurnedIn';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
@@ -20,6 +22,7 @@ import { useState } from 'react';
 import IconContentBox from '../boxes/IconContentBox';
 import IdentityBox from '../boxes/IdentityBox';
 import DecisionMakerModal from '../modals/DecisionMakerModal';
+import NextStepsModal from '../modals/NextStepsModal';
 import TwitterDetailsModal from '../modals/TwitterDetailsModal';
 interface ConversationalTableColumnProps {
   data: LeadDto[];
@@ -40,6 +43,9 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
   const [loadingDecisionMaker, setLoadingDecisionMaker] = useState<string | null>(null);
   const [decisionMakersData, setDecisionMakersData] = useState<any>(null);
   const [isDecisionMakerModalOpen, setIsDecisionMakerModalOpen] = useState(false);
+  const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
+  const [nextStepsLead, setNextStepsLead] = useState<LeadDto | null>(null);
+  const [isUpdatingStep, setIsUpdatingStep] = useState(false);
 
   // Convert Twitter data to LeadDto format for display
   const convertTwitterDataToLeads = (twitterData: TwitterFetchResponseDto): LeadDto[] => {
@@ -95,6 +101,50 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedLead(null);
+  };
+
+  const handleOpenNextSteps = (lead: LeadDto) => {
+    setNextStepsLead(lead);
+    setIsNextStepsModalOpen(true);
+  };
+
+  const handleCloseNextSteps = () => {
+    setIsNextStepsModalOpen(false);
+    setNextStepsLead(null);
+  };
+
+  const handleMarkStepComplete = async (stepId: string, completed: boolean) => {
+    if (!nextStepsLead?.lead_id) return;
+
+    setIsUpdatingStep(true);
+    try {
+      await LeadsAPI.markNextStepComplete(nextStepsLead.lead_id, stepId, completed);
+      triggerToast('success', completed ? 'Step marked as complete' : 'Step unmarked');
+
+      // Update local state
+      if (nextStepsLead.ai_next_steps) {
+        const updatedSteps = nextStepsLead.ai_next_steps.steps.map((step: any) =>
+          step.step_id === stepId
+            ? {
+                ...step,
+                completed,
+                completed_at: completed ? new Date().toISOString() : null,
+              }
+            : step
+        );
+        setNextStepsLead({
+          ...nextStepsLead,
+          ai_next_steps: {
+            ...nextStepsLead.ai_next_steps,
+            steps: updatedSteps,
+          },
+        });
+      }
+    } catch (error: any) {
+      triggerToast('error', error.message || 'Error updating step');
+    } finally {
+      setIsUpdatingStep(false);
+    }
   };
 
   const handleFindDecisionMaker = async (lead: LeadDto) => {
@@ -318,6 +368,53 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
       ),
     },
     {
+      key: 'ai_next_steps',
+      title: 'Next Steps',
+      render: (_, row) => {
+        if (!row.ai_next_steps || !row.ai_next_steps.steps || row.ai_next_steps.steps.length === 0) {
+          return null;
+        }
+
+        const totalSteps = row.ai_next_steps.steps.length;
+        const pendingSteps = row.ai_next_steps.steps.filter((s: any) => !s.completed).length;
+        const highPriorityCount = row.ai_next_steps.steps.filter((s: any) => !s.completed && s.priority === 'high').length;
+
+        return (
+          <Box>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<ListAltIcon />}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenNextSteps(row);
+              }}
+              sx={{
+                textTransform: 'none',
+                borderRadius: 2,
+                fontSize: '12px',
+                px: 2,
+                py: 0.5,
+                borderColor: highPriorityCount > 0 ? '#DC2626' : '#D1D5DB',
+                color: highPriorityCount > 0 ? '#DC2626' : '#374151',
+                '&:hover': {
+                  borderColor: highPriorityCount > 0 ? '#B91C1C' : '#9CA3AF',
+                  backgroundColor: highPriorityCount > 0 ? '#FEE2E2' : '#F3F4F6',
+                },
+              }}
+            >
+              {pendingSteps > 0 ? `${pendingSteps} action${pendingSteps > 1 ? 's' : ''}` : 'View steps'}
+            </Button>
+            {highPriorityCount > 0 && (
+              <Typography variant="caption" display="block" sx={{ mt: 0.5, color: '#DC2626', fontSize: '10px', fontWeight: 600 }}>
+                {highPriorityCount} high priority
+              </Typography>
+            )}
+          </Box>
+        );
+      },
+    },
+    {
       key: 'lead_id',
       title: 'Actions',
       render: (_, row) => {
@@ -405,6 +502,16 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
         parentJobSignalId={decisionMakersData?.parentJobSignalId}
         errorMessage={decisionMakersData?.errorMessage}
         suggestion={decisionMakersData?.suggestion}
+      />
+
+      {/* Next Steps Modal */}
+      <NextStepsModal
+        open={isNextStepsModalOpen}
+        onClose={handleCloseNextSteps}
+        leadName={`${nextStepsLead?.first_name ?? ''} ${nextStepsLead?.last_name ?? ''}`.trim() || nextStepsLead?.username || 'Lead'}
+        nextSteps={nextStepsLead?.ai_next_steps || null}
+        onMarkComplete={handleMarkStepComplete}
+        isUpdating={isUpdatingStep}
       />
 
       {/* Pagination Controls */}

@@ -69,6 +69,21 @@ export interface LeadDto {
   hiring_company?: string;
   hiring_intent_score?: number;
   job_source?: string;
+  ai_next_steps?: {
+    steps: Array<{
+      step_id: string;
+      action: string;
+      reasoning: string;
+      priority: 'high' | 'medium' | 'low';
+      confidence: number;
+      platform?: string;
+      completed: boolean;
+      completed_at?: string;
+    }>;
+    generated_at: string;
+    based_on_goal: string;
+    summary: string;
+  };
 }
 
 export interface GetByFiltersLeadsDtoParameters {

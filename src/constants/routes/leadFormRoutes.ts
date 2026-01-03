@@ -20,7 +20,11 @@ type ILeadFormApi =
   | 'getByFilters'
   | 'delete'
   | 'autoPopulate'
-  | 'generateJobKeywords';
+  | 'generateJobKeywords'
+  | 'getByUserAndType'
+  | 'setDefault'
+  | 'togglePause'
+  | 'toggleAutoGen';
 
 const rawLeadFormApiRoutes: Record<ILeadFormApi, string> = {
   organizationSearchCreate: '/lead-forms/organization-search/create',
@@ -40,6 +44,10 @@ const rawLeadFormApiRoutes: Record<ILeadFormApi, string> = {
   delete: '/lead-forms/delete',
   autoPopulate: '/lead-forms/auto-populate',
   generateJobKeywords: '/lead-forms/generate-job-keywords',
+  getByUserAndType: '/lead-forms/getByUserAndType',
+  setDefault: '/lead-forms/setDefault',
+  togglePause: '/lead-forms/toggle-pause',
+  toggleAutoGen: '/lead-forms/toggle-auto-generate',
 };
 
 export const leadFormApiRoutes: Record<ILeadFormApi, string> = RouteHelper.createRoutes(URI_BACKEND_SVC_PATH, rawLeadFormApiRoutes);

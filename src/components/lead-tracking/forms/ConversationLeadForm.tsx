@@ -21,9 +21,10 @@ import { useAuth } from '@/providers/AuthProvider';
 import { useFeatureLimitStore } from '@/store/useFeatureLimitStore';
 import BoltIcon from '@mui/icons-material/Bolt';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import SaveIcon from '@mui/icons-material/Save';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
-import { Alert, Box, Button, Chip, FormControl, FormControlLabel, IconButton, LinearProgress, MenuItem, Select, Switch, Tooltip, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, FormControl, FormControlLabel, IconButton, LinearProgress, MenuItem, Select, Switch, TextField, Tooltip, Typography } from '@mui/material';
 import Image from 'next/image';
 import router from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
@@ -995,6 +996,32 @@ const ConversationLeadFormV2 = () => {
               setValue={(val) => handleChange('form_title', val)}
               required
             />
+
+            <Box mt={3}>
+              <Typography variant="caption" sx={{ color: '#6b7280', mb: 1, display: 'flex', alignItems: 'center' }}>
+                What's your goal with these leads? (Optional)
+                <Tooltip
+                  title="Tell us your business objective. AI will use this to generate personalized next steps for each lead. Example: 'I want to sell productivity tools to startup founders'"
+                  arrow
+                >
+                  <InfoOutlinedIcon fontSize="small" sx={{ ml: 0.5, color: '#9ca3af' }} />
+                </Tooltip>
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={2}
+                placeholder="e.g., I want to sell gadgets to programmers"
+                value={form.lead_generation_goal || ''}
+                onChange={(e) => handleChange('lead_generation_goal', e.target.value)}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '8px',
+                  },
+                }}
+              />
+            </Box>
           </Box>
 
           {/* AI Form Completion Section */}
