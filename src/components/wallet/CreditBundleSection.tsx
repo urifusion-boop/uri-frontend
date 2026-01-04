@@ -89,21 +89,36 @@ export const CreditBundleSection = () => {
 
       {/* Bundle Cards */}
       <Grid container spacing={3}>
-        {isLoadingBundles
-          ? Array.from({ length: 4 }).map((_, idx) => (
-              <Grid item xs={12} sm={6} md={3} key={idx}>
-                <Card sx={{ borderRadius: 4 }}>
-                  <CardContent sx={{ p: 3 }}>
-                    <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))
-          : bundles.map((bundle) => (
-              <Grid item xs={12} sm={6} md={3} key={bundle.tier}>
-                <CreditBundleCard bundle={bundle} onPurchase={purchaseBundle} isPurchasing={isPurchasing} isPopular={bundle.tier === CreditBundleTierEnum.MEDIUM} />
-              </Grid>
-            ))}
+        {isLoadingBundles ? (
+          Array.from({ length: 4 }).map((_, idx) => (
+            <Grid item xs={12} sm={6} md={3} key={idx}>
+              <Card sx={{ borderRadius: 4 }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
+                </CardContent>
+              </Card>
+            </Grid>
+          ))
+        ) : bundles.length === 0 ? (
+          <Grid item xs={12}>
+            <Card sx={{ borderRadius: 4, textAlign: 'center', py: 4 }}>
+              <CardContent>
+                <Typography variant="h6" fontWeight={700} sx={{ color: '#141414', mb: 1 }}>
+                  No bundles available
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
+                  Credit bundles are temporarily unavailable. Please try again later.
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ) : (
+          bundles.map((bundle) => (
+            <Grid item xs={12} sm={6} md={3} key={bundle.tier}>
+              <CreditBundleCard bundle={bundle} onPurchase={purchaseBundle} isPurchasing={isPurchasing} isPopular={bundle.tier === CreditBundleTierEnum.MEDIUM} />
+            </Grid>
+          ))
+        )}
       </Grid>
 
       {/* Credit Usage Info */}
