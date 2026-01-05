@@ -6,6 +6,7 @@ import CustomCheckbox from '@/components/input/CustomCheckbox';
 import ListValuesInput from '@/components/input/ListValuesInput';
 import SingleFieldInput from '@/components/input/SingleFieldInput';
 import BusinessMismatchWarningModal from '@/components/modals/BusinessMismatchWarningModal';
+import { InsufficientBalanceModal } from '@/components/modals/InsufficientBalanceModal';
 import { LimitExceededModal } from '@/components/modals/LimitExceededModal';
 import SmartModal from '@/components/modals/SmartModal';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
@@ -117,6 +118,14 @@ const ConversationLeadFormV2 = () => {
   const { userDetails, subscriptionPlanType } = useAuth();
   const userId = userDetails?.userId;
   const featureLimit = useFeatureLimitStore((state) => state.featureLimit);
+
+  // Payment mode state for lead generation
+  const [paymentMode, setPaymentMode] = useState<'WALLET' | 'CREDITS'>('WALLET');
+  const [showInsufficientBalanceModal, setShowInsufficientBalanceModal] = useState(false);
+  const [insufficientBalanceData, setInsufficientBalanceData] = useState<{
+    requiredAmount: number;
+    availableBalance: number;
+  }>({ requiredAmount: 0, availableBalance: 0 });
 
   // Fetch user's business details from uri-insights backend
   const [userBusinessDetails, setUserBusinessDetails] = useState<any>(null);
@@ -407,7 +416,20 @@ const ConversationLeadFormV2 = () => {
 
     try {
       // Start the async job (returns immediately with job_id)
-      const response = await LeadFormService.fetchConversationalLeads(leadFormId, userId);
+      const response = await LeadFormService.fetchConversationalLeads(leadFormId, userId, paymentMode);
+
+      // Check for insufficient balance error (402)
+      if (response.responseCode === 402) {
+        clearInterval(tipInterval);
+        const responseData = response.responseData as any;
+        setInsufficientBalanceData({
+          requiredAmount: responseData?.required_amount || 750,
+          availableBalance: responseData?.available_balance || 0,
+        });
+        setShowInsufficientBalanceModal(true);
+        setIsFetchingLeads(false);
+        return;
+      }
 
       // Check for limit exceeded error
       if (response.responseCode === 403 && (response.responseData as any)?.limit_exceeded) {
@@ -538,6 +560,19 @@ const ConversationLeadFormV2 = () => {
       clearInterval(tipInterval);
       if (progressSimulation) clearInterval(progressSimulation);
       if (pollInterval) clearInterval(pollInterval);
+
+      // Check if this is an insufficient balance error (402)
+      const is402Error = error?.response?.status === 402;
+      if (is402Error) {
+        const responseData = error?.response?.data || {};
+        setInsufficientBalanceData({
+          requiredAmount: responseData?.required_amount || 750,
+          availableBalance: responseData?.available_balance || 0,
+        });
+        setShowInsufficientBalanceModal(true);
+        setIsFetchingLeads(false);
+        return;
+      }
 
       // Check if this is a limit exceeded error (403 status or limit_exceeded flag)
       const is403Error = error?.response?.status === 403;
@@ -1576,6 +1611,17 @@ const ConversationLeadFormV2 = () => {
         currentUsage={featureLimit?.lead?.noOfLeads?.count ?? 0}
         limit={featureLimit?.lead?.noOfLeads?.limit ?? 0}
         planName={subscriptionPlanType ?? 'your current plan'}
+      />
+
+      {/* Insufficient Balance Modal */}
+      <InsufficientBalanceModal
+        isOpen={showInsufficientBalanceModal}
+        onClose={() => setShowInsufficientBalanceModal(false)}
+        paymentMode={paymentMode}
+        requiredAmount={insufficientBalanceData.requiredAmount}
+        availableBalance={insufficientBalanceData.availableBalance}
+        actionType="SCAN"
+        onPaymentModeChange={(mode) => setPaymentMode(mode)}
       />
 
       {/* Business Mismatch Warning Modal */}

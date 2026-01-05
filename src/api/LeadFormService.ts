@@ -108,7 +108,8 @@ export class LeadsService {
 
   static async fetchConversationalLeads(
     lead_form_id: string,
-    user_id: string
+    user_id: string,
+    payment_mode: 'WALLET' | 'CREDITS' = 'WALLET'
   ): Promise<
     UriResponse<{
       lead_form_id: string;
@@ -128,7 +129,7 @@ export class LeadsService {
         }>
       >
     > = await UriHttpClient.getClient().post(
-      `${leadFormApiRoutes.conversationalSearchFetchLeads}?lead_form_id=${lead_form_id}&user_id=${user_id}`,
+      `${leadFormApiRoutes.conversationalSearchFetchLeads}?lead_form_id=${lead_form_id}&user_id=${user_id}&payment_mode=${payment_mode}`,
       {},
       {
         timeout: 10000, // 10 seconds - just to start the job
