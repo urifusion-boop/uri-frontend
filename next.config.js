@@ -44,6 +44,10 @@ const nextConfig = withPWA({
         destination: 'http://localhost:8001/:path*',
       },
       {
+        source: '/uri-transactions/:path*',
+        destination: 'http://localhost:9001/:path*',
+      },
+      {
         source: '/email-verification',
         destination: '/auth/email-verification',
       },
