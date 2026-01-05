@@ -11,7 +11,6 @@ import { Box, Button, FormControl, MenuItem, Pagination, Select, Typography } fr
 import { useEffect, useState } from 'react';
 import IdentityBox from '../boxes/IdentityBox';
 import RevealBox from '../boxes/RevealBox';
-import StatusBox from '../boxes/StatusBox';
 import Spinner from '../loaders/Spinner';
 
 interface OrganizationTableColumnProps {
@@ -107,16 +106,6 @@ const OrganizationTableCard = ({ data, total, page, pageSize, search, setPage, s
       title: 'Location',
       render: (_, row) => <Typography className="text-sm text-center text-gray-600">{row.location ?? '-'}</Typography>,
     },
-    // {
-    //   key: 'tags',
-    //   title: 'Tags',
-    //   render: (_, row) => <Typography className="text-sm text-gray-600">{row.tags?.join(', ') ?? '-'}</Typography>,
-    // },
-    {
-      key: 'lead_status',
-      title: 'Lead Status',
-      render: (_, row) => <StatusBox label={row.lead_status ?? '-'} />,
-    },
     {
       key: 'social_profile_link',
       title: 'Profile Links',
@@ -146,6 +135,15 @@ const OrganizationTableCard = ({ data, total, page, pageSize, search, setPage, s
           </div>
         );
       },
+    },
+    {
+      key: 'form_title',
+      title: 'Generated From',
+      render: (_, row) => (
+        <Typography className="text-sm text-gray-600" sx={{ fontWeight: 500 }}>
+          {row.form_title || '-'}
+        </Typography>
+      ),
     },
     {
       key: 'created_date',

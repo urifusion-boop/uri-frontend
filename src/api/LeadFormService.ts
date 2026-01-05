@@ -89,13 +89,13 @@ export class LeadsService {
   }
 
   static async getById(lead_form_id: string): Promise<UriResponse<LeadFormDto>> {
-    const response: Awaited<AxiosResponse<UriResponse<LeadFormDto>>> = await UriHttpClient.getClient().get(`${leadFormApiRoutes.getById}?${lead_form_id}`);
+    const response: Awaited<AxiosResponse<UriResponse<LeadFormDto>>> = await UriHttpClient.getClient().get(`${leadFormApiRoutes.getById}?lead_form_id=${lead_form_id}`);
 
     return response.data;
   }
 
   static async deleteLeadForm(lead_form_id: string): Promise<UriResponse<LeadFormDto>> {
-    const response: Awaited<AxiosResponse<UriResponse<LeadFormDto>>> = await UriHttpClient.getClient().delete(`${leadFormApiRoutes.delete}?${lead_form_id}`);
+    const response: Awaited<AxiosResponse<UriResponse<LeadFormDto>>> = await UriHttpClient.getClient().delete(`${leadFormApiRoutes.delete}?lead_form_id=${lead_form_id}`);
 
     return response.data;
   }

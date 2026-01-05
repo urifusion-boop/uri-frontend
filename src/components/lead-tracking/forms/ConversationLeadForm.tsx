@@ -27,7 +27,7 @@ import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import { Alert, Box, Button, Chip, FormControl, FormControlLabel, IconButton, LinearProgress, MenuItem, Select, Switch, TextField, Tooltip, Typography } from '@mui/material';
 import Image from 'next/image';
 import router from 'next/router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { HiPencil } from 'react-icons/hi';
 import PlatformSelector from '../PlatformSelector';
 
@@ -103,6 +103,8 @@ const ConversationLeadFormV2 = () => {
   const { mutate: triggerAutoPopulate, data: autoPopulatedResponse, isSuccess: autoPopulateSuccess } = autoPopulateLeadForm;
   const [openSuccessModal, setOpenSuccessModal] = useState(false);
   const [showLimitExceededModal, setShowLimitExceededModal] = useState(false);
+  const [showLeadGoalModal, setShowLeadGoalModal] = useState(false);
+  const leadGoalRef = useRef<HTMLDivElement>(null);
 
   // Business mismatch warning modal state
   const [showMismatchModal, setShowMismatchModal] = useState(false);
@@ -144,14 +146,42 @@ const ConversationLeadFormV2 = () => {
     }
   }, [userId]);
 
-  const { createConversationalSearchLeadForm, updateConversationalSearchLeadForm, useGetExistingFormType } = useLeadFormHooks();
+  const { createConversationalSearchLeadForm, updateConversationalSearchLeadForm, useGetExistingFormType, useGetLeadFormById, useGetFormsByUserAndType } = useLeadFormHooks();
 
-  const { data: existingForm, isSuccess } = useGetExistingFormType(userId || '', FormTypeEnum.CONVERSATIONAL);
+  // Check if we're in create mode (creating a new form) or edit mode (editing existing)
+  const isCreateMode = router.query.mode === 'create';
+  const formIdFromUrl = router.query.form_id as string;
+
+  // Fetch form by ID if form_id is provided, otherwise fetch by type (gets first/default)
+  const { data: formById, isSuccess: isSuccessById } = useGetLeadFormById(formIdFromUrl);
+  const { data: formByType, isSuccess: isSuccessByType } = useGetExistingFormType(userId || '', FormTypeEnum.CONVERSATIONAL);
+
+  // Fetch all forms of this type for the selector dropdown
+  const { data: allFormsOfType = [] } = useGetFormsByUserAndType(userId || '', FormTypeEnum.CONVERSATIONAL);
+
+  // Priority: form_id > form_type (specific form takes precedence)
+  const existingForm = formIdFromUrl ? formById : formByType;
+  const isSuccess = formIdFromUrl ? isSuccessById : isSuccessByType;
+
+  const hasMultipleForms = allFormsOfType.length > 1;
+
+  const handleFormSelect = (formId: string) => {
+    router.push(
+      {
+        pathname: router.pathname,
+        query: { ...router.query, form_id: formId },
+      },
+      undefined,
+      { shallow: true }
+    );
+  };
 
   useEffect(() => {
     console.log('existingForm', existingForm);
-    if (existingForm && isSuccess && userId) {
-      const { form_title, intent_type, buying_signals, excluded_keywords, ai_response_guide, keywords, competitors, lead_form_id, add_to_history, auto_generate, form_type } = existingForm;
+    // Only load existing form data if NOT in create mode
+    if (existingForm && isSuccess && userId && !isCreateMode) {
+      const { form_title, intent_type, buying_signals, excluded_keywords, ai_response_guide, keywords, competitors, lead_form_id, add_to_history, auto_generate, form_type, lead_generation_goal } =
+        existingForm as any;
 
       setForm({
         user_id: userId,
@@ -182,11 +212,45 @@ const ConversationLeadFormV2 = () => {
         // Job Boards fields
         solution_context: (existingForm as any).solution_context || '',
         job_keywords: (existingForm as any).job_keywords || [],
+        // AI Next Steps
+        lead_generation_goal: lead_generation_goal || '',
       });
 
       setExistingFormId(lead_form_id);
+    } else if (isCreateMode) {
+      // In create mode, reset form to blank state and ensure existingFormId is null
+      setForm({
+        user_id: userId || '',
+        form_title: 'Sales Signal Form V2',
+        ai_response_guide: '',
+        keywords: [],
+        competitors: [],
+        intent_type: '',
+        buying_signals: [],
+        excluded_keywords: [],
+        add_to_history: false,
+        auto_generate: false,
+        form_type: FormTypeEnum.CONVERSATIONAL,
+        location: [],
+        post_age_filter: 'all',
+        enable_realtime: true,
+        monitoring_platforms: [],
+        platform_configs: [],
+        monitoring_interval_hours: 0,
+        category_context: '',
+        implied_keywords: [],
+        scoring_thresholds: {
+          intent_score_min: 0.55,
+          relevance_score_min: 0.5,
+          final_score_min: 0.6,
+        },
+        solution_context: '',
+        job_keywords: [],
+        lead_generation_goal: '',
+      });
+      setExistingFormId(null);
     }
-  }, [existingForm, isSuccess, userId]);
+  }, [existingForm, isSuccess, userId, isCreateMode, formIdFromUrl]);
 
   // Track if Job Boards is enabled using useMemo
   const isJobBoardsEnabled = useMemo(() => {
@@ -305,8 +369,6 @@ const ConversationLeadFormV2 = () => {
   };
 
   const handleChange = (field: keyof ConversationalSearchFormDto, value: any) => {
-    console.log('🔧 Form field changed:', field, value);
-
     // If platform_configs changed, trigger job keyword generation
     if (field === 'platform_configs') {
       const isJobBoardsNowEnabled = value?.some((config: any) => config.platform === 'JOB_BOARDS' && config.enabled);
@@ -565,6 +627,16 @@ const ConversationLeadFormV2 = () => {
       return;
     }
 
+    // Check if lead_generation_goal is empty
+    if (!form.lead_generation_goal || form.lead_generation_goal.trim() === '') {
+      setShowLeadGoalModal(true);
+      return;
+    }
+
+    await proceedWithSave();
+  };
+
+  const proceedWithSave = async () => {
     // Frontend limit check removed - now handled by backend with proper validation
     // Backend will return 403 with limit_exceeded flag if user exceeds quota
 
@@ -635,13 +707,13 @@ const ConversationLeadFormV2 = () => {
     const payload: ConversationalSearchFormDto = {
       ...form,
       enable_realtime: true,
-      user_id: userId,
+      user_id: userId!,
       monitoring_platforms: enabledPlatforms,
     };
 
     if (existingFormId) {
       const updatePayload: ConversationalSearchFormDto = {
-        user_id: userId,
+        user_id: userId || '',
         form_title: payload.form_title || '',
         intent_type: payload.intent_type || '',
         ai_response_guide: payload.ai_response_guide || '',
@@ -665,6 +737,8 @@ const ConversationLeadFormV2 = () => {
         // Job Boards fields
         solution_context: payload.solution_context || '',
         job_keywords: payload.job_keywords || [],
+        // AI Next Steps
+        lead_generation_goal: payload.lead_generation_goal || '',
       };
 
       updateConversationalSearchLeadForm.mutate(
@@ -857,7 +931,7 @@ const ConversationLeadFormV2 = () => {
   const handleAutoPopulate = () => {
     if (!userId) return;
     triggerAutoPopulate({
-      user_id: userId,
+      user_id: userId!,
       lead_form_type: FormTypeEnum.CONVERSATIONAL,
       data: autoPopulateData,
     });
@@ -996,32 +1070,6 @@ const ConversationLeadFormV2 = () => {
               setValue={(val) => handleChange('form_title', val)}
               required
             />
-
-            <Box mt={3}>
-              <Typography variant="caption" sx={{ color: '#6b7280', mb: 1, display: 'flex', alignItems: 'center' }}>
-                What's your goal with these leads? (Optional)
-                <Tooltip
-                  title="Tell us your business objective. AI will use this to generate personalized next steps for each lead. Example: 'I want to sell productivity tools to startup founders'"
-                  arrow
-                >
-                  <InfoOutlinedIcon fontSize="small" sx={{ ml: 0.5, color: '#9ca3af' }} />
-                </Tooltip>
-              </Typography>
-              <TextField
-                fullWidth
-                multiline
-                rows={2}
-                placeholder="e.g., I want to sell gadgets to programmers"
-                value={form.lead_generation_goal || ''}
-                onChange={(e) => handleChange('lead_generation_goal', e.target.value)}
-                variant="outlined"
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '8px',
-                  },
-                }}
-              />
-            </Box>
           </Box>
 
           {/* AI Form Completion Section */}
@@ -1242,23 +1290,42 @@ const ConversationLeadFormV2 = () => {
             </Box>
           </Box>
 
+          {/* Lead Generation Goal - Positioned before checkboxes */}
+          <Box ref={leadGoalRef} sx={{ mb: 3 }}>
+            <Typography variant="body2" sx={{ color: '#374151', mb: 1, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+              What's your goal with these leads? (Optional)
+              <Tooltip
+                title="Tell us your business objective. AI will use this to generate personalized next steps for each lead. Example: 'I want to sell productivity tools to startup founders'"
+                arrow
+              >
+                <InfoOutlinedIcon fontSize="small" sx={{ ml: 0.5, color: '#9ca3af' }} />
+              </Tooltip>
+            </Typography>
+            <TextField
+              fullWidth
+              multiline
+              rows={1}
+              placeholder="e.g., I want to recruit software engineers for my startup"
+              value={form.lead_generation_goal || ''}
+              onChange={(e) => handleChange('lead_generation_goal', e.target.value)}
+              variant="outlined"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '8px',
+                  backgroundColor: '#FAFBFC',
+                },
+              }}
+            />
+          </Box>
+
           {/* Checkboxes */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr' }, gap: 3, mb: 3 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr' }, gap: 3, mb: 3 }}>
             <Box mt={3.5} sx={{ display: 'flex', alignItems: 'center' }}>
               <CustomCheckbox
                 label="Add to history"
                 checked={form.add_to_history || false}
                 onChange={(val) => handleChange('add_to_history', val)}
                 tooltip="Check this if you want to add the form to your history. This will add the form to your history so you can easily find it later."
-              />
-            </Box>
-
-            <Box mt={3.5} sx={{ display: 'flex', alignItems: 'center' }}>
-              <CustomCheckbox
-                label="Auto-generate"
-                checked={form.auto_generate || false}
-                onChange={(val) => handleChange('auto_generate', val)}
-                tooltip="Check this if you want to auto-generate the form. This will auto-generate the form with the data from the backend."
               />
             </Box>
           </Box>
@@ -1595,6 +1662,40 @@ const ConversationLeadFormV2 = () => {
           onContinueAnyway={handleContinueAnyway}
         />
       )}
+
+      {/* Lead Goal Reminder Modal */}
+      <SmartModal
+        open={showLeadGoalModal}
+        onClose={async () => {
+          setShowLeadGoalModal(false);
+          await proceedWithSave();
+        }}
+        image={<Box sx={{ fontSize: 48 }}>🎯</Box>}
+        mainText="Add Your Lead Goal?"
+        subText="Providing your lead generation goal helps our AI generate personalized, actionable next steps for each lead—making your outreach more effective."
+        handleAction={() => {
+          setShowLeadGoalModal(false);
+          leadGoalRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => {
+            const textField = leadGoalRef.current?.querySelector('textarea');
+            if (textField) {
+              textField.focus();
+              textField.style.border = '2px solid #CD1B78';
+              textField.style.boxShadow = '0 0 0 3px rgba(205, 27, 120, 0.1)';
+              setTimeout(() => {
+                textField.style.border = '';
+                textField.style.boxShadow = '';
+              }, 3000);
+            }
+          }, 500);
+        }}
+        actionText="Add Lead Goal"
+        handleCancel={async () => {
+          setShowLeadGoalModal(false);
+          await proceedWithSave();
+        }}
+        cancelText="Continue Without Goal"
+      />
     </Box>
   );
 };

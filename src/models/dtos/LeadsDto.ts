@@ -69,6 +69,8 @@ export interface LeadDto {
   hiring_company?: string;
   hiring_intent_score?: number;
   job_source?: string;
+  lead_form_snapshot_id?: string;
+  form_title?: string;
   ai_next_steps?: {
     steps: Array<{
       step_id: string;
@@ -96,6 +98,7 @@ export interface GetByFiltersLeadsDtoParameters {
   starred?: boolean;
   date_filter?: string;
   lead_type?: string;
+  lead_form_snapshot_id?: string;
 }
 
 export interface ExportLeadDto {

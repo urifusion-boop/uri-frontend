@@ -15,7 +15,6 @@ import { JobSignalAnalytics } from '@/utils/analytics';
 import { canFindDecisionMakers, getSignalLabel, isLowConfidence } from '@/utils/jobSignalHelpers';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
-import TurnedInIcon from '@mui/icons-material/TurnedIn';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { Box, Button, Chip, FormControl, MenuItem, Pagination, Select, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
@@ -307,25 +306,6 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
       ),
     },
     {
-      key: 'lead_status',
-      title: 'Lead Status',
-      render: (_, row) => <IconContentBox content={row.lead_status ?? '-'} type={row.lead_status as LeadStatusEnum} />,
-    },
-    {
-      key: 'tags',
-      title: 'Tags',
-      render: (_, row) => <IconContentBox content={row.tags?.join(', ') ?? '-'} icon={<TurnedInIcon />} />,
-    },
-    {
-      key: 'opportunity_type',
-      title: 'Opportunity Type',
-      render: (_, row) => (
-        <Typography variant="caption" fontSize="14px" className="text-sm text-gray-600 max-w-[100px] truncate">
-          {row.opportunity_type ?? '-'}
-        </Typography>
-      ),
-    },
-    {
       key: 'social_profile_link',
       title: 'Profile Links',
       render: (_, row) => {
@@ -356,6 +336,15 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
           </div>
         );
       },
+    },
+    {
+      key: 'form_title',
+      title: 'Generated From',
+      render: (_, row) => (
+        <Typography className="text-sm text-gray-600" sx={{ fontWeight: 500 }}>
+          {row.form_title || '-'}
+        </Typography>
+      ),
     },
     {
       key: 'created_date',
