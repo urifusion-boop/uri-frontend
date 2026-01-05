@@ -1,5 +1,6 @@
 import { UriHttpClient } from '@/configs/http.config';
 import { leadFormApiRoutes } from '@/constants/routes/leadFormRoutes';
+import { leadsApiRoutes } from '@/constants/routes/leadsRoutes';
 import { ObjectHelper } from '@/helpers/ObjectHelper';
 import {
   AutoPopulateDto,
@@ -193,5 +194,132 @@ export class LeadsService {
     } catch {
       return false;
     }
+  }
+
+  /**
+   * Generate job keywords from business context (PRD Section 5)
+   * AI uses onboarding information to pre-fill keyword logic
+   */
+  static async generateJobKeywords(userId: string, context?: string): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post(leadsApiRoutes.generateJobKeywords, null, {
+      params: {
+        user_id: userId,
+        context: context || undefined,
+      },
+    });
+    return response.data;
+  }
+
+  /**
+   * Find decision-makers for a job board signal (PRD Section 8)
+   * Maps job role to decision-maker titles and searches Apollo
+   */
+  static async findDecisionMakers(leadId: string): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post(leadsApiRoutes.findDecisionMakers.replace(':lead_id', leadId));
+    return response.data;
+  }
+
+  /**
+   * Get user's business details from uri-backend
+   * Used for auto-generating job keywords from onboarding data
+   */
+  static async getUserBusinessDetails(userId: string): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().get(`${leadsApiRoutes.getUserBusinessDetails}/${userId}`);
+    return response.data;
+  }
+
+  /**
+   * Add decision-maker to Individual Leads (PRD Section 8.4-8.5)
+   * Creates an Individual Lead from a job signal decision-maker
+   */
+  static async addDecisionMakerToIndividualLeads(data: {
+    name: string;
+    email: string;
+    phone?: string;
+    linkedin_url?: string;
+    job_title: string;
+    company: string;
+    user_id: string;
+    parent_job_signal_id: string;
+    notes?: string;
+  }): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post('/api/v1/leads/create', {
+      first_name: data.name.split(' ')[0] || data.name,
+      last_name: data.name.split(' ').slice(1).join(' ') || '',
+      lead_email: data.email,
+      phone: data.phone,
+      linkedin_url: data.linkedin_url,
+      job_title: data.job_title,
+      company_name: data.company,
+      lead_type: 'PERSON',
+      lead_source: 'JOB_SIGNAL_CONVERSION',
+      assigned_to: data.user_id,
+      lead_status: 'NEW',
+      opportunity_type: 'Other',
+      tags: [],
+      lead_reason: data.notes || `Decision-maker for job signal at ${data.company}`,
+      starred: false,
+      // Link back to parent job signal
+      parent_job_signal_id: data.parent_job_signal_id,
+    });
+    return response.data;
+  }
+
+  /**
+   * Validate search context to detect business-keyword mismatch
+   * Helps prevent irrelevant lead generation
+   */
+  static async validateSearchContext(data: {
+    solution_context: string;
+    category_context?: string;
+    social_keywords?: string[];
+    job_keywords?: string[];
+    has_social_platforms: boolean;
+    has_job_boards: boolean;
+  }): Promise<
+    UriResponse<{
+      is_valid: boolean;
+      match_score: number;
+      social_platform_match: number;
+      job_board_match: number;
+      recommendation: 'proceed' | 'use_only_social' | 'use_only_job_boards' | 'update_search';
+      reasoning: string;
+      suggested_social_keywords: string[];
+    }>
+  > {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post(leadsApiRoutes.validateSearchContext, data);
+    return response.data;
+  }
+
+  /**
+   * Get all forms for a user by form type (for multi-form support)
+   */
+  static async getFormsByUserAndType(userId: string, formType: string): Promise<UriResponse<LeadFormDto[]>> {
+    const response: Awaited<AxiosResponse<UriResponse<LeadFormDto[]>>> = await UriHttpClient.getClient().get(`${leadFormApiRoutes.getByUserAndType}?user_id=${userId}&form_type=${formType}`);
+    return response.data;
+  }
+
+  /**
+   * Set a form as the default for a user and form type
+   */
+  static async setDefaultForm(userId: string, formType: string, formId: string): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post(`${leadFormApiRoutes.setDefault}?user_id=${userId}&form_type=${formType}&lead_form_id=${formId}`);
+    return response.data;
+  }
+
+  /**
+   * Toggle pause/resume for a lead form
+   */
+  static async togglePause(formId: string, disabled: boolean): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().patch(`${leadFormApiRoutes.togglePause}/${formId}?disabled=${disabled}`);
+    return response.data;
+  }
+
+  /**
+   * Toggle auto-generate for a lead form
+   */
+  static async toggleAutoGenerate(formId: string, autoGenerate: boolean): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().patch(`${leadFormApiRoutes.toggleAutoGen}/${formId}?auto_generate=${autoGenerate}`);
+    return response.data;
   }
 }

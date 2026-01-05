@@ -10,6 +10,7 @@ import HouseIcon from '@mui/icons-material/House';
 import PersonIcon from '@mui/icons-material/Person';
 import { Box, Button, Grid, IconButton, Skeleton, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
+import MultiFormGrid from '../MultiFormGrid';
 
 interface LeadTypeCardProps {
   colorMap: Record<string, string>;
@@ -18,7 +19,7 @@ interface LeadTypeCardProps {
 const LeadTypeCard = ({ colorMap }: LeadTypeCardProps) => {
   const router = useRouter();
   const { userDetails } = useAuth();
-  const { useGetLeadFormsByUserId } = useLeadFormHooks();
+  const { useGetLeadFormsByUserId, deleteLeadForm, setDefaultForm, togglePause, toggleAutoGenerate } = useLeadFormHooks();
   const { data: leadFormsData, isLoading } = useGetLeadFormsByUserId(userDetails?.userId || '');
 
   const iconMap: Record<string, JSX.Element> = {
@@ -104,6 +105,54 @@ const LeadTypeCard = ({ colorMap }: LeadTypeCardProps) => {
     router.push(`/leads-tracking/forms/leads?type=${typeKey}`);
   };
 
+  // Multi-form handlers
+  const handleEdit = (formId: string) => {
+    const form = leadFormsData?.find((f) => f.lead_form_id === formId);
+    if (form) {
+      const typeKey = typeKeyMap[String(form.form_type).toUpperCase()];
+      router.push(`/leads-tracking/forms/manage?type=${typeKey}&form_id=${formId}`);
+    }
+  };
+
+  const handleDelete = async (formId: string) => {
+    if (confirm('Are you sure you want to delete this form?')) {
+      await deleteLeadForm.mutateAsync(formId);
+    }
+  };
+
+  const handleSetDefault = async (formId: string) => {
+    const form = leadFormsData?.find((f) => f.lead_form_id === formId);
+    if (form && userDetails?.userId) {
+      await setDefaultForm.mutateAsync({
+        userId: userDetails.userId,
+        formType: String(form.form_type),
+        formId,
+      });
+    }
+  };
+
+  const handleTogglePause = async (formId: string, isPaused: boolean) => {
+    await togglePause.mutateAsync({ formId, disabled: isPaused });
+  };
+
+  const handleToggleAutoGen = async (formId: string, isEnabled: boolean) => {
+    await toggleAutoGenerate.mutateAsync({ formId, autoGenerate: isEnabled });
+  };
+
+  const handleCreate = (typeKey: string) => {
+    router.push(`/leads-tracking/forms/manage?type=${typeKey}&mode=create`);
+  };
+
+  // Group forms by type
+  const formsByType: Record<string, LeadFormDto[]> = {};
+  for (const form of leadFormsData || []) {
+    const key = typeKeyMap[String(form.form_type).toUpperCase()];
+    if (key) {
+      if (!formsByType[key]) formsByType[key] = [];
+      formsByType[key].push(form);
+    }
+  }
+
   return (
     <Grid container spacing={3}>
       {isLoading ? (
@@ -118,7 +167,28 @@ const LeadTypeCard = ({ colorMap }: LeadTypeCardProps) => {
         finalForms.map((form) => {
           const typeKey = form.typeKey;
           const color = colorMap[typeKey] || '#CD1B78';
+          const formsForThisType = formsByType[typeKey] || [];
+          const hasMultipleForms = formsForThisType.length > 1;
 
+          // If multiple forms exist for this type, use MultiFormGrid
+          if (hasMultipleForms) {
+            return (
+              <Grid item xs={12} key={typeKey}>
+                <MultiFormGrid
+                  forms={formsForThisType}
+                  leadType={form.form_type}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onSetDefault={handleSetDefault}
+                  onTogglePause={handleTogglePause}
+                  onToggleAutoGen={handleToggleAutoGen}
+                  onCreate={() => handleCreate(typeKey)}
+                />
+              </Grid>
+            );
+          }
+
+          // Otherwise, use the original card design
           return (
             <Grid item xs={12} sm={6} lg={3.5} xl={6} key={typeKey}>
               <Box

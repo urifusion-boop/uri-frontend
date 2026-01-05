@@ -88,6 +88,7 @@
     "react-select": "^5.8.0",
     "react-share": "^5.1.0",
     "react-social-media-embed": "^2.5.9",
+    "react-toastify": "^11.0.5",
     "recharts": "^2.12.7",
     "remark": "^15.0.1",
     "remark-html": "^16.0.1",
