@@ -31,6 +31,53 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { HiPencil } from 'react-icons/hi';
 import PlatformSelector from '../PlatformSelector';
 
+// LocalStorage keys for job state persistence
+const JOB_STATE_KEY = 'uri_active_lead_job';
+
+// Helper functions for managing active job state
+const saveJobToLocalStorage = (jobId: string, leadFormId: string, userId: string) => {
+  try {
+    localStorage.setItem(
+      JOB_STATE_KEY,
+      JSON.stringify({
+        jobId,
+        leadFormId,
+        userId,
+        startTime: Date.now(),
+      })
+    );
+  } catch (e) {
+    console.error('Failed to save job state:', e);
+  }
+};
+
+const getJobFromLocalStorage = (userId: string) => {
+  try {
+    const stored = localStorage.getItem(JOB_STATE_KEY);
+    if (!stored) return null;
+
+    const jobState = JSON.parse(stored);
+    // Only return if it's for the same user and less than 30 minutes old
+    if (jobState.userId === userId && Date.now() - jobState.startTime < 30 * 60 * 1000) {
+      return jobState;
+    }
+    // Clear stale job state
+    localStorage.removeItem(JOB_STATE_KEY);
+    return null;
+  } catch (e) {
+    console.error('Failed to read job state:', e);
+    return null;
+  }
+};
+
+const clearJobFromLocalStorage = () => {
+  try {
+    localStorage.removeItem(JOB_STATE_KEY);
+  } catch (e) {
+    console.error('Failed to clear job state:', e);
+  }
+};
+
 const ConversationLeadFormV2 = () => {
   const [debugInfo, setDebugInfo] = useState<string>('Waiting...');
 
@@ -74,6 +121,20 @@ const ConversationLeadFormV2 = () => {
   const [fetchingStatus, setFetchingStatus] = useState<string>('');
   const [fetchingProgress, setFetchingProgress] = useState(0);
   const [currentTip, setCurrentTip] = useState('');
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
+
+  // Store interval refs so we can cleanup on unmount
+  const intervalsRef = useRef<{
+    tipInterval: NodeJS.Timeout | null;
+    progressSimulation: NodeJS.Timeout | null;
+    pollInterval: NodeJS.Timeout | null;
+    fallbackTimeout: NodeJS.Timeout | null;
+  }>({
+    tipInterval: null,
+    progressSimulation: null,
+    pollInterval: null,
+    fallbackTimeout: null,
+  });
   const [leadStats, setLeadStats] = useState<{
     // Social stats
     social_total_fetched?: number;
@@ -304,6 +365,43 @@ const ConversationLeadFormV2 = () => {
     }
   }, [isJobBoardsEnabled, userId, autoPopulateData, form.solution_context, userDetails]);
 
+  // Cleanup intervals on component unmount
+  useEffect(() => {
+    return () => {
+      // Clear all intervals when component unmounts
+      if (intervalsRef.current.tipInterval) clearInterval(intervalsRef.current.tipInterval);
+      if (intervalsRef.current.progressSimulation) clearInterval(intervalsRef.current.progressSimulation);
+      if (intervalsRef.current.pollInterval) clearInterval(intervalsRef.current.pollInterval);
+      if (intervalsRef.current.fallbackTimeout) clearTimeout(intervalsRef.current.fallbackTimeout);
+    };
+  }, []);
+
+  // Add beforeunload warning when job is running
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isFetchingLeads) {
+        e.preventDefault();
+        e.returnValue = 'Lead generation is in progress. If you leave, you can return to see the progress.';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isFetchingLeads]);
+
+  // Check for existing job on mount and resume if found
+  useEffect(() => {
+    if (userId && !isFetchingLeads && !activeJobId) {
+      const savedJob = getJobFromLocalStorage(userId);
+      if (savedJob) {
+        console.log('🔄 Resuming previous job:', savedJob.jobId);
+        // Resume polling for this job
+        resumeJobPolling(savedJob.jobId);
+      }
+    }
+  }, [userId]);
+
   // Merge newly fetched Twitter results with previously cached ones
   const mergeTwitterResults = (prev: TwitterFetchResponseDto | null, next: TwitterFetchResponseDto): TwitterFetchResponseDto => {
     const prevTweets = prev?.responseData?.tweets ?? [];
@@ -434,6 +532,135 @@ const ConversationLeadFormV2 = () => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Helper function to clear all intervals
+  const clearAllIntervals = () => {
+    if (intervalsRef.current.tipInterval) {
+      clearInterval(intervalsRef.current.tipInterval);
+      intervalsRef.current.tipInterval = null;
+    }
+    if (intervalsRef.current.progressSimulation) {
+      clearInterval(intervalsRef.current.progressSimulation);
+      intervalsRef.current.progressSimulation = null;
+    }
+    if (intervalsRef.current.pollInterval) {
+      clearInterval(intervalsRef.current.pollInterval);
+      intervalsRef.current.pollInterval = null;
+    }
+    if (intervalsRef.current.fallbackTimeout) {
+      clearTimeout(intervalsRef.current.fallbackTimeout);
+      intervalsRef.current.fallbackTimeout = null;
+    }
+  };
+
+  // Resume polling for an existing job
+  const resumeJobPolling = async (jobId: string) => {
+    if (!userId) return;
+
+    console.log('🔄 Resuming job polling for:', jobId);
+    setActiveJobId(jobId);
+    setIsFetchingLeads(true);
+    setFetchingProgress(50); // Start at 50% when resuming
+    setFetchingStatus('🔄 Resuming lead generation...');
+
+    // Setup tips rotation
+    const tips = [
+      "💡 Tip: Use specific keywords like 'need' instead of generic terms",
+      '🎯 Did you know? Specific pain points yield better leads',
+      "⚡ Pro tip: Try 'looking for recommendations' for better results",
+      '🔍 Fun fact: 70% of posts are filtered out for being promotional',
+    ];
+
+    let currentTipIndex = 0;
+    intervalsRef.current.tipInterval = setInterval(() => {
+      setCurrentTip(tips[currentTipIndex]);
+      currentTipIndex = (currentTipIndex + 1) % tips.length;
+    }, 4000);
+    setCurrentTip(tips[0]);
+
+    // Start polling
+    let pollAttempts = 0;
+    const MAX_POLL_ATTEMPTS = 100;
+    let isJobComplete = false;
+
+    const pollJob = async () => {
+      if (isJobComplete || pollAttempts >= MAX_POLL_ATTEMPTS) {
+        clearAllIntervals();
+        return;
+      }
+
+      pollAttempts++;
+
+      try {
+        const statusResponse = await LeadFormService.getJobStatus(jobId);
+
+        if (statusResponse.responseCode === 200 && statusResponse.responseData) {
+          const jobData = statusResponse.responseData;
+
+          // Update progress based on backend progress if available
+          if (jobData.progress) {
+            setFetchingProgress(jobData.progress);
+          }
+
+          if (jobData.status === 'completed') {
+            isJobComplete = true;
+            clearAllIntervals();
+            clearJobFromLocalStorage();
+            setActiveJobId(null);
+
+            if (jobData.stats) {
+              setLeadStats(jobData.stats);
+            }
+
+            setFetchingProgress(100);
+            setFetchingStatus('✅ Analysis complete!');
+
+            setTimeout(() => {
+              setOpenSuccessModal(true);
+              triggerToast('success', jobData.message || 'Leads fetched and analyzed successfully!');
+            }, 500);
+
+            setIsFetchingLeads(false);
+          } else if (jobData.status === 'failed') {
+            isJobComplete = true;
+            clearAllIntervals();
+            clearJobFromLocalStorage();
+            setActiveJobId(null);
+
+            triggerToast('error', jobData.error || 'Lead generation failed');
+            setIsFetchingLeads(false);
+          }
+        }
+      } catch (pollError) {
+        console.error('Polling error:', pollError);
+      }
+    };
+
+    // Poll immediately, then every 15 seconds
+    pollJob();
+    intervalsRef.current.pollInterval = setInterval(pollJob, 15000);
+
+    // Fallback timeout: 30 minutes
+    intervalsRef.current.fallbackTimeout = setTimeout(
+      () => {
+        if (!isJobComplete) {
+          clearAllIntervals();
+          clearJobFromLocalStorage();
+          setActiveJobId(null);
+
+          setFetchingProgress(100);
+          setFetchingStatus('✅ Analysis complete!');
+          setIsFetchingLeads(false);
+
+          setTimeout(() => {
+            setOpenSuccessModal(true);
+            triggerToast('success', 'Lead generation completed. Check your leads list.');
+          }, 500);
+        }
+      },
+      30 * 60 * 1000
+    );
+  };
+
   // Fetch leads from backend with intent analysis
   const fetchLeadsFromPlatforms = async (leadFormId: string) => {
     if (!userId) {
@@ -455,7 +682,7 @@ const ConversationLeadFormV2 = () => {
     let currentTipIndex = 0;
 
     // Rotate tips every 4 seconds
-    const tipInterval = setInterval(() => {
+    intervalsRef.current.tipInterval = setInterval(() => {
       setCurrentTip(tips[currentTipIndex]);
       currentTipIndex = (currentTipIndex + 1) % tips.length;
     }, 4000);
@@ -464,16 +691,13 @@ const ConversationLeadFormV2 = () => {
     setCurrentTip(tips[0]);
     setFetchingStatus('🚀 Starting lead generation...');
 
-    let progressSimulation: any = null;
-    let pollInterval: any = null;
-
     try {
       // Start the async job (returns immediately with job_id)
       const response = await LeadFormService.fetchConversationalLeads(leadFormId, userId);
 
       // Check for limit exceeded error
       if (response.responseCode === 403 && (response.responseData as any)?.limit_exceeded) {
-        clearInterval(tipInterval);
+        clearAllIntervals();
         setShowLimitExceededModal(true);
         setIsFetchingLeads(false);
         return;
@@ -488,6 +712,11 @@ const ConversationLeadFormV2 = () => {
         throw new Error('No job_id returned from server');
       }
 
+      // Save job to localStorage for resume capability
+      setActiveJobId(jobId);
+      saveJobToLocalStorage(jobId, leadFormId, userId);
+      console.log('💾 Saved job to localStorage:', jobId);
+
       // HYBRID: Simulated progress + backend polling (with retry logic)
       let simulatedProgress = 0;
       let isJobComplete = false;
@@ -501,7 +730,7 @@ const ConversationLeadFormV2 = () => {
       const MAX_POLL_ATTEMPTS = hasJobBoardsEnabled ? 100 : 60;
 
       // Simulate smooth progress: 0% → 95% over 2 minutes
-      progressSimulation = setInterval(() => {
+      intervalsRef.current.progressSimulation = setInterval(() => {
         if (simulatedProgress < 95 && !isJobComplete) {
           simulatedProgress += 0.79; // ~95% in 120 seconds
           setFetchingProgress(Math.floor(simulatedProgress));
@@ -520,9 +749,9 @@ const ConversationLeadFormV2 = () => {
       }, 1000);
 
       // Poll backend every 15 seconds (restored from original)
-      pollInterval = setInterval(async () => {
+      intervalsRef.current.pollInterval = setInterval(async () => {
         if (isJobComplete || pollAttempts >= MAX_POLL_ATTEMPTS) {
-          clearInterval(pollInterval);
+          clearAllIntervals();
           return;
         }
 
@@ -536,9 +765,9 @@ const ConversationLeadFormV2 = () => {
 
             if (jobData.status === 'completed') {
               isJobComplete = true;
-              clearInterval(pollInterval);
-              clearInterval(progressSimulation);
-              clearInterval(tipInterval);
+              clearAllIntervals();
+              clearJobFromLocalStorage();
+              setActiveJobId(null);
 
               // Store the stats
               if (jobData.stats) {
@@ -557,9 +786,9 @@ const ConversationLeadFormV2 = () => {
               setIsFetchingLeads(false);
             } else if (jobData.status === 'failed') {
               isJobComplete = true;
-              clearInterval(pollInterval);
-              clearInterval(progressSimulation);
-              clearInterval(tipInterval);
+              clearAllIntervals();
+              clearJobFromLocalStorage();
+              setActiveJobId(null);
 
               triggerToast('error', jobData.error || 'Lead generation failed');
               setIsFetchingLeads(false);
@@ -574,12 +803,12 @@ const ConversationLeadFormV2 = () => {
       // Fallback timeout: If job never completes, show modal
       // Social only: 15 minutes, With job boards: 25 minutes
       const fallbackTimeoutMinutes = hasJobBoardsEnabled ? 25 : 15;
-      setTimeout(
+      intervalsRef.current.fallbackTimeout = setTimeout(
         () => {
           if (!isJobComplete) {
-            clearInterval(pollInterval);
-            clearInterval(progressSimulation);
-            clearInterval(tipInterval);
+            clearAllIntervals();
+            clearJobFromLocalStorage();
+            setActiveJobId(null);
 
             setFetchingProgress(100);
             setFetchingStatus('✅ Analysis complete!');
@@ -597,9 +826,7 @@ const ConversationLeadFormV2 = () => {
       console.error('Error starting lead generation:', error);
 
       // Clear all intervals
-      clearInterval(tipInterval);
-      if (progressSimulation) clearInterval(progressSimulation);
-      if (pollInterval) clearInterval(pollInterval);
+      clearAllIntervals();
 
       // Check if this is a limit exceeded error (403 status or limit_exceeded flag)
       const is403Error = error?.response?.status === 403;
@@ -1633,6 +1860,43 @@ const ConversationLeadFormV2 = () => {
               </Box>
             );
           })()}
+
+        {/* Unqualified Leads CTA - Show only if leads were analyzed */}
+        {leadStats && (leadStats.total_fetched > 0 || leadStats.total_qualified > 0) && (
+          <Box
+            sx={{
+              mt: 3,
+              p: 2,
+              backgroundColor: '#fff3e0',
+              borderRadius: '8px',
+              border: '1px solid #ffb74d',
+              textAlign: 'center',
+            }}
+          >
+            <Typography variant="body2" sx={{ color: '#e65100', fontWeight: 500, mb: 0.5 }}>
+              💡 Want to review filtered-out leads?
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#5a5a5a', display: 'block', mb: 1 }}>
+              View unqualified leads that didn't meet your criteria
+            </Typography>
+            <Box
+              component="a"
+              href="/leads-tracking/forms/leads?type=conversational&active_tab=unqualified&page=1"
+              sx={{
+                color: '#f57c00',
+                fontWeight: 600,
+                fontSize: '14px',
+                textDecoration: 'none',
+                cursor: 'pointer',
+                '&:hover': {
+                  textDecoration: 'underline',
+                },
+              }}
+            >
+              Go to Unqualified Tab →
+            </Box>
+          </Box>
+        )}
       </SmartModal>
 
       {/* Limit Exceeded Modal */}
@@ -1666,9 +1930,9 @@ const ConversationLeadFormV2 = () => {
       {/* Lead Goal Reminder Modal */}
       <SmartModal
         open={showLeadGoalModal}
-        onClose={async () => {
+        onClose={() => {
+          // X button: Just close modal, don't save
           setShowLeadGoalModal(false);
-          await proceedWithSave();
         }}
         image={<Box sx={{ fontSize: 48 }}>🎯</Box>}
         mainText="Add Your Lead Goal?"
@@ -1691,6 +1955,7 @@ const ConversationLeadFormV2 = () => {
         }}
         actionText="Add Lead Goal"
         handleCancel={async () => {
+          // "Continue Without Goal" button: Close and proceed with save
           setShowLeadGoalModal(false);
           await proceedWithSave();
         }}
