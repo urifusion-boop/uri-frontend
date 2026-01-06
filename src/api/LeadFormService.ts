@@ -186,9 +186,13 @@ export class LeadsService {
    * Cancel a running lead generation job
    *
    * @param jobId - The job ID to cancel
+   * @param userId - The user ID requesting cancellation
    * @returns Response with cancellation status
    */
-  static async cancelLeadGenerationJob(jobId: string): Promise<
+  static async cancelLeadGenerationJob(
+    jobId: string,
+    userId: string
+  ): Promise<
     UriResponse<{
       job_id: string;
       status: string;
@@ -198,7 +202,7 @@ export class LeadsService {
     }>
   > {
     const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().post(
-      `${leadFormApiRoutes.conversationalSearchJobStatus}/${jobId}/cancel`,
+      `${leadFormApiRoutes.conversationalSearchJobStatus}/${jobId}/cancel?user_id=${userId}`,
       {},
       {
         headers: {

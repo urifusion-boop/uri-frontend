@@ -404,6 +404,14 @@ const ConversationLeadFormV2 = () => {
     };
   }, []);
 
+  // Stop progress simulation when user cancels job
+  useEffect(() => {
+    if (isCancelling && intervalsRef.current.progressSimulation) {
+      clearInterval(intervalsRef.current.progressSimulation);
+      intervalsRef.current.progressSimulation = null;
+    }
+  }, [isCancelling]);
+
   // Add beforeunload warning when job is running
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -1264,13 +1272,18 @@ const ConversationLeadFormV2 = () => {
       return;
     }
 
+    if (!userId) {
+      triggerToast('error', 'User not authenticated');
+      return;
+    }
+
     setIsCancelling(true);
     setCancelError(null);
 
     try {
       console.log('🛑 Requesting cancellation for job:', activeJobId);
 
-      const response = await LeadFormService.cancelLeadGenerationJob(activeJobId);
+      const response = await LeadFormService.cancelLeadGenerationJob(activeJobId, userId);
 
       if (response.status) {
         triggerToast('success', 'Cancelling job... This may take 5-15 seconds');
