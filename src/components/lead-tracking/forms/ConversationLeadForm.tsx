@@ -24,7 +24,27 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import SaveIcon from '@mui/icons-material/Save';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
-import { Alert, Box, Button, Chip, FormControl, FormControlLabel, IconButton, LinearProgress, MenuItem, Select, Switch, TextField, Tooltip, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  FormControlLabel,
+  IconButton,
+  LinearProgress,
+  MenuItem,
+  Select,
+  Switch,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import Image from 'next/image';
 import router from 'next/router';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -155,6 +175,9 @@ const ConversationLeadFormV2 = () => {
     total_qualified: number;
     new_leads_saved: number;
     duplicates_skipped: number;
+
+    // Cancellation flag
+    job_cancelled?: boolean;
   } | null>(null);
 
   const { autoPopulateLeadForm, isAutoPopulating } = useLeadFormHooks();
@@ -183,6 +206,11 @@ const ConversationLeadFormV2 = () => {
 
   // Fetch user's business details from uri-insights backend
   const [userBusinessDetails, setUserBusinessDetails] = useState<any>(null);
+
+  // Cancellation state
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
 
   useEffect(() => {
     if (userId) {
@@ -596,9 +624,20 @@ const ConversationLeadFormV2 = () => {
         if (statusResponse.responseCode === 200 && statusResponse.responseData) {
           const jobData = statusResponse.responseData;
 
-          // Update progress based on backend progress if available
-          if (jobData.progress) {
+          // Update progress based on REAL backend progress
+          if (typeof jobData.progress === 'number') {
             setFetchingProgress(jobData.progress);
+
+            // Update status messages based on REAL progress
+            if (jobData.progress < 20) {
+              setFetchingStatus('🔍 Searching across social platforms...');
+            } else if (jobData.progress < 50) {
+              setFetchingStatus('📊 Analyzing posts for intent signals...');
+            } else if (jobData.progress < 80) {
+              setFetchingStatus('🎯 Filtering and scoring qualified leads...');
+            } else if (jobData.progress < 100) {
+              setFetchingStatus('✨ Finalizing results...');
+            }
           }
 
           if (jobData.status === 'completed') {
@@ -617,6 +656,25 @@ const ConversationLeadFormV2 = () => {
             setTimeout(() => {
               setOpenSuccessModal(true);
               triggerToast('success', jobData.message || 'Leads fetched and analyzed successfully!');
+            }, 500);
+
+            setIsFetchingLeads(false);
+          } else if (jobData.status === 'cancelled') {
+            isJobComplete = true;
+            clearAllIntervals();
+            clearJobFromLocalStorage();
+            setActiveJobId(null);
+
+            if (jobData.stats) {
+              setLeadStats({ ...jobData.stats, job_cancelled: true });
+            }
+
+            setFetchingProgress(100);
+            setFetchingStatus('🛑 Job cancelled');
+
+            setTimeout(() => {
+              setOpenSuccessModal(true);
+              triggerToast('success', jobData.message || 'Job cancelled. Partial results available.');
             }, 500);
 
             setIsFetchingLeads(false);
@@ -763,6 +821,23 @@ const ConversationLeadFormV2 = () => {
           if (statusResponse.responseCode === 200 && statusResponse.responseData) {
             const jobData = statusResponse.responseData;
 
+            // Update with REAL backend progress (overrides simulation)
+            if (typeof jobData.progress === 'number') {
+              simulatedProgress = jobData.progress; // Sync simulation with real progress
+              setFetchingProgress(jobData.progress);
+
+              // Update status based on real progress
+              if (jobData.progress < 20) {
+                setFetchingStatus('🔍 Searching across social platforms...');
+              } else if (jobData.progress < 50) {
+                setFetchingStatus('📊 Analyzing posts for intent signals...');
+              } else if (jobData.progress < 80) {
+                setFetchingStatus('🎯 Filtering and scoring qualified leads...');
+              } else if (jobData.progress < 100) {
+                setFetchingStatus('✨ Finalizing results...');
+              }
+            }
+
             if (jobData.status === 'completed') {
               isJobComplete = true;
               clearAllIntervals();
@@ -781,6 +856,25 @@ const ConversationLeadFormV2 = () => {
               setTimeout(() => {
                 setOpenSuccessModal(true);
                 triggerToast('success', jobData.message || 'Leads fetched and analyzed successfully!');
+              }, 500);
+
+              setIsFetchingLeads(false);
+            } else if (jobData.status === 'cancelled') {
+              isJobComplete = true;
+              clearAllIntervals();
+              clearJobFromLocalStorage();
+              setActiveJobId(null);
+
+              if (jobData.stats) {
+                setLeadStats({ ...jobData.stats, job_cancelled: true });
+              }
+
+              setFetchingProgress(100);
+              setFetchingStatus('🛑 Job cancelled');
+
+              setTimeout(() => {
+                setOpenSuccessModal(true);
+                triggerToast('success', jobData.message || 'Job cancelled. Partial results available.');
               }, 500);
 
               setIsFetchingLeads(false);
@@ -1162,6 +1256,40 @@ const ConversationLeadFormV2 = () => {
       lead_form_type: FormTypeEnum.CONVERSATIONAL,
       data: autoPopulateData,
     });
+  };
+
+  const handleCancelJob = async () => {
+    if (!activeJobId) {
+      triggerToast('error', 'No active job to cancel');
+      return;
+    }
+
+    setIsCancelling(true);
+    setCancelError(null);
+
+    try {
+      console.log('🛑 Requesting cancellation for job:', activeJobId);
+
+      const response = await LeadFormService.cancelLeadGenerationJob(activeJobId);
+
+      if (response.status) {
+        triggerToast('success', 'Cancelling job... This may take 5-15 seconds');
+        setShowCancelConfirmation(false);
+
+        // Continue polling - job status will change to "cancelled"
+        // The existing polling logic will handle showing final stats
+      } else {
+        setCancelError(response.responseMessage || 'Failed to cancel job');
+        triggerToast('error', response.responseMessage || 'Failed to cancel job');
+      }
+    } catch (error: any) {
+      console.error('Error cancelling job:', error);
+      const errorMsg = error?.response?.data?.responseMessage || 'Failed to cancel job';
+      setCancelError(errorMsg);
+      triggerToast('error', errorMsg);
+    } finally {
+      setIsCancelling(false);
+    }
   };
 
   const disabledPlatforms = new Set([BrowsercloudPlatformEnum.THREADS]);
@@ -1564,16 +1692,17 @@ const ConversationLeadFormV2 = () => {
             sx={{
               mb: 3,
               p: 3,
-              bgcolor: '#f8f9ff',
+              bgcolor: isCancelling ? '#fff3e0' : '#f8f9ff',
               borderRadius: 2,
-              border: '1px solid #e0e7ff',
+              border: isCancelling ? '1px solid #ff9800' : '1px solid #e0e7ff',
+              transition: 'all 0.3s ease',
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-              <Typography variant="body1" sx={{ fontWeight: 600, color: '#1e293b' }}>
-                {fetchingStatus}
+              <Typography variant="body1" sx={{ fontWeight: 600, color: isCancelling ? '#e65100' : '#1e293b' }}>
+                {isCancelling ? '🛑 Cancelling... Job will stop shortly' : fetchingStatus}
               </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: '#CD1B78' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: isCancelling ? '#f57c00' : '#CD1B78' }}>
                 {fetchingProgress}%
               </Typography>
             </Box>
@@ -1584,29 +1713,77 @@ const ConversationLeadFormV2 = () => {
               sx={{
                 height: 8,
                 borderRadius: 4,
-                backgroundColor: '#e0e7ff',
+                backgroundColor: isCancelling ? '#ffe0b2' : '#e0e7ff',
                 '& .MuiLinearProgress-bar': {
                   borderRadius: 4,
-                  backgroundColor: '#CD1B78',
+                  backgroundColor: isCancelling ? '#ff9800' : '#CD1B78',
+                  transition: 'background-color 0.3s ease',
                 },
               }}
             />
 
-            {currentTip && (
+            {isCancelling ? (
               <Box
                 sx={{
                   mt: 2,
                   p: 2,
-                  bgcolor: 'white',
+                  bgcolor: '#fff8e1',
                   borderRadius: 1.5,
-                  border: '1px solid #e0e7ff',
+                  border: '1px solid #ffb74d',
                 }}
               >
-                <Typography variant="body2" sx={{ color: '#475569', fontStyle: 'italic' }}>
-                  {currentTip}
+                <Typography variant="body2" sx={{ color: '#e65100', fontWeight: 500, mb: 0.5 }}>
+                  ⏳ Cancellation in progress
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#5a5a5a', display: 'block' }}>
+                  The worker will finish processing the current keyword and stop gracefully. This typically takes 5-15 seconds.
                 </Typography>
               </Box>
+            ) : (
+              currentTip && (
+                <Box
+                  sx={{
+                    mt: 2,
+                    p: 2,
+                    bgcolor: 'white',
+                    borderRadius: 1.5,
+                    border: '1px solid #e0e7ff',
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: '#475569', fontStyle: 'italic' }}>
+                    {currentTip}
+                  </Typography>
+                </Box>
+              )
             )}
+
+            {/* Cancel Button */}
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <Button
+                variant="outlined"
+                color="error"
+                size="small"
+                onClick={() => setShowCancelConfirmation(true)}
+                disabled={isCancelling}
+                startIcon={isCancelling ? <CircularProgress size={16} /> : null}
+                sx={{
+                  borderColor: '#d32f2f',
+                  color: '#d32f2f',
+                  '&:hover': {
+                    borderColor: '#c62828',
+                    backgroundColor: '#ffebee',
+                  },
+                }}
+              >
+                {isCancelling ? 'Cancelling...' : 'Cancel Generation'}
+              </Button>
+
+              {cancelError && (
+                <Typography variant="caption" color="error" sx={{ display: 'block', mt: 1 }}>
+                  {cancelError}
+                </Typography>
+              )}
+            </Box>
           </Box>
         )}
 
@@ -1661,13 +1838,17 @@ const ConversationLeadFormV2 = () => {
       {/* Success Modal */}
       <SmartModal
         open={openSuccessModal}
-        image={<Image src="/assets/images/success.png" alt="Success" width={64} height={64} />}
-        mainText={leadStats && leadStats.new_leads_saved === 0 ? 'Analysis Complete' : 'Success! 🎉'}
+        image={leadStats?.job_cancelled ? <Box sx={{ fontSize: 48 }}>⚠️</Box> : <Image src="/assets/images/success.png" alt="Success" width={64} height={64} />}
+        mainText={leadStats?.job_cancelled ? 'Job Cancelled' : leadStats && leadStats.new_leads_saved === 0 ? 'Analysis Complete' : 'Success! 🎉'}
         subText={
           leadStats
             ? (() => {
                 const hasSocial = (leadStats.social_total_fetched || 0) > 0;
                 const hasJobBoards = (leadStats.job_signals_found || 0) > 0;
+
+                if (leadStats.job_cancelled) {
+                  return `Job was cancelled after processing ${leadStats.total_fetched || 0} post${(leadStats.total_fetched || 0) !== 1 ? 's' : ''}. Found ${leadStats.new_leads_saved || 0} qualified lead${(leadStats.new_leads_saved || 0) !== 1 ? 's' : ''}.`;
+                }
 
                 if (leadStats.new_leads_saved === 0) {
                   if (leadStats.total_fetched > 0) {
@@ -1897,6 +2078,26 @@ const ConversationLeadFormV2 = () => {
             </Box>
           </Box>
         )}
+
+        {/* Show cancellation notice */}
+        {leadStats?.job_cancelled && (
+          <Box sx={{ mt: 2, p: 2, bgcolor: '#fff3e0', borderRadius: 1 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              💡 Partial results were saved. You were only charged for:
+            </Typography>
+            <ul style={{ margin: '8px 0 0 20px' }}>
+              <li>
+                <Typography variant="caption">{leadStats.total_fetched || 0} posts fetched</Typography>
+              </li>
+              <li>
+                <Typography variant="caption">{leadStats.total_qualified || 0} posts analyzed</Typography>
+              </li>
+              <li>
+                <Typography variant="caption">{leadStats.new_leads_saved || 0} leads saved</Typography>
+              </li>
+            </ul>
+          </Box>
+        )}
       </SmartModal>
 
       {/* Limit Exceeded Modal */}
@@ -1961,6 +2162,49 @@ const ConversationLeadFormV2 = () => {
         }}
         cancelText="Continue Without Goal"
       />
+
+      {/* Cancel Confirmation Dialog */}
+      <Dialog open={showCancelConfirmation} onClose={() => setShowCancelConfirmation(false)}>
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>Cancel Lead Generation?</Box>
+        </DialogTitle>
+
+        <DialogContent>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            Are you sure you want to cancel this lead generation job?
+          </Typography>
+
+          <Box sx={{ p: 2, bgcolor: '#fff3e0', borderRadius: 1, mb: 2 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+              What happens when you cancel:
+            </Typography>
+            <ul style={{ margin: 0, paddingLeft: 20 }}>
+              <li>
+                <Typography variant="caption">Job will stop within 5-15 seconds</Typography>
+              </li>
+              <li>
+                <Typography variant="caption">You'll receive partial results (leads collected so far)</Typography>
+              </li>
+              <li>
+                <Typography variant="caption">You'll only be charged for posts actually fetched and analyzed</Typography>
+              </li>
+            </ul>
+          </Box>
+
+          <Typography variant="caption" color="text.secondary">
+            Current progress: {fetchingProgress}% ({fetchingStatus})
+          </Typography>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setShowCancelConfirmation(false)} disabled={isCancelling}>
+            Continue Generation
+          </Button>
+          <Button onClick={handleCancelJob} color="error" variant="contained" disabled={isCancelling} startIcon={isCancelling ? <CircularProgress size={16} color="inherit" /> : null}>
+            {isCancelling ? 'Cancelling...' : 'Yes, Cancel'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
