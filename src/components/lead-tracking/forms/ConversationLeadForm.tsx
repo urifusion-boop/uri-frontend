@@ -143,7 +143,8 @@ const ConversationLeadFormV2 = () => {
   const [existingFormId, setExistingFormId] = useState<string | null>(null);
   const [isFetchingLeads, setIsFetchingLeads] = useState(false);
   const [fetchingStatus, setFetchingStatus] = useState<string>('');
-  const [fetchingProgress, setFetchingProgress] = useState(0);
+  const [targetProgress, setTargetProgress] = useState(0); // Backend's real progress (target)
+  const [fetchingProgress, setFetchingProgress] = useState(0); // Smoothly animated display progress
   const [currentTip, setCurrentTip] = useState('');
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
 
@@ -153,11 +154,13 @@ const ConversationLeadFormV2 = () => {
     progressSimulation: NodeJS.Timeout | null;
     pollInterval: NodeJS.Timeout | null;
     fallbackTimeout: NodeJS.Timeout | null;
+    smoothProgressInterval: NodeJS.Timeout | null;
   }>({
     tipInterval: null,
     progressSimulation: null,
     pollInterval: null,
     fallbackTimeout: null,
+    smoothProgressInterval: null,
   });
   const [leadStats, setLeadStats] = useState<{
     // Social stats
@@ -361,14 +364,13 @@ const ConversationLeadFormV2 = () => {
   const debouncedSolutionContext = useDebounce(form.solution_context, 1500);
 
   // PRD Section 5: Auto-generate job keywords when Job Boards platform is enabled (INITIAL GENERATION)
+  // NOTE: This only runs when Job Boards is FIRST enabled, not on every page load
   useEffect(() => {
     console.log('🔍 Job Boards Auto-Generation Check:', {
       isJobBoardsEnabled,
       hasJobKeywords: form.job_keywords && form.job_keywords.length > 0,
       userId,
       autoPopulateData,
-      solution_context: form.solution_context,
-      whatYouSell: userDetails?.businessDetails?.whatYouSell,
     });
 
     // Only generate if Job Boards is enabled, we don't have job keywords yet, and we have context or onboarding data
@@ -403,7 +405,8 @@ const ConversationLeadFormV2 = () => {
         console.warn('   3. Enter job keywords manually');
       }
     }
-  }, [isJobBoardsEnabled, userId, autoPopulateData, form.solution_context, userDetails]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isJobBoardsEnabled, userId, autoPopulateData]);
 
   // AUTO-REGENERATION: When solution context changes, regenerate keywords (unless locked)
   useEffect(() => {
@@ -447,6 +450,7 @@ const ConversationLeadFormV2 = () => {
       if (intervalsRef.current.progressSimulation) clearInterval(intervalsRef.current.progressSimulation);
       if (intervalsRef.current.pollInterval) clearInterval(intervalsRef.current.pollInterval);
       if (intervalsRef.current.fallbackTimeout) clearTimeout(intervalsRef.current.fallbackTimeout);
+      if (intervalsRef.current.smoothProgressInterval) clearInterval(intervalsRef.current.smoothProgressInterval);
     };
   }, []);
 
@@ -457,6 +461,48 @@ const ConversationLeadFormV2 = () => {
       intervalsRef.current.progressSimulation = null;
     }
   }, [isCancelling]);
+
+  // Smooth progress animation - interpolates between current and target progress
+  useEffect(() => {
+    // Clear any existing interval
+    if (intervalsRef.current.smoothProgressInterval) {
+      clearInterval(intervalsRef.current.smoothProgressInterval);
+    }
+
+    // Only animate if there's a gap between display and target
+    if (fetchingProgress < targetProgress) {
+      intervalsRef.current.smoothProgressInterval = setInterval(() => {
+        setFetchingProgress((prev) => {
+          const diff = targetProgress - prev;
+
+          // If we've reached target, stop
+          if (diff <= 0) {
+            if (intervalsRef.current.smoothProgressInterval) {
+              clearInterval(intervalsRef.current.smoothProgressInterval);
+              intervalsRef.current.smoothProgressInterval = null;
+            }
+            return targetProgress;
+          }
+
+          // Exponential smoothing: move 10% of remaining distance per tick
+          // This creates natural acceleration/deceleration
+          const increment = Math.max(0.5, diff * 0.1);
+          return Math.min(targetProgress, prev + increment);
+        });
+      }, 50); // Update every 50ms for smooth 20fps animation
+    } else if (fetchingProgress > targetProgress) {
+      // If backend progress goes backwards (shouldn't happen), snap immediately
+      setFetchingProgress(targetProgress);
+    }
+
+    // Cleanup on unmount or when dependencies change
+    return () => {
+      if (intervalsRef.current.smoothProgressInterval) {
+        clearInterval(intervalsRef.current.smoothProgressInterval);
+        intervalsRef.current.smoothProgressInterval = null;
+      }
+    };
+  }, [targetProgress, fetchingProgress]);
 
   // Add beforeunload warning when job is running
   useEffect(() => {
@@ -641,7 +687,7 @@ const ConversationLeadFormV2 = () => {
     console.log('🔄 Resuming job polling for:', jobId);
     setActiveJobId(jobId);
     setIsFetchingLeads(true);
-    setFetchingProgress(50); // Start at 50% when resuming
+    setTargetProgress(50); // Start at 50% when resuming
     setFetchingStatus('🔄 Resuming lead generation...');
 
     // Setup tips rotation
@@ -680,7 +726,7 @@ const ConversationLeadFormV2 = () => {
 
           // Update progress based on REAL backend progress
           if (typeof jobData.progress === 'number') {
-            setFetchingProgress(jobData.progress);
+            setTargetProgress(jobData.progress); // Smooth animation will interpolate
 
             // Update status messages based on REAL progress
             if (jobData.progress < 20) {
@@ -704,7 +750,7 @@ const ConversationLeadFormV2 = () => {
               setLeadStats(jobData.stats);
             }
 
-            setFetchingProgress(100);
+            setTargetProgress(100); // Smooth transition to 100%
             setFetchingStatus('✅ Analysis complete!');
 
             setTimeout(() => {
@@ -723,7 +769,7 @@ const ConversationLeadFormV2 = () => {
               setLeadStats({ ...jobData.stats, job_cancelled: true });
             }
 
-            setFetchingProgress(100);
+            setTargetProgress(100); // Smooth transition to 100%
             setFetchingStatus('🛑 Job cancelled');
 
             setTimeout(() => {
@@ -759,7 +805,7 @@ const ConversationLeadFormV2 = () => {
           clearJobFromLocalStorage();
           setActiveJobId(null);
 
-          setFetchingProgress(100);
+          setTargetProgress(100); // Smooth transition to 100%
           setFetchingStatus('✅ Analysis complete!');
           setIsFetchingLeads(false);
 
@@ -781,7 +827,8 @@ const ConversationLeadFormV2 = () => {
     }
 
     setIsFetchingLeads(true);
-    setFetchingProgress(0);
+    setTargetProgress(0);
+    setFetchingProgress(0); // Reset display progress immediately
 
     // Helpful tips to rotate through
     const tips = [
@@ -845,7 +892,7 @@ const ConversationLeadFormV2 = () => {
       intervalsRef.current.progressSimulation = setInterval(() => {
         if (simulatedProgress < 95 && !isJobComplete) {
           simulatedProgress += 0.79; // ~95% in 120 seconds
-          setFetchingProgress(Math.floor(simulatedProgress));
+          setTargetProgress(Math.floor(simulatedProgress)); // Update target, smooth animation handles display
 
           // Update status messages based on progress
           if (simulatedProgress < 20) {
@@ -878,7 +925,7 @@ const ConversationLeadFormV2 = () => {
             // Update with REAL backend progress (overrides simulation)
             if (typeof jobData.progress === 'number') {
               simulatedProgress = jobData.progress; // Sync simulation with real progress
-              setFetchingProgress(jobData.progress);
+              setTargetProgress(jobData.progress); // Smooth animation will interpolate
 
               // Update status based on real progress
               if (jobData.progress < 20) {
@@ -903,8 +950,8 @@ const ConversationLeadFormV2 = () => {
                 setLeadStats(jobData.stats);
               }
 
-              // Jump to 100%
-              setFetchingProgress(100);
+              // Smooth transition to 100%
+              setTargetProgress(100);
               setFetchingStatus('✅ Analysis complete!');
 
               setTimeout(() => {
@@ -923,7 +970,7 @@ const ConversationLeadFormV2 = () => {
                 setLeadStats({ ...jobData.stats, job_cancelled: true });
               }
 
-              setFetchingProgress(100);
+              setTargetProgress(100); // Smooth transition to 100%
               setFetchingStatus('🛑 Job cancelled');
 
               setTimeout(() => {
@@ -958,7 +1005,7 @@ const ConversationLeadFormV2 = () => {
             clearJobFromLocalStorage();
             setActiveJobId(null);
 
-            setFetchingProgress(100);
+            setTargetProgress(100); // Smooth transition to 100%
             setFetchingStatus('✅ Analysis complete!');
             setIsFetchingLeads(false);
 
@@ -990,7 +1037,8 @@ const ConversationLeadFormV2 = () => {
       setIsFetchingLeads(false);
       setTimeout(() => {
         setFetchingStatus('');
-        setFetchingProgress(0);
+        setTargetProgress(0);
+        setFetchingProgress(0); // Reset both immediately on error
         setCurrentTip('');
       }, 1000);
     }
@@ -1882,7 +1930,7 @@ const ConversationLeadFormV2 = () => {
                 '& .MuiLinearProgress-bar': {
                   borderRadius: 4,
                   backgroundColor: isCancelling ? '#ff9800' : '#CD1B78',
-                  transition: 'background-color 0.3s ease',
+                  transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease',
                 },
               }}
             />
