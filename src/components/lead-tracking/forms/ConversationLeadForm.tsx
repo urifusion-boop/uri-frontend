@@ -1604,14 +1604,32 @@ const ConversationLeadFormV2 = () => {
                   <Box sx={{ ml: 'auto', display: 'flex', gap: 0.5 }}>
                     {/* Lock button */}
                     <Tooltip title={keywordsLocked ? 'Keywords locked. Click to enable auto-regeneration' : 'Lock keywords to prevent auto-updates'}>
-                      <IconButton size="small" onClick={() => setKeywordsLocked(!keywordsLocked)} sx={{ p: 0.5 }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => setKeywordsLocked(!keywordsLocked)}
+                        sx={{
+                          p: 0.5,
+                          color: '#CD1B78',
+                          '&:hover': { bgcolor: 'rgba(205, 27, 120, 0.08)' },
+                        }}
+                      >
                         {keywordsLocked ? <LockIcon fontSize="small" /> : <LockOpenIcon fontSize="small" />}
                       </IconButton>
                     </Tooltip>
 
                     {/* Manual regenerate button */}
                     <Tooltip title="Manually regenerate from current solution context">
-                      <IconButton size="small" onClick={handleManualRegenerateKeywords} disabled={!form.solution_context || isGeneratingKeywords} sx={{ p: 0.5 }}>
+                      <IconButton
+                        size="small"
+                        onClick={handleManualRegenerateKeywords}
+                        disabled={!form.solution_context || isGeneratingKeywords}
+                        sx={{
+                          p: 0.5,
+                          color: '#CD1B78',
+                          '&:hover': { bgcolor: 'rgba(205, 27, 120, 0.08)' },
+                          '&.Mui-disabled': { color: 'rgba(0, 0, 0, 0.26)' },
+                        }}
+                      >
                         <AutorenewIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
