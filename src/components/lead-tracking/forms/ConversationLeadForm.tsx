@@ -9,6 +9,7 @@ import BusinessMismatchWarningModal from '@/components/modals/BusinessMismatchWa
 import { LimitExceededModal } from '@/components/modals/LimitExceededModal';
 import SmartModal from '@/components/modals/SmartModal';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
+import useDebounce from '@/hooks/useDebounce';
 import { ConversationalSearchFormDto } from '@/models/dtos/LeadFormDto';
 import { LeadDto } from '@/models/dtos/LeadsDto';
 import { TwitterFetchResponseDto } from '@/models/dtos/TwitterDto';
@@ -19,9 +20,12 @@ import { LeadStatusEnum } from '@/models/enum-models/LeadStatusEnum';
 import { LeadTypeEnum } from '@/models/enum-models/LeadTypeEnum';
 import { useAuth } from '@/providers/AuthProvider';
 import { useFeatureLimitStore } from '@/store/useFeatureLimitStore';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
 import BoltIcon from '@mui/icons-material/Bolt';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import LockIcon from '@mui/icons-material/Lock';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
 import SaveIcon from '@mui/icons-material/Save';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import {
@@ -190,6 +194,11 @@ const ConversationLeadFormV2 = () => {
   const [showLeadGoalModal, setShowLeadGoalModal] = useState(false);
   const leadGoalRef = useRef<HTMLDivElement>(null);
 
+  // Job keyword auto-regeneration state
+  const [isGeneratingKeywords, setIsGeneratingKeywords] = useState(false);
+  const [keywordsJustUpdated, setKeywordsJustUpdated] = useState(false);
+  const [keywordsLocked, setKeywordsLocked] = useState(false);
+
   // Business mismatch warning modal state
   const [showMismatchModal, setShowMismatchModal] = useState(false);
   const [mismatchData, setMismatchData] = useState<{
@@ -348,7 +357,10 @@ const ConversationLeadFormV2 = () => {
     return enabled;
   }, [form.platform_configs]);
 
-  // PRD Section 5: Auto-generate job keywords when Job Boards platform is enabled
+  // Debounced solution context for auto-regeneration
+  const debouncedSolutionContext = useDebounce(form.solution_context, 1500);
+
+  // PRD Section 5: Auto-generate job keywords when Job Boards platform is enabled (INITIAL GENERATION)
   useEffect(() => {
     console.log('🔍 Job Boards Auto-Generation Check:', {
       isJobBoardsEnabled,
@@ -392,6 +404,40 @@ const ConversationLeadFormV2 = () => {
       }
     }
   }, [isJobBoardsEnabled, userId, autoPopulateData, form.solution_context, userDetails]);
+
+  // AUTO-REGENERATION: When solution context changes, regenerate keywords (unless locked)
+  useEffect(() => {
+    // Only auto-regenerate if:
+    // 1. Job Boards is enabled
+    // 2. Solution context has meaningful content
+    // 3. Keywords are not locked by user
+    // 4. Keywords already exist (meaning this is an update, not initial generation)
+    if (isJobBoardsEnabled && debouncedSolutionContext && debouncedSolutionContext.trim().length > 10 && !keywordsLocked && form.job_keywords && form.job_keywords.length > 0 && userId) {
+      console.log('🔄 Auto-regenerating keywords from updated solution context');
+      setIsGeneratingKeywords(true);
+
+      LeadFormService.generateJobKeywords(userId, debouncedSolutionContext)
+        .then((response) => {
+          if (response.status && response.responseData?.job_keywords) {
+            const keywords = response.responseData.job_keywords;
+            console.log(`✅ Regenerated ${keywords.length} job keywords:`, keywords);
+            setForm((prev) => ({ ...prev, job_keywords: keywords }));
+
+            // Visual feedback
+            setKeywordsJustUpdated(true);
+            setTimeout(() => setKeywordsJustUpdated(false), 2000);
+
+            triggerToast('success', `Updated ${keywords.length} job keywords based on new context`);
+          }
+        })
+        .catch((error) => {
+          console.error('Error regenerating keywords:', error);
+        })
+        .finally(() => {
+          setIsGeneratingKeywords(false);
+        });
+    }
+  }, [debouncedSolutionContext, isJobBoardsEnabled, keywordsLocked, userId]);
 
   // Cleanup intervals on component unmount
   useEffect(() => {
@@ -1305,6 +1351,32 @@ const ConversationLeadFormV2 = () => {
     }
   };
 
+  const handleManualRegenerateKeywords = async () => {
+    if (!userId || !form.solution_context) {
+      triggerToast('error', 'Please enter a solution context first');
+      return;
+    }
+
+    setIsGeneratingKeywords(true);
+    try {
+      const response = await LeadFormService.generateJobKeywords(userId, form.solution_context);
+      if (response.status && response.responseData?.job_keywords) {
+        const keywords = response.responseData.job_keywords;
+        setForm((prev) => ({ ...prev, job_keywords: keywords }));
+
+        // Visual feedback
+        setKeywordsJustUpdated(true);
+        setTimeout(() => setKeywordsJustUpdated(false), 2000);
+
+        triggerToast('success', `Generated ${keywords.length} fresh job keywords`);
+      }
+    } catch (error: any) {
+      triggerToast('error', error.message || 'Failed to regenerate keywords');
+    } finally {
+      setIsGeneratingKeywords(false);
+    }
+  };
+
   const disabledPlatforms = new Set([BrowsercloudPlatformEnum.THREADS]);
 
   return (
@@ -1494,23 +1566,85 @@ const ConversationLeadFormV2 = () => {
               <Box sx={{ mb: 3 }}>
                 <SingleFieldInput
                   label="Solution Context"
-                  tooltip="What problem does your product or service solve? This helps us identify relevant hiring signals from job postings."
+                  tooltip="Describe your product/service. Job keywords will auto-generate as you type."
                   placeholder="e.g., 'We provide cloud infrastructure that reduces DevOps costs'"
                   value={form.solution_context || ''}
                   setValue={(val) => handleChange('solution_context', val)}
                   required={false}
                 />
+
+                {/* Loading indicator when generating keywords */}
+                {isGeneratingKeywords && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                    <CircularProgress size={16} />
+                    <Typography variant="caption" color="primary">
+                      Generating job keywords...
+                    </Typography>
+                  </Box>
+                )}
               </Box>
 
               {/* Job Keywords - Auto-generated from solution context */}
-              <Box sx={{ mb: 3 }}>
+              <Box
+                sx={{
+                  mb: 3,
+                  position: 'relative',
+                  border: keywordsJustUpdated ? '2px solid #4caf50' : 'none',
+                  borderRadius: 1,
+                  transition: 'all 0.3s ease',
+                  p: keywordsJustUpdated ? 1 : 0,
+                }}
+              >
+                {/* Relationship indicator and controls */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <Typography variant="body2" color="text.secondary" fontSize="13px">
+                    🤖 Auto-generated from solution context above
+                  </Typography>
+
+                  <Box sx={{ ml: 'auto', display: 'flex', gap: 0.5 }}>
+                    {/* Lock button */}
+                    <Tooltip title={keywordsLocked ? 'Keywords locked. Click to enable auto-regeneration' : 'Lock keywords to prevent auto-updates'}>
+                      <IconButton size="small" onClick={() => setKeywordsLocked(!keywordsLocked)} sx={{ p: 0.5 }}>
+                        {keywordsLocked ? <LockIcon fontSize="small" /> : <LockOpenIcon fontSize="small" />}
+                      </IconButton>
+                    </Tooltip>
+
+                    {/* Manual regenerate button */}
+                    <Tooltip title="Manually regenerate from current solution context">
+                      <IconButton size="small" onClick={handleManualRegenerateKeywords} disabled={!form.solution_context || isGeneratingKeywords} sx={{ p: 0.5 }}>
+                        <AutorenewIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Box>
+
                 <ListValuesInput
                   label="Job Role Keywords"
-                  tooltip="Job titles to search for on LinkedIn Jobs and Jobberman. These are auto-generated when you add Solution Context. E.g., 'DevOps Engineer', 'Cloud Architect'"
+                  tooltip="These keywords are automatically generated from your solution context. You can edit or lock them."
                   placeholder="e.g. 'DevOps Engineer', 'Cloud Architect', 'Platform Engineer'"
                   keywords={form.job_keywords || []}
                   setKeywords={(val) => handleChange('job_keywords', val)}
                 />
+
+                {/* Updated badge */}
+                {keywordsJustUpdated && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: -10,
+                      right: -10,
+                      bgcolor: '#4caf50',
+                      color: 'white',
+                      px: 1.5,
+                      py: 0.5,
+                      borderRadius: 2,
+                      fontSize: '12px',
+                      fontWeight: 600,
+                    }}
+                  >
+                    ✨ Updated!
+                  </Box>
+                )}
               </Box>
             </>
           )}

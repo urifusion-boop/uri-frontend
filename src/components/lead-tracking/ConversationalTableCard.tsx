@@ -2,6 +2,7 @@ import { LeadsService } from '@/api/LeadFormService';
 import { LeadsService as LeadsAPI } from '@/api/LeadsService';
 import { Table, TableColumn } from '@/components/atoms/AlertTable';
 import { triggerToast } from '@/components/atoms/CustomToast';
+import { queryClient } from '@/configs/query-client.config';
 import { accountIcons } from '@/constants/accountIcons';
 import { PlatformHelper } from '@/helpers/PlatformHelper';
 import useClipboard from '@/hooks/clipboard';
@@ -118,6 +119,10 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
     setIsUpdatingStep(true);
     try {
       await LeadsAPI.markNextStepComplete(nextStepsLead.lead_id, stepId, completed);
+
+      // Invalidate leads cache to refetch fresh data from database
+      queryClient.invalidateQueries(['leads-data']);
+
       triggerToast('success', completed ? 'Step marked as complete' : 'Step unmarked');
 
       // Update local state
