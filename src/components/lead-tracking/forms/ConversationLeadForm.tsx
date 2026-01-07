@@ -1851,8 +1851,8 @@ const ConversationLeadFormV2 = () => {
       {/* Success Modal */}
       <SmartModal
         open={openSuccessModal}
-        image={leadStats?.job_cancelled ? <Box sx={{ fontSize: 48 }}>⚠️</Box> : <Image src="/assets/images/success.png" alt="Success" width={64} height={64} />}
-        mainText={leadStats?.job_cancelled ? 'Job Cancelled' : leadStats && leadStats.new_leads_saved === 0 ? 'Analysis Complete' : 'Success! 🎉'}
+        image={<Image src="/assets/images/success.png" alt="Success" width={64} height={64} />}
+        mainText={leadStats?.job_cancelled ? 'Search Stopped' : leadStats && leadStats.new_leads_saved === 0 ? 'Analysis Complete' : 'Success! 🎉'}
         subText={
           leadStats
             ? (() => {
@@ -1860,7 +1860,7 @@ const ConversationLeadFormV2 = () => {
                 const hasJobBoards = (leadStats.job_signals_found || 0) > 0;
 
                 if (leadStats.job_cancelled) {
-                  return `Job was cancelled after processing ${leadStats.total_fetched || 0} post${(leadStats.total_fetched || 0) !== 1 ? 's' : ''}. Found ${leadStats.new_leads_saved || 0} qualified lead${(leadStats.new_leads_saved || 0) !== 1 ? 's' : ''}.`;
+                  return `Your lead search was stopped early. Here's what we found:`;
                 }
 
                 if (leadStats.new_leads_saved === 0) {
@@ -2089,26 +2089,6 @@ const ConversationLeadFormV2 = () => {
             >
               Go to Unqualified Tab →
             </Box>
-          </Box>
-        )}
-
-        {/* Show cancellation notice */}
-        {leadStats?.job_cancelled && (
-          <Box sx={{ mt: 2, p: 2, bgcolor: '#fff3e0', borderRadius: 1 }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              💡 Partial results were saved. You were only charged for:
-            </Typography>
-            <ul style={{ margin: '8px 0 0 20px' }}>
-              <li>
-                <Typography variant="caption">{leadStats.total_fetched || 0} posts fetched</Typography>
-              </li>
-              <li>
-                <Typography variant="caption">{leadStats.total_qualified || 0} posts analyzed</Typography>
-              </li>
-              <li>
-                <Typography variant="caption">{leadStats.new_leads_saved || 0} leads saved</Typography>
-              </li>
-            </ul>
           </Box>
         )}
       </SmartModal>
