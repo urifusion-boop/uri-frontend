@@ -312,7 +312,10 @@ const ConversationLeadFormV2 = () => {
         },
         // Job Boards fields
         solution_context: (existingForm as any).solution_context || '',
-        job_keywords: (existingForm as any).job_keywords || [],
+        job_keywords:
+          (form.job_keywords?.length ?? 0) > 0
+            ? form.job_keywords // Keep locally regenerated keywords
+            : (existingForm as any).job_keywords || [], // Only load from DB if form is empty
         // AI Next Steps
         lead_generation_goal: lead_generation_goal || '',
       });
@@ -487,7 +490,7 @@ const ConversationLeadFormV2 = () => {
           // Exponential smoothing: move 10% of remaining distance per tick
           // This creates natural acceleration/deceleration
           const increment = Math.max(0.5, diff * 0.1);
-          return Math.min(targetProgress, prev + increment);
+          return Math.round(Math.min(targetProgress, prev + increment));
         });
       }, 50); // Update every 50ms for smooth 20fps animation
     } else if (fetchingProgress > targetProgress) {
@@ -922,10 +925,14 @@ const ConversationLeadFormV2 = () => {
           if (statusResponse.responseCode === 200 && statusResponse.responseData) {
             const jobData = statusResponse.responseData;
 
-            // Update with REAL backend progress (overrides simulation)
+            // Update with REAL backend progress (only if moving forward)
             if (typeof jobData.progress === 'number') {
-              simulatedProgress = jobData.progress; // Sync simulation with real progress
-              setTargetProgress(jobData.progress); // Smooth animation will interpolate
+              // Only update if backend progress is ahead or equal (never go backward)
+              if (jobData.progress >= simulatedProgress) {
+                simulatedProgress = jobData.progress; // Sync simulation with real progress
+                setTargetProgress(jobData.progress); // Smooth animation will interpolate
+              }
+              // If backend is behind simulated progress, ignore it and let simulation continue
 
               // Update status based on real progress
               if (jobData.progress < 20) {
@@ -954,10 +961,27 @@ const ConversationLeadFormV2 = () => {
               setTargetProgress(100);
               setFetchingStatus('✅ Analysis complete!');
 
+              // Hybrid approach: Wait for animation to complete OR 2s max timeout
+              const startTime = Date.now();
+              const checkAnimationComplete = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+
+                // Show modal if progress reached 99% OR 2 seconds passed
+                if (fetchingProgress >= 99 || elapsed >= 2000) {
+                  clearInterval(checkAnimationComplete);
+                  setOpenSuccessModal(true);
+                  triggerToast('success', jobData.message || 'Leads fetched and analyzed successfully!');
+                }
+              }, 100);
+
+              // Absolute fallback: force modal after 3 seconds
               setTimeout(() => {
-                setOpenSuccessModal(true);
-                triggerToast('success', jobData.message || 'Leads fetched and analyzed successfully!');
-              }, 500);
+                clearInterval(checkAnimationComplete);
+                if (!openSuccessModal) {
+                  setOpenSuccessModal(true);
+                  triggerToast('success', jobData.message || 'Leads fetched and analyzed successfully!');
+                }
+              }, 3000);
 
               setIsFetchingLeads(false);
             } else if (jobData.status === 'cancelled') {
