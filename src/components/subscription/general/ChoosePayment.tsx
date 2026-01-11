@@ -24,7 +24,7 @@ const ChoosePayment = ({ setStep, onSelectPlan, selectedPlan }: ChoosePaymentPro
   );
 
   return (
-    <Box sx={{ px: 1 }}>
+    <Box sx={{ px: 1, width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
       <Typography
         sx={{
           color: '#000000',

@@ -1,38 +1,43 @@
-export interface FundWalletDto {
-  userId: string;
-  amount: number;
-  email: string;
+export interface WalletBalanceResponseDto {
+  balance: number;
   currency: string;
+}
+
+export interface FundWalletRequestDto {
+  amount: number;
+  currency: string;
+  userId?: string;
+  email?: string;
   callbackUrl?: string;
 }
 
-export interface DeductWalletDto {
-  userId: string;
-  amount: number;
+export interface FundWalletResponseDto {
+  authorization_url: string;
+  access_code: string;
   reference: string;
-  narration: string;
-}
-
-export interface WalletDto {
-  _id: string;
-  userId: string;
-  balance: number;
-  currency: string;
-  ledger_balance: number;
-  is_locked: boolean;
-  createdAt: string;
-  updatedAt: string;
-  transactions?: WalletTransactionDto[];
 }
 
 export interface WalletTransactionDto {
-  userId: string;
+  id: string;
+  type: 'credit' | 'debit';
   amount: number;
   currency: string;
-  transaction_type: string;
+  description: string;
+  date: string;
+  status: 'pending' | 'success' | 'failed';
   reference: string;
-  narration: string;
-  status: string;
-  transaction_date: string;
-  channel?: string;
+}
+
+export interface WalletHistoryResponseDto {
+  transactions: WalletTransactionDto[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface WalletResponseDto {
+  userId?: string;
+  balance?: number;
+  currency?: string;
+  transactions?: WalletTransactionDto[];
 }

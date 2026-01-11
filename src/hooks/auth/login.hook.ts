@@ -1,9 +1,9 @@
 import { AuthService } from '@/api/AuthService';
 import { ClientProfileService } from '@/api/ClientProfileService';
 import { CreativeProfileService } from '@/api/CreativeProfileService';
-import { SubscriptionService } from '@/api/SubscriptionService';
-import { OnboardingService } from '@/api/OnboardingService';
 import { LeadsService } from '@/api/LeadFormService';
+import { OnboardingService } from '@/api/OnboardingService';
+import { SubscriptionService } from '@/api/SubscriptionService';
 import { STORE_KEYS } from '@/configs/store.config';
 import { dashboardRoutes } from '@/constants/ClientRoute';
 import { SecurityHelper } from '@/helpers/SecurityHelper';
@@ -115,17 +115,17 @@ export const useLoginHook = () => {
         setGoogleLoading(false);
       }
     } else {
-      if (response.responseMessage.includes('confirm your email')) {
+      if (response.responseMessage?.includes('confirm your email')) {
         const errorRes: any = response;
         setLocalStorageItem(STORE_KEYS.TEMP_EMAIL, data?.email ?? '');
         router.push('/email-verification');
       }
-      if (response.responseMessage.includes('Login confirmation required')) {
+      if (response.responseMessage?.includes('Login confirmation required')) {
         const errorRes: any = response;
         setLocalStorageItem(STORE_KEYS.TEMP_EMAIL, errorRes.responseData?.email ?? '');
         router.push('/admin/login-confirmation');
       }
-      toast.error(response?.responseMessage);
+      toast.error(response?.responseMessage || 'An error occurred during login');
       setGoogleLoading(false);
     }
   };
@@ -172,7 +172,7 @@ export const useLoginHook = () => {
         onboardingStep,
         primaryWorkflow,
         primaryModule,
-        lastAccessedModule
+        lastAccessedModule,
       });
 
       // If onboarding not completed, redirect based on last step

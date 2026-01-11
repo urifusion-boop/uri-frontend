@@ -1,9 +1,9 @@
 import ChartLine from '@/utils/icon/ChartLine';
 import HeartRateSearch from '@/utils/icon/HeartRateSearch';
-import { HiHashtag } from 'react-icons/hi';
-import { MdRecordVoiceOver, MdAssessment } from 'react-icons/md';
 import { BsGraphUp } from 'react-icons/bs';
-import { FaUser, FaBuilding, FaComments } from 'react-icons/fa';
+import { FaBuilding, FaComments, FaUser } from 'react-icons/fa';
+import { HiHashtag } from 'react-icons/hi';
+import { MdAssessment, MdRecordVoiceOver } from 'react-icons/md';
 
 export interface WorkflowModule {
   id: string;
@@ -83,14 +83,14 @@ export const WORKFLOWS: Record<string, Workflow> = {
       },
       {
         id: 'conversational-leads',
-        name: 'Conversational Leads',
-        description: 'Track leads from conversations',
+        name: 'Sales Signals',
+        description: 'Public online conversations indicating buying intent, pain, or opportunity',
         route: '/leads-tracking/forms/leads?type=conversational',
         icon: FaComments,
       },
     ],
   },
-  'crm': {
+  crm: {
     id: 'crm',
     name: 'CRM',
     description: 'Manage leads & sales pipeline',
@@ -120,5 +120,5 @@ export const getModuleRoute = (moduleId: string): string => {
 export const getWorkflowModules = (workflowId: string): string[] => {
   const workflow = WORKFLOWS[workflowId];
   if (!workflow) return [];
-  return workflow.modules.map(m => m.id);
+  return workflow.modules.map((m) => m.id);
 };

@@ -11,11 +11,12 @@ import { FormTypeEnum } from '@/models/enum-models/FormTypeEnum';
 import { useAuth } from '@/providers/AuthProvider';
 import { useFeatureLimitStore } from '@/store/useFeatureLimitStore';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
-import { Box, IconButton, Tooltip, Typography } from '@mui/material';
+import { Box, IconButton, TextField, Tooltip, Typography } from '@mui/material';
 import Image from 'next/image';
 import router from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { HiPencil } from 'react-icons/hi';
 
 const BusinessLeadForm = () => {
@@ -40,22 +41,51 @@ const BusinessLeadForm = () => {
   const { mutate: triggerAutoPopulate, data: autoPopulatedResponse, isSuccess: autoPopulateSuccess } = autoPopulateLeadForm;
   const [openSuccessModal, setOpenSuccessModal] = useState(false);
   const [showLimitExceededModal, setShowLimitExceededModal] = useState(false);
+  const [showLeadGoalModal, setShowLeadGoalModal] = useState(false);
+  const leadGoalRef = useRef<HTMLDivElement>(null);
 
   const { userDetails, subscriptionPlanType } = useAuth();
   const userId = userDetails?.userId;
   const featureLimit = useFeatureLimitStore((state) => state.featureLimit);
 
-  const { createBusinessSearchLeadForm, updateBusinessSearchLeadForm, useGetExistingFormType } = useLeadFormHooks();
+  const { createBusinessSearchLeadForm, updateBusinessSearchLeadForm, useGetExistingFormType, useGetLeadFormById, useGetFormsByUserAndType } = useLeadFormHooks();
 
-  const { data: existingForm, isSuccess } = useGetExistingFormType(userId || '', FormTypeEnum.BUSINESS);
+  // Check if we're in create mode (creating a new form) or edit mode (editing existing)
+  const isCreateMode = router.query.mode === 'create';
+  const formIdFromUrl = router.query.form_id as string;
+
+  // Fetch form by ID if form_id is provided, otherwise fetch by type (gets first/default)
+  const { data: formById, isSuccess: isSuccessById } = useGetLeadFormById(formIdFromUrl);
+  const { data: formByType, isSuccess: isSuccessByType } = useGetExistingFormType(userId || '', FormTypeEnum.BUSINESS);
+
+  // Fetch all forms of this type for the selector dropdown
+  const { data: allFormsOfType = [] } = useGetFormsByUserAndType(userId || '', FormTypeEnum.BUSINESS);
+
+  // Priority: form_id > form_type (specific form takes precedence)
+  const existingForm = formIdFromUrl ? formById : formByType;
+  const isSuccess = formIdFromUrl ? isSuccessById : isSuccessByType;
+
+  const hasMultipleForms = allFormsOfType.length > 1;
+
+  const handleFormSelect = (formId: string) => {
+    router.push(
+      {
+        pathname: router.pathname,
+        query: { ...router.query, form_id: formId },
+      },
+      undefined,
+      { shallow: true }
+    );
+  };
 
   useEffect(() => {
     console.log('existingForm', existingForm);
-    if (existingForm && isSuccess && userId) {
-      const { form_title, business_name, business_summary, business_website, ai_response_guide, keywords, competitors, lead_form_id } = existingForm;
+    // Only load existing form data if NOT in create mode
+    if (existingForm && isSuccess && userId && !isCreateMode) {
+      const { form_title, business_name, business_summary, business_website, ai_response_guide, keywords, competitors, lead_form_id, lead_generation_goal } = existingForm;
 
       setForm({
-        user_id: userId,
+        user_id: userId!,
         form_title,
         business_name,
         business_summary,
@@ -63,6 +93,7 @@ const BusinessLeadForm = () => {
         ai_response_guide,
         keywords,
         competitors,
+        lead_generation_goal,
       });
 
       if (keywords) {
@@ -70,8 +101,23 @@ const BusinessLeadForm = () => {
       }
 
       setExistingFormId(lead_form_id);
+    } else if (isCreateMode) {
+      // In create mode, reset form to blank state and ensure existingFormId is null
+      setForm({
+        user_id: userId || '',
+        form_title: 'Business Lead Form',
+        business_name: '',
+        business_summary: '',
+        business_website: '',
+        ai_response_guide: '',
+        keywords: [],
+        competitors: [],
+        lead_generation_goal: '',
+      });
+      setKeywords([]);
+      setExistingFormId(null);
     }
-  }, [existingForm, isSuccess, userId]);
+  }, [existingForm, isSuccess, userId, isCreateMode, formIdFromUrl]);
 
   const handleChange = (field: keyof BusinessSearchFormDto, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -83,6 +129,16 @@ const BusinessLeadForm = () => {
       return;
     }
 
+    // Check if lead_generation_goal is empty
+    if (!form.lead_generation_goal || form.lead_generation_goal.trim() === '') {
+      setShowLeadGoalModal(true);
+      return;
+    }
+
+    proceedWithSave();
+  };
+
+  const proceedWithSave = () => {
     const leadLimit = featureLimit?.lead?.noOfLeads?.limit ?? 0;
     const leadCount = featureLimit?.lead?.noOfLeads?.count ?? 0;
     const isUnlimited = leadLimit === -1;
@@ -97,13 +153,13 @@ const BusinessLeadForm = () => {
 
     const payload: BusinessSearchFormDto = {
       ...form,
-      user_id: userId,
+      user_id: userId!,
       keywords: keywords,
     };
 
     if (existingFormId) {
       const updatePayload: BusinessSearchFormDto = {
-        user_id: userId,
+        user_id: userId || '',
         form_title: payload.form_title || '',
         business_name: payload.business_name || '',
         business_summary: payload.business_summary || '',
@@ -111,6 +167,7 @@ const BusinessLeadForm = () => {
         ai_response_guide: payload.ai_response_guide || '',
         keywords: payload.keywords || [],
         competitors: payload.competitors || [],
+        lead_generation_goal: payload.lead_generation_goal || '',
       };
 
       updateBusinessSearchLeadForm.mutate(
@@ -164,7 +221,7 @@ const BusinessLeadForm = () => {
   const handleAutoPopulate = () => {
     if (!userId) return;
     triggerAutoPopulate({
-      user_id: userId,
+      user_id: userId!,
       lead_form_type: FormTypeEnum.BUSINESS,
       data: autoPopulateData,
     });
@@ -293,6 +350,34 @@ const BusinessLeadForm = () => {
           </Box>
         </Box>
 
+        {/* Lead Generation Goal - Positioned before submit button */}
+        <Box ref={leadGoalRef} sx={{ mt: 4, mb: 3 }}>
+          <Typography variant="body2" sx={{ color: '#374151', mb: 1, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+            What's your goal with these leads? (Optional)
+            <Tooltip
+              title="Tell us your business objective. AI will use this to generate personalized next steps for each lead. Example: 'I want to sell productivity tools to startup founders'"
+              arrow
+            >
+              <InfoOutlinedIcon fontSize="small" sx={{ ml: 0.5, color: '#9ca3af' }} />
+            </Tooltip>
+          </Typography>
+          <TextField
+            fullWidth
+            multiline
+            rows={1}
+            placeholder="e.g., I want to partner with similar businesses in my industry"
+            value={form.lead_generation_goal || ''}
+            onChange={(e) => handleChange('lead_generation_goal', e.target.value)}
+            variant="outlined"
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '8px',
+                backgroundColor: '#FAFBFC',
+              },
+            }}
+          />
+        </Box>
+
         <Box sx={{ textAlign: 'center', pt: 3, borderTop: '1px solid #e5e7eb' }}>
           <LoadingButton
             onClick={handleSubmit}
@@ -330,6 +415,40 @@ const BusinessLeadForm = () => {
         currentUsage={featureLimit?.lead?.noOfLeads?.count ?? 0}
         limit={featureLimit?.lead?.noOfLeads?.limit ?? 0}
         planName={subscriptionPlanType ?? 'your current plan'}
+      />
+
+      {/* Lead Goal Reminder Modal */}
+      <SmartModal
+        open={showLeadGoalModal}
+        onClose={() => {
+          setShowLeadGoalModal(false);
+          proceedWithSave();
+        }}
+        image={<Box sx={{ fontSize: 48 }}>🎯</Box>}
+        mainText="Add Your Lead Goal?"
+        subText="Providing your lead generation goal helps our AI generate personalized, actionable next steps for each lead—making your outreach more effective."
+        handleAction={() => {
+          setShowLeadGoalModal(false);
+          leadGoalRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => {
+            const textField = leadGoalRef.current?.querySelector('textarea');
+            if (textField) {
+              textField.focus();
+              textField.style.border = '2px solid #CD1B78';
+              textField.style.boxShadow = '0 0 0 3px rgba(205, 27, 120, 0.1)';
+              setTimeout(() => {
+                textField.style.border = '';
+                textField.style.boxShadow = '';
+              }, 3000);
+            }
+          }, 500);
+        }}
+        actionText="Add Lead Goal"
+        handleCancel={() => {
+          setShowLeadGoalModal(false);
+          proceedWithSave();
+        }}
+        cancelText="Continue Without Goal"
       />
     </Box>
   );

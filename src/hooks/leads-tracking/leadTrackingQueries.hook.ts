@@ -28,11 +28,11 @@ export const useLeadQueries = (
   const userId = userDetails?.userId ?? '';
 
   // Get filters from store
-  const { leadStatus, interestLevel, dateFilter, leadsDateFilter, leadSource, leadStarred, setLeadsData } = useLeadTrackingStore((state) => state);
+  const { leadStatus, interestLevel, dateFilter, leadsDateFilter, leadSource, leadStarred, leadFormSnapshotId, setLeadsData } = useLeadTrackingStore((state) => state);
 
   // Query to fetch leads by filters or search
   const leadsQuery = useQuery({
-    queryKey: ['leads-data', userId, searchValue, page, pageSize, leadStatus, interestLevel, leadSource, leadStarred, leadsDateFilter, leadType],
+    queryKey: ['leads-data', userId, searchValue, page, pageSize, leadStatus, interestLevel, leadSource, leadStarred, leadsDateFilter, leadFormSnapshotId, leadType],
     queryFn: async () => {
       if (searchValue) {
         const result = await LeadsService.search({
@@ -53,6 +53,7 @@ export const useLeadQueries = (
         ...(leadSource && { lead_source: leadSource }),
         ...(leadStarred === 'star' && { starred: leadStarred === 'star' }),
         ...(leadsDateFilter && { date_filter: leadsDateFilter }),
+        ...(leadFormSnapshotId && { lead_form_snapshot_id: leadFormSnapshotId }),
       });
 
       setLeadsData(result.responseData?.data ?? []);

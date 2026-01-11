@@ -6,7 +6,6 @@ import { LeadDto } from '@/models/dtos/LeadsDto';
 import { CampaignPlatformEnum } from '@/models/enum-models/PlatformEnum';
 import { Box, FormControl, MenuItem, Pagination, Select, Typography } from '@mui/material';
 import IdentityBox from '../boxes/IdentityBox';
-import StatusBox from '../boxes/StatusBox';
 
 interface BusinessTableColumnProps {
   data: LeadDto[];
@@ -41,21 +40,6 @@ const BusinessTableCard = ({ data, total, page, pageSize, search, setPage, setPa
       render: (_, row) => <Typography className="text-sm text-gray-600">{row.lead_source ?? '-'}</Typography>,
     },
     {
-      key: 'opportunity_type',
-      title: 'Opportunity Type',
-      render: (_, row) => <Typography className="text-sm text-gray-600">{row.opportunity_type ?? '-'}</Typography>,
-    },
-    {
-      key: 'tags',
-      title: 'Tags',
-      render: (_, row) => <Typography className="text-sm text-gray-600">{row.tags?.join(', ') ?? '-'}</Typography>,
-    },
-    {
-      key: 'lead_status',
-      title: 'Lead Status',
-      render: (_, row) => <StatusBox label={row.lead_status ?? '-'} />,
-    },
-    {
       key: 'social_profile_link',
       title: 'Profile Links',
       render: (_, row) => {
@@ -86,6 +70,15 @@ const BusinessTableCard = ({ data, total, page, pageSize, search, setPage, setPa
           </div>
         );
       },
+    },
+    {
+      key: 'form_title',
+      title: 'Generated From',
+      render: (_, row) => (
+        <Typography className="text-sm text-gray-600" sx={{ fontWeight: 500 }}>
+          {row.form_title || '-'}
+        </Typography>
+      ),
     },
     {
       key: 'created_date',

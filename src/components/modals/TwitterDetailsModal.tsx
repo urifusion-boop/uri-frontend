@@ -1,13 +1,17 @@
 import { LeadDto } from '@/models/dtos/LeadsDto';
-import { Dialog, DialogTitle, DialogContent, Box, Typography, IconButton, Chip, Link, Divider } from '@mui/material';
+import { LeadSourceEnum } from '@/models/enum-models/LeadSourceEnum';
+import { SvgIconComponent } from '@mui/icons-material';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import CloseIcon from '@mui/icons-material/Close';
-import TwitterIcon from '@mui/icons-material/Twitter';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import LinkIcon from '@mui/icons-material/Link';
 import PersonIcon from '@mui/icons-material/Person';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
-import { SvgIconComponent } from '@mui/icons-material';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import WorkIcon from '@mui/icons-material/Work';
+import { Box, Chip, Dialog, DialogContent, DialogTitle, Divider, IconButton, Link, Typography } from '@mui/material';
 
 interface TwitterDetailsModalProps {
   open: boolean;
@@ -48,6 +52,20 @@ const platformConfigs: Record<string, PlatformConfig> = {
     color: '#000000',
     contentLabel: 'TikTok Content',
     urlLabel: 'TikTok URL',
+  },
+  job_boards: {
+    name: 'Job Board',
+    icon: WorkIcon,
+    color: '#2563eb',
+    contentLabel: 'Job Description',
+    urlLabel: 'Job Posting URL',
+  },
+  'job boards': {
+    name: 'Job Board',
+    icon: WorkIcon,
+    color: '#2563eb',
+    contentLabel: 'Job Description',
+    urlLabel: 'Job Posting URL',
   },
 };
 
@@ -132,12 +150,7 @@ const TwitterDetailsModal = ({ open, onClose, lead }: TwitterDetailsModalProps) 
               </Typography>
             </Box>
             <Box sx={{ ml: 3.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Chip
-                label={(lead as any).sentiment}
-                color={getSentimentColor((lead as any).sentiment)}
-                size="small"
-                sx={{ textTransform: 'capitalize' }}
-              />
+              <Chip label={(lead as any).sentiment} color={getSentimentColor((lead as any).sentiment)} size="small" sx={{ textTransform: 'capitalize' }} />
               {(lead as any).confidence && (
                 <Typography variant="caption" color="text.secondary">
                   Confidence: {((lead as any).confidence * 100).toFixed(0)}%
@@ -197,6 +210,110 @@ const TwitterDetailsModal = ({ open, onClose, lead }: TwitterDetailsModalProps) 
               {lead[platformConfig.profileUrlField] as string}
             </Link>
           </Box>
+        )}
+
+        {/* Job Signal-Specific Fields */}
+        {lead.lead_source === LeadSourceEnum.JOB_BOARDS && (
+          <>
+            {/* Job Details */}
+            {(lead.hiring_company || lead.job_title_field || lead.job_posting_url) && (
+              <Box sx={{ mb: 3, p: 2, backgroundColor: '#eff6ff', borderRadius: 2, border: '1px solid #bfdbfe' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <WorkIcon sx={{ color: '#2563eb', fontSize: 20 }} />
+                  <Typography variant="subtitle2" fontWeight={600} color="#1e40af">
+                    Job Posting Details
+                  </Typography>
+                </Box>
+                {lead.hiring_company && (
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    <strong>Company:</strong> {lead.hiring_company}
+                  </Typography>
+                )}
+                {lead.job_title_field && (
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    <strong>Position:</strong> {lead.job_title_field}
+                  </Typography>
+                )}
+                {lead.job_source && (
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    <strong>Source:</strong> {lead.job_source}
+                  </Typography>
+                )}
+                {lead.job_posting_url && (
+                  <Link
+                    href={lead.job_posting_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      display: 'block',
+                      color: '#2563eb',
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' },
+                      fontSize: '0.875rem',
+                      mt: 1,
+                    }}
+                  >
+                    View Job Posting →
+                  </Link>
+                )}
+              </Box>
+            )}
+
+            {/* Signal Scores */}
+            {(lead.commercial_relevance !== undefined || lead.problem_solution_match !== undefined || lead.hiring_intent_score !== undefined) && (
+              <Box sx={{ mb: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <TrendingUpIcon sx={{ color: '#6b7280', fontSize: 20 }} />
+                  <Typography variant="subtitle2" fontWeight={600} color="text.secondary">
+                    Signal Scores
+                  </Typography>
+                </Box>
+                <Box sx={{ ml: 3.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  {lead.commercial_relevance !== undefined && (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="body2">Commercial Relevance:</Typography>
+                      <Chip
+                        label={`${(lead.commercial_relevance * 100).toFixed(0)}%`}
+                        size="small"
+                        color={lead.commercial_relevance >= 0.7 ? 'success' : lead.commercial_relevance >= 0.5 ? 'warning' : 'default'}
+                      />
+                    </Box>
+                  )}
+                  {lead.problem_solution_match !== undefined && (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="body2">Problem-Solution Match:</Typography>
+                      <Chip label={`${(lead.problem_solution_match * 100).toFixed(0)}%`} size="small" />
+                    </Box>
+                  )}
+                  {lead.hiring_intent_score !== undefined && (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="body2">Hiring Intent:</Typography>
+                      <Chip label={`${(lead.hiring_intent_score * 100).toFixed(0)}%`} size="small" />
+                    </Box>
+                  )}
+                </Box>
+              </Box>
+            )}
+
+            {/* Implied Problems */}
+            {lead.implied_problems && lead.implied_problems.length > 0 && (
+              <Box sx={{ mb: 3, p: 2, backgroundColor: '#fef3c7', borderRadius: 2, border: '1px solid #fcd34d' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                  <ErrorOutlineIcon sx={{ color: '#d97706', fontSize: 20 }} />
+                  <Typography variant="subtitle2" fontWeight={600} color="#92400e">
+                    Implied Business Problems
+                  </Typography>
+                </Box>
+                <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
+                  {lead.implied_problems.map((problem, index) => (
+                    <Typography key={index} component="li" variant="body2" sx={{ color: '#78350f', mb: 0.5 }}>
+                      {problem}
+                    </Typography>
+                  ))}
+                </Box>
+              </Box>
+            )}
+          </>
         )}
 
         {/* Created Date */}

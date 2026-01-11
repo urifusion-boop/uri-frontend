@@ -1,9 +1,8 @@
 import { BiBook } from 'react-icons/bi';
-import { FaFolder } from 'react-icons/fa';
+import { FaWallet } from 'react-icons/fa';
 import { FaMagnifyingGlassChart, FaUserTie } from 'react-icons/fa6';
 import { GrAction, GrNotification } from 'react-icons/gr';
 
-import AlertOnFilled from '@/utils/icon/AlertOnFilled';
 import ChartLine from '@/utils/icon/ChartLine';
 import HeartRateSearch from '@/utils/icon/HeartRateSearch';
 import { BiBot } from 'react-icons/bi';
@@ -84,6 +83,12 @@ export const dashboardLinks: ILink[] = [
         icon: FaList,
       },
     ],
+  },
+  {
+    label: 'Wallet',
+    route: '/wallet',
+    icon: FaWallet,
+    tourKey: 'tour-wallet-btn',
   },
   {
     label: 'Insight Assistant',

@@ -1,15 +1,15 @@
 import { RealtimeLeadDto } from '@/models/dtos/RealtimeLeadDto';
-import { Box, Typography, Avatar, Chip, IconButton, Collapse, Button } from '@mui/material';
-import { useState } from 'react';
+import { BrowsercloudPlatformEnum, PlatformDisplayNames } from '@/models/enum-models/BrowsercloudPlatformEnum';
 import CloseIcon from '@mui/icons-material/Close';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TwitterIcon from '@mui/icons-material/Twitter';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import { BrowsercloudPlatformEnum, PlatformDisplayNames } from '@/models/enum-models/BrowsercloudPlatformEnum';
+import { Avatar, Box, Button, Chip, Collapse, IconButton, Typography } from '@mui/material';
 import { formatDistanceToNow } from 'date-fns';
+import { useState } from 'react';
 
 interface RealtimeLeadNotificationProps {
   lead: RealtimeLeadDto;
@@ -21,19 +21,12 @@ const PlatformIcons: Record<BrowsercloudPlatformEnum, React.ReactElement> = {
   [BrowsercloudPlatformEnum.TWITTER]: <TwitterIcon sx={{ fontSize: 16 }} />,
   [BrowsercloudPlatformEnum.LINKEDIN]: <LinkedInIcon sx={{ fontSize: 16 }} />,
   [BrowsercloudPlatformEnum.FACEBOOK]: <FacebookIcon sx={{ fontSize: 16 }} />,
-  [BrowsercloudPlatformEnum.THREADS]: (
-    <Box sx={{ fontSize: 14, fontWeight: 'bold', fontFamily: 'monospace' }}>@</Box>
-  ),
-  [BrowsercloudPlatformEnum.TIKTOK]: (
-    <Box sx={{ fontSize: 14, fontWeight: 'bold', fontFamily: 'sans-serif' }}>♪</Box>
-  ),
+  [BrowsercloudPlatformEnum.THREADS]: <Box sx={{ fontSize: 14, fontWeight: 'bold', fontFamily: 'monospace' }}>@</Box>,
+  [BrowsercloudPlatformEnum.TIKTOK]: <Box sx={{ fontSize: 14, fontWeight: 'bold', fontFamily: 'sans-serif' }}>♪</Box>,
+  [BrowsercloudPlatformEnum.JOB_BOARDS]: <Box sx={{ fontSize: 14, fontWeight: 'bold', fontFamily: 'sans-serif' }}>💼</Box>,
 };
 
-const RealtimeLeadNotification: React.FC<RealtimeLeadNotificationProps> = ({
-  lead,
-  onDismiss,
-  onViewDetails,
-}) => {
+const RealtimeLeadNotification: React.FC<RealtimeLeadNotificationProps> = ({ lead, onDismiss, onViewDetails }) => {
   const [expanded, setExpanded] = useState(false);
 
   const { source, ai_analysis, lead_score } = lead;
@@ -66,11 +59,7 @@ const RealtimeLeadNotification: React.FC<RealtimeLeadNotificationProps> = ({
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1 }}>
-          <Avatar
-            src={source.author_url}
-            alt={source.author_name}
-            sx={{ width: 40, height: 40 }}
-          >
+          <Avatar src={source.author_url} alt={source.author_name} sx={{ width: 40, height: 40 }}>
             {source.author_name.charAt(0).toUpperCase()}
           </Avatar>
 
@@ -135,12 +124,7 @@ const RealtimeLeadNotification: React.FC<RealtimeLeadNotificationProps> = ({
         </Typography>
 
         {source.post_content.length > 150 && (
-          <Button
-            size="small"
-            endIcon={expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            onClick={() => setExpanded(!expanded)}
-            sx={{ mt: 0.5, fontSize: '12px', textTransform: 'none' }}
-          >
+          <Button size="small" endIcon={expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />} onClick={() => setExpanded(!expanded)} sx={{ mt: 0.5, fontSize: '12px', textTransform: 'none' }}>
             {expanded ? 'Show less' : 'Show more'}
           </Button>
         )}
@@ -194,16 +178,8 @@ const RealtimeLeadNotification: React.FC<RealtimeLeadNotificationProps> = ({
               {ai_analysis.summary}
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-              <Chip
-                label={ai_analysis.opportunity_type}
-                size="small"
-                sx={{ fontSize: '10px', height: 20 }}
-              />
-              <Chip
-                label={ai_analysis.interest_level}
-                size="small"
-                sx={{ fontSize: '10px', height: 20 }}
-              />
+              <Chip label={ai_analysis.opportunity_type} size="small" sx={{ fontSize: '10px', height: 20 }} />
+              <Chip label={ai_analysis.interest_level} size="small" sx={{ fontSize: '10px', height: 20 }} />
             </Box>
           </Box>
         )}

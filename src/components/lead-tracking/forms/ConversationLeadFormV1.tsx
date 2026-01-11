@@ -20,7 +20,7 @@ import { HiPencil } from 'react-icons/hi';
 const ConversationLeadForm = () => {
   const [form, setForm] = useState<ConversationalSearchFormDto>({
     user_id: '',
-    form_title: 'Conversational Lead Form',
+    form_title: 'Sales Signal Form',
     ai_response_guide: '',
     keywords: [],
     competitors: [],
@@ -156,7 +156,7 @@ const ConversationLeadForm = () => {
     <Box sx={{ maxWidth: '950px', mx: 'auto', mt: 4 }}>
       <Box sx={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e5e7eb', p: { xs: 3, md: 5 }, boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)' }}>
         <Typography variant="h6" sx={{ textAlign: 'center', fontWeight: 600, mb: 1, color: '#1f2937' }}>
-          Conversational Lead Form
+          Sales Signal Form
         </Typography>
         <Typography variant="body2" sx={{ textAlign: 'center', color: '#6b7280', mb: 4 }}>
           {existingFormId ? 'Edit your existing form' : 'What would you like to generate leads for?'}

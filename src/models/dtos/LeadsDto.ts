@@ -60,6 +60,32 @@ export interface LeadDto {
   company_size_range?: string;
   sentiment?: string;
   confidence?: number;
+  commercial_relevance?: number;
+  problem_solution_match?: number;
+  company_confidence?: number;
+  implied_problems?: string[];
+  job_posting_url?: string;
+  job_title_field?: string;
+  hiring_company?: string;
+  hiring_intent_score?: number;
+  job_source?: string;
+  lead_form_snapshot_id?: string;
+  form_title?: string;
+  ai_next_steps?: {
+    steps: Array<{
+      step_id: string;
+      action: string;
+      reasoning: string;
+      priority: 'high' | 'medium' | 'low';
+      confidence: number;
+      platform?: string;
+      completed: boolean;
+      completed_at?: string;
+    }>;
+    generated_at: string;
+    based_on_goal: string;
+    summary: string;
+  };
 }
 
 export interface GetByFiltersLeadsDtoParameters {
@@ -72,6 +98,7 @@ export interface GetByFiltersLeadsDtoParameters {
   starred?: boolean;
   date_filter?: string;
   lead_type?: string;
+  lead_form_snapshot_id?: string;
 }
 
 export interface ExportLeadDto {

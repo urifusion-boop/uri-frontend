@@ -27,6 +27,7 @@ import FeatureHeader from './FeatureHeader';
 import FormSnapshotTab from './FormSnapshotTab';
 import LeadsTab from './LeadsTab';
 import ManageLeadsTab from './ManageLeadsTab';
+import UnqualifiedTab from './UnqualifiedTab';
 
 // components/lead-tracking/LeadsView.tsx
 type LeadsViewProps = {
@@ -39,7 +40,7 @@ type LeadsViewProps = {
 const LeadsView = ({ leadType, label, icon, excludeTabs = [] }: LeadsViewProps) => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const isMobile = useMediaQuery('(max-width:800px)');
-  const tabs = ['leads', 'manage', 'snapshots', 'analytics'] as string[];
+  const tabs = ['leads', 'unqualified', 'manage', 'snapshots', 'analytics'] as string[];
   const filteredTabs = useMemo(() => tabs.filter((t) => !excludeTabs.includes(t)), [excludeTabs]);
 
   const defaultTab = filteredTabs.includes('leads') ? 'leads' : filteredTabs[0];
@@ -111,6 +112,8 @@ const LeadsView = ({ leadType, label, icon, excludeTabs = [] }: LeadsViewProps) 
         buttonText={generateButtonText}
         onExportClick={toggleExportModal}
         //onImportClick={toggleImportModal}
+        onCreateNewClick={() => router.push(`/leads-tracking/forms/manage?type=${LeadHelper.getLeadFormType(leadType)}&mode=create`)}
+        allowCreateNew={!!leadsHookData.existingLeadForm}
         icon={icon}
         title={`${label} Leads`}
       />
@@ -157,6 +160,7 @@ const LeadsView = ({ leadType, label, icon, excludeTabs = [] }: LeadsViewProps) 
         }}
         tabs={filteredTabs}
         tourKey="tour-lead"
+        wrapperStyles={{ px: { xs: 2, sm: 3, md: 4 } }}
       />
 
       {useMemo(() => {
@@ -180,6 +184,8 @@ const LeadsView = ({ leadType, label, icon, excludeTabs = [] }: LeadsViewProps) 
                 refresh={leadsHookData.leadsQuery.refetch}
               />
             );
+          case 'unqualified':
+            return <UnqualifiedTab userId={userId || ''} leadFormSnapshotId={leadsHookData.existingLeadForm?.lead_form_snapshot_id} />;
           case 'manage':
             return (
               <ManageLeadsTab
@@ -196,7 +202,7 @@ const LeadsView = ({ leadType, label, icon, excludeTabs = [] }: LeadsViewProps) 
           case 'analytics':
             return <AnalyticsTab leadAnalyticsData={leadsHookData.leadAnalyticsData} loading={leadsHookData.isLoadingAnalytics} leadType={leadType} />;
         }
-      }, [activeTab, leadsHookData])}
+      }, [activeTab, leadsHookData, userId])}
 
       <ExportLeadsModal
         open={isExportModalOpen}

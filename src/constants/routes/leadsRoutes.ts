@@ -23,7 +23,13 @@ type ILeadsApi =
   | 'exportReport'
   | 'star'
   | 'unstar'
-  | 'enrich';
+  | 'enrich'
+  | 'getUserBusinessDetails'
+  | 'generateJobKeywords'
+  | 'validateSearchContext'
+  | 'findDecisionMakers'
+  | 'markNextStepComplete'
+  | 'nextStepsSummary';
 
 const rawLeadsApiRoutes: Record<ILeadsApi, string> = {
   create: '/lead/create',
@@ -46,6 +52,12 @@ const rawLeadsApiRoutes: Record<ILeadsApi, string> = {
   star: '/lead/star',
   unstar: '/lead/unstar',
   enrich: '/lead/enrich',
+  getUserBusinessDetails: '/lead/user-business-details',
+  generateJobKeywords: '/lead/generate-job-keywords',
+  validateSearchContext: '/lead/validate-search-context',
+  findDecisionMakers: '/lead/job-boards/:lead_id/find-decision-makers',
+  markNextStepComplete: '/leads/:lead_id/next-steps/:step_id/complete',
+  nextStepsSummary: '/leads/insights/next-steps-summary',
 };
 
 export const leadsApiRoutes: Record<ILeadsApi, string> = RouteHelper.createRoutes(URI_BACKEND_SVC_PATH, rawLeadsApiRoutes);

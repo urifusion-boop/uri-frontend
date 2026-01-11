@@ -30,8 +30,8 @@ const formTypes: FormType[] = [
   },
   {
     id: 'conversational',
-    title: 'Conversation Lead Form',
-    description: 'Capture social media conversations that may indicate interest in your products or services.',
+    title: 'Sales Signals Form',
+    description: 'Public online conversations indicating buying intent, pain, or opportunity.',
     icon: Description,
   },
 ];

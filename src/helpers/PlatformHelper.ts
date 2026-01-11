@@ -28,7 +28,7 @@ export class PlatformHelper {
 
   public static getSocialIcon(
     social_platform: string,
-    accountIcons: Record<'Instagram' | 'X' | 'TikTok' | 'Facebook' | 'Twitter' | 'Reddit' | 'Linkedin', React.ReactElement>
+    accountIcons: Record<'Instagram' | 'X' | 'TikTok' | 'Facebook' | 'Twitter' | 'Reddit' | 'Linkedin' | 'Jobberman' | 'LinkedIn_Jobs' | 'Indeed', React.ReactElement>
   ): React.ReactElement | null {
     // Map CampaignPlatformEnum values to accountIcons keys
     const platformIconMap: Record<string, keyof typeof accountIcons> = {
@@ -39,6 +39,9 @@ export class PlatformHelper {
       [CampaignPlatformEnum.TWITTER]: 'Twitter',
       [CampaignPlatformEnum.REDDIT]: 'Reddit',
       [CampaignPlatformEnum.LINKEDIN]: 'Linkedin',
+      [CampaignPlatformEnum.JOBBERMAN]: 'Jobberman',
+      [CampaignPlatformEnum.LINKEDIN_JOBS]: 'LinkedIn_Jobs',
+      [CampaignPlatformEnum.INDEED]: 'Indeed',
     };
 
     const platform = social_platform?.toUpperCase();
@@ -102,6 +105,8 @@ export class PlatformHelper {
     if (url.includes('facebook.com')) return CampaignPlatformEnum.FACEBOOK;
     if (url.includes('tiktok.com')) return CampaignPlatformEnum.TIKTOK;
     if (url.includes('twitter.com')) return CampaignPlatformEnum.TWITTER;
+    // Check for LinkedIn Jobs before regular LinkedIn
+    if (url.includes('linkedin.com/jobs')) return CampaignPlatformEnum.LINKEDIN_JOBS;
     if (url.includes('linkedin.com')) return CampaignPlatformEnum.LINKEDIN;
     if (url.includes('reddit.com')) return CampaignPlatformEnum.REDDIT;
     if (url.includes('snapchat.com')) return CampaignPlatformEnum.SNAPCHAT;
@@ -109,6 +114,9 @@ export class PlatformHelper {
     if (url.includes('telegram.org')) return CampaignPlatformEnum.TELEGRAM;
     if (url.includes('discord.com')) return CampaignPlatformEnum.DISCORD;
     if (url.includes('nairaland.com')) return CampaignPlatformEnum.NAIRALAND;
+    // Job boards
+    if (url.includes('jobberman.com')) return CampaignPlatformEnum.JOBBERMAN;
+    if (url.includes('indeed.com')) return CampaignPlatformEnum.INDEED;
     return CampaignPlatformEnum.WEBSITE;
   }
 }

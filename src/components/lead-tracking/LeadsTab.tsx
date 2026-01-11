@@ -1,17 +1,21 @@
 import { GetByFiltersLeadsDto, LeadDto } from '@/models/dtos/LeadsDto';
-import { ViewColumn, ViewModule } from '@mui/icons-material';
-import { Box, IconButton, Skeleton, Typography, Tooltip, Chip, Button } from '@mui/material';
 import { TwitterFetchResponseDto } from '@/models/dtos/TwitterDto';
-import { useEffect, useState } from 'react';
+import { ViewColumn, ViewModule } from '@mui/icons-material';
+import { Box, Button, Chip, IconButton, Skeleton, Tooltip, Typography } from '@mui/material';
+import { useEffect, useMemo, useState } from 'react';
 
 import { LightThemeColors } from '@/configs/colors.config';
+import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
+import { FormTypeEnum } from '@/models/enum-models/FormTypeEnum';
 import { LeadStatusEnum } from '@/models/enum-models/LeadStatusEnum';
 import { LeadTypeEnum } from '@/models/enum-models/LeadTypeEnum';
+import { useAuth } from '@/providers/AuthProvider';
 import { useLeadTrackingStore } from '@/store/leads-tracking/useLeadTrackingStore';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import BoltIcon from '@mui/icons-material/Bolt';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { UseQueryResult } from '@tanstack/react-query';
+import { useRouter } from 'next/router';
 import Select from '../atoms/Select';
 import LeadKanban from '../features/alert/LeadKanban';
 import SingleFieldInput from '../input/SingleFieldInput';
@@ -20,7 +24,6 @@ import ConversationalTableCard from './ConversationalTableCard';
 import IndividualTableCard from './IndividualTableCard';
 import OrganizationTableCard from './OrganizationTableCard';
 import RealtimeLeadsDashboard from './RealtimeLeadsDashboard';
-import { useRouter } from 'next/router';
 // Removed manual Save Twitter Leads functionality; auto-save now handled in fetch flow
 
 interface LeadsTabProps {
@@ -43,12 +46,45 @@ interface LeadsTabProps {
 const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, page, pageSize, setPage, setPageSize, search, setSearch, layout, setLayout, leadType, refresh }: LeadsTabProps) => {
   const filtersStore = useLeadTrackingStore((state) => state);
   const router = useRouter();
+  const { userDetails } = useAuth();
+  const userId = userDetails?.userId;
   const [twitterData, setTwitterData] = useState<TwitterFetchResponseDto | null>(null);
-  
+
+  // Fetch forms for the current lead type
+  const { useGetFormsByUserAndType } = useLeadFormHooks();
+
+  // Map LeadTypeEnum to FormTypeEnum
+  const formTypeMap: Record<LeadTypeEnum, FormTypeEnum> = {
+    [LeadTypeEnum.PERSON]: FormTypeEnum.PERSON,
+    [LeadTypeEnum.ORGANIZATION]: FormTypeEnum.ORGANIZATION,
+    [LeadTypeEnum.CONVERSATIONAL]: FormTypeEnum.CONVERSATIONAL,
+    [LeadTypeEnum.BUSINESS]: FormTypeEnum.BUSINESS,
+  };
+
+  const formType = leadType ? formTypeMap[leadType] : undefined;
+
+  const { data: formsResponse } = useGetFormsByUserAndType(userId || '', formType || FormTypeEnum.PERSON);
+
+  // Create form options for the dropdown
+  const formOptions = useMemo((): { value: string; label: string; form_title: string }[] => {
+    if (!formsResponse || !Array.isArray(formsResponse)) {
+      const forms = (formsResponse as any)?.data || [];
+      if (!forms || forms.length === 0) return [];
+
+      const formsList = forms.map((form: any) => ({
+        value: form.lead_form_id,
+        label: form.form_title,
+        form_title: form.form_title,
+      }));
+
+      return formsList as { value: string; label: string; form_title: string }[];
+    }
+    return [];
+  }, [formsResponse]);
 
   // Check if conversational type for real-time option
   const isConversationalType = leadType === LeadTypeEnum.CONVERSATIONAL;
-  
+
   // Check if we're coming from Twitter source
   const isTwitterSource = router.query.source === 'twitter';
 
@@ -67,17 +103,11 @@ const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, 
     }
   }, [isTwitterSource, isConversationalType]);
 
-  
-
   return (
     <Box className="bg-white h-full p-4 border-l">
       <Box className="flex items-center justify-between">
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Typography className="text-2xl font-medium">
-            {isTwitterSource && twitterData 
-              ? `${twitterData.responseData.total_tweets} Twitter Results` 
-              : `${leadsData?.data?.total} Leads`}
-          </Typography>
+          <Typography className="text-2xl font-medium">{isTwitterSource && twitterData ? `${twitterData.responseData.total_tweets} Twitter Results` : `${leadsData?.data?.total} Leads`}</Typography>
           {isConversationalType && layout === 'realtime' && (
             <Chip
               icon={<BoltIcon sx={{ fontSize: 14 }} />}
@@ -155,6 +185,15 @@ const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, 
                   value={filtersStore.interestLevel ?? ''}
                   containerClassName="max-w-[300px] w-full"
                 />
+                {formOptions.length > 0 && (
+                  <Select
+                    options={formOptions}
+                    placeholder="Form"
+                    onChange={(value) => filtersStore.setLeadFormSnapshotId(value)}
+                    value={filtersStore.leadFormSnapshotId ?? ''}
+                    containerClassName="max-w-[250px] w-full min-w-[180px]"
+                  />
+                )}
               </Box>
               <Box className="flex items-center gap-3 ml-3 mb-3">
                 <SingleFieldInput value={search} setValue={(e) => setSearch(e)} placeholder="Search" required={false} />
@@ -184,10 +223,7 @@ const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, 
                 </button>
                 {isConversationalType && (
                   <Tooltip title="Real-time View (VTweet) (disabled)">
-                    <button
-                      disabled
-                      className={`p-2 transition-all opacity-50 cursor-not-allowed ${layout === 'realtime' ? 'bg-gray-100 text-primary-600' : ''}`}
-                    >
+                    <button disabled className={`p-2 transition-all opacity-50 cursor-not-allowed ${layout === 'realtime' ? 'bg-gray-100 text-primary-600' : ''}`}>
                       <NotificationsActiveIcon />
                     </button>
                   </Tooltip>
