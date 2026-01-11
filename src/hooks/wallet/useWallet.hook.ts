@@ -1,6 +1,6 @@
 import { WalletService } from '@/api/WalletService';
 import { useToast } from '@/hooks/use-toast';
-import { FundWalletDto } from '@/models/dtos/WalletDto';
+import { FundWalletRequestDto } from '@/models/dtos/WalletDto';
 import { useAuth } from '@/providers/AuthProvider';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -23,8 +23,8 @@ export const useWallet = () => {
   });
 
   const { mutateAsync: fundWallet, isPending: isFundingWallet } = useMutation({
-    mutationFn: async (data: FundWalletDto) => {
-      const response = await WalletService.fundWallet(data);
+    mutationFn: async (data: FundWalletRequestDto) => {
+      const response = await WalletService.initiateFunding(data);
       return response;
     },
     onSuccess: (data) => {

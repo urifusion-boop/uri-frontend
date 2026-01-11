@@ -55,23 +55,23 @@ const WalletHistoryModal: React.FC<IProps> = ({ open, onClose, transactions }) =
                   <TableRow key={index}>
                     <TableCell>
                       <Text size={14} weight={400} mode="secondary">
-                        {dayjs(tx.transaction_date).format('MMM D, YYYY h:mm A')}
+                        {dayjs(tx.date).format('MMM D, YYYY h:mm A')}
                       </Text>
                     </TableCell>
                     <TableCell>
                       <Text size={14} weight={500}>
-                        {tx.narration}
+                        {tx.description}
                       </Text>
                       <Text size={12} weight={400} mode="secondary">
                         {tx.reference}
                       </Text>
                     </TableCell>
                     <TableCell>
-                      <Chip label={tx.transaction_type} size="small" color={tx.transaction_type === 'income' ? 'success' : 'default'} variant="outlined" />
+                      <Chip label={tx.type} size="small" color={tx.type === 'credit' ? 'success' : 'default'} variant="outlined" />
                     </TableCell>
                     <TableCell align="right">
-                      <Text size={14} weight={600} style={{ color: tx.transaction_type === 'income' ? 'green' : 'red' }}>
-                        {tx.transaction_type === 'income' ? '+' : '-'}₦{TextHelper.formatNumberWithCommas(tx.amount.toString())}
+                      <Text size={14} weight={600} style={{ color: tx.type === 'credit' ? 'green' : 'red' }}>
+                        {tx.type === 'credit' ? '+' : '-'}₦{TextHelper.formatNumberWithCommas(tx.amount.toString())}
                       </Text>
                     </TableCell>
                     <TableCell align="right">
