@@ -3,7 +3,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { authRoutes } from '@/constants/ClientRoute';
 import { useAuth } from '@/providers/AuthProvider';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BarChart3, Bell, BookOpen, Briefcase, ChevronDown, Database, FileText, GraduationCap, Hash, Heart, Lightbulb, Menu, MonitorPlay, Rocket, TrendingUp, Users, Video, Zap } from 'lucide-react';
+import { BarChart3, Bell, BookOpen, Briefcase, ChevronDown, Database, FileText, Hash, Heart, Lightbulb, Menu, MonitorPlay, Rocket, TrendingUp, Users, Video, Zap } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -134,7 +134,6 @@ const Navigation = () => {
           { icon: FileText, name: 'Blog', desc: 'Latest insights & tips', href: '/resources/blog' },
           { icon: BookOpen, name: 'Guides', desc: 'In-depth tutorials', href: '/resources/guides' },
           { icon: Video, name: 'Case Studies', desc: 'Success stories', href: '/resources/case-studies' },
-          { icon: GraduationCap, name: 'Uri Academy', desc: 'Learn sales & earn', href: 'https://academy.uricreative.com/' },
         ],
       },
       {
@@ -372,6 +371,9 @@ const Navigation = () => {
                 )}
               </AnimatePresence>
             </div>
+            <Link href="https://academy.uricreative.com/" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-foreground transition-colors font-medium">
+              Uri Academy
+            </Link>
             <Link href="/pricing" className="text-foreground/70 hover:text-foreground transition-colors font-medium">
               Pricing
             </Link>
@@ -540,6 +542,11 @@ const Navigation = () => {
                       )}
                     </AnimatePresence>
                   </div>
+
+                  {/* Uri Academy Mobile */}
+                  <Link href="https://academy.uricreative.com/" target="_blank" rel="noopener noreferrer" className="text-lg font-semibold" onClick={() => setMobileMenuOpen(false)}>
+                    Uri Academy
+                  </Link>
 
                   {/* Pricing Mobile */}
                   <Link href="/pricing" className="text-lg font-semibold" onClick={() => setMobileMenuOpen(false)}>
