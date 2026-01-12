@@ -504,104 +504,358 @@ export default function SignalRefineryTestPage() {
                   </Grid>
                 )}
 
-                {currentJob.leads && currentJob.leads.length > 0 && (
-                  <Box mt={3}>
-                    <Typography variant="subtitle1" fontWeight={600} color="#111827" mb={2}>
-                      Buyer Leads ({currentJob.leads.length})
-                    </Typography>
-                    <TableContainer>
-                      <Table>
-                        <TableHead>
-                          <TableRow sx={{ bgcolor: '#F9FAFB' }}>
-                            <TableCell sx={{ fontWeight: 600, color: '#374151' }}>Platform</TableCell>
-                            <TableCell sx={{ fontWeight: 600, color: '#374151' }}>Title</TableCell>
-                            <TableCell sx={{ fontWeight: 600, color: '#374151' }}>Classification</TableCell>
-                            <TableCell sx={{ fontWeight: 600, color: '#374151' }}>Rank</TableCell>
-                            <TableCell />
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {currentJob.leads.map((lead, idx) => (
-                            <React.Fragment key={lead.id}>
-                              <TableRow hover sx={{ cursor: 'pointer' }} onClick={() => toggleRow(lead.id)}>
-                                <TableCell>
-                                  <Chip
-                                    label={lead.platform}
-                                    size="small"
-                                    sx={{
-                                      bgcolor: platformColors[lead.platform as XRayPlatform],
-                                      color: '#fff',
-                                      fontWeight: 600,
-                                    }}
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  <Typography variant="body2" fontWeight={500} noWrap maxWidth={300}>
-                                    {lead.title}
-                                  </Typography>
-                                </TableCell>
-                                <TableCell>
-                                  <Box display="flex" alignItems="center" gap={0.5}>
-                                    {getClassificationIcon(lead.buyer_seller.classification)}
-                                    <Typography variant="caption" fontWeight={600}>
-                                      {lead.buyer_seller.classification}
+                {/* Raw Search Results */}
+                {currentJob.results && currentJob.results.length > 0 && (
+                  <Box
+                    mt={3}
+                    sx={{
+                      borderRadius: '12px',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      p: 0.2,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        borderRadius: '11px',
+                        background: '#fff',
+                        p: 3,
+                      }}
+                    >
+                      <Box display="flex" alignItems="center" gap={1.5} mb={2.5}>
+                        <Box
+                          sx={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: '10px',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <ScienceIcon sx={{ fontSize: 24, color: '#fff' }} />
+                        </Box>
+                        <Box flex={1}>
+                          <Typography variant="h6" fontWeight={700} color="#111827">
+                            Raw Google Results
+                          </Typography>
+                          <Typography variant="caption" color="#6B7280">
+                            {currentJob.results.length} posts/threads discovered from search
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      <Box
+                        sx={{
+                          borderRadius: '10px',
+                          border: '1px solid #E5E7EB',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <TableContainer>
+                          <Table>
+                            <TableHead>
+                              <TableRow sx={{ bgcolor: '#F9FAFB' }}>
+                                <TableCell sx={{ fontWeight: 600, color: '#374151', fontSize: '13px' }}>Platform</TableCell>
+                                <TableCell sx={{ fontWeight: 600, color: '#374151', fontSize: '13px' }}>Post/Thread Details</TableCell>
+                                <TableCell sx={{ fontWeight: 600, color: '#374151', fontSize: '13px', textAlign: 'center' }}>Rank</TableCell>
+                                <TableCell sx={{ fontWeight: 600, color: '#374151', fontSize: '13px', textAlign: 'center' }}>Action</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {currentJob.results.map((result, idx) => (
+                                <TableRow
+                                  key={idx}
+                                  hover
+                                  sx={{
+                                    cursor: 'pointer',
+                                    '&:hover': {
+                                      bgcolor: '#F9FAFB',
+                                    },
+                                    transition: 'all 0.2s ease',
+                                  }}
+                                  onClick={() => window.open(result.url, '_blank')}
+                                >
+                                  <TableCell sx={{ py: 2 }}>
+                                    <Chip
+                                      label={result.platform}
+                                      size="small"
+                                      sx={{
+                                        bgcolor: platformColors[result.platform as XRayPlatform],
+                                        color: '#fff',
+                                        fontWeight: 600,
+                                        fontSize: '11px',
+                                        height: '24px',
+                                      }}
+                                    />
+                                  </TableCell>
+                                  <TableCell sx={{ py: 2, maxWidth: 500 }}>
+                                    <Typography variant="body2" fontWeight={600} color="#111827" sx={{ mb: 0.5 }}>
+                                      {result.title}
                                     </Typography>
-                                  </Box>
-                                </TableCell>
-                                <TableCell>
-                                  <Chip label={`#${lead.google_rank}`} size="small" variant="outlined" />
-                                </TableCell>
-                                <TableCell>
-                                  <IconButton
-                                    size="small"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      toggleRow(lead.id);
+                                    <Typography variant="caption" color="#6B7280" sx={{ display: 'block', lineHeight: 1.4 }}>
+                                      {result.snippet.length > 120 ? `${result.snippet.substring(0, 120)}...` : result.snippet}
+                                    </Typography>
+                                  </TableCell>
+                                  <TableCell align="center" sx={{ py: 2 }}>
+                                    <Chip
+                                      label={`#${result.google_rank}`}
+                                      size="small"
+                                      variant="outlined"
+                                      sx={{
+                                        borderColor: '#667eea',
+                                        color: '#667eea',
+                                        fontWeight: 600,
+                                        fontSize: '11px',
+                                      }}
+                                    />
+                                  </TableCell>
+                                  <TableCell align="center" sx={{ py: 2 }}>
+                                    <IconButton
+                                      size="small"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        window.open(result.url, '_blank');
+                                      }}
+                                      sx={{
+                                        bgcolor: '#F3F4F6',
+                                        '&:hover': {
+                                          bgcolor: '#667eea',
+                                          color: '#fff',
+                                        },
+                                        transition: 'all 0.2s ease',
+                                      }}
+                                    >
+                                      <OpenInNewIcon fontSize="small" />
+                                    </IconButton>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      </Box>
+                    </Box>
+                  </Box>
+                )}
+
+                {currentJob.leads && currentJob.leads.length > 0 && (
+                  <Box
+                    mt={3}
+                    sx={{
+                      borderRadius: '12px',
+                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      p: 0.2,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        borderRadius: '11px',
+                        background: '#fff',
+                        p: 3,
+                      }}
+                    >
+                      <Box display="flex" alignItems="center" gap={1.5} mb={2.5}>
+                        <Box
+                          sx={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: '10px',
+                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <Typography fontSize={24}>✅</Typography>
+                        </Box>
+                        <Box flex={1}>
+                          <Typography variant="h6" fontWeight={700} color="#111827">
+                            Qualified Buyer Leads
+                          </Typography>
+                          <Typography variant="caption" color="#6B7280">
+                            {currentJob.leads.length} high-intent buyers identified by AI
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      <Box
+                        sx={{
+                          borderRadius: '10px',
+                          border: '1px solid #E5E7EB',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <TableContainer>
+                          <Table>
+                            <TableHead>
+                              <TableRow sx={{ bgcolor: '#F9FAFB' }}>
+                                <TableCell sx={{ fontWeight: 600, color: '#374151', fontSize: '13px' }}>Platform</TableCell>
+                                <TableCell sx={{ fontWeight: 600, color: '#374151', fontSize: '13px' }}>Lead Details</TableCell>
+                                <TableCell sx={{ fontWeight: 600, color: '#374151', fontSize: '13px', textAlign: 'center' }}>Classification</TableCell>
+                                <TableCell sx={{ fontWeight: 600, color: '#374151', fontSize: '13px', textAlign: 'center' }}>Rank</TableCell>
+                                <TableCell sx={{ fontWeight: 600, color: '#374151', fontSize: '13px', textAlign: 'center' }}>Details</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {currentJob.leads.map((lead, idx) => (
+                                <React.Fragment key={lead.id}>
+                                  <TableRow
+                                    hover
+                                    sx={{
+                                      cursor: 'pointer',
+                                      '&:hover': {
+                                        bgcolor: '#F9FAFB',
+                                      },
+                                      transition: 'all 0.2s ease',
                                     }}
+                                    onClick={() => toggleRow(lead.id)}
                                   >
-                                    {expandedRows.has(lead.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                                  </IconButton>
-                                </TableCell>
-                              </TableRow>
-                              <TableRow>
-                                <TableCell colSpan={5} sx={{ p: 0, border: 0 }}>
-                                  <Collapse in={expandedRows.has(lead.id)}>
-                                    <Box p={3} bgcolor="#F9FAFB">
-                                      <Typography variant="body2" color="#6B7280" mb={2}>
-                                        {lead.snippet}
+                                    <TableCell sx={{ py: 2 }}>
+                                      <Chip
+                                        label={lead.platform}
+                                        size="small"
+                                        sx={{
+                                          bgcolor: platformColors[lead.platform as XRayPlatform],
+                                          color: '#fff',
+                                          fontWeight: 600,
+                                          fontSize: '11px',
+                                          height: '24px',
+                                        }}
+                                      />
+                                    </TableCell>
+                                    <TableCell sx={{ py: 2, maxWidth: 400 }}>
+                                      <Typography variant="body2" fontWeight={600} color="#111827">
+                                        {lead.title}
                                       </Typography>
-                                      {lead.buyer_seller.pain_point && (
-                                        <Box mb={1}>
-                                          <Typography variant="caption" fontWeight={600} color="#374151">
-                                            Pain Point:
+                                      <Typography variant="caption" color="#6B7280" sx={{ display: 'block', mt: 0.5 }}>
+                                        {lead.snippet.length > 100 ? `${lead.snippet.substring(0, 100)}...` : lead.snippet}
+                                      </Typography>
+                                    </TableCell>
+                                    <TableCell align="center" sx={{ py: 2 }}>
+                                      <Box display="flex" alignItems="center" justifyContent="center" gap={0.5}>
+                                        {getClassificationIcon(lead.buyer_seller.classification)}
+                                        <Typography variant="caption" fontWeight={600} color="#10b981">
+                                          {lead.buyer_seller.classification}
+                                        </Typography>
+                                      </Box>
+                                    </TableCell>
+                                    <TableCell align="center" sx={{ py: 2 }}>
+                                      <Chip
+                                        label={`#${lead.google_rank}`}
+                                        size="small"
+                                        variant="outlined"
+                                        sx={{
+                                          borderColor: '#10b981',
+                                          color: '#10b981',
+                                          fontWeight: 600,
+                                          fontSize: '11px',
+                                        }}
+                                      />
+                                    </TableCell>
+                                    <TableCell align="center" sx={{ py: 2 }}>
+                                      <IconButton
+                                        size="small"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          toggleRow(lead.id);
+                                        }}
+                                        sx={{
+                                          bgcolor: '#F3F4F6',
+                                          '&:hover': {
+                                            bgcolor: '#10b981',
+                                            color: '#fff',
+                                          },
+                                          transition: 'all 0.2s ease',
+                                        }}
+                                      >
+                                        {expandedRows.has(lead.id) ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                                      </IconButton>
+                                    </TableCell>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableCell colSpan={5} sx={{ p: 0, border: 0 }}>
+                                      <Collapse in={expandedRows.has(lead.id)}>
+                                        <Box
+                                          p={3}
+                                          sx={{
+                                            bgcolor: '#F9FAFB',
+                                            borderTop: '2px solid #10b981',
+                                          }}
+                                        >
+                                          <Typography variant="body2" color="#374151" mb={2} sx={{ lineHeight: 1.6 }}>
+                                            {lead.snippet}
                                           </Typography>
-                                          <Typography variant="body2" color="#6B7280">
-                                            {lead.buyer_seller.pain_point}
-                                          </Typography>
+
+                                          <Box display="flex" gap={2} flexWrap="wrap" mb={2}>
+                                            {lead.buyer_seller.pain_point && (
+                                              <Box
+                                                flex={1}
+                                                minWidth={250}
+                                                p={2}
+                                                sx={{
+                                                  bgcolor: '#fff',
+                                                  borderRadius: '8px',
+                                                  border: '1px solid #E5E7EB',
+                                                }}
+                                              >
+                                                <Typography variant="caption" fontWeight={700} color="#10b981" sx={{ display: 'block', mb: 1 }}>
+                                                  💡 Pain Point
+                                                </Typography>
+                                                <Typography variant="body2" color="#374151" sx={{ lineHeight: 1.5 }}>
+                                                  {lead.buyer_seller.pain_point}
+                                                </Typography>
+                                              </Box>
+                                            )}
+                                            {lead.buyer_seller.product_needed && (
+                                              <Box
+                                                flex={1}
+                                                minWidth={250}
+                                                p={2}
+                                                sx={{
+                                                  bgcolor: '#fff',
+                                                  borderRadius: '8px',
+                                                  border: '1px solid #E5E7EB',
+                                                }}
+                                              >
+                                                <Typography variant="caption" fontWeight={700} color="#10b981" sx={{ display: 'block', mb: 1 }}>
+                                                  🎯 Product Needed
+                                                </Typography>
+                                                <Typography variant="body2" color="#374151" sx={{ lineHeight: 1.5 }}>
+                                                  {lead.buyer_seller.product_needed}
+                                                </Typography>
+                                              </Box>
+                                            )}
+                                          </Box>
+
+                                          <Button
+                                            variant="contained"
+                                            size="small"
+                                            startIcon={<OpenInNewIcon />}
+                                            onClick={() => window.open(lead.url, '_blank')}
+                                            sx={{
+                                              textTransform: 'none',
+                                              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                              color: '#fff',
+                                              fontWeight: 600,
+                                              '&:hover': {
+                                                background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                                              },
+                                            }}
+                                          >
+                                            View Source
+                                          </Button>
                                         </Box>
-                                      )}
-                                      {lead.buyer_seller.product_needed && (
-                                        <Box mb={2}>
-                                          <Typography variant="caption" fontWeight={600} color="#374151">
-                                            Product Needed:
-                                          </Typography>
-                                          <Typography variant="body2" color="#6B7280">
-                                            {lead.buyer_seller.product_needed}
-                                          </Typography>
-                                        </Box>
-                                      )}
-                                      <Button size="small" startIcon={<OpenInNewIcon />} onClick={() => window.open(lead.url, '_blank')} sx={{ textTransform: 'none' }}>
-                                        View Source
-                                      </Button>
-                                    </Box>
-                                  </Collapse>
-                                </TableCell>
-                              </TableRow>
-                            </React.Fragment>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
+                                      </Collapse>
+                                    </TableCell>
+                                  </TableRow>
+                                </React.Fragment>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      </Box>
+                    </Box>
                   </Box>
                 )}
               </Box>
