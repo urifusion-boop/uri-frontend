@@ -77,7 +77,7 @@ const IconContentBox = ({ icon, content, type, onClick }: IconContentBoxProps) =
 
   const mapped = getIconAndContent();
   const label = content ?? mapped?.content ?? '';
-  const secondary = content && mapped?.content && content !== mapped.content ? content : undefined;
+  const secondary = undefined; // Don't show secondary text for now to avoid duplication
 
   const iconColor = getColorForType(type);
   const baseIcon = (icon ?? mapped?.icon ?? <OtherIcon />) as React.ReactElement<any, any>;

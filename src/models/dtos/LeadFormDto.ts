@@ -100,6 +100,7 @@ export interface LeadFormDto {
   apollo_id: any;
   is_pre_stored: boolean;
   id: string;
+  lead_generation_goal?: string; // AI Next Steps - User's business goal
 }
 export class IndividualLeadFormDto {
   user_id?: string;

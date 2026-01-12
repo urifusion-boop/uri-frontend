@@ -3,7 +3,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { authRoutes } from '@/constants/ClientRoute';
 import { useAuth } from '@/providers/AuthProvider';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Award, BarChart3, Bell, BookOpen, Brain, Briefcase, Building2, ChevronDown, FileText, Heart, Lightbulb, Menu, MonitorPlay, Rocket, Target, Users, Video, Zap } from 'lucide-react';
+import { BarChart3, Bell, BookOpen, Briefcase, ChevronDown, Database, FileText, Hash, Heart, Lightbulb, Menu, MonitorPlay, Rocket, TrendingUp, Users, Video, Zap } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -16,6 +16,7 @@ const Navigation = () => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileActiveMenu, setMobileActiveMenu] = useState<string | null>(null);
+  const [activeCoreFeature, setActiveCoreFeature] = useState<string | null>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const router = useRouter();
   const { isAuthenticated, userDetails, userRoutes, logoutUser } = useAuth();
@@ -33,44 +34,75 @@ const Navigation = () => {
   type MenuSection = { title: string; items: MenuItem[] };
   type MenuData = { title: string; sections: MenuSection[] };
 
+  // Core Features with glassmorphism dropdowns
+  const coreFeatures = [
+    {
+      id: 'social-media',
+      title: 'Social Media Tracking',
+      href: '/features/social-media-tracking',
+      icon: Hash,
+      subFeatures: [
+        { name: 'Keyword tracking', href: '/features/social-media-tracking' },
+        { name: 'Hashtag tracking', href: '/features/social-media-tracking' },
+        { name: 'Account tracking', href: '/features/social-media-tracking' },
+        { name: 'Report generation', href: '/features/social-media-tracking' },
+      ],
+    },
+    {
+      id: 'lead-generation',
+      title: 'Lead Generation',
+      href: '/features/lead-generation',
+      icon: TrendingUp,
+      subFeatures: [
+        { name: 'Individual leads', href: '/features/lead-generation' },
+        { name: 'Sales signals', href: '/features/lead-generation' },
+        { name: 'Organizational leads', href: '/features/lead-generation' },
+      ],
+    },
+    {
+      id: 'crm-enrichment',
+      title: 'CRM & Data Enrichment',
+      href: '/features/crm-enrichment',
+      icon: Database,
+      subFeatures: [
+        { name: 'Integration with existing CRMs', href: '/features/crm-enrichment' },
+        { name: 'Dead lead tracking', href: '/features/crm-enrichment' },
+        { name: 'Continuous lead monitoring', href: '/features/crm-enrichment' },
+        { name: 'Data enrichment', href: '/features/crm-enrichment' },
+        { name: 'Reactivation alerts', href: '/features/crm-enrichment' },
+      ],
+    },
+    {
+      id: 'alerts',
+      title: 'Alerts & Notifications',
+      href: '/features/alerts-notifications',
+      icon: Bell,
+      subFeatures: [
+        { name: 'Real-time lead alerts', href: '/features/alerts-notifications' },
+        { name: 'Sales signal alerts', href: '/features/alerts-notifications' },
+        { name: 'Keyword and account alerts', href: '/features/alerts-notifications' },
+      ],
+    },
+    {
+      id: 'reporting',
+      title: 'Reporting & Exports',
+      href: '/features/reporting-exports',
+      icon: BarChart3,
+      subFeatures: [
+        { name: 'Automated reports', href: '/features/reporting-exports' },
+        { name: 'Lead and data export', href: '/features/reporting-exports' },
+      ],
+    },
+  ];
+
   const featuresMenu: MenuData = {
     title: 'Features',
     sections: [
-      {
-        title: 'Core Features',
-        items: [
-          { icon: Target, name: 'Signal Detection', desc: 'Real-time buying signals', href: '/signals' },
-          { icon: Brain, name: 'AI Analysis', desc: 'Contextual intelligence', href: '/signal-detection' },
-          { icon: Bell, name: 'Smart Alerts', desc: 'Instant notifications', href: '/features' },
-        ],
-      },
       {
         title: 'Tools',
         items: [
           { icon: BarChart3, name: 'ROI Calculator', desc: 'Measure your returns', href: '/tools/roi-calculator' },
           { icon: Zap, name: 'Chrome Extension', desc: 'Browser integration', href: '/tools/chrome-extension' },
-        ],
-      },
-    ],
-  };
-
-  const solutionsMenu: MenuData = {
-    title: 'Solutions',
-    sections: [
-      {
-        title: 'Integrations',
-        items: [
-          { icon: Building2, name: 'CRM Sync', desc: 'Connect your CRM', href: '/tools/crm-sync' },
-          { icon: Users, name: 'All Integrations', desc: 'Salesforce, HubSpot & more', href: '/integrations' },
-          { icon: Award, name: 'Lead Finder', desc: 'Discover prospects', href: '/tools/lead-finder' },
-        ],
-      },
-      {
-        title: 'Company',
-        items: [
-          { name: 'About Us', desc: 'Our mission & story', href: '/company/about' },
-          { name: 'Partners', desc: 'Partner program', href: '/company/partners' },
-          { name: 'Careers', desc: 'Join our team', href: '/company/careers' },
         ],
       },
     ],
@@ -116,11 +148,7 @@ const Navigation = () => {
   };
 
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-background/80 backdrop-blur-lg border-b border-border shadow-sm' : 'bg-transparent'}`}
-    >
+    <motion.nav initial={{ y: -100 }} animate={{ y: 0 }} className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'glass-nav' : 'bg-transparent'}`}>
       <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
@@ -133,7 +161,14 @@ const Navigation = () => {
           {/* Center Links */}
           <div className="hidden md:flex items-center gap-6 lg:gap-8">
             {/* Features Dropdown */}
-            <div className="relative" onMouseEnter={() => setActiveMenu('features')} onMouseLeave={() => setActiveMenu(null)}>
+            <div
+              className="relative"
+              onMouseEnter={() => setActiveMenu('features')}
+              onMouseLeave={() => {
+                setActiveMenu(null);
+                setActiveCoreFeature(null);
+              }}
+            >
               <button className="flex items-center gap-1 text-foreground/70 hover:text-foreground transition-colors font-medium">
                 Features
                 <ChevronDown className="w-4 h-4" />
@@ -146,35 +181,82 @@ const Navigation = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[600px] z-50"
+                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[700px] z-50"
                   >
-                    <div className="bg-background border border-border rounded-2xl shadow-strong p-8">
-                      <div className="grid grid-cols-2 gap-8">
-                        {featuresMenu.sections.map((section, idx) => (
-                          <div key={idx}>
-                            <h3 className="text-sm font-bold text-primary mb-4">{section.title}</h3>
-                            <div className="space-y-3">
-                              {section.items.map((item, itemIdx) => (
-                                <Link
-                                  key={itemIdx}
-                                  href={item.href || '#'}
-                                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent transition-colors group"
-                                  onClick={() => setActiveMenu(null)}
+                    <div className="glass-dropdown rounded-2xl p-6">
+                      <h3 className="text-sm font-bold text-primary mb-4">Core Features</h3>
+                      <div className="grid grid-cols-2 gap-3">
+                        {coreFeatures.map((feature) => (
+                          <div key={feature.id} className="relative" onMouseEnter={() => setActiveCoreFeature(feature.id)} onMouseLeave={() => setActiveCoreFeature(null)}>
+                            <Link
+                              href={feature.href}
+                              className="flex items-center gap-3 p-3 rounded-xl glass-card glass-hover group"
+                              onClick={() => {
+                                setActiveMenu(null);
+                                setActiveCoreFeature(null);
+                              }}
+                            >
+                              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                                <feature.icon className="w-5 h-5 text-primary" />
+                              </div>
+                              <div className="flex-1">
+                                <div className="font-semibold text-sm">{feature.title}</div>
+                              </div>
+                              <ChevronDown className="w-4 h-4 text-muted-foreground -rotate-90" />
+                            </Link>
+
+                            {/* Sub-features dropdown */}
+                            <AnimatePresence>
+                              {activeCoreFeature === feature.id && (
+                                <motion.div
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  exit={{ opacity: 0, x: -10 }}
+                                  transition={{ duration: 0.15 }}
+                                  className="absolute left-full top-0 ml-2 w-56 z-50"
                                 >
-                                  {item.icon && (
-                                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                                      <item.icon className="w-5 h-5 text-primary" />
+                                  <div className="glass-dropdown rounded-xl p-3">
+                                    <div className="space-y-1">
+                                      {feature.subFeatures.map((sub, idx) => (
+                                        <Link
+                                          key={idx}
+                                          href={sub.href}
+                                          className="block px-3 py-2 text-sm rounded-lg hover:bg-primary/10 transition-colors"
+                                          onClick={() => {
+                                            setActiveMenu(null);
+                                            setActiveCoreFeature(null);
+                                          }}
+                                        >
+                                          {sub.name}
+                                        </Link>
+                                      ))}
                                     </div>
-                                  )}
-                                  <div>
-                                    <div className="font-semibold text-sm mb-1">{item.name}</div>
-                                    <div className="text-xs text-muted-foreground">{item.desc}</div>
                                   </div>
-                                </Link>
-                              ))}
-                            </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                           </div>
                         ))}
+                      </div>
+
+                      {/* Tools Section */}
+                      <div className="mt-6 pt-4 border-t border-border/50">
+                        <h3 className="text-sm font-bold text-primary mb-3">Tools</h3>
+                        <div className="grid grid-cols-2 gap-3">
+                          {featuresMenu.sections[0].items.map((item, itemIdx) => (
+                            <Link key={itemIdx} href={item.href || '#'} className="flex items-center gap-3 p-3 rounded-xl glass-card glass-hover group" onClick={() => setActiveMenu(null)}>
+                              {item.icon && (
+                                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                                  <item.icon className="w-5 h-5 text-primary" />
+                                </div>
+                              )}
+                              <div>
+                                <div className="font-semibold text-sm">{item.name}</div>
+                                <div className="text-xs text-muted-foreground">{item.desc}</div>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </motion.div>
@@ -203,19 +285,29 @@ const Navigation = () => {
                         <div key={idx}>
                           <h3 className="text-sm font-bold text-primary mb-4">{section.title}</h3>
                           <div className="space-y-3">
-                            {section.items.map((item, itemIdx) => (
-                              <Link key={itemIdx} href={item.href || '#'} className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent transition-colors group" onClick={() => setActiveMenu(null)}>
-                                {item.icon && (
-                                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                                    <item.icon className="w-5 h-5 text-primary" />
+                            {section.items.map((item, itemIdx) => {
+                              const isExternal = item.href.startsWith('http');
+                              return (
+                                <Link
+                                  key={itemIdx}
+                                  href={item.href || '#'}
+                                  target={isExternal ? '_blank' : undefined}
+                                  rel={isExternal ? 'noopener noreferrer' : undefined}
+                                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent transition-colors group"
+                                  onClick={() => setActiveMenu(null)}
+                                >
+                                  {item.icon && (
+                                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                                      <item.icon className="w-5 h-5 text-primary" />
+                                    </div>
+                                  )}
+                                  <div>
+                                    <div className="font-semibold text-sm mb-1">{item.name}</div>
+                                    <div className="text-xs text-muted-foreground">{item.desc}</div>
                                   </div>
-                                )}
-                                <div>
-                                  <div className="font-semibold text-sm mb-1">{item.name}</div>
-                                  <div className="text-xs text-muted-foreground">{item.desc}</div>
-                                </div>
-                              </Link>
-                            ))}
+                                </Link>
+                              );
+                            })}
                           </div>
                         </div>
                       ))}
@@ -247,24 +339,29 @@ const Navigation = () => {
                           <div key={idx}>
                             <h3 className="text-sm font-bold text-primary mb-4">{section.title}</h3>
                             <div className="space-y-3">
-                              {section.items.map((item, itemIdx) => (
-                                <Link
-                                  key={itemIdx}
-                                  href={item.href || '#'}
-                                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent transition-colors group"
-                                  onClick={() => setActiveMenu(null)}
-                                >
-                                  {item.icon && (
-                                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                                      <item.icon className="w-5 h-5 text-primary" />
+                              {section.items.map((item, itemIdx) => {
+                                const isExternal = item.href.startsWith('http');
+                                return (
+                                  <Link
+                                    key={itemIdx}
+                                    href={item.href || '#'}
+                                    target={isExternal ? '_blank' : undefined}
+                                    rel={isExternal ? 'noopener noreferrer' : undefined}
+                                    className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent transition-colors group"
+                                    onClick={() => setActiveMenu(null)}
+                                  >
+                                    {item.icon && (
+                                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                                        <item.icon className="w-5 h-5 text-primary" />
+                                      </div>
+                                    )}
+                                    <div>
+                                      <div className="font-semibold text-sm mb-1">{item.name}</div>
+                                      <div className="text-xs text-muted-foreground">{item.desc}</div>
                                     </div>
-                                  )}
-                                  <div>
-                                    <div className="font-semibold text-sm mb-1">{item.name}</div>
-                                    <div className="text-xs text-muted-foreground">{item.desc}</div>
-                                  </div>
-                                </Link>
-                              ))}
+                                  </Link>
+                                );
+                              })}
                             </div>
                           </div>
                         ))}
@@ -274,6 +371,9 @@ const Navigation = () => {
                 )}
               </AnimatePresence>
             </div>
+            <Link href="https://academy.uricreative.com/" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-foreground transition-colors font-medium">
+              Uri Academy
+            </Link>
             <Link href="/pricing" className="text-foreground/70 hover:text-foreground transition-colors font-medium">
               Pricing
             </Link>
@@ -294,45 +394,12 @@ const Navigation = () => {
                 </Button>
               </>
             ) : (
-              <div className="relative">
-                <button
-                  className="flex items-center gap-2 text-foreground/80 hover:text-foreground font-medium"
-                  onClick={() => setUserMenuOpen((prev) => !prev)}
-                  onBlur={() => setTimeout(() => setUserMenuOpen(false), 200)}
-                >
-                  {userDetails?.firstName || userDetails?.email || 'Account'}
-                  <ChevronDown className={`w-4 h-4 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
-                </button>
-                <AnimatePresence>
-                  {userMenuOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute right-0 top-full mt-2 w-48 z-50"
-                    >
-                      <div className="bg-background border border-border rounded-xl shadow-strong p-2">
-                        <Link href={userRoutes.dashboard} className="block px-3 py-2 rounded-lg hover:bg-accent text-sm" onClick={() => setUserMenuOpen(false)}>
-                          Dashboard
-                        </Link>
-                        <Link href={userRoutes.profile} className="block px-3 py-2 rounded-lg hover:bg-accent text-sm" onClick={() => setUserMenuOpen(false)}>
-                          Profile
-                        </Link>
-                        <button
-                          className="w-full text-left px-3 py-2 rounded-lg hover:bg-accent text-sm text-destructive"
-                          onClick={() => {
-                            setUserMenuOpen(false);
-                            logoutUser();
-                          }}
-                        >
-                          Logout
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              <Button
+                className="bg-primary text-primary-foreground hover:bg-primary-hover font-semibold rounded-xl shadow-soft text-xs sm:text-sm px-3 sm:px-4 py-2"
+                onClick={() => router.push('/dashboard')}
+              >
+                Dashboard
+              </Button>
             )}
 
             {/* Mobile Menu */}
@@ -357,24 +424,29 @@ const Navigation = () => {
                             <div key={idx} className="mb-4">
                               <h4 className="text-sm font-bold text-primary mb-2">{section.title}</h4>
                               <div className="space-y-2">
-                                {section.items.map((item, itemIdx) => (
-                                  <Link
-                                    key={itemIdx}
-                                    href={item.href || '#'}
-                                    className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent transition-colors"
-                                    onClick={() => setMobileMenuOpen(false)}
-                                  >
-                                    {item.icon && (
-                                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                        <item.icon className="w-4 h-4 text-primary" />
+                                {section.items.map((item, itemIdx) => {
+                                  const isExternal = item.href.startsWith('http');
+                                  return (
+                                    <Link
+                                      key={itemIdx}
+                                      href={item.href || '#'}
+                                      target={isExternal ? '_blank' : undefined}
+                                      rel={isExternal ? 'noopener noreferrer' : undefined}
+                                      className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent transition-colors"
+                                      onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                      {item.icon && (
+                                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                          <item.icon className="w-4 h-4 text-primary" />
+                                        </div>
+                                      )}
+                                      <div>
+                                        <div className="font-semibold text-sm">{item.name}</div>
+                                        <div className="text-xs text-muted-foreground">{item.desc}</div>
                                       </div>
-                                    )}
-                                    <div>
-                                      <div className="font-semibold text-sm">{item.name}</div>
-                                      <div className="text-xs text-muted-foreground">{item.desc}</div>
-                                    </div>
-                                  </Link>
-                                ))}
+                                    </Link>
+                                  );
+                                })}
                               </div>
                             </div>
                           ))}
@@ -396,24 +468,29 @@ const Navigation = () => {
                             <div key={idx} className="mb-4">
                               <h4 className="text-sm font-bold text-primary mb-2">{section.title}</h4>
                               <div className="space-y-2">
-                                {section.items.map((item, itemIdx) => (
-                                  <Link
-                                    key={itemIdx}
-                                    href={item.href || '#'}
-                                    className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent transition-colors"
-                                    onClick={() => setMobileMenuOpen(false)}
-                                  >
-                                    {item.icon && (
-                                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                        <item.icon className="w-4 h-4 text-primary" />
+                                {section.items.map((item, itemIdx) => {
+                                  const isExternal = item.href.startsWith('http');
+                                  return (
+                                    <Link
+                                      key={itemIdx}
+                                      href={item.href || '#'}
+                                      target={isExternal ? '_blank' : undefined}
+                                      rel={isExternal ? 'noopener noreferrer' : undefined}
+                                      className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent transition-colors"
+                                      onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                      {item.icon && (
+                                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                          <item.icon className="w-4 h-4 text-primary" />
+                                        </div>
+                                      )}
+                                      <div>
+                                        <div className="font-semibold text-sm">{item.name}</div>
+                                        <div className="text-xs text-muted-foreground">{item.desc}</div>
                                       </div>
-                                    )}
-                                    <div>
-                                      <div className="font-semibold text-sm">{item.name}</div>
-                                      <div className="text-xs text-muted-foreground">{item.desc}</div>
-                                    </div>
-                                  </Link>
-                                ))}
+                                    </Link>
+                                  );
+                                })}
                               </div>
                             </div>
                           ))}
@@ -435,24 +512,29 @@ const Navigation = () => {
                             <div key={idx} className="mb-4">
                               <h4 className="text-sm font-bold text-primary mb-2">{section.title}</h4>
                               <div className="space-y-2">
-                                {section.items.map((item, itemIdx) => (
-                                  <Link
-                                    key={itemIdx}
-                                    href={item.href || '#'}
-                                    className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent transition-colors"
-                                    onClick={() => setMobileMenuOpen(false)}
-                                  >
-                                    {item.icon && (
-                                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                        <item.icon className="w-4 h-4 text-primary" />
+                                {section.items.map((item, itemIdx) => {
+                                  const isExternal = item.href.startsWith('http');
+                                  return (
+                                    <Link
+                                      key={itemIdx}
+                                      href={item.href || '#'}
+                                      target={isExternal ? '_blank' : undefined}
+                                      rel={isExternal ? 'noopener noreferrer' : undefined}
+                                      className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent transition-colors"
+                                      onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                      {item.icon && (
+                                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                          <item.icon className="w-4 h-4 text-primary" />
+                                        </div>
+                                      )}
+                                      <div>
+                                        <div className="font-semibold text-sm">{item.name}</div>
+                                        <div className="text-xs text-muted-foreground">{item.desc}</div>
                                       </div>
-                                    )}
-                                    <div>
-                                      <div className="font-semibold text-sm">{item.name}</div>
-                                      <div className="text-xs text-muted-foreground">{item.desc}</div>
-                                    </div>
-                                  </Link>
-                                ))}
+                                    </Link>
+                                  );
+                                })}
                               </div>
                             </div>
                           ))}
@@ -460,6 +542,11 @@ const Navigation = () => {
                       )}
                     </AnimatePresence>
                   </div>
+
+                  {/* Uri Academy Mobile */}
+                  <Link href="https://academy.uricreative.com/" target="_blank" rel="noopener noreferrer" className="text-lg font-semibold" onClick={() => setMobileMenuOpen(false)}>
+                    Uri Academy
+                  </Link>
 
                   {/* Pricing Mobile */}
                   <Link href="/pricing" className="text-lg font-semibold" onClick={() => setMobileMenuOpen(false)}>
@@ -485,22 +572,9 @@ const Navigation = () => {
                       </>
                     ) : (
                       <>
-                        <Link href={userRoutes.dashboard} className="text-center py-2 font-medium" onClick={() => setMobileMenuOpen(false)}>
+                        <Link href="/dashboard" className="text-center py-2 font-medium" onClick={() => setMobileMenuOpen(false)}>
                           Dashboard
                         </Link>
-                        <Link href={userRoutes.profile} className="text-center py-2 font-medium" onClick={() => setMobileMenuOpen(false)}>
-                          Profile
-                        </Link>
-                        <Button
-                          variant="outline"
-                          className="font-semibold rounded-xl shadow-soft w-full"
-                          onClick={() => {
-                            logoutUser();
-                            setMobileMenuOpen(false);
-                          }}
-                        >
-                          Logout
-                        </Button>
                       </>
                     )}
                   </div>

@@ -1,5 +1,4 @@
 import { LeadsService } from '@/api/LeadsService';
-import { LightThemeColors } from '@/configs/colors.config';
 import { SocialMessagingHelper } from '@/helpers/SocialMessagingHelper';
 import { TextHelper } from '@/helpers/TextHelper';
 import useClipboard from '@/hooks/clipboard';
@@ -391,37 +390,6 @@ const MentionCard = ({ lead, deleteSelection, selectedLeadForDelete, setSelected
               flexWrap: 'wrap',
             }}
           >
-            <Typography
-              sx={{
-                fontSize: '16px',
-                fontWeight: 600,
-                color: '#818181',
-                wordBreak: 'break-word',
-                wordWrap: 'break-word',
-                overflowWrap: 'break-word',
-              }}
-            >
-              Mention of{' '}
-              <span
-                style={{
-                  color: LightThemeColors.uriColor,
-                  fontWeight: 400,
-                  fontSize: '14px',
-                }}
-              >
-                {(lead?.tags ?? lead.keywords ?? [])?.join(', ')}
-              </span>{' '}
-              on {TextHelper.getDomainName(lead.lead_link ?? lead.social_profile_link ?? '')}
-            </Typography>
-            <Box
-              sx={{
-                height: '5px',
-                width: '5px',
-                borderRadius: '1000%',
-                backgroundColor: '#838282',
-                display: { xs: 'none', md: 'block' },
-              }}
-            />
             <Box
               sx={{
                 display: 'flex',
@@ -580,39 +548,44 @@ const MentionCard = ({ lead, deleteSelection, selectedLeadForDelete, setSelected
                 <RevealBox type="phone" value={lead.phone} />
               </Grid>
             ))}
+        </Box>
 
-          {/* {(lead.social_profile || lead.location) && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              {lead.social_profile_link ? (
-                <a href={lead.social_profile_link} target="_blank" rel="noopener noreferrer" style={{ color: LightThemeColors.uriColor, textDecoration: 'underline', fontSize: '14px' }}>
-                  @{TextHelper.truncateText(lead.social_profile ?? '', 30, '')}
-                </a>
-              ) : (
-                lead.social_profile && <Typography sx={{ fontSize: '14px', fontWeight: 500 }}>@{lead.social_profile}</Typography>
-              )}
-              {lead.location && <Typography sx={{ fontSize: '14px', fontWeight: 500, color: '#666' }}>{lead.location}</Typography>}
-            </Box>
-          )} */}
-
-          {lead.opportunity_type && (
-            <Box
+        {/* Form Title */}
+        {lead.form_title && (
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              mt: 2,
+              px: 2,
+              py: 0.75,
+              backgroundColor: '#F0F4FF',
+              borderRadius: '8px',
+              border: '1px solid #D1D9E6',
+              width: 'fit-content',
+            }}
+          >
+            <Typography
               sx={{
-                display: 'inline-block',
-                mt: 1,
-                px: 2,
-                py: 0.5,
-                backgroundColor: '#F2F2F2',
-                color: '#333',
-                fontWeight: 500,
                 fontSize: '12px',
-                borderRadius: '6px',
-                width: 'fit-content',
+                fontWeight: 600,
+                color: '#4B5563',
               }}
             >
-              {lead.opportunity_type}
-            </Box>
-          )}
-        </Box>
+              Generated from:
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: '12px',
+                fontWeight: 600,
+                color: '#CD1B78',
+              }}
+            >
+              {lead.form_title}
+            </Typography>
+          </Box>
+        )}
 
         {/* Mention Content */}
         <Typography
@@ -625,38 +598,149 @@ const MentionCard = ({ lead, deleteSelection, selectedLeadForDelete, setSelected
         >
           {lead.mention}
         </Typography>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: { xs: 'flex-start', md: 'center' },
-            gap: '10px',
-            mt: '14px',
-            flexDirection: { xs: 'column', md: 'row' },
-          }}
-        >
+
+        {/* Lead Reason */}
+        {lead?.lead_reason && (
           <Typography
             sx={{
-              color: interestLevelColor[lead?.interest_level?.toLocaleLowerCase() as 'high' | 'medium' | 'low']?.color,
-              fontSize: '12px',
-              fontWeight: 700,
-              backgroundColor: interestLevelColor[lead?.interest_level?.toLocaleLowerCase() as 'high' | 'medium' | 'low']?.bgColor,
-              width: 'fit-content',
-              py: '5.52px',
-              px: '17.49px',
-            }}
-          >
-            {lead?.interest_level}
-          </Typography>
-          <Typography
-            sx={{
-              color: '#7B7B7B',
-              fontSize: '13.8px',
+              color: '#6B7280',
+              fontSize: '14px',
               fontWeight: 500,
+              mt: 2,
+              px: 2,
+              py: 1,
+              backgroundColor: '#F9FAFB',
+              borderLeft: '3px solid #CD1B78',
+              borderRadius: '4px',
             }}
           >
-            {lead?.lead_reason}
+            {lead.lead_reason}
           </Typography>
-        </Box>
+        )}
+
+        {/* AI Next Steps */}
+        {lead.ai_next_steps && lead.ai_next_steps.steps && lead.ai_next_steps.steps.length > 0 && (
+          <Box
+            sx={{
+              mt: 3,
+              p: 3,
+              backgroundColor: '#FAFBFC',
+              borderRadius: '12px',
+              border: '1px solid #E5E7EB',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+              <Typography
+                sx={{
+                  fontSize: '15px',
+                  fontWeight: 700,
+                  color: '#1F2937',
+                }}
+              >
+                🎯 AI-Recommended Next Steps
+              </Typography>
+            </Box>
+
+            {lead.ai_next_steps.summary && (
+              <Typography
+                sx={{
+                  fontSize: '13px',
+                  color: '#6B7280',
+                  mb: 2,
+                  fontStyle: 'italic',
+                }}
+              >
+                {lead.ai_next_steps.summary}
+              </Typography>
+            )}
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              {lead.ai_next_steps.steps.map((step, index) => (
+                <Box
+                  key={step.step_id}
+                  sx={{
+                    display: 'flex',
+                    gap: 2,
+                    p: 2,
+                    backgroundColor: '#fff',
+                    borderRadius: '8px',
+                    border: '1px solid #E5E7EB',
+                    opacity: step.completed ? 0.6 : 1,
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      color: '#9CA3AF',
+                      minWidth: '24px',
+                    }}
+                  >
+                    {index + 1}.
+                  </Typography>
+                  <Box sx={{ flex: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                      <Typography
+                        sx={{
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          color: '#374151',
+                          textDecoration: step.completed ? 'line-through' : 'none',
+                        }}
+                      >
+                        {step.action}
+                      </Typography>
+                      <Box
+                        sx={{
+                          px: 1,
+                          py: 0.25,
+                          borderRadius: '4px',
+                          backgroundColor: step.priority === 'high' ? '#FEE2E2' : step.priority === 'medium' ? '#FEF3C7' : '#E0E7FF',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          color: step.priority === 'high' ? '#991B1B' : step.priority === 'medium' ? '#92400E' : '#3730A3',
+                        }}
+                      >
+                        {step.priority.toUpperCase()}
+                      </Box>
+                    </Box>
+                    <Typography
+                      sx={{
+                        fontSize: '12px',
+                        color: '#6B7280',
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {step.reasoning}
+                    </Typography>
+                    {step.platform && (
+                      <Typography
+                        sx={{
+                          fontSize: '11px',
+                          color: '#9CA3AF',
+                          mt: 0.5,
+                        }}
+                      >
+                        Platform: {step.platform}
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+
+            <Typography
+              sx={{
+                fontSize: '11px',
+                color: '#9CA3AF',
+                mt: 2,
+                textAlign: 'center',
+              }}
+            >
+              Generated {moment(lead.ai_next_steps.generated_at).fromNow()} • Based on: {lead.ai_next_steps.based_on_goal}
+            </Typography>
+          </Box>
+        )}
 
         {/* Ai Reply */}
         <Collapse in={showAiReply} timeout={500}>

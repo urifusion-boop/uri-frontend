@@ -89,13 +89,13 @@ export class LeadsService {
   }
 
   static async getById(lead_form_id: string): Promise<UriResponse<LeadFormDto>> {
-    const response: Awaited<AxiosResponse<UriResponse<LeadFormDto>>> = await UriHttpClient.getClient().get(`${leadFormApiRoutes.getById}?${lead_form_id}`);
+    const response: Awaited<AxiosResponse<UriResponse<LeadFormDto>>> = await UriHttpClient.getClient().get(`${leadFormApiRoutes.getById}?lead_form_id=${lead_form_id}`);
 
     return response.data;
   }
 
   static async deleteLeadForm(lead_form_id: string): Promise<UriResponse<LeadFormDto>> {
-    const response: Awaited<AxiosResponse<UriResponse<LeadFormDto>>> = await UriHttpClient.getClient().delete(`${leadFormApiRoutes.delete}?${lead_form_id}`);
+    const response: Awaited<AxiosResponse<UriResponse<LeadFormDto>>> = await UriHttpClient.getClient().delete(`${leadFormApiRoutes.delete}?lead_form_id=${lead_form_id}`);
 
     return response.data;
   }
@@ -179,6 +179,38 @@ export class LeadsService {
     > = await UriHttpClient.getClient().get(`${leadFormApiRoutes.conversationalSearchJobStatus}/${job_id}`, {
       timeout: 20000, // 20 seconds (increased for slower database queries)
     });
+
+    return response.data;
+  }
+
+  /**
+   * Cancel a running lead generation job
+   *
+   * @param jobId - The job ID to cancel
+   * @param userId - The user ID requesting cancellation
+   * @returns Response with cancellation status
+   */
+  static async cancelLeadGenerationJob(
+    jobId: string,
+    userId: string
+  ): Promise<
+    UriResponse<{
+      job_id: string;
+      status: string;
+      message: string;
+      current_progress?: number;
+      stats?: any;
+    }>
+  > {
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().post(
+      `${leadFormApiRoutes.conversationalSearchJobStatus}/${jobId}/cancel?user_id=${userId}`,
+      {},
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
     return response.data;
   }

@@ -10,6 +10,7 @@ import { InsufficientBalanceModal } from '@/components/modals/InsufficientBalanc
 import { LimitExceededModal } from '@/components/modals/LimitExceededModal';
 import SmartModal from '@/components/modals/SmartModal';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
+import useDebounce from '@/hooks/useDebounce';
 import { ConversationalSearchFormDto } from '@/models/dtos/LeadFormDto';
 import { LeadDto } from '@/models/dtos/LeadsDto';
 import { TwitterFetchResponseDto } from '@/models/dtos/TwitterDto';
@@ -20,17 +21,87 @@ import { LeadStatusEnum } from '@/models/enum-models/LeadStatusEnum';
 import { LeadTypeEnum } from '@/models/enum-models/LeadTypeEnum';
 import { useAuth } from '@/providers/AuthProvider';
 import { useFeatureLimitStore } from '@/store/useFeatureLimitStore';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
 import BoltIcon from '@mui/icons-material/Bolt';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import LockIcon from '@mui/icons-material/Lock';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
 import SaveIcon from '@mui/icons-material/Save';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
-import { Alert, Box, Button, Chip, FormControl, FormControlLabel, IconButton, LinearProgress, MenuItem, Select, Switch, TextField, Tooltip, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  FormControlLabel,
+  IconButton,
+  LinearProgress,
+  MenuItem,
+  Select,
+  Switch,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import Image from 'next/image';
 import router from 'next/router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { HiPencil } from 'react-icons/hi';
 import PlatformSelector from '../PlatformSelector';
+
+// LocalStorage keys for job state persistence
+const JOB_STATE_KEY = 'uri_active_lead_job';
+
+// Helper functions for managing active job state
+const saveJobToLocalStorage = (jobId: string, leadFormId: string, userId: string) => {
+  try {
+    localStorage.setItem(
+      JOB_STATE_KEY,
+      JSON.stringify({
+        jobId,
+        leadFormId,
+        userId,
+        startTime: Date.now(),
+      })
+    );
+  } catch (e) {
+    console.error('Failed to save job state:', e);
+  }
+};
+
+const getJobFromLocalStorage = (userId: string) => {
+  try {
+    const stored = localStorage.getItem(JOB_STATE_KEY);
+    if (!stored) return null;
+
+    const jobState = JSON.parse(stored);
+    // Only return if it's for the same user and less than 30 minutes old
+    if (jobState.userId === userId && Date.now() - jobState.startTime < 30 * 60 * 1000) {
+      return jobState;
+    }
+    // Clear stale job state
+    localStorage.removeItem(JOB_STATE_KEY);
+    return null;
+  } catch (e) {
+    console.error('Failed to read job state:', e);
+    return null;
+  }
+};
+
+const clearJobFromLocalStorage = () => {
+  try {
+    localStorage.removeItem(JOB_STATE_KEY);
+  } catch (e) {
+    console.error('Failed to clear job state:', e);
+  }
+};
 
 const ConversationLeadFormV2 = () => {
   const [debugInfo, setDebugInfo] = useState<string>('Waiting...');
@@ -73,8 +144,25 @@ const ConversationLeadFormV2 = () => {
   const [existingFormId, setExistingFormId] = useState<string | null>(null);
   const [isFetchingLeads, setIsFetchingLeads] = useState(false);
   const [fetchingStatus, setFetchingStatus] = useState<string>('');
-  const [fetchingProgress, setFetchingProgress] = useState(0);
+  const [targetProgress, setTargetProgress] = useState(0); // Backend's real progress (target)
+  const [fetchingProgress, setFetchingProgress] = useState(0); // Smoothly animated display progress
   const [currentTip, setCurrentTip] = useState('');
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
+
+  // Store interval refs so we can cleanup on unmount
+  const intervalsRef = useRef<{
+    tipInterval: NodeJS.Timeout | null;
+    progressSimulation: NodeJS.Timeout | null;
+    pollInterval: NodeJS.Timeout | null;
+    fallbackTimeout: NodeJS.Timeout | null;
+    smoothProgressInterval: NodeJS.Timeout | null;
+  }>({
+    tipInterval: null,
+    progressSimulation: null,
+    pollInterval: null,
+    fallbackTimeout: null,
+    smoothProgressInterval: null,
+  });
   const [leadStats, setLeadStats] = useState<{
     // Social stats
     social_total_fetched?: number;
@@ -95,6 +183,9 @@ const ConversationLeadFormV2 = () => {
     total_qualified: number;
     new_leads_saved: number;
     duplicates_skipped: number;
+
+    // Cancellation flag
+    job_cancelled?: boolean;
   } | null>(null);
 
   const { autoPopulateLeadForm, isAutoPopulating } = useLeadFormHooks();
@@ -104,6 +195,13 @@ const ConversationLeadFormV2 = () => {
   const { mutate: triggerAutoPopulate, data: autoPopulatedResponse, isSuccess: autoPopulateSuccess } = autoPopulateLeadForm;
   const [openSuccessModal, setOpenSuccessModal] = useState(false);
   const [showLimitExceededModal, setShowLimitExceededModal] = useState(false);
+  const [showLeadGoalModal, setShowLeadGoalModal] = useState(false);
+  const leadGoalRef = useRef<HTMLDivElement>(null);
+
+  // Job keyword auto-regeneration state
+  const [isGeneratingKeywords, setIsGeneratingKeywords] = useState(false);
+  const [keywordsJustUpdated, setKeywordsJustUpdated] = useState(false);
+  const [keywordsLocked, setKeywordsLocked] = useState(false);
 
   // Business mismatch warning modal state
   const [showMismatchModal, setShowMismatchModal] = useState(false);
@@ -130,6 +228,11 @@ const ConversationLeadFormV2 = () => {
   // Fetch user's business details from uri-insights backend
   const [userBusinessDetails, setUserBusinessDetails] = useState<any>(null);
 
+  // Cancellation state
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+
   useEffect(() => {
     if (userId) {
       console.log('🔍 Fetching business details for userId:', userId);
@@ -153,14 +256,42 @@ const ConversationLeadFormV2 = () => {
     }
   }, [userId]);
 
-  const { createConversationalSearchLeadForm, updateConversationalSearchLeadForm, useGetExistingFormType } = useLeadFormHooks();
+  const { createConversationalSearchLeadForm, updateConversationalSearchLeadForm, useGetExistingFormType, useGetLeadFormById, useGetFormsByUserAndType } = useLeadFormHooks();
 
-  const { data: existingForm, isSuccess } = useGetExistingFormType(userId || '', FormTypeEnum.CONVERSATIONAL);
+  // Check if we're in create mode (creating a new form) or edit mode (editing existing)
+  const isCreateMode = router.query.mode === 'create';
+  const formIdFromUrl = router.query.form_id as string;
+
+  // Fetch form by ID if form_id is provided, otherwise fetch by type (gets first/default)
+  const { data: formById, isSuccess: isSuccessById } = useGetLeadFormById(formIdFromUrl);
+  const { data: formByType, isSuccess: isSuccessByType } = useGetExistingFormType(userId || '', FormTypeEnum.CONVERSATIONAL);
+
+  // Fetch all forms of this type for the selector dropdown
+  const { data: allFormsOfType = [] } = useGetFormsByUserAndType(userId || '', FormTypeEnum.CONVERSATIONAL);
+
+  // Priority: form_id > form_type (specific form takes precedence)
+  const existingForm = formIdFromUrl ? formById : formByType;
+  const isSuccess = formIdFromUrl ? isSuccessById : isSuccessByType;
+
+  const hasMultipleForms = allFormsOfType.length > 1;
+
+  const handleFormSelect = (formId: string) => {
+    router.push(
+      {
+        pathname: router.pathname,
+        query: { ...router.query, form_id: formId },
+      },
+      undefined,
+      { shallow: true }
+    );
+  };
 
   useEffect(() => {
     console.log('existingForm', existingForm);
-    if (existingForm && isSuccess && userId) {
-      const { form_title, intent_type, buying_signals, excluded_keywords, ai_response_guide, keywords, competitors, lead_form_id, add_to_history, auto_generate, form_type } = existingForm;
+    // Only load existing form data if NOT in create mode
+    if (existingForm && isSuccess && userId && !isCreateMode) {
+      const { form_title, intent_type, buying_signals, excluded_keywords, ai_response_guide, keywords, competitors, lead_form_id, add_to_history, auto_generate, form_type, lead_generation_goal } =
+        existingForm as any;
 
       setForm({
         user_id: userId,
@@ -190,12 +321,49 @@ const ConversationLeadFormV2 = () => {
         },
         // Job Boards fields
         solution_context: (existingForm as any).solution_context || '',
-        job_keywords: (existingForm as any).job_keywords || [],
+        job_keywords:
+          (form.job_keywords?.length ?? 0) > 0
+            ? form.job_keywords // Keep locally regenerated keywords
+            : (existingForm as any).job_keywords || [], // Only load from DB if form is empty
+        // AI Next Steps
+        lead_generation_goal: lead_generation_goal || '',
       });
 
       setExistingFormId(lead_form_id);
+    } else if (isCreateMode) {
+      // In create mode, reset form to blank state and ensure existingFormId is null
+      setForm({
+        user_id: userId || '',
+        form_title: 'Sales Signal Form V2',
+        ai_response_guide: '',
+        keywords: [],
+        competitors: [],
+        intent_type: '',
+        buying_signals: [],
+        excluded_keywords: [],
+        add_to_history: false,
+        auto_generate: false,
+        form_type: FormTypeEnum.CONVERSATIONAL,
+        location: [],
+        post_age_filter: 'all',
+        enable_realtime: true,
+        monitoring_platforms: [],
+        platform_configs: [],
+        monitoring_interval_hours: 0,
+        category_context: '',
+        implied_keywords: [],
+        scoring_thresholds: {
+          intent_score_min: 0.55,
+          relevance_score_min: 0.5,
+          final_score_min: 0.6,
+        },
+        solution_context: '',
+        job_keywords: [],
+        lead_generation_goal: '',
+      });
+      setExistingFormId(null);
     }
-  }, [existingForm, isSuccess, userId]);
+  }, [existingForm, isSuccess, userId, isCreateMode, formIdFromUrl]);
 
   // Track if Job Boards is enabled using useMemo
   const isJobBoardsEnabled = useMemo(() => {
@@ -204,15 +372,17 @@ const ConversationLeadFormV2 = () => {
     return enabled;
   }, [form.platform_configs]);
 
-  // PRD Section 5: Auto-generate job keywords when Job Boards platform is enabled
+  // Debounced solution context for auto-regeneration
+  const debouncedSolutionContext = useDebounce(form.solution_context, 1500);
+
+  // PRD Section 5: Auto-generate job keywords when Job Boards platform is enabled (INITIAL GENERATION)
+  // NOTE: This only runs when Job Boards is FIRST enabled, not on every page load
   useEffect(() => {
     console.log('🔍 Job Boards Auto-Generation Check:', {
       isJobBoardsEnabled,
       hasJobKeywords: form.job_keywords && form.job_keywords.length > 0,
       userId,
       autoPopulateData,
-      solution_context: form.solution_context,
-      whatYouSell: userDetails?.businessDetails?.whatYouSell,
     });
 
     // Only generate if Job Boards is enabled, we don't have job keywords yet, and we have context or onboarding data
@@ -247,7 +417,130 @@ const ConversationLeadFormV2 = () => {
         console.warn('   3. Enter job keywords manually');
       }
     }
-  }, [isJobBoardsEnabled, userId, autoPopulateData, form.solution_context, userDetails]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isJobBoardsEnabled, userId, autoPopulateData]);
+
+  // AUTO-REGENERATION: When solution context changes, regenerate keywords (unless locked)
+  useEffect(() => {
+    // Only auto-regenerate if:
+    // 1. Job Boards is enabled
+    // 2. Solution context has meaningful content
+    // 3. Keywords are not locked by user
+    // 4. Keywords already exist (meaning this is an update, not initial generation)
+    if (isJobBoardsEnabled && debouncedSolutionContext && debouncedSolutionContext.trim().length > 10 && !keywordsLocked && form.job_keywords && form.job_keywords.length > 0 && userId) {
+      console.log('🔄 Auto-regenerating keywords from updated solution context');
+      setIsGeneratingKeywords(true);
+
+      LeadFormService.generateJobKeywords(userId, debouncedSolutionContext)
+        .then((response) => {
+          if (response.status && response.responseData?.job_keywords) {
+            const keywords = response.responseData.job_keywords;
+            console.log(`✅ Regenerated ${keywords.length} job keywords:`, keywords);
+            setForm((prev) => ({ ...prev, job_keywords: keywords }));
+
+            // Visual feedback
+            setKeywordsJustUpdated(true);
+            setTimeout(() => setKeywordsJustUpdated(false), 2000);
+
+            triggerToast('success', `Updated ${keywords.length} job keywords based on new context`);
+          }
+        })
+        .catch((error) => {
+          console.error('Error regenerating keywords:', error);
+        })
+        .finally(() => {
+          setIsGeneratingKeywords(false);
+        });
+    }
+  }, [debouncedSolutionContext, isJobBoardsEnabled, keywordsLocked, userId]);
+
+  // Cleanup intervals on component unmount
+  useEffect(() => {
+    return () => {
+      // Clear all intervals when component unmounts
+      if (intervalsRef.current.tipInterval) clearInterval(intervalsRef.current.tipInterval);
+      if (intervalsRef.current.progressSimulation) clearInterval(intervalsRef.current.progressSimulation);
+      if (intervalsRef.current.pollInterval) clearInterval(intervalsRef.current.pollInterval);
+      if (intervalsRef.current.fallbackTimeout) clearTimeout(intervalsRef.current.fallbackTimeout);
+      if (intervalsRef.current.smoothProgressInterval) clearInterval(intervalsRef.current.smoothProgressInterval);
+    };
+  }, []);
+
+  // Stop progress simulation when user cancels job
+  useEffect(() => {
+    if (isCancelling && intervalsRef.current.progressSimulation) {
+      clearInterval(intervalsRef.current.progressSimulation);
+      intervalsRef.current.progressSimulation = null;
+    }
+  }, [isCancelling]);
+
+  // Smooth progress animation - interpolates between current and target progress
+  useEffect(() => {
+    // Clear any existing interval
+    if (intervalsRef.current.smoothProgressInterval) {
+      clearInterval(intervalsRef.current.smoothProgressInterval);
+    }
+
+    // Only animate if there's a gap between display and target
+    if (fetchingProgress < targetProgress) {
+      intervalsRef.current.smoothProgressInterval = setInterval(() => {
+        setFetchingProgress((prev) => {
+          const diff = targetProgress - prev;
+
+          // If we've reached target, stop
+          if (diff <= 0) {
+            if (intervalsRef.current.smoothProgressInterval) {
+              clearInterval(intervalsRef.current.smoothProgressInterval);
+              intervalsRef.current.smoothProgressInterval = null;
+            }
+            return targetProgress;
+          }
+
+          // Exponential smoothing: move 10% of remaining distance per tick
+          // This creates natural acceleration/deceleration
+          const increment = Math.max(0.5, diff * 0.1);
+          return Math.round(Math.min(targetProgress, prev + increment));
+        });
+      }, 50); // Update every 50ms for smooth 20fps animation
+    } else if (fetchingProgress > targetProgress) {
+      // If backend progress goes backwards (shouldn't happen), snap immediately
+      setFetchingProgress(targetProgress);
+    }
+
+    // Cleanup on unmount or when dependencies change
+    return () => {
+      if (intervalsRef.current.smoothProgressInterval) {
+        clearInterval(intervalsRef.current.smoothProgressInterval);
+        intervalsRef.current.smoothProgressInterval = null;
+      }
+    };
+  }, [targetProgress, fetchingProgress]);
+
+  // Add beforeunload warning when job is running
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isFetchingLeads) {
+        e.preventDefault();
+        e.returnValue = 'Lead generation is in progress. If you leave, you can return to see the progress.';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isFetchingLeads]);
+
+  // Check for existing job on mount and resume if found
+  useEffect(() => {
+    if (userId && !isFetchingLeads && !activeJobId) {
+      const savedJob = getJobFromLocalStorage(userId);
+      if (savedJob) {
+        console.log('🔄 Resuming previous job:', savedJob.jobId);
+        // Resume polling for this job
+        resumeJobPolling(savedJob.jobId);
+      }
+    }
+  }, [userId]);
 
   // Merge newly fetched Twitter results with previously cached ones
   const mergeTwitterResults = (prev: TwitterFetchResponseDto | null, next: TwitterFetchResponseDto): TwitterFetchResponseDto => {
@@ -314,8 +607,6 @@ const ConversationLeadFormV2 = () => {
   };
 
   const handleChange = (field: keyof ConversationalSearchFormDto, value: any) => {
-    console.log('🔧 Form field changed:', field, value);
-
     // If platform_configs changed, trigger job keyword generation
     if (field === 'platform_configs') {
       const isJobBoardsNowEnabled = value?.some((config: any) => config.platform === 'JOB_BOARDS' && config.enabled);
@@ -381,6 +672,165 @@ const ConversationLeadFormV2 = () => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Helper function to clear all intervals
+  const clearAllIntervals = () => {
+    if (intervalsRef.current.tipInterval) {
+      clearInterval(intervalsRef.current.tipInterval);
+      intervalsRef.current.tipInterval = null;
+    }
+    if (intervalsRef.current.progressSimulation) {
+      clearInterval(intervalsRef.current.progressSimulation);
+      intervalsRef.current.progressSimulation = null;
+    }
+    if (intervalsRef.current.pollInterval) {
+      clearInterval(intervalsRef.current.pollInterval);
+      intervalsRef.current.pollInterval = null;
+    }
+    if (intervalsRef.current.fallbackTimeout) {
+      clearTimeout(intervalsRef.current.fallbackTimeout);
+      intervalsRef.current.fallbackTimeout = null;
+    }
+  };
+
+  // Resume polling for an existing job
+  const resumeJobPolling = async (jobId: string) => {
+    if (!userId) return;
+
+    console.log('🔄 Resuming job polling for:', jobId);
+    setActiveJobId(jobId);
+    setIsFetchingLeads(true);
+    setTargetProgress(50); // Start at 50% when resuming
+    setFetchingStatus('🔄 Resuming lead generation...');
+
+    // Setup tips rotation
+    const tips = [
+      "💡 Tip: Use specific keywords like 'need' instead of generic terms",
+      '🎯 Did you know? Specific pain points yield better leads',
+      "⚡ Pro tip: Try 'looking for recommendations' for better results",
+      '🔍 Fun fact: 70% of posts are filtered out for being promotional',
+    ];
+
+    let currentTipIndex = 0;
+    intervalsRef.current.tipInterval = setInterval(() => {
+      setCurrentTip(tips[currentTipIndex]);
+      currentTipIndex = (currentTipIndex + 1) % tips.length;
+    }, 4000);
+    setCurrentTip(tips[0]);
+
+    // Start polling
+    let pollAttempts = 0;
+    const MAX_POLL_ATTEMPTS = 100;
+    let isJobComplete = false;
+
+    const pollJob = async () => {
+      if (isJobComplete || pollAttempts >= MAX_POLL_ATTEMPTS) {
+        clearAllIntervals();
+        return;
+      }
+
+      pollAttempts++;
+
+      try {
+        const statusResponse = await LeadFormService.getJobStatus(jobId);
+
+        if (statusResponse.responseCode === 200 && statusResponse.responseData) {
+          const jobData = statusResponse.responseData;
+
+          // Update progress based on REAL backend progress
+          if (typeof jobData.progress === 'number') {
+            setTargetProgress(jobData.progress); // Smooth animation will interpolate
+
+            // Update status messages based on REAL progress
+            if (jobData.progress < 20) {
+              setFetchingStatus('🔍 Searching across social platforms...');
+            } else if (jobData.progress < 50) {
+              setFetchingStatus('📊 Analyzing posts for intent signals...');
+            } else if (jobData.progress < 80) {
+              setFetchingStatus('🎯 Filtering and scoring qualified leads...');
+            } else if (jobData.progress < 100) {
+              setFetchingStatus('✨ Finalizing results...');
+            }
+          }
+
+          if (jobData.status === 'completed') {
+            isJobComplete = true;
+            clearAllIntervals();
+            clearJobFromLocalStorage();
+            setActiveJobId(null);
+
+            if (jobData.stats) {
+              setLeadStats(jobData.stats);
+            }
+
+            setTargetProgress(100); // Smooth transition to 100%
+            setFetchingStatus('✅ Analysis complete!');
+
+            setTimeout(() => {
+              setOpenSuccessModal(true);
+              triggerToast('success', jobData.message || 'Leads fetched and analyzed successfully!');
+            }, 500);
+
+            setIsFetchingLeads(false);
+          } else if (jobData.status === 'cancelled') {
+            isJobComplete = true;
+            clearAllIntervals();
+            clearJobFromLocalStorage();
+            setActiveJobId(null);
+
+            if (jobData.stats) {
+              setLeadStats({ ...jobData.stats, job_cancelled: true });
+            }
+
+            setTargetProgress(100); // Smooth transition to 100%
+            setFetchingStatus('🛑 Job cancelled');
+
+            setTimeout(() => {
+              setOpenSuccessModal(true);
+              triggerToast('success', jobData.message || 'Job cancelled. Partial results available.');
+            }, 500);
+
+            setIsFetchingLeads(false);
+          } else if (jobData.status === 'failed') {
+            isJobComplete = true;
+            clearAllIntervals();
+            clearJobFromLocalStorage();
+            setActiveJobId(null);
+
+            triggerToast('error', jobData.error || 'Lead generation failed');
+            setIsFetchingLeads(false);
+          }
+        }
+      } catch (pollError) {
+        console.error('Polling error:', pollError);
+      }
+    };
+
+    // Poll immediately, then every 15 seconds
+    pollJob();
+    intervalsRef.current.pollInterval = setInterval(pollJob, 15000);
+
+    // Fallback timeout: 30 minutes
+    intervalsRef.current.fallbackTimeout = setTimeout(
+      () => {
+        if (!isJobComplete) {
+          clearAllIntervals();
+          clearJobFromLocalStorage();
+          setActiveJobId(null);
+
+          setTargetProgress(100); // Smooth transition to 100%
+          setFetchingStatus('✅ Analysis complete!');
+          setIsFetchingLeads(false);
+
+          setTimeout(() => {
+            setOpenSuccessModal(true);
+            triggerToast('success', 'Lead generation completed. Check your leads list.');
+          }, 500);
+        }
+      },
+      30 * 60 * 1000
+    );
+  };
+
   // Fetch leads from backend with intent analysis
   const fetchLeadsFromPlatforms = async (leadFormId: string) => {
     if (!userId) {
@@ -389,7 +839,8 @@ const ConversationLeadFormV2 = () => {
     }
 
     setIsFetchingLeads(true);
-    setFetchingProgress(0);
+    setTargetProgress(0);
+    setFetchingProgress(0); // Reset display progress immediately
 
     // Helpful tips to rotate through
     const tips = [
@@ -402,7 +853,7 @@ const ConversationLeadFormV2 = () => {
     let currentTipIndex = 0;
 
     // Rotate tips every 4 seconds
-    const tipInterval = setInterval(() => {
+    intervalsRef.current.tipInterval = setInterval(() => {
       setCurrentTip(tips[currentTipIndex]);
       currentTipIndex = (currentTipIndex + 1) % tips.length;
     }, 4000);
@@ -411,16 +862,13 @@ const ConversationLeadFormV2 = () => {
     setCurrentTip(tips[0]);
     setFetchingStatus('🚀 Starting lead generation...');
 
-    let progressSimulation: any = null;
-    let pollInterval: any = null;
-
     try {
       // Start the async job (returns immediately with job_id)
       const response = await LeadFormService.fetchConversationalLeads(leadFormId, userId, paymentMode);
 
       // Check for insufficient balance error (402)
       if (response.responseCode === 402) {
-        clearInterval(tipInterval);
+        if (intervalsRef.current.tipInterval) clearInterval(intervalsRef.current.tipInterval);
         const responseData = response.responseData as any;
         setInsufficientBalanceData({
           requiredAmount: responseData?.required_amount || 750,
@@ -433,7 +881,7 @@ const ConversationLeadFormV2 = () => {
 
       // Check for limit exceeded error
       if (response.responseCode === 403 && (response.responseData as any)?.limit_exceeded) {
-        clearInterval(tipInterval);
+        clearAllIntervals();
         setShowLimitExceededModal(true);
         setIsFetchingLeads(false);
         return;
@@ -448,6 +896,11 @@ const ConversationLeadFormV2 = () => {
         throw new Error('No job_id returned from server');
       }
 
+      // Save job to localStorage for resume capability
+      setActiveJobId(jobId);
+      saveJobToLocalStorage(jobId, leadFormId, userId);
+      console.log('💾 Saved job to localStorage:', jobId);
+
       // HYBRID: Simulated progress + backend polling (with retry logic)
       let simulatedProgress = 0;
       let isJobComplete = false;
@@ -461,10 +914,10 @@ const ConversationLeadFormV2 = () => {
       const MAX_POLL_ATTEMPTS = hasJobBoardsEnabled ? 100 : 60;
 
       // Simulate smooth progress: 0% → 95% over 2 minutes
-      progressSimulation = setInterval(() => {
+      intervalsRef.current.progressSimulation = setInterval(() => {
         if (simulatedProgress < 95 && !isJobComplete) {
           simulatedProgress += 0.79; // ~95% in 120 seconds
-          setFetchingProgress(Math.floor(simulatedProgress));
+          setTargetProgress(Math.floor(simulatedProgress)); // Update target, smooth animation handles display
 
           // Update status messages based on progress
           if (simulatedProgress < 20) {
@@ -480,9 +933,9 @@ const ConversationLeadFormV2 = () => {
       }, 1000);
 
       // Poll backend every 15 seconds (restored from original)
-      pollInterval = setInterval(async () => {
+      intervalsRef.current.pollInterval = setInterval(async () => {
         if (isJobComplete || pollAttempts >= MAX_POLL_ATTEMPTS) {
-          clearInterval(pollInterval);
+          clearAllIntervals();
           return;
         }
 
@@ -494,32 +947,89 @@ const ConversationLeadFormV2 = () => {
           if (statusResponse.responseCode === 200 && statusResponse.responseData) {
             const jobData = statusResponse.responseData;
 
+            // Update with REAL backend progress (only if moving forward)
+            if (typeof jobData.progress === 'number') {
+              // Only update if backend progress is ahead or equal (never go backward)
+              if (jobData.progress >= simulatedProgress) {
+                simulatedProgress = jobData.progress; // Sync simulation with real progress
+                setTargetProgress(jobData.progress); // Smooth animation will interpolate
+              }
+              // If backend is behind simulated progress, ignore it and let simulation continue
+
+              // Update status based on real progress
+              if (jobData.progress < 20) {
+                setFetchingStatus('🔍 Searching across social platforms...');
+              } else if (jobData.progress < 50) {
+                setFetchingStatus('📊 Analyzing posts for intent signals...');
+              } else if (jobData.progress < 80) {
+                setFetchingStatus('🎯 Filtering and scoring qualified leads...');
+              } else if (jobData.progress < 100) {
+                setFetchingStatus('✨ Finalizing results...');
+              }
+            }
+
             if (jobData.status === 'completed') {
               isJobComplete = true;
-              clearInterval(pollInterval);
-              clearInterval(progressSimulation);
-              clearInterval(tipInterval);
+              clearAllIntervals();
+              clearJobFromLocalStorage();
+              setActiveJobId(null);
 
               // Store the stats
               if (jobData.stats) {
                 setLeadStats(jobData.stats);
               }
 
-              // Jump to 100%
-              setFetchingProgress(100);
+              // Smooth transition to 100%
+              setTargetProgress(100);
               setFetchingStatus('✅ Analysis complete!');
+
+              // Hybrid approach: Wait for animation to complete OR 2s max timeout
+              const startTime = Date.now();
+              const checkAnimationComplete = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+
+                // Show modal if progress reached 99% OR 2 seconds passed
+                if (fetchingProgress >= 99 || elapsed >= 2000) {
+                  clearInterval(checkAnimationComplete);
+                  setOpenSuccessModal(true);
+                  triggerToast('success', jobData.message || 'Leads fetched and analyzed successfully!');
+                }
+              }, 100);
+
+              // Absolute fallback: force modal after 3 seconds
+              setTimeout(() => {
+                clearInterval(checkAnimationComplete);
+                if (!openSuccessModal) {
+                  setOpenSuccessModal(true);
+                  triggerToast('success', jobData.message || 'Leads fetched and analyzed successfully!');
+                }
+              }, 3000);
+
+              setIsFetchingLeads(false);
+            } else if (jobData.status === 'cancelled') {
+              isJobComplete = true;
+              clearAllIntervals();
+              clearJobFromLocalStorage();
+              setActiveJobId(null);
+
+              if (jobData.stats) {
+                setLeadStats({ ...jobData.stats, job_cancelled: true });
+              }
+
+              setTargetProgress(100); // Smooth transition to 100%
+              setFetchingStatus('🛑 Job cancelled');
 
               setTimeout(() => {
                 setOpenSuccessModal(true);
-                triggerToast('success', jobData.message || 'Leads fetched and analyzed successfully!');
+                triggerToast('success', jobData.message || 'Job cancelled. Partial results available.');
               }, 500);
 
               setIsFetchingLeads(false);
             } else if (jobData.status === 'failed') {
               isJobComplete = true;
-              clearInterval(pollInterval);
-              clearInterval(progressSimulation);
-              clearInterval(tipInterval);
+              clearAllIntervals();
+              clearJobFromLocalStorage();
+              setActiveJobId(null);
 
               triggerToast('error', jobData.error || 'Lead generation failed');
               setIsFetchingLeads(false);
@@ -534,14 +1044,14 @@ const ConversationLeadFormV2 = () => {
       // Fallback timeout: If job never completes, show modal
       // Social only: 15 minutes, With job boards: 25 minutes
       const fallbackTimeoutMinutes = hasJobBoardsEnabled ? 25 : 15;
-      setTimeout(
+      intervalsRef.current.fallbackTimeout = setTimeout(
         () => {
           if (!isJobComplete) {
-            clearInterval(pollInterval);
-            clearInterval(progressSimulation);
-            clearInterval(tipInterval);
+            clearAllIntervals();
+            clearJobFromLocalStorage();
+            setActiveJobId(null);
 
-            setFetchingProgress(100);
+            setTargetProgress(100); // Smooth transition to 100%
             setFetchingStatus('✅ Analysis complete!');
             setIsFetchingLeads(false);
 
@@ -557,9 +1067,7 @@ const ConversationLeadFormV2 = () => {
       console.error('Error starting lead generation:', error);
 
       // Clear all intervals
-      clearInterval(tipInterval);
-      if (progressSimulation) clearInterval(progressSimulation);
-      if (pollInterval) clearInterval(pollInterval);
+      clearAllIntervals();
 
       // Check if this is an insufficient balance error (402)
       const is402Error = error?.response?.status === 402;
@@ -588,7 +1096,8 @@ const ConversationLeadFormV2 = () => {
       setIsFetchingLeads(false);
       setTimeout(() => {
         setFetchingStatus('');
-        setFetchingProgress(0);
+        setTargetProgress(0);
+        setFetchingProgress(0); // Reset both immediately on error
         setCurrentTip('');
       }, 1000);
     }
@@ -600,6 +1109,16 @@ const ConversationLeadFormV2 = () => {
       return;
     }
 
+    // Check if lead_generation_goal is empty
+    if (!form.lead_generation_goal || form.lead_generation_goal.trim() === '') {
+      setShowLeadGoalModal(true);
+      return;
+    }
+
+    await proceedWithSave();
+  };
+
+  const proceedWithSave = async () => {
     // Frontend limit check removed - now handled by backend with proper validation
     // Backend will return 403 with limit_exceeded flag if user exceeds quota
 
@@ -670,13 +1189,13 @@ const ConversationLeadFormV2 = () => {
     const payload: ConversationalSearchFormDto = {
       ...form,
       enable_realtime: true,
-      user_id: userId,
+      user_id: userId!,
       monitoring_platforms: enabledPlatforms,
     };
 
     if (existingFormId) {
       const updatePayload: ConversationalSearchFormDto = {
-        user_id: userId,
+        user_id: userId || '',
         form_title: payload.form_title || '',
         intent_type: payload.intent_type || '',
         ai_response_guide: payload.ai_response_guide || '',
@@ -700,6 +1219,8 @@ const ConversationLeadFormV2 = () => {
         // Job Boards fields
         solution_context: payload.solution_context || '',
         job_keywords: payload.job_keywords || [],
+        // AI Next Steps
+        lead_generation_goal: payload.lead_generation_goal || '',
       };
 
       updateConversationalSearchLeadForm.mutate(
@@ -892,10 +1413,75 @@ const ConversationLeadFormV2 = () => {
   const handleAutoPopulate = () => {
     if (!userId) return;
     triggerAutoPopulate({
-      user_id: userId,
+      user_id: userId!,
       lead_form_type: FormTypeEnum.CONVERSATIONAL,
       data: autoPopulateData,
     });
+  };
+
+  const handleCancelJob = async () => {
+    if (!activeJobId) {
+      triggerToast('error', 'No active job to cancel');
+      return;
+    }
+
+    if (!userId) {
+      triggerToast('error', 'User not authenticated');
+      return;
+    }
+
+    setIsCancelling(true);
+    setCancelError(null);
+
+    try {
+      console.log('🛑 Requesting cancellation for job:', activeJobId);
+
+      const response = await LeadFormService.cancelLeadGenerationJob(activeJobId, userId);
+
+      if (response.status) {
+        triggerToast('success', 'Cancelling job... This may take 5-15 seconds');
+        setShowCancelConfirmation(false);
+
+        // Continue polling - job status will change to "cancelled"
+        // The existing polling logic will handle showing final stats
+      } else {
+        setCancelError(response.responseMessage || 'Failed to cancel job');
+        triggerToast('error', response.responseMessage || 'Failed to cancel job');
+      }
+    } catch (error: any) {
+      console.error('Error cancelling job:', error);
+      const errorMsg = error?.response?.data?.responseMessage || 'Failed to cancel job';
+      setCancelError(errorMsg);
+      triggerToast('error', errorMsg);
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  const handleManualRegenerateKeywords = async () => {
+    if (!userId || !form.solution_context) {
+      triggerToast('error', 'Please enter a solution context first');
+      return;
+    }
+
+    setIsGeneratingKeywords(true);
+    try {
+      const response = await LeadFormService.generateJobKeywords(userId, form.solution_context);
+      if (response.status && response.responseData?.job_keywords) {
+        const keywords = response.responseData.job_keywords;
+        setForm((prev) => ({ ...prev, job_keywords: keywords }));
+
+        // Visual feedback
+        setKeywordsJustUpdated(true);
+        setTimeout(() => setKeywordsJustUpdated(false), 2000);
+
+        triggerToast('success', `Generated ${keywords.length} fresh job keywords`);
+      }
+    } catch (error: any) {
+      triggerToast('error', error.message || 'Failed to regenerate keywords');
+    } finally {
+      setIsGeneratingKeywords(false);
+    }
   };
 
   const disabledPlatforms = new Set([BrowsercloudPlatformEnum.THREADS]);
@@ -1031,32 +1617,6 @@ const ConversationLeadFormV2 = () => {
               setValue={(val) => handleChange('form_title', val)}
               required
             />
-
-            <Box mt={3}>
-              <Typography variant="caption" sx={{ color: '#6b7280', mb: 1, display: 'flex', alignItems: 'center' }}>
-                What's your goal with these leads? (Optional)
-                <Tooltip
-                  title="Tell us your business objective. AI will use this to generate personalized next steps for each lead. Example: 'I want to sell productivity tools to startup founders'"
-                  arrow
-                >
-                  <InfoOutlinedIcon fontSize="small" sx={{ ml: 0.5, color: '#9ca3af' }} />
-                </Tooltip>
-              </Typography>
-              <TextField
-                fullWidth
-                multiline
-                rows={2}
-                placeholder="e.g., I want to sell gadgets to programmers"
-                value={form.lead_generation_goal || ''}
-                onChange={(e) => handleChange('lead_generation_goal', e.target.value)}
-                variant="outlined"
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '8px',
-                  },
-                }}
-              />
-            </Box>
           </Box>
 
           {/* AI Form Completion Section */}
@@ -1113,23 +1673,103 @@ const ConversationLeadFormV2 = () => {
               <Box sx={{ mb: 3 }}>
                 <SingleFieldInput
                   label="Solution Context"
-                  tooltip="What problem does your product or service solve? This helps us identify relevant hiring signals from job postings."
+                  tooltip="Describe your product/service. Job keywords will auto-generate as you type."
                   placeholder="e.g., 'We provide cloud infrastructure that reduces DevOps costs'"
                   value={form.solution_context || ''}
                   setValue={(val) => handleChange('solution_context', val)}
                   required={false}
                 />
+
+                {/* Loading indicator when generating keywords */}
+                {isGeneratingKeywords && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                    <CircularProgress size={16} />
+                    <Typography variant="caption" color="primary">
+                      Generating job keywords...
+                    </Typography>
+                  </Box>
+                )}
               </Box>
 
               {/* Job Keywords - Auto-generated from solution context */}
-              <Box sx={{ mb: 3 }}>
+              <Box
+                sx={{
+                  mb: 3,
+                  position: 'relative',
+                  border: keywordsJustUpdated ? '2px solid #4caf50' : 'none',
+                  borderRadius: 1,
+                  transition: 'all 0.3s ease',
+                  p: keywordsJustUpdated ? 1 : 0,
+                }}
+              >
+                {/* Relationship indicator and controls */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <Typography variant="body2" color="text.secondary" fontSize="13px">
+                    🤖 Auto-generated from solution context above
+                  </Typography>
+
+                  <Box sx={{ ml: 'auto', display: 'flex', gap: 0.5 }}>
+                    {/* Lock button */}
+                    <Tooltip title={keywordsLocked ? 'Keywords locked. Click to enable auto-regeneration' : 'Lock keywords to prevent auto-updates'}>
+                      <IconButton
+                        size="small"
+                        onClick={() => setKeywordsLocked(!keywordsLocked)}
+                        sx={{
+                          p: 0.5,
+                          color: '#CD1B78',
+                          '&:hover': { bgcolor: 'rgba(205, 27, 120, 0.08)' },
+                        }}
+                      >
+                        {keywordsLocked ? <LockIcon fontSize="small" /> : <LockOpenIcon fontSize="small" />}
+                      </IconButton>
+                    </Tooltip>
+
+                    {/* Manual regenerate button */}
+                    <Tooltip title="Manually regenerate from current solution context">
+                      <IconButton
+                        size="small"
+                        onClick={handleManualRegenerateKeywords}
+                        disabled={!form.solution_context || isGeneratingKeywords}
+                        sx={{
+                          p: 0.5,
+                          color: '#CD1B78',
+                          '&:hover': { bgcolor: 'rgba(205, 27, 120, 0.08)' },
+                          '&.Mui-disabled': { color: 'rgba(0, 0, 0, 0.26)' },
+                        }}
+                      >
+                        <AutorenewIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Box>
+
                 <ListValuesInput
                   label="Job Role Keywords"
-                  tooltip="Job titles to search for on LinkedIn Jobs and Jobberman. These are auto-generated when you add Solution Context. E.g., 'DevOps Engineer', 'Cloud Architect'"
+                  tooltip="These keywords are automatically generated from your solution context. You can edit or lock them."
                   placeholder="e.g. 'DevOps Engineer', 'Cloud Architect', 'Platform Engineer'"
                   keywords={form.job_keywords || []}
                   setKeywords={(val) => handleChange('job_keywords', val)}
                 />
+
+                {/* Updated badge */}
+                {keywordsJustUpdated && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: -10,
+                      right: -10,
+                      bgcolor: '#4caf50',
+                      color: 'white',
+                      px: 1.5,
+                      py: 0.5,
+                      borderRadius: 2,
+                      fontSize: '12px',
+                      fontWeight: 600,
+                    }}
+                  >
+                    ✨ Updated!
+                  </Box>
+                )}
               </Box>
             </>
           )}
@@ -1277,23 +1917,42 @@ const ConversationLeadFormV2 = () => {
             </Box>
           </Box>
 
+          {/* Lead Generation Goal - Positioned before checkboxes */}
+          <Box ref={leadGoalRef} sx={{ mb: 3 }}>
+            <Typography variant="body2" sx={{ color: '#374151', mb: 1, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+              What's your goal with these leads? (Optional)
+              <Tooltip
+                title="Tell us your business objective. AI will use this to generate personalized next steps for each lead. Example: 'I want to sell productivity tools to startup founders'"
+                arrow
+              >
+                <InfoOutlinedIcon fontSize="small" sx={{ ml: 0.5, color: '#9ca3af' }} />
+              </Tooltip>
+            </Typography>
+            <TextField
+              fullWidth
+              multiline
+              rows={1}
+              placeholder="e.g., I want to recruit software engineers for my startup"
+              value={form.lead_generation_goal || ''}
+              onChange={(e) => handleChange('lead_generation_goal', e.target.value)}
+              variant="outlined"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '8px',
+                  backgroundColor: '#FAFBFC',
+                },
+              }}
+            />
+          </Box>
+
           {/* Checkboxes */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr' }, gap: 3, mb: 3 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr' }, gap: 3, mb: 3 }}>
             <Box mt={3.5} sx={{ display: 'flex', alignItems: 'center' }}>
               <CustomCheckbox
                 label="Add to history"
                 checked={form.add_to_history || false}
                 onChange={(val) => handleChange('add_to_history', val)}
                 tooltip="Check this if you want to add the form to your history. This will add the form to your history so you can easily find it later."
-              />
-            </Box>
-
-            <Box mt={3.5} sx={{ display: 'flex', alignItems: 'center' }}>
-              <CustomCheckbox
-                label="Auto-generate"
-                checked={form.auto_generate || false}
-                onChange={(val) => handleChange('auto_generate', val)}
-                tooltip="Check this if you want to auto-generate the form. This will auto-generate the form with the data from the backend."
               />
             </Box>
           </Box>
@@ -1305,16 +1964,17 @@ const ConversationLeadFormV2 = () => {
             sx={{
               mb: 3,
               p: 3,
-              bgcolor: '#f8f9ff',
+              bgcolor: isCancelling ? '#fff3e0' : '#f8f9ff',
               borderRadius: 2,
-              border: '1px solid #e0e7ff',
+              border: isCancelling ? '1px solid #ff9800' : '1px solid #e0e7ff',
+              transition: 'all 0.3s ease',
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-              <Typography variant="body1" sx={{ fontWeight: 600, color: '#1e293b' }}>
-                {fetchingStatus}
+              <Typography variant="body1" sx={{ fontWeight: 600, color: isCancelling ? '#e65100' : '#1e293b' }}>
+                {isCancelling ? '🛑 Cancelling... Job will stop shortly' : fetchingStatus}
               </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: '#CD1B78' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: isCancelling ? '#f57c00' : '#CD1B78' }}>
                 {fetchingProgress}%
               </Typography>
             </Box>
@@ -1325,29 +1985,77 @@ const ConversationLeadFormV2 = () => {
               sx={{
                 height: 8,
                 borderRadius: 4,
-                backgroundColor: '#e0e7ff',
+                backgroundColor: isCancelling ? '#ffe0b2' : '#e0e7ff',
                 '& .MuiLinearProgress-bar': {
                   borderRadius: 4,
-                  backgroundColor: '#CD1B78',
+                  backgroundColor: isCancelling ? '#ff9800' : '#CD1B78',
+                  transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease',
                 },
               }}
             />
 
-            {currentTip && (
+            {isCancelling ? (
               <Box
                 sx={{
                   mt: 2,
                   p: 2,
-                  bgcolor: 'white',
+                  bgcolor: '#fff8e1',
                   borderRadius: 1.5,
-                  border: '1px solid #e0e7ff',
+                  border: '1px solid #ffb74d',
                 }}
               >
-                <Typography variant="body2" sx={{ color: '#475569', fontStyle: 'italic' }}>
-                  {currentTip}
+                <Typography variant="body2" sx={{ color: '#e65100', fontWeight: 500, mb: 0.5 }}>
+                  ⏳ Cancellation in progress
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#5a5a5a', display: 'block' }}>
+                  The worker will finish processing the current keyword and stop gracefully. This typically takes 5-15 seconds.
                 </Typography>
               </Box>
+            ) : (
+              currentTip && (
+                <Box
+                  sx={{
+                    mt: 2,
+                    p: 2,
+                    bgcolor: 'white',
+                    borderRadius: 1.5,
+                    border: '1px solid #e0e7ff',
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: '#475569', fontStyle: 'italic' }}>
+                    {currentTip}
+                  </Typography>
+                </Box>
+              )
             )}
+
+            {/* Cancel Button */}
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <Button
+                variant="outlined"
+                color="error"
+                size="small"
+                onClick={() => setShowCancelConfirmation(true)}
+                disabled={isCancelling}
+                startIcon={isCancelling ? <CircularProgress size={16} /> : null}
+                sx={{
+                  borderColor: '#d32f2f',
+                  color: '#d32f2f',
+                  '&:hover': {
+                    borderColor: '#c62828',
+                    backgroundColor: '#ffebee',
+                  },
+                }}
+              >
+                {isCancelling ? 'Cancelling...' : 'Cancel Generation'}
+              </Button>
+
+              {cancelError && (
+                <Typography variant="caption" color="error" sx={{ display: 'block', mt: 1 }}>
+                  {cancelError}
+                </Typography>
+              )}
+            </Box>
           </Box>
         )}
 
@@ -1403,12 +2111,16 @@ const ConversationLeadFormV2 = () => {
       <SmartModal
         open={openSuccessModal}
         image={<Image src="/assets/images/success.png" alt="Success" width={64} height={64} />}
-        mainText={leadStats && leadStats.new_leads_saved === 0 ? 'Analysis Complete' : 'Success! 🎉'}
+        mainText={leadStats?.job_cancelled ? 'Search Stopped' : leadStats && leadStats.new_leads_saved === 0 ? 'Analysis Complete' : 'Success! 🎉'}
         subText={
           leadStats
             ? (() => {
                 const hasSocial = (leadStats.social_total_fetched || 0) > 0;
                 const hasJobBoards = (leadStats.job_signals_found || 0) > 0;
+
+                if (leadStats.job_cancelled) {
+                  return `Your lead search was stopped early. Here's what we found:`;
+                }
 
                 if (leadStats.new_leads_saved === 0) {
                   if (leadStats.total_fetched > 0) {
@@ -1601,6 +2313,43 @@ const ConversationLeadFormV2 = () => {
               </Box>
             );
           })()}
+
+        {/* Unqualified Leads CTA - Show only if leads were analyzed */}
+        {leadStats && (leadStats.total_fetched > 0 || leadStats.total_qualified > 0) && (
+          <Box
+            sx={{
+              mt: 3,
+              p: 2,
+              backgroundColor: '#fff3e0',
+              borderRadius: '8px',
+              border: '1px solid #ffb74d',
+              textAlign: 'center',
+            }}
+          >
+            <Typography variant="body2" sx={{ color: '#e65100', fontWeight: 500, mb: 0.5 }}>
+              💡 Want to review filtered-out leads?
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#5a5a5a', display: 'block', mb: 1 }}>
+              View unqualified leads that didn't meet your criteria
+            </Typography>
+            <Box
+              component="a"
+              href="/leads-tracking/forms/leads?type=conversational&active_tab=unqualified&page=1"
+              sx={{
+                color: '#f57c00',
+                fontWeight: 600,
+                fontSize: '14px',
+                textDecoration: 'none',
+                cursor: 'pointer',
+                '&:hover': {
+                  textDecoration: 'underline',
+                },
+              }}
+            >
+              Go to Unqualified Tab →
+            </Box>
+          </Box>
+        )}
       </SmartModal>
 
       {/* Limit Exceeded Modal */}
@@ -1641,6 +2390,84 @@ const ConversationLeadFormV2 = () => {
           onContinueAnyway={handleContinueAnyway}
         />
       )}
+
+      {/* Lead Goal Reminder Modal */}
+      <SmartModal
+        open={showLeadGoalModal}
+        onClose={() => {
+          // X button: Just close modal, don't save
+          setShowLeadGoalModal(false);
+        }}
+        image={<Box sx={{ fontSize: 48 }}>🎯</Box>}
+        mainText="Add Your Lead Goal?"
+        subText="Providing your lead generation goal helps our AI generate personalized, actionable next steps for each lead—making your outreach more effective."
+        handleAction={() => {
+          setShowLeadGoalModal(false);
+          leadGoalRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => {
+            const textField = leadGoalRef.current?.querySelector('textarea');
+            if (textField) {
+              textField.focus();
+              textField.style.border = '2px solid #CD1B78';
+              textField.style.boxShadow = '0 0 0 3px rgba(205, 27, 120, 0.1)';
+              setTimeout(() => {
+                textField.style.border = '';
+                textField.style.boxShadow = '';
+              }, 3000);
+            }
+          }, 500);
+        }}
+        actionText="Add Lead Goal"
+        handleCancel={async () => {
+          // "Continue Without Goal" button: Close and proceed with save
+          setShowLeadGoalModal(false);
+          await proceedWithSave();
+        }}
+        cancelText="Continue Without Goal"
+      />
+
+      {/* Cancel Confirmation Dialog */}
+      <Dialog open={showCancelConfirmation} onClose={() => setShowCancelConfirmation(false)}>
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>Cancel Lead Generation?</Box>
+        </DialogTitle>
+
+        <DialogContent>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            Are you sure you want to cancel this lead generation job?
+          </Typography>
+
+          <Box sx={{ p: 2, bgcolor: '#fff3e0', borderRadius: 1, mb: 2 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+              What happens when you cancel:
+            </Typography>
+            <ul style={{ margin: 0, paddingLeft: 20 }}>
+              <li>
+                <Typography variant="caption">Job will stop within 5-15 seconds</Typography>
+              </li>
+              <li>
+                <Typography variant="caption">You'll receive partial results (leads collected so far)</Typography>
+              </li>
+              <li>
+                <Typography variant="caption">You'll only be charged for posts actually fetched and analyzed</Typography>
+              </li>
+            </ul>
+          </Box>
+
+          <Typography variant="caption" color="text.secondary">
+            Current progress: {fetchingProgress}% ({fetchingStatus})
+          </Typography>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setShowCancelConfirmation(false)} disabled={isCancelling}>
+            Continue Generation
+          </Button>
+          <Button onClick={handleCancelJob} color="error" variant="contained" disabled={isCancelling} startIcon={isCancelling ? <CircularProgress size={16} color="inherit" /> : null}>
+            {isCancelling ? 'Cancelling...' : 'Yes, Cancel'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

@@ -15,6 +15,8 @@ interface LeadStoreState {
   setLeadSource: (source: string | null) => void;
   leadStarred: string | null;
   setLeadStarred: (starred: string | null) => void;
+  leadFormSnapshotId: string | null;
+  setLeadFormSnapshotId: (snapshotId: string | null) => void;
   leadsData: LeadDto[] | null;
   leadType: string | null;
   setLeadType: (type: string | null) => void;
@@ -35,6 +37,8 @@ export const useLeadTrackingStore = create<LeadStoreState>((set) => ({
   setLeadSource: (source) => set({ leadSource: source }),
   leadStarred: 'all',
   setLeadStarred: (starred) => set({ leadStarred: starred }),
+  leadFormSnapshotId: null,
+  setLeadFormSnapshotId: (snapshotId) => set({ leadFormSnapshotId: snapshotId }),
   leadsData: null,
   leadType: null,
   setLeadType: (type) => set({ leadType: type }),
@@ -50,6 +54,7 @@ export const useLeadTrackingStore = create<LeadStoreState>((set) => ({
       leadsDateFilter: null,
       leadSource: null,
       leadStarred: 'all',
+      leadFormSnapshotId: null,
       leadType: null,
     }),
 }));

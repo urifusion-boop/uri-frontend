@@ -170,7 +170,7 @@ const SubscriptionPlansList = ({ onSelectPlan, selectedPlan }: ChoosePaymentProp
                   duration={'Bring Enterprise level functionality to your brand'}
                   planType={SubscriptionTypeEnum.Enterprise}
                   planFeatures={planFeatures[SubscriptionTypeEnum.Enterprise]}
-                  onSelect={() => window.open('https://calendly.com/uricreative-sales/uri-social-listening-tool-demo', '_blank')}
+                  onSelect={() => window.open('https://calendly.com/precious-zino-uricreative/let-s-talk-about-uri', '_blank')}
                   price={'Custom'}
                   selected={false}
                   recommended

@@ -112,6 +112,8 @@ const LeadsView = ({ leadType, label, icon, excludeTabs = [] }: LeadsViewProps) 
         buttonText={generateButtonText}
         onExportClick={toggleExportModal}
         //onImportClick={toggleImportModal}
+        onCreateNewClick={() => router.push(`/leads-tracking/forms/manage?type=${LeadHelper.getLeadFormType(leadType)}&mode=create`)}
+        allowCreateNew={!!leadsHookData.existingLeadForm}
         icon={icon}
         title={`${label} Leads`}
       />

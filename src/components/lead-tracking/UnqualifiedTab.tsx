@@ -69,32 +69,37 @@ const UnqualifiedTab = ({ userId, leadFormSnapshotId }: UnqualifiedTabProps) => 
           <Box
             sx={{
               backgroundColor: '#fff',
-              borderRadius: '12px',
+              borderRadius: '16px',
               p: 3,
-              border: '1px solid #E5E7EB',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+              border: '1px solid #F3F4F6',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
               flex: 1,
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                borderColor: '#F8BBE0',
+                boxShadow: '0 4px 6px rgba(205, 27, 120, 0.1)',
+              },
             }}
           >
-            <Box display="flex" alignItems="center" gap={1} mb={1.5}>
+            <Box display="flex" alignItems="center" gap={1.5} mb={1.5}>
               <Box
                 sx={{
                   width: 40,
                   height: 40,
-                  borderRadius: '10px',
-                  backgroundColor: '#FFF0F7',
+                  borderRadius: '12px',
+                  backgroundColor: '#FFF5FB',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <BlockIcon sx={{ color: '#C91A79', fontSize: 22 }} />
+                <BlockIcon sx={{ color: '#CD1B78', fontSize: 20 }} />
               </Box>
-              <Typography fontSize="14px" color="#6C727F" fontWeight={600}>
+              <Typography fontSize="13px" color="#6B7280" fontWeight={600} letterSpacing="0.3px">
                 Total Unqualified
               </Typography>
             </Box>
-            <Typography fontSize="32px" fontWeight={700} color="#374151" lineHeight={1.2}>
+            <Typography fontSize="32px" fontWeight={700} color="#1F2937" lineHeight={1.2}>
               {totalSpam.toLocaleString()}
             </Typography>
             <Typography fontSize="12px" color="#9CA3AF" mt={0.5}>
@@ -107,28 +112,33 @@ const UnqualifiedTab = ({ userId, leadFormSnapshotId }: UnqualifiedTabProps) => 
           <Box
             sx={{
               backgroundColor: '#fff',
-              borderRadius: '12px',
+              borderRadius: '16px',
               p: 3,
-              border: '1px solid #E5E7EB',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+              border: '1px solid #F3F4F6',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
               flex: 1,
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                borderColor: '#BAE6FD',
+                boxShadow: '0 4px 6px rgba(14, 165, 233, 0.1)',
+              },
             }}
           >
-            <Box display="flex" alignItems="center" gap={1} mb={2}>
+            <Box display="flex" alignItems="center" gap={1.5} mb={2}>
               <Box
                 sx={{
                   width: 40,
                   height: 40,
-                  borderRadius: '10px',
+                  borderRadius: '12px',
                   backgroundColor: '#F0F9FF',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <SourceIcon sx={{ color: '#0EA5E9', fontSize: 22 }} />
+                <SourceIcon sx={{ color: '#0EA5E9', fontSize: 20 }} />
               </Box>
-              <Typography fontSize="14px" color="#6C727F" fontWeight={600}>
+              <Typography fontSize="13px" color="#6B7280" fontWeight={600} letterSpacing="0.3px">
                 By Source
               </Typography>
             </Box>
@@ -138,7 +148,7 @@ const UnqualifiedTab = ({ userId, leadFormSnapshotId }: UnqualifiedTabProps) => 
                   <Typography fontSize="13px" color="#374151" fontWeight={500}>
                     {source}
                   </Typography>
-                  <Typography fontSize="13px" fontWeight={700} color="#C91A79">
+                  <Typography fontSize="13px" fontWeight={700} color="#CD1B78">
                     {bySource[source]}
                   </Typography>
                 </Box>
@@ -155,28 +165,33 @@ const UnqualifiedTab = ({ userId, leadFormSnapshotId }: UnqualifiedTabProps) => 
           <Box
             sx={{
               backgroundColor: '#fff',
-              borderRadius: '12px',
+              borderRadius: '16px',
               p: 3,
-              border: '1px solid #E5E7EB',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+              border: '1px solid #F3F4F6',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
               flex: 1,
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                borderColor: '#FDE68A',
+                boxShadow: '0 4px 6px rgba(245, 158, 11, 0.1)',
+              },
             }}
           >
-            <Box display="flex" alignItems="center" gap={1} mb={2}>
+            <Box display="flex" alignItems="center" gap={1.5} mb={2}>
               <Box
                 sx={{
                   width: 40,
                   height: 40,
-                  borderRadius: '10px',
-                  backgroundColor: '#FEF3C7',
+                  borderRadius: '12px',
+                  backgroundColor: '#FFFBEB',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <WarningAmberIcon sx={{ color: '#F59E0B', fontSize: 22 }} />
+                <WarningAmberIcon sx={{ color: '#F59E0B', fontSize: 20 }} />
               </Box>
-              <Typography fontSize="14px" color="#6C727F" fontWeight={600}>
+              <Typography fontSize="13px" color="#6B7280" fontWeight={600} letterSpacing="0.3px">
                 Top Filter Reasons
               </Typography>
             </Box>
@@ -186,7 +201,7 @@ const UnqualifiedTab = ({ userId, leadFormSnapshotId }: UnqualifiedTabProps) => 
                   <Typography fontSize="13px" color="#374151" fontWeight={500} noWrap sx={{ maxWidth: 200 }}>
                     {reason}
                   </Typography>
-                  <Typography fontSize="13px" fontWeight={700} color="#C91A79" sx={{ ml: 1 }}>
+                  <Typography fontSize="13px" fontWeight={700} color="#CD1B78" sx={{ ml: 1 }}>
                     {byReason[reason]}
                   </Typography>
                 </Box>
