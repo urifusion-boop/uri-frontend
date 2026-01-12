@@ -474,7 +474,7 @@ export default function SignalRefineryTestPage() {
                     <Grid item xs={6} md={3}>
                       <Box textAlign="center" p={2} borderRadius="8px" bgcolor="#F9FAFB">
                         <Typography variant="h4" fontWeight={700} color="#059669">
-                          {currentJob.metrics.buyer_leads_count}
+                          {currentJob.metrics.final_buyer_count || currentJob.metrics.buyer_leads_count || 0}
                         </Typography>
                         <Typography variant="caption" color="#6B7280">
                           Buyer Leads
@@ -484,7 +484,7 @@ export default function SignalRefineryTestPage() {
                     <Grid item xs={6} md={3}>
                       <Box textAlign="center" p={2} borderRadius="8px" bgcolor="#F9FAFB">
                         <Typography variant="h4" fontWeight={700} color="#EF4444">
-                          {currentJob.metrics.seller_filtered_count}
+                          {currentJob.metrics.seller_filtered || currentJob.metrics.seller_filtered_count || 0}
                         </Typography>
                         <Typography variant="caption" color="#6B7280">
                           Sellers Filtered
