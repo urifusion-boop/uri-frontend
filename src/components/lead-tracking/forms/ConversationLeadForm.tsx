@@ -377,7 +377,8 @@ const ConversationLeadFormV2 = () => {
     });
 
     // Only generate if Job Boards is enabled, we don't have job keywords yet, and we have context or onboarding data
-    if (isJobBoardsEnabled && (!form.job_keywords || form.job_keywords.length === 0) && userId) {
+    // Don't regenerate if we're loading an existing form that already has keywords saved
+    if (isJobBoardsEnabled && (!form.job_keywords || form.job_keywords.length === 0) && userId && !(existingForm as any)?.job_keywords?.length) {
       // Priority: 1) Auto-populate data, 2) Solution context, 3) Onboarding data (businessDetails.whatYouSell)
       const context = autoPopulateData || form.solution_context || userDetails?.businessDetails?.whatYouSell || '';
 
