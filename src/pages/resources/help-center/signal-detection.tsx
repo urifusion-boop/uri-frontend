@@ -146,7 +146,7 @@ export default function SignalDetectionHelpPage() {
                 Read articles <ArrowRight className="w-4 h-4 ml-1" />
               </span>
             </Link>
-            <Link href="/resources/help-center/billing" className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors group">
+            <Link href="/pricing" className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors group">
               <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors">Next: Billing & Plans</h3>
               <p className="text-sm text-muted-foreground mb-4">Manage your subscription and billing.</p>
               <span className="text-primary text-sm flex items-center">

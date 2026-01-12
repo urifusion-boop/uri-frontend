@@ -62,6 +62,11 @@ const publicRoutes = [
   '/nonprofits',
   '/dummy-dashboard',
   '/features',
+  '/features/social-media-tracking',
+  '/features/lead-generation',
+  '/features/crm-enrichment',
+  '/features/alerts-notifications',
+  '/features/reporting-exports',
   '/signals',
   '/integrations',
 ];

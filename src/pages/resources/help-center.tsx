@@ -75,7 +75,7 @@ const categories = [
   { name: 'Getting Started', count: 12, link: '/resources/help-center/getting-started' },
   { name: 'CRM Integration', count: 8, link: '/resources/help-center/crm-integration' },
   { name: 'Signal Detection', count: 15, link: '/resources/help-center/signal-detection' },
-  { name: 'Billing & Plans', count: 6, link: '/resources/help-center/billing' },
+  { name: 'Billing & Plans', count: 6, link: '/pricing' },
   { name: 'Security & Privacy', count: 9, link: '/resources/help-center/security' },
   { name: 'API & Technical', count: 11, link: '/resources/help-center/api' },
 ];
@@ -141,8 +141,10 @@ export default function HelpCenterPage() {
                 <MessageCircle className="w-10 h-10 text-primary mx-auto mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Live Chat</h3>
                 <p className="text-sm text-muted-foreground mb-4">Chat with our support team in real-time. Available Mon-Fri, 9am-6pm WAT.</p>
-                <Button variant="outline" className="rounded-full">
-                  Start Chat
+                <Button asChild variant="outline" className="rounded-full">
+                  <a href="https://calendly.com/precious-zino-uricreative/let-s-talk-about-uri" target="_blank" rel="noopener noreferrer">
+                    Start Chat
+                  </a>
                 </Button>
               </div>
               <div className="text-center">
