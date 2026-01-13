@@ -20,6 +20,7 @@ export const useWallet = () => {
       return null;
     },
     enabled: !!userDetails?.userId,
+    retry: false,
   });
 
   const { mutateAsync: fundWallet, isPending: isFundingWallet } = useMutation({

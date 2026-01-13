@@ -116,7 +116,19 @@ function PricingPage() {
         </Box>
 
         {/* User Journey Cards - Shows the 4 user types */}
-        <UserJourneyCards />
+        <UserJourneyCards
+          onStartTrial={() => {
+            if (userDetails) {
+              if (isTrialEligible) {
+                setShowTrialModal(true);
+              }
+            } else {
+              router.push('/auth/login?redirect=/pricing');
+            }
+          }}
+          trialButtonText={checkingEligibility ? 'Loading...' : userDetails && !isTrialEligible ? 'Trial Already Used' : 'Start Free Trial'}
+          isTrialDisabled={checkingEligibility || (!!userDetails && !isTrialEligible)}
+        />
 
         {/* Lead Generation Pricing Section */}
         <LeadGenPricingSection />

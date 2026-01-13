@@ -12,7 +12,6 @@ import useGuideTour from '@/components/guide-tour/useGuideTour';
 import CustomModal from '@/components/modals/CustomModal';
 import TrialCountdownBanner from '@/components/trial/TrialCountdownBanner';
 import TrialExpiredModal from '@/components/trial/TrialExpiredModal';
-import WalletWidget from '@/components/wallet/WalletWidget';
 import { useClientsDashHook } from '@/hooks/clients/dashboard.hook';
 import { useTrialStatus } from '@/hooks/trial/useTrial.hook';
 import { useModal } from '@/hooks/utils.hook';
@@ -69,11 +68,6 @@ const ClientsDashboard = () => {
       <Box sx={{ px: { xs: 1, md: 4 }, py: 2 }}>
         <Box sx={{ backgroundColor: '#fff', borderRadius: 2, padding: { xs: 2, md: 4 } }}>
           <DashboardCard startTour={startTour} username={userDetails?.firstName ?? ''} />
-
-          {/* Wallet Widget */}
-          <Box sx={{ mt: 3 }}>
-            <WalletWidget />
-          </Box>
 
           {/* Trial Countdown Banner */}
           {trialStatus && trialStatus.status === 'active' && (
