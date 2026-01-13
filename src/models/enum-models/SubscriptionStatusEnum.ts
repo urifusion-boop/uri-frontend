@@ -13,15 +13,9 @@ export enum SubscriptionDurationEnum {
 
 export enum SubscriptionTypeEnum {
   FreeTrial = 'FREE_TRIAL',
-  Business = 'Business',
-  BusinessQuarterly = 'Business_Quarterly',
-  BusinessAnnually = 'Business_Anually',
-  Professional = 'Professional',
-  ProfessionalQuarterly = 'Professional_Quarterly',
-  ProfessionalAnnually = 'Professional_Anually',
-  Standard = 'Standard',
-  StandardQuarterly = 'Standard_Quarterly',
-  StandardAnnually = 'Standard_Anually',
+  FreeTrial7Day = 'FREE_TRIAL_7_DAY',
   Leads_Generation = 'Leads_Generation',
   Enterprise = 'Enterprise',
+  Social_Listening_Free = 'SOCIAL_LISTENING_FREE',
+  Social_Listening_Paid = 'SOCIAL_LISTENING_PAID',
 }

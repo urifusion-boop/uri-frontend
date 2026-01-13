@@ -16,16 +16,13 @@ function CustomSubscriptionHeader({ subscribed = false }: Readonly<{ subscribed?
     console.log('subscriptionPlanType : ', subscriptionPlanType);
     switch (subscriptionPlanType) {
       case SubscriptionTypeEnum.FreeTrial:
+      case SubscriptionTypeEnum.FreeTrial7Day:
+      case SubscriptionTypeEnum.Social_Listening_Free:
         return '#000';
-      case SubscriptionTypeEnum.Standard:
-      case SubscriptionTypeEnum.StandardAnnually:
+      case SubscriptionTypeEnum.Social_Listening_Paid:
         return '#CD1B78';
-      case SubscriptionTypeEnum.Professional:
-      case SubscriptionTypeEnum.ProfessionalAnnually:
+      case SubscriptionTypeEnum.Leads_Generation:
         return '#D67E27';
-      case SubscriptionTypeEnum.Business:
-      case SubscriptionTypeEnum.BusinessAnnually:
-        return '#C0C0C0';
       case SubscriptionTypeEnum.Enterprise:
         return '#FFD700';
       default:

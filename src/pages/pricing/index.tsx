@@ -2,6 +2,7 @@ import { TrialService } from '@/api/TrialService';
 import Footer from '@/components/landing/Footer';
 import Navigation from '@/components/Navigation';
 import LeadGenPricingSection from '@/components/pricing/LeadGenPricingSection';
+import SocialListeningPricingSection from '@/components/pricing/SocialListeningPricingSection';
 import UserJourneyCards from '@/components/pricing/UserJourneyCards';
 import TrialActivationModal from '@/components/trial/TrialActivationModal';
 import { useAuth } from '@/providers/AuthProvider';
@@ -120,6 +121,9 @@ function PricingPage() {
 
         {/* Lead Generation Pricing Section */}
         <LeadGenPricingSection />
+
+        {/* Social Listening Pricing Section */}
+        <SocialListeningPricingSection />
       </div>
 
       <Footer />

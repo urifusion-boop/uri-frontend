@@ -9,7 +9,6 @@ import SubscriptionPlan from '@/components/subscription/general/SubscriptionPlan
 import { planFeatures } from '@/data/subscription';
 import { useSubscriptionPlans } from '@/hooks/subscription/subscriptionPlans.hook';
 import { SubscriptionPlan as SubscriptionPlanDto } from '@/models/dtos/SubscriptionDto';
-import HandshakeOutline from '@/utils/icon/HandshakeOutline';
 import { IconType } from 'react-icons';
 import { BiBriefcase } from 'react-icons/bi';
 import { IoDiamondOutline } from 'react-icons/io5';
@@ -52,25 +51,26 @@ const SubscriptionPlansList = ({ onSelectPlan, selectedPlan }: ChoosePaymentProp
         // Filter by active tab interval
         if (plan.interval !== activeTab) return false;
 
+        // Filter to allow specific plan types and rely on plan_type when available
+        const allowedTypes = ['SOCIAL_LISTENING_FREE', 'SOCIAL_LISTENING_PAID', 'LEADS_GENERATION', 'ENTERPRISE'];
+        const planTypeSource = (plan as any).plan_type || plan.name.split('_')[0];
+        const planTypeUpper = (planTypeSource || '').toUpperCase();
+        const isAllowed = allowedTypes.includes(planTypeUpper);
+
+        if (!isAllowed) return false;
+
         // Filter out plans that don't have matching plan features
-        const planType = plan.name.split('_')[0] as keyof typeof planFeatures;
+        const planType = planTypeUpper as keyof typeof planFeatures;
         return planFeatures[planType] !== undefined;
       });
   }, [subscriptionPlans, activeTab]);
 
   const getPlanTypeIcon = (planType: string): IconType => {
     switch (planType) {
-      case SubscriptionTypeEnum.Standard:
-      case SubscriptionTypeEnum.StandardQuarterly:
-      case SubscriptionTypeEnum.StandardAnnually:
-        return PiStackSimpleFill;
-      case SubscriptionTypeEnum.Professional:
-      case SubscriptionTypeEnum.ProfessionalQuarterly:
-      case SubscriptionTypeEnum.ProfessionalAnnually:
-        return HandshakeOutline;
-      case SubscriptionTypeEnum.Business:
-      case SubscriptionTypeEnum.BusinessQuarterly:
-      case SubscriptionTypeEnum.BusinessAnnually:
+      case SubscriptionTypeEnum.Social_Listening_Paid:
+      case SubscriptionTypeEnum.Social_Listening_Free:
+        return IoDiamondOutline;
+      case SubscriptionTypeEnum.Leads_Generation:
         return BiBriefcase;
       default:
         return PiStackSimpleFill;
@@ -92,18 +92,6 @@ const SubscriptionPlansList = ({ onSelectPlan, selectedPlan }: ChoosePaymentProp
 
   const getPlanTypeDiscount = (planType: string) => {
     switch (planType) {
-      case SubscriptionTypeEnum.StandardQuarterly:
-        return 'Save ₦1k monthly ';
-      case SubscriptionTypeEnum.ProfessionalQuarterly:
-        return 'Save ₦3k monthly ';
-      case SubscriptionTypeEnum.BusinessQuarterly:
-        return 'Save ₦7k monthly ';
-      case SubscriptionTypeEnum.StandardAnnually:
-        return 'Save ₦5k monthly ';
-      case SubscriptionTypeEnum.ProfessionalAnnually:
-        return 'Save ₦10k monthly ';
-      case SubscriptionTypeEnum.BusinessAnnually:
-        return 'Save ₦20k monthly ';
       default:
         return undefined;
     }
@@ -149,7 +137,8 @@ const SubscriptionPlansList = ({ onSelectPlan, selectedPlan }: ChoosePaymentProp
                 }}
               >
                 {filteredSubscriptionPlans?.map((plan) => {
-                  const planType = plan.name.split('_')[0] as keyof typeof planFeatures;
+                  const planTypeSource = (plan as any).plan_type || plan.name.split('_')[0];
+                  const planType = (planTypeSource || '').toUpperCase() as keyof typeof planFeatures;
 
                   return (
                     <SubscriptionPlan

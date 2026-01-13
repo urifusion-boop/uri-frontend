@@ -116,12 +116,7 @@ export default function App({ Component, pageProps }: AppProps) {
       }
     };
 
-    const handlePaymentRequired = () => {
-      setShowSubscriptionModal(true);
-    };
-
     window.addEventListener('unauthorized', handleUnauthorizedAccess);
-    window.addEventListener('payment-required', handlePaymentRequired);
 
     NProgress.configure({ showSpinner: false });
     router.events.on('routeChangeStart', () => NProgress.start());
@@ -130,7 +125,6 @@ export default function App({ Component, pageProps }: AppProps) {
 
     return () => {
       window.removeEventListener('unauthorized', handleUnauthorizedAccess);
-      window.removeEventListener('payment-required', handlePaymentRequired);
       router.events.off('routeChangeStart', NProgress.start);
       router.events.off('routeChangeComplete', NProgress.done);
       router.events.off('routeChangeError', NProgress.done);

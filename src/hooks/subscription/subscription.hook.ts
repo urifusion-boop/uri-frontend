@@ -13,7 +13,7 @@ export const useSubscription = () => {
 
   const initializeSubscription = useMutation({
     mutationFn: async (data: Partial<SubscriptionDto>) => {
-      if (!userDetails?.email || !data.amount || !data.plan) return;
+      if (!userDetails?.email || data.amount === undefined || !data.plan) return;
 
       const response = await SubscriptionService.chargeSubscription(
         {
@@ -24,7 +24,7 @@ export const useSubscription = () => {
           reference: TextHelper.generateReferenceForUser(userDetails.userId ?? ''),
           channels: ['card'],
         },
-        userDetails.paystackId
+        userDetails.paystackId ?? 0
       );
 
       if (!response.status) {
