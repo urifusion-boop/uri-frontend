@@ -1,7 +1,9 @@
 import { dashboardBottomLinks, dashboardLinks } from '@/data/dashboard';
 import React, { Fragment, memo, useCallback, useEffect, useState } from 'react';
 
+import { useWorkflowFilter } from '@/contexts/WorkflowFilterContext';
 import useCustomTheme from '@/hooks/theme.hook';
+import { useUserWorkflows } from '@/hooks/useUserWorkflows';
 import { SubscriptionStatusEnum } from '@/models/enum-models/SubscriptionStatusEnum';
 import styles from '@/styles/Dashboard.module.css';
 import { Box } from '@mui/material';
@@ -11,8 +13,6 @@ import { FaChevronDown } from 'react-icons/fa6';
 import { GrClose } from 'react-icons/gr';
 import { UserTypeEnum } from '../../models/enum-models/UserTypeEnum';
 import { useAuth } from '../../providers/AuthProvider';
-import { useWorkflowFilter } from '@/contexts/WorkflowFilterContext';
-import { useUserWorkflows } from '@/hooks/useUserWorkflows';
 import Text from './CustomText';
 import { UriLogo } from './Icons';
 
@@ -39,7 +39,7 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
 
   // Filter dashboard links based on enabled workflows and dashboard selection
   const filteredDashboardLinks = React.useMemo(() => {
-    return dashboardLinks.filter(link => {
+    return dashboardLinks.filter((link) => {
       // Always show Dashboard
       if (link.route === '/dashboard') return true;
 
@@ -78,6 +78,31 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
         // Priority 1: If user has manually selected workflows on dashboard, ONLY show selected
         if (selectedWorkflows.length > 0) {
           return selectedWorkflows.includes('lead-generation');
+        }
+
+        // Priority 2: If user has NO enabled workflows (empty), show ALL workflows
+        if (userEnabledWorkflows.length === 0) {
+          return true; // Show everything when nothing is enabled
+        }
+
+        // Priority 3: If no dashboard selection, check if workflow is enabled
+        if (!isEnabled) return false;
+
+        // Priority 4: If user has only ONE enabled workflow, show only that one
+        if (userEnabledWorkflows.length === 1) {
+          return true;
+        }
+
+        // Priority 5: If user has multiple enabled workflows and no dashboard selection, show all enabled
+        return true;
+      }
+
+      if (link.route === '/lazarus') {
+        const isEnabled = userEnabledWorkflows.includes('crm');
+
+        // Priority 1: If user has manually selected workflows on dashboard, ONLY show selected
+        if (selectedWorkflows.length > 0) {
+          return selectedWorkflows.includes('crm');
         }
 
         // Priority 2: If user has NO enabled workflows (empty), show ALL workflows
@@ -138,6 +163,7 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
         const workflowMap: Record<string, string> = {
           'social-listening': '/social-listening',
           'lead-generation': '/leads-tracking',
+          crm: '/lazarus',
         };
         if (workflowMap[query.workflow as string] === item.route) {
           return true;
@@ -258,7 +284,15 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
                     item.subLinkers.map((subLink, index) => (
                       <Link
                         key={index}
-                        href={item?.route === '/profile' ? profileRoute : subLink.needId ? `${item.route}/${query.trackerId ?? 0}${subLink?.route}` : subLink.route.startsWith('/') ? subLink.route : `${item.route}${subLink.route}`}
+                        href={
+                          item?.route === '/profile'
+                            ? profileRoute
+                            : subLink.needId
+                              ? `${item.route}/${query.trackerId ?? 0}${subLink?.route}`
+                              : subLink.route.startsWith('/')
+                                ? subLink.route
+                                : `${item.route}${subLink.route}`
+                        }
                         onMouseEnter={() => setOpen(true)}
                       >
                         <Box
@@ -450,7 +484,15 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
                   item.subLinkers.map((subLink, index) => (
                     <Link
                       key={index}
-                      href={item?.route === '/profile' ? profileRoute : subLink.needId ? `${item.route}/${query.trackerId ?? 0}${subLink?.route}` : subLink.route.startsWith('/') ? subLink.route : `${item.route}${subLink.route}`}
+                      href={
+                        item?.route === '/profile'
+                          ? profileRoute
+                          : subLink.needId
+                            ? `${item.route}/${query.trackerId ?? 0}${subLink?.route}`
+                            : subLink.route.startsWith('/')
+                              ? subLink.route
+                              : `${item.route}${subLink.route}`
+                      }
                       onMouseEnter={() => setOpen(true)}
                     >
                       <Box

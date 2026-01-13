@@ -9,9 +9,9 @@ import { Box, Button, Chip, Collapse, Grid, Typography, styled } from '@mui/mate
 import { useRouter } from 'next/router';
 import React from 'react';
 import { BsGraphUp } from 'react-icons/bs';
-import { FaBuilding, FaComments, FaFolder, FaUser } from 'react-icons/fa';
+import { FaBuilding, FaComments, FaFolder, FaHeartbeat, FaUser } from 'react-icons/fa';
 import { HiHashtag } from 'react-icons/hi';
-import { MdRecordVoiceOver } from 'react-icons/md';
+import { MdAutorenew, MdRecordVoiceOver } from 'react-icons/md';
 
 const Container = styled(Box)({
   display: 'flex',
@@ -118,10 +118,18 @@ const workflowData = [
   {
     id: 'crm',
     name: 'CRM',
-    description: 'Manage leads & sales pipeline',
-    icon: <BsGraphUp size={40} color={LightThemeColors.uriColor} />,
-    comingSoon: true,
-    modules: [],
+    description: 'Monitor dead leads & resurrect opportunities',
+    icon: <MdAutorenew size={40} color={LightThemeColors.uriColor} />,
+    comingSoon: false,
+    modules: [
+      {
+        id: 'lazarus-protocol',
+        title: 'Lazarus Protocol',
+        description: 'Track focus contacts & companies for resurrection signals.',
+        icon: <FaHeartbeat size={40} color={LightThemeColors.uriColor} />,
+        href: '/lazarus',
+      },
+    ],
   },
 ];
 

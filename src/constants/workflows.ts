@@ -1,9 +1,9 @@
 import ChartLine from '@/utils/icon/ChartLine';
 import HeartRateSearch from '@/utils/icon/HeartRateSearch';
 import { BsGraphUp } from 'react-icons/bs';
-import { FaBuilding, FaComments, FaUser } from 'react-icons/fa';
+import { FaBuilding, FaComments, FaHeartbeat, FaUser } from 'react-icons/fa';
 import { HiHashtag } from 'react-icons/hi';
-import { MdAssessment, MdRecordVoiceOver } from 'react-icons/md';
+import { MdAssessment, MdAutorenew, MdRecordVoiceOver } from 'react-icons/md';
 
 export interface WorkflowModule {
   id: string;
@@ -93,10 +93,18 @@ export const WORKFLOWS: Record<string, Workflow> = {
   crm: {
     id: 'crm',
     name: 'CRM',
-    description: 'Manage leads & sales pipeline',
-    icon: BsGraphUp,
-    comingSoon: true,
-    modules: [],
+    description: 'Monitor dead leads & resurrect opportunities',
+    icon: MdAutorenew,
+    comingSoon: false,
+    modules: [
+      {
+        id: 'lazarus-protocol',
+        name: 'Lazarus Protocol',
+        description: 'Track focus contacts & companies for resurrection signals',
+        route: '/lazarus',
+        icon: FaHeartbeat,
+      },
+    ],
   },
 };
 
@@ -112,6 +120,7 @@ export const getModuleRoute = (moduleId: string): string => {
     'individual-leads': '/leads-tracking/forms/leads?type=individual',
     'organization-leads': '/leads-tracking/forms/leads?type=organization',
     'conversational-leads': '/leads-tracking/forms/leads?type=conversational',
+    'lazarus-protocol': '/lazarus',
   };
   return routes[moduleId] || '/dashboard';
 };

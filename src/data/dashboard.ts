@@ -1,5 +1,5 @@
 import { BiBook } from 'react-icons/bi';
-import { FaWallet } from 'react-icons/fa';
+import { FaHeartbeat, FaWallet } from 'react-icons/fa';
 import { FaMagnifyingGlassChart, FaUserTie } from 'react-icons/fa6';
 import { GrAction, GrNotification } from 'react-icons/gr';
 
@@ -15,7 +15,7 @@ import { HiMiniUserGroup } from 'react-icons/hi2';
 import { IoMdPricetags } from 'react-icons/io';
 import { IoSettingsOutline } from 'react-icons/io5';
 import { IconType } from 'react-icons/lib';
-import { MdRecordVoiceOver } from 'react-icons/md';
+import { MdAutorenew, MdRecordVoiceOver, MdSettings } from 'react-icons/md';
 import { RxDashboard } from 'react-icons/rx';
 
 interface ILink {
@@ -81,6 +81,24 @@ export const dashboardLinks: ILink[] = [
         label: 'History',
         route: '/leads-tracking/history',
         icon: FaList,
+      },
+    ],
+  },
+  {
+    label: 'CRM',
+    icon: MdAutorenew,
+    route: '/lazarus',
+    tourKey: 'tour-crm-btn',
+    subLinkers: [
+      {
+        label: 'Lazarus Protocol',
+        route: '/lazarus',
+        icon: FaHeartbeat,
+      },
+      {
+        label: 'Auto-Detection Settings',
+        route: '/lazarus/settings',
+        icon: MdSettings,
       },
     ],
   },

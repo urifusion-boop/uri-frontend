@@ -86,6 +86,10 @@ export interface LeadDto {
     based_on_goal: string;
     summary: string;
   };
+  // Lazarus Protocol fields
+  is_lazarus_monitored?: boolean;
+  lazarus_focus_id?: string;
+  resurrection_count?: number;
 }
 
 export interface GetByFiltersLeadsDtoParameters {
