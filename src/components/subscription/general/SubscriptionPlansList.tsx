@@ -12,7 +12,6 @@ import { SubscriptionPlan as SubscriptionPlanDto } from '@/models/dtos/Subscript
 import HandshakeOutline from '@/utils/icon/HandshakeOutline';
 import { IconType } from 'react-icons';
 import { BiBriefcase } from 'react-icons/bi';
-import { IoDiamondOutline } from 'react-icons/io5';
 import { PiStackSimpleFill } from 'react-icons/pi';
 
 interface ChoosePaymentProps {
@@ -71,6 +70,7 @@ const SubscriptionPlansList = ({ onSelectPlan, selectedPlan }: ChoosePaymentProp
       case SubscriptionTypeEnum.Business:
       case SubscriptionTypeEnum.BusinessQuarterly:
       case SubscriptionTypeEnum.BusinessAnnually:
+      case SubscriptionTypeEnum.LeadsGen:
         return BiBriefcase;
       default:
         return PiStackSimpleFill;
@@ -98,14 +98,8 @@ const SubscriptionPlansList = ({ onSelectPlan, selectedPlan }: ChoosePaymentProp
         return 'Save ₦3k monthly ';
       case SubscriptionTypeEnum.BusinessQuarterly:
         return 'Save ₦7k monthly ';
-      case SubscriptionTypeEnum.StandardAnnually:
-        return 'Save ₦5k monthly ';
-      case SubscriptionTypeEnum.ProfessionalAnnually:
-        return 'Save ₦10k monthly ';
-      case SubscriptionTypeEnum.BusinessAnnually:
-        return 'Save ₦20k monthly ';
       default:
-        return undefined;
+        return '';
     }
   };
 
@@ -139,45 +133,28 @@ const SubscriptionPlansList = ({ onSelectPlan, selectedPlan }: ChoosePaymentProp
         >
           <HorizontalSlider>
             {filteredSubscriptionPlans && filteredSubscriptionPlans?.length > 0 ? (
-              <Box
-                sx={{
-                  display: 'flex',
-                  gap: 2,
-                  p: { xs: 1, sm: 2 },
-                  minWidth: 'max-content',
-                  justifyContent: 'center',
-                }}
-              >
+              <Box sx={{ display: 'flex', gap: 2, p: { xs: 1, sm: 2 }, minWidth: 'max-content', justifyContent: 'center' }}>
                 {filteredSubscriptionPlans?.map((plan) => {
-                  const planType = plan.name.split('_')[0] as keyof typeof planFeatures;
+                  const planTypeKey = planFeatures[plan.plan_code as keyof typeof planFeatures]
+                    ? (plan.plan_code as keyof typeof planFeatures)
+                    : (plan.name.split('_')[0] as keyof typeof planFeatures);
 
                   return (
                     <SubscriptionPlan
                       key={plan.plan_code}
-                      duration={`/${plan.interval === SubscriptionDurationEnum.MONTHLY ? 'month' : plan.interval === SubscriptionDurationEnum.QUARTERLY ? '3 months' : 'year'}`}
-                      planType={planType}
-                      planFeatures={planFeatures[planType]}
+                      planType={planTypeKey}
+                      price={plan.amount / 100}
+                      duration={getPlanDurationDetails(plan.interval)}
+                      planFeatures={planFeatures[planTypeKey]}
                       onSelect={() => onSelectPlan(plan)}
-                      price={plan.amount}
-                      selected={selectedPlan === plan.name}
-                      icon={getPlanTypeIcon(planType as string)}
-                      subTitle={getPlanDurationDetails(plan.interval)}
-                      description={getPlanTypeDiscount(plan.name)}
+                      subTitle={getPlanTypeDiscount(planTypeKey)}
+                      icon={getPlanTypeIcon(planTypeKey)}
+                      selected={selectedPlan === plan.plan_code}
+                      buttonText="Choose Plan"
+                      description={plan.description}
                     />
                   );
                 })}
-                <SubscriptionPlan
-                  duration={'Bring Enterprise level functionality to your brand'}
-                  planType={SubscriptionTypeEnum.Enterprise}
-                  planFeatures={planFeatures[SubscriptionTypeEnum.Enterprise]}
-                  onSelect={() => window.open('https://calendly.com/precious-zino-uricreative/let-s-talk-about-uri', '_blank')}
-                  price={'Custom'}
-                  selected={false}
-                  recommended
-                  icon={IoDiamondOutline}
-                  buttonText="Book a Call"
-                  subTitle={getPlanDurationDetails(activeTab)}
-                />
               </Box>
             ) : (
               <Box

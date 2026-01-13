@@ -24,4 +24,7 @@ export enum SubscriptionTypeEnum {
   StandardAnnually = 'Standard_Anually',
   Leads_Generation = 'Leads_Generation',
   Enterprise = 'Enterprise',
+  SocialListeningFree = 'SOCIAL_LISTENING_FREE',
+  SocialListeningPaid = 'SOCIAL_LISTENING_PAID',
+  LeadsGen = 'LEADS_GEN',
 }

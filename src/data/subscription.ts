@@ -51,4 +51,16 @@ export const planFeatures = {
       'Advanced Support',
     ],
   },
+  [SubscriptionTypeEnum.SocialListeningFree]: {
+    includedFeatures: ['Social Listening', 'Access to Dera AI', '1 Report per Month', '1 Connected Social Account'],
+    excludedFeatures: ['Advanced Support', 'Team Collaboration'],
+  },
+  [SubscriptionTypeEnum.SocialListeningPaid]: {
+    includedFeatures: ['Social Listening', 'Access to Dera AI', '4 Reports per Month', '3 Connected Social Accounts'],
+    excludedFeatures: ['Advanced Support'],
+  },
+  [SubscriptionTypeEnum.LeadsGen]: {
+    includedFeatures: ['Lead Generation', 'Export Leads'],
+    excludedFeatures: [],
+  },
 };
