@@ -3,6 +3,7 @@ import DashboardLayout from '@/components/atoms/DashboardLayout';
 import AddCompanyMonitorModal from '@/components/lazarus/AddCompanyMonitorModal';
 import AddFocusContactModal from '@/components/lazarus/AddFocusContactModal';
 import CSVUploadModal from '@/components/lazarus/CSVUploadModal';
+import LazarusOnboarding from '@/components/lazarus/LazarusOnboarding';
 import PasteAndGoModal from '@/components/lazarus/PasteAndGoModal';
 import { useAuth } from '@/providers/AuthProvider';
 import { CompanyMonitor, FocusContact, LazarusAlert, LazarusAlertStatus, LazarusMetrics, LazarusMonitoringStatus } from '@/types/lazarus.types';
@@ -51,6 +52,7 @@ const LazarusProtocolPage = () => {
   const [companyMonitors, setCompanyMonitors] = useState<CompanyMonitor[]>([]);
   const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [showAddContactModal, setShowAddContactModal] = useState(false);
   const [showAddCompanyModal, setShowAddCompanyModal] = useState(false);
   const [showCSVUploadModal, setShowCSVUploadModal] = useState(false);
@@ -75,6 +77,15 @@ const LazarusProtocolPage = () => {
       const metricsResponse = await LazarusService.getUserMetrics(userId!);
       if (metricsResponse.responseData) {
         setMetrics(metricsResponse.responseData);
+
+        // PRD: Show onboarding if user has never added any contacts/companies (first-time)
+        const isFirstTime = metricsResponse.responseData.slots_used === 0;
+        if (isFirstTime) {
+          console.log('👋 First-time user detected - showing Lazarus onboarding');
+          setShowOnboarding(true);
+          setLoading(false);
+          return; // Don't load other data yet
+        }
       }
 
       const alertsResponse = await LazarusService.getAlerts(userId!, LazarusAlertStatus.NEW, 0, 50);
@@ -98,6 +109,12 @@ const LazarusProtocolPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOnboardingComplete = () => {
+    console.log('✅ Onboarding completed - loading dashboard');
+    setShowOnboarding(false);
+    loadDashboardData(); // Reload to show the dashboard
   };
 
   const handleTabChange = async (event: React.SyntheticEvent, newValue: number) => {
@@ -175,6 +192,11 @@ const LazarusProtocolPage = () => {
     // Open WhatsApp Web with pre-filled message
     window.open(`https://wa.me/?text=${message}`, '_blank');
   };
+
+  // Show onboarding for first-time users (PRD flow)
+  if (showOnboarding && userId) {
+    return <LazarusOnboarding userId={userId} onComplete={handleOnboardingComplete} />;
+  }
 
   if (loading) {
     return (

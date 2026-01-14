@@ -177,4 +177,25 @@ export class LazarusService {
     const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().get(`${BASE_PATH}/analytics?user_id=${userId}&days=${days}`);
     return response.data;
   }
+
+  // ============ CRM INTEGRATION ============
+  static async initiateCRMConnection(userId: string, crmType: 'hubspot' | 'salesforce'): Promise<UriResponse<{ authorization_url: string }>> {
+    const response: AxiosResponse<UriResponse<{ authorization_url: string }>> = await UriHttpClient.getClient().post(`${BASE_PATH}/crm/connect/initiate?user_id=${userId}&crm_type=${crmType}`);
+    return response.data;
+  }
+
+  static async getCRMStatus(userId: string): Promise<UriResponse<any>> {
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().get(`${BASE_PATH}/crm/status?user_id=${userId}`);
+    return response.data;
+  }
+
+  static async disconnectCRM(userId: string): Promise<UriResponse<{ success: boolean; message: string }>> {
+    const response: AxiosResponse<UriResponse<{ success: boolean; message: string }>> = await UriHttpClient.getClient().delete(`${BASE_PATH}/crm/disconnect?user_id=${userId}`);
+    return response.data;
+  }
+
+  static async syncCRM(userId: string): Promise<UriResponse<{ contacts_added: number; companies_added: number }>> {
+    const response: AxiosResponse<UriResponse<{ contacts_added: number; companies_added: number }>> = await UriHttpClient.getClient().post(`${BASE_PATH}/crm/sync?user_id=${userId}`);
+    return response.data;
+  }
 }
