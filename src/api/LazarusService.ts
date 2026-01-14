@@ -184,6 +184,14 @@ export class LazarusService {
     return response.data;
   }
 
+  // Priority 3: Private App connection
+  static async connectPrivateApp(userId: string, crmType: 'hubspot' | 'salesforce', accessToken: string): Promise<UriResponse<any>> {
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().post(
+      `${BASE_PATH}/crm/connect/private-app?user_id=${userId}&crm_type=${crmType}&access_token=${encodeURIComponent(accessToken)}`
+    );
+    return response.data;
+  }
+
   static async getCRMStatus(userId: string): Promise<UriResponse<any>> {
     const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().get(`${BASE_PATH}/crm/status?user_id=${userId}`);
     return response.data;
@@ -194,8 +202,15 @@ export class LazarusService {
     return response.data;
   }
 
-  static async syncCRM(userId: string): Promise<UriResponse<{ contacts_added: number; companies_added: number }>> {
-    const response: AxiosResponse<UriResponse<{ contacts_added: number; companies_added: number }>> = await UriHttpClient.getClient().post(`${BASE_PATH}/crm/sync?user_id=${userId}`);
+  // Priority 3: Background sync support
+  static async syncCRM(userId: string, background: boolean = false): Promise<UriResponse<{ contacts_added: number; companies_added: number; status?: string }>> {
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().post(`${BASE_PATH}/crm/sync?user_id=${userId}&background=${background}`);
+    return response.data;
+  }
+
+  // Priority 2: Sync logs viewer
+  static async getCRMSyncLogs(userId: string, limit: number = 10): Promise<UriResponse<any[]>> {
+    const response: AxiosResponse<UriResponse<any[]>> = await UriHttpClient.getClient().get(`${BASE_PATH}/crm/sync-logs?user_id=${userId}&limit=${limit}`);
     return response.data;
   }
 }
