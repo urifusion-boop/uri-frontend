@@ -77,7 +77,7 @@ const PricingTable = () => {
               {/* Section Title */}
               {section.title && (
                 <tr className="">
-                  <td colSpan={5} className="p-4 font-medium text-gray-700">
+                  <td colSpan={pricingData.headers.length + 1} className="p-4 font-medium text-gray-700">
                     <Typography className="font-bold text-gray-700 text-lg pl-2">{section.title}</Typography>
                   </td>
                 </tr>

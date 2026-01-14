@@ -1,6 +1,6 @@
 import { LightThemeColors } from '@/configs/colors.config';
 import { alpha, Box, Button, Card, CardContent, Chip, Grid, List, ListItem, ListItemIcon, ListItemText, Stack, Typography } from '@mui/material';
-import { FaCheck, FaCoins, FaHeadphones, FaWallet } from 'react-icons/fa';
+import { FaBuilding, FaCheck, FaCoins, FaHandshake, FaHeadphones, FaWallet } from 'react-icons/fa';
 import { MdTimer } from 'react-icons/md';
 
 interface UserTypeCardProps {
@@ -163,6 +163,22 @@ export const UserJourneyCards = ({ onStartTrial, trialButtonText = 'Start Free T
       subtitle: 'Basic monitoring',
       description: 'Perfect for individuals who want to monitor social presence with optional lead gen access.',
       features: ['1 social account tracking', '1 report per month', 'Access to Dera AI assistant', 'PAYG or credits for leads'],
+    },
+    {
+      icon: <FaHandshake size={20} />,
+      iconBg: 'linear-gradient(135deg, #e67e22 0%, #d35400 100%)',
+      title: 'Social Listening (Paid)',
+      subtitle: 'Pro monitoring',
+      description: 'For growing brands that need more comprehensive social tracking and reporting.',
+      features: ['3 social accounts tracking', '4 reports per month', 'Access to Dera AI assistant', 'Enhanced tracking capabilities'],
+    },
+    {
+      icon: <FaBuilding size={20} />,
+      iconBg: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
+      title: 'Enterprise',
+      subtitle: 'Unlimited access',
+      description: 'The ultimate solution for large organizations requiring unlimited capabilities.',
+      features: ['Unlimited social accounts', 'Unlimited reports', 'Full AI capabilities', 'Priority support & collaboration'],
     },
     {
       icon: <FaWallet size={20} />,
