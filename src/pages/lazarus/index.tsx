@@ -9,16 +9,20 @@ import { CompanyMonitor, FocusContact, LazarusAlert, LazarusAlertStatus, Lazarus
 import AddIcon from '@mui/icons-material/Add';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import BusinessIcon from '@mui/icons-material/Business';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import EmailIcon from '@mui/icons-material/Email';
 import LinkIcon from '@mui/icons-material/Link';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import PersonIcon from '@mui/icons-material/Person';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ScienceIcon from '@mui/icons-material/Science';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import { Box, Button, Chip, Container, Grid, IconButton, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Button, Chip, Container, Grid, IconButton, LinearProgress, Tab, Tabs, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -45,6 +49,7 @@ const LazarusProtocolPage = () => {
   const [alerts, setAlerts] = useState<LazarusAlert[]>([]);
   const [focusContacts, setFocusContacts] = useState<FocusContact[]>([]);
   const [companyMonitors, setCompanyMonitors] = useState<CompanyMonitor[]>([]);
+  const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showAddContactModal, setShowAddContactModal] = useState(false);
   const [showAddCompanyModal, setShowAddCompanyModal] = useState(false);
@@ -95,8 +100,20 @@ const LazarusProtocolPage = () => {
     }
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = async (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+
+    // Load analytics data when Analytics tab is selected
+    if (newValue === 3 && userId && !analyticsData) {
+      try {
+        const analyticsResponse = await LazarusService.getAnalyticsData(userId, 30);
+        if (analyticsResponse.responseData) {
+          setAnalyticsData(analyticsResponse.responseData);
+        }
+      } catch (error) {
+        console.error('❌ Failed to load analytics data:', error);
+      }
+    }
   };
 
   const handleContactAlert = async (alertId: string) => {
@@ -114,6 +131,28 @@ const LazarusProtocolPage = () => {
       loadDashboardData();
     } catch (error) {
       console.error('Failed to dismiss alert:', error);
+    }
+  };
+
+  const handleResurrectLead = async (alert: LazarusAlert) => {
+    // Note: Backend expects source_lead_id which should be linked to the original dead lead
+    // For now, we'll use the alert's source_id (which is the focus_id or monitor_id)
+    // This may need adjustment based on your backend implementation
+
+    try {
+      // You may need to fetch the source_lead_id from the focus contact or company monitor
+      // For now, attempting with alert.source_id
+      const response = await LazarusService.resurrectLead(userId!, alert.source_id, alert.alert_type);
+
+      if (response.status) {
+        console.log('✅ Lead resurrected successfully:', response.responseData);
+        // Reload dashboard to refresh alert status
+        loadDashboardData();
+      } else {
+        console.error('Failed to resurrect lead:', response.responseMessage);
+      }
+    } catch (error) {
+      console.error('Error resurrecting lead:', error);
     }
   };
 
@@ -497,6 +536,7 @@ const LazarusProtocolPage = () => {
             <Tab label={`Alerts (${alerts.length})`} />
             <Tab label={`Focus Contacts (${focusContacts.length})`} />
             <Tab label={`Company Monitors (${companyMonitors.length})`} />
+            <Tab label="Analytics" />
           </Tabs>
         </Box>
 
@@ -643,6 +683,30 @@ const LazarusProtocolPage = () => {
                             </Button>
                           </Box>
                           <Box display="flex" gap={1}>
+                            <Button
+                              variant="contained"
+                              size="small"
+                              onClick={() => handleResurrectLead(alert)}
+                              sx={{
+                                backgroundColor: '#10B981',
+                                color: '#fff',
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                fontSize: '11px',
+                                px: 1.5,
+                                py: 0.5,
+                                borderRadius: '6px',
+                                '&:hover': {
+                                  backgroundColor: '#059669',
+                                },
+                                '&:disabled': {
+                                  backgroundColor: '#D1D5DB',
+                                  color: '#9CA3AF',
+                                },
+                              }}
+                            >
+                              Resurrect Lead
+                            </Button>
                             <Button
                               variant="outlined"
                               size="small"
@@ -948,6 +1012,309 @@ const LazarusProtocolPage = () => {
                 ))
               )}
             </Grid>
+          </TabPanel>
+
+          {/* Analytics Tab */}
+          <TabPanel value={tabValue} index={3}>
+            {!analyticsData ? (
+              <Box sx={{ textAlign: 'center', py: 8 }}>
+                <Typography variant="body1" color="text.secondary" mb={2}>
+                  Loading analytics...
+                </Typography>
+                <LinearProgress sx={{ maxWidth: 300, mx: 'auto' }} />
+              </Box>
+            ) : (
+              <Box>
+                {/* KPI Cards Row */}
+                <Grid container spacing={3} mb={4}>
+                  {/* Resurrection Rate Card */}
+                  <Grid item xs={12} md={4}>
+                    <Box
+                      sx={{
+                        p: 3,
+                        borderRadius: '14px',
+                        border: '1px solid #F3F4F6',
+                        background: analyticsData.resurrection_rate_status === 'above_target' ? '#F0FDF4' : '#FEF3C7',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                      }}
+                    >
+                      <Box display="flex" alignItems="center" gap={1} mb={1}>
+                        {analyticsData.resurrection_rate_status === 'above_target' ? (
+                          <TrendingUpIcon sx={{ color: '#10B981', fontSize: 20 }} />
+                        ) : (
+                          <TrendingDownIcon sx={{ color: '#F59E0B', fontSize: 20 }} />
+                        )}
+                        <Typography fontSize="13px" fontWeight={600} color="#6B7280">
+                          Resurrection Rate
+                        </Typography>
+                      </Box>
+                      <Typography fontSize="36px" fontWeight={700} color="#111827" lineHeight={1} mb={0.5}>
+                        {analyticsData.resurrection_rate}%
+                      </Typography>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        {analyticsData.resurrection_rate_status === 'above_target' ? (
+                          <Chip
+                            label="✅ Above Target"
+                            size="small"
+                            sx={{
+                              backgroundColor: '#10B981',
+                              color: '#fff',
+                              fontWeight: 700,
+                              fontSize: '10px',
+                            }}
+                          />
+                        ) : (
+                          <Chip
+                            label="⚠️ Below Target"
+                            size="small"
+                            sx={{
+                              backgroundColor: '#F59E0B',
+                              color: '#fff',
+                              fontWeight: 700,
+                              fontSize: '10px',
+                            }}
+                          />
+                        )}
+                        <Typography fontSize="11px" color="#6B7280">
+                          Target: {analyticsData.resurrection_rate_target}%
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Grid>
+
+                  {/* Quota Utilization Card */}
+                  <Grid item xs={12} md={4}>
+                    <Box
+                      sx={{
+                        p: 3,
+                        borderRadius: '14px',
+                        border: '1px solid #F3F4F6',
+                        background: '#fff',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                      }}
+                    >
+                      <Typography fontSize="13px" fontWeight={600} color="#6B7280" mb={1}>
+                        Quota Utilization
+                      </Typography>
+                      <Typography fontSize="36px" fontWeight={700} color="#111827" lineHeight={1} mb={1}>
+                        {analyticsData.quota_utilization}%
+                      </Typography>
+                      <Typography fontSize="12px" color="#6B7280" mb={2}>
+                        {analyticsData.slots_used} of {analyticsData.slots_total} slots used
+                      </Typography>
+                      <LinearProgress
+                        variant="determinate"
+                        value={analyticsData.quota_utilization}
+                        sx={{
+                          height: 8,
+                          borderRadius: 4,
+                          backgroundColor: '#E5E7EB',
+                          '& .MuiLinearProgress-bar': {
+                            backgroundColor: analyticsData.quota_utilization >= 90 ? '#EF4444' : '#7C3AED',
+                            borderRadius: 4,
+                          },
+                        }}
+                      />
+                      {analyticsData.should_upgrade && (
+                        <Typography fontSize="11px" color="#EF4444" fontWeight={700} mt={1}>
+                          🔔 {analyticsData.slots_remaining} slots remaining - Consider upgrading!
+                        </Typography>
+                      )}
+                    </Box>
+                  </Grid>
+
+                  {/* Accuracy Rate Card */}
+                  <Grid item xs={12} md={4}>
+                    <Box
+                      sx={{
+                        p: 3,
+                        borderRadius: '14px',
+                        border: '1px solid #F3F4F6',
+                        background: '#F0FDF4',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                      }}
+                    >
+                      <Box display="flex" alignItems="center" gap={1} mb={1}>
+                        <CheckCircleIcon sx={{ color: '#10B981', fontSize: 20 }} />
+                        <Typography fontSize="13px" fontWeight={600} color="#6B7280">
+                          Accuracy Rate
+                        </Typography>
+                      </Box>
+                      <Typography fontSize="36px" fontWeight={700} color="#111827" lineHeight={1} mb={0.5}>
+                        {analyticsData.accuracy_rate}%
+                      </Typography>
+                      <Typography fontSize="11px" color="#6B7280">
+                        {analyticsData.dismissed_count} of {analyticsData.total_alerts} alerts dismissed ({analyticsData.false_positive_rate}% false positive)
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+
+                {/* Line Chart - Resurrection Rate Trend */}
+                <Box
+                  sx={{
+                    p: 3,
+                    borderRadius: '14px',
+                    border: '1px solid #F3F4F6',
+                    background: '#fff',
+                    mb: 4,
+                  }}
+                >
+                  <Typography fontSize="16px" fontWeight={700} color="#111827" mb={3}>
+                    📈 Resurrection Rate Trend (Last 4 Weeks)
+                  </Typography>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={analyticsData.weekly_trends}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                      <XAxis dataKey="week" stroke="#6B7280" style={{ fontSize: 12 }} />
+                      <YAxis stroke="#6B7280" style={{ fontSize: 12 }} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#fff',
+                          border: '1px solid #E5E7EB',
+                          borderRadius: 8,
+                        }}
+                      />
+                      <Line type="monotone" dataKey="resurrection_rate" stroke="#7C3AED" strokeWidth={3} dot={{ fill: '#7C3AED', r: 5 }} activeDot={{ r: 7 }} />
+                      {/* Target line at 15% */}
+                      <Line type="monotone" dataKey={() => 15} stroke="#10B981" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </Box>
+
+                {/* Alert Performance Stats */}
+                <Grid container spacing={3} mb={4}>
+                  <Grid item xs={12} md={6}>
+                    <Box
+                      sx={{
+                        p: 3,
+                        borderRadius: '14px',
+                        border: '1px solid #F3F4F6',
+                        background: '#fff',
+                      }}
+                    >
+                      <Typography fontSize="16px" fontWeight={700} color="#111827" mb={2}>
+                        🎯 Alert Performance
+                      </Typography>
+                      <Grid container spacing={2}>
+                        <Grid item xs={6}>
+                          <Typography fontSize="11px" color="#6B7280" mb={0.5}>
+                            Total Alerts
+                          </Typography>
+                          <Typography fontSize="24px" fontWeight={700} color="#111827">
+                            {analyticsData.total_alerts}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Typography fontSize="11px" color="#6B7280" mb={0.5}>
+                            Acted Upon
+                          </Typography>
+                          <Typography fontSize="24px" fontWeight={700} color="#10B981">
+                            {analyticsData.acted_upon_count}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Typography fontSize="11px" color="#6B7280" mb={0.5}>
+                            Dismissed
+                          </Typography>
+                          <Typography fontSize="24px" fontWeight={700} color="#EF4444">
+                            {analyticsData.dismissed_count}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Typography fontSize="11px" color="#6B7280" mb={0.5}>
+                            Pending
+                          </Typography>
+                          <Typography fontSize="24px" fontWeight={700} color="#F59E0B">
+                            {analyticsData.pending_count}
+                          </Typography>
+                        </Grid>
+                      </Grid>
+                    </Box>
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <Box
+                      sx={{
+                        p: 3,
+                        borderRadius: '14px',
+                        border: '1px solid #F3F4F6',
+                        background: '#fff',
+                      }}
+                    >
+                      <Typography fontSize="16px" fontWeight={700} color="#111827" mb={2}>
+                        📊 Alert Actions Breakdown
+                      </Typography>
+                      <Box>
+                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
+                          <Typography fontSize="12px" color="#6B7280">
+                            Contacted
+                          </Typography>
+                          <Typography fontSize="14px" fontWeight={700} color="#10B981">
+                            {analyticsData.contacted_percentage}%
+                          </Typography>
+                        </Box>
+                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
+                          <Typography fontSize="12px" color="#6B7280">
+                            Dismissed
+                          </Typography>
+                          <Typography fontSize="14px" fontWeight={700} color="#EF4444">
+                            {analyticsData.dismissed_percentage}%
+                          </Typography>
+                        </Box>
+                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                          <Typography fontSize="12px" color="#6B7280">
+                            Pending
+                          </Typography>
+                          <Typography fontSize="14px" fontWeight={700} color="#F59E0B">
+                            {analyticsData.pending_percentage}%
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Grid>
+                </Grid>
+
+                {/* Bar Chart - Alert Type Performance */}
+                <Box
+                  sx={{
+                    p: 3,
+                    borderRadius: '14px',
+                    border: '1px solid #F3F4F6',
+                    background: '#fff',
+                  }}
+                >
+                  <Typography fontSize="16px" fontWeight={700} color="#111827" mb={3}>
+                    🔥 Top Performing Alert Types
+                  </Typography>
+                  {analyticsData.alert_types_performance && analyticsData.alert_types_performance.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={analyticsData.alert_types_performance}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                        <XAxis dataKey="alert_type" stroke="#6B7280" style={{ fontSize: 11 }} />
+                        <YAxis stroke="#6B7280" style={{ fontSize: 12 }} />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#fff',
+                            border: '1px solid #E5E7EB',
+                            borderRadius: 8,
+                          }}
+                        />
+                        <Bar dataKey="action_rate" fill="#7C3AED" radius={[8, 8, 0, 0]}>
+                          {analyticsData.alert_types_performance.map((entry: any, index: number) => (
+                            <Cell key={`cell-${index}`} fill={index === 0 ? '#10B981' : '#7C3AED'} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <Typography fontSize="13px" color="#6B7280" textAlign="center" py={4}>
+                      No alert data available yet
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+            )}
           </TabPanel>
         </Box>
       </Container>

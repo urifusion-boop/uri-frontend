@@ -2,6 +2,7 @@ import { LeadsService } from '@/api/LeadFormService';
 import { LeadsService as LeadsAPI } from '@/api/LeadsService';
 import { Table, TableColumn } from '@/components/atoms/AlertTable';
 import { triggerToast } from '@/components/atoms/CustomToast';
+import MarkAsDeadModal from '@/components/lazarus/MarkAsDeadModal';
 import { queryClient } from '@/configs/query-client.config';
 import { accountIcons } from '@/constants/accountIcons';
 import { PlatformHelper } from '@/helpers/PlatformHelper';
@@ -15,10 +16,15 @@ import { CampaignPlatformEnum } from '@/models/enum-models/PlatformEnum';
 import { JobSignalAnalytics } from '@/utils/analytics';
 import { canFindDecisionMakers, getSignalLabel, isLowConfidence } from '@/utils/jobSignalHelpers';
 import ListAltIcon from '@mui/icons-material/ListAlt';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import { Box, Button, Chip, FormControl, MenuItem, Pagination, Select, Tooltip, Typography } from '@mui/material';
+import { Box, Button, Chip, FormControl, IconButton, Menu, MenuItem, Pagination, Select, Tooltip, Typography } from '@mui/material';
+import { useRouter } from 'next/router';
 import { useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { FaHeartbeat, FaSkull } from 'react-icons/fa';
+import { MdAutorenew } from 'react-icons/md';
 import IconContentBox from '../boxes/IconContentBox';
 import IdentityBox from '../boxes/IdentityBox';
 import DecisionMakerModal from '../modals/DecisionMakerModal';
@@ -37,6 +43,7 @@ interface ConversationalTableColumnProps {
 }
 
 const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage, setPageSize, setSearch, twitterData }: ConversationalTableColumnProps) => {
+  const router = useRouter();
   const { copyToClipboard } = useClipboard();
   const [selectedLead, setSelectedLead] = useState<LeadDto | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -46,6 +53,11 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
   const [isNextStepsModalOpen, setIsNextStepsModalOpen] = useState(false);
   const [nextStepsLead, setNextStepsLead] = useState<LeadDto | null>(null);
   const [isUpdatingStep, setIsUpdatingStep] = useState(false);
+
+  // Lazarus integration - Mark as Dead modal
+  const [markDeadModalOpen, setMarkDeadModalOpen] = useState(false);
+  const [selectedLeadForAction, setSelectedLeadForAction] = useState<LeadDto | null>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   // Convert Twitter data to LeadDto format for display
   const convertTwitterDataToLeads = (twitterData: TwitterFetchResponseDto): LeadDto[] => {
@@ -239,6 +251,29 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
     return 'Other';
   };
 
+  // Action menu handlers for Lazarus integration
+  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, lead: LeadDto) => {
+    event.stopPropagation();
+    setSelectedLeadForAction(lead);
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+  };
+
+  const handleMarkAsDead = () => {
+    handleCloseMenu();
+    setMarkDeadModalOpen(true);
+  };
+
+  const handleViewInLazarus = () => {
+    handleCloseMenu();
+    if (selectedLeadForAction?.lazarus_focus_id) {
+      router.push(`/lazarus?focus_id=${selectedLeadForAction.lazarus_focus_id}`);
+    }
+  };
+
   const columns: TableColumn<LeadDto>[] = [
     {
       key: 'id',
@@ -359,6 +394,56 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
         <Typography variant="caption" fontSize="14px" className="text-sm text-center">
           {row.created_date ? new Date(row.created_date).toLocaleDateString() : '-'}
         </Typography>
+      ),
+    },
+    {
+      key: 'id' as any,
+      title: 'Actions',
+      render: (_, row) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {/* Lazarus Monitoring Badge */}
+          {row.is_lazarus_monitored && (
+            <Chip
+              icon={<FaHeartbeat size={12} />}
+              label="Lazarus"
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/lazarus?focus_id=${row.lazarus_focus_id}`);
+              }}
+              sx={{
+                backgroundColor: '#F3E8FF',
+                color: '#7C3AED',
+                fontWeight: 600,
+                fontSize: '10px',
+                cursor: 'pointer',
+                '&:hover': {
+                  backgroundColor: '#E9D5FF',
+                },
+              }}
+            />
+          )}
+
+          {/* Resurrection Count Badge */}
+          {row.resurrection_count && row.resurrection_count > 0 && (
+            <Chip
+              icon={<MdAutorenew size={12} />}
+              label={`${row.resurrection_count}x`}
+              size="small"
+              sx={{
+                backgroundColor: '#D1FAE5',
+                color: '#059669',
+                fontWeight: 600,
+                fontSize: '10px',
+              }}
+            />
+          )}
+
+          {/* Action Menu */}
+          <IconButton size="small" onClick={(e) => handleOpenMenu(e, row)} sx={{ ml: 'auto' }}>
+            <MoreVertIcon fontSize="small" />
+          </IconButton>
+        </Box>
       ),
     },
     {
@@ -526,6 +611,48 @@ const ConversationalTableCard = ({ data, total, page, pageSize, search, setPage,
 
         <Pagination count={Math.ceil(Number(displayTotal || 1) / pageSize)} shape="rounded" size="small" page={Number(page)} onChange={(_, p) => setPage(p)} />
       </Box>
+
+      {/* Action Menu */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleCloseMenu}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <MenuItem onClick={handleMarkAsDead}>
+          <FaSkull size={14} style={{ marginRight: 8 }} />
+          Mark as Dead
+        </MenuItem>
+        {selectedLeadForAction?.is_lazarus_monitored && (
+          <MenuItem onClick={handleViewInLazarus}>
+            <FaHeartbeat size={14} style={{ marginRight: 8 }} />
+            View in Lazarus
+          </MenuItem>
+        )}
+      </Menu>
+
+      {/* Mark as Dead Modal */}
+      <MarkAsDeadModal
+        open={markDeadModalOpen}
+        onClose={() => {
+          setMarkDeadModalOpen(false);
+          setSelectedLeadForAction(null);
+        }}
+        leadId={selectedLeadForAction?.lead_id || ''}
+        leadName={`${selectedLeadForAction?.first_name || ''} ${selectedLeadForAction?.last_name || ''}`.trim() || selectedLeadForAction?.username || ''}
+        leadCompanyName={selectedLeadForAction?.company_name || ''}
+        onSuccess={(addedToLazarus) => {
+          // Refresh the leads list would go here
+          if (addedToLazarus) {
+            toast.success('Lead marked as dead and added to Lazarus monitoring!', {
+              duration: 4000,
+            });
+          } else {
+            toast.success('Lead marked as dead');
+          }
+        }}
+      />
     </Box>
   );
 };

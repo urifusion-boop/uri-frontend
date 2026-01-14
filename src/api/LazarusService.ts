@@ -150,4 +150,31 @@ export class LazarusService {
     const response: AxiosResponse<UriResponse<ScanResponse>> = await UriHttpClient.getClient().post(`${BASE_PATH}/scan/company-monitors?batch_size=${batchSize}`);
     return response.data;
   }
+
+  // ============ AUTO-DETECTION ============
+  static async getAutoDetectionRules(userId: string): Promise<UriResponse<any>> {
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().get(`${BASE_PATH}/auto-detection/rules?user_id=${userId}`);
+    return response.data;
+  }
+
+  static async updateAutoDetectionRules(userId: string, rules: any): Promise<UriResponse<any>> {
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().put(`${BASE_PATH}/auto-detection/rules?user_id=${userId}`, rules);
+    return response.data;
+  }
+
+  static async triggerAutoDetectionScan(userId: string): Promise<UriResponse<any>> {
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().post(`${BASE_PATH}/auto-detection/scan?user_id=${userId}`);
+    return response.data;
+  }
+
+  static async getAutoDetectionHistory(userId: string, skip: number = 0, limit: number = 20): Promise<UriResponse<any[]>> {
+    const response: AxiosResponse<UriResponse<any[]>> = await UriHttpClient.getClient().get(`${BASE_PATH}/auto-detection/history?user_id=${userId}&skip=${skip}&limit=${limit}`);
+    return response.data;
+  }
+
+  // ============ ANALYTICS ============
+  static async getAnalyticsData(userId: string, days: number = 30): Promise<UriResponse<any>> {
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().get(`${BASE_PATH}/analytics?user_id=${userId}&days=${days}`);
+    return response.data;
+  }
 }
