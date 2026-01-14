@@ -91,7 +91,7 @@ const SubscriptionModal: React.FC = () => {
 
   const handleViewPaidPlans = () => {
     setOpen(false);
-    router.push('/pricing');
+    router.push('/settings?tab=subscription');
   };
 
   // Trial features

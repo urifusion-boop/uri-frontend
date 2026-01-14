@@ -1,13 +1,15 @@
 import { SubscriptionPlan, SubscriptionResponseDto } from '@/models/dtos/SubscriptionDto';
 
 import { TrialService } from '@/api/TrialService';
+import LeadGenPricingSection from '@/components/pricing/LeadGenPricingSection';
+import { UserJourneyCards } from '@/components/pricing/UserJourneyCards';
+import SubscriptionPlansList from '@/components/subscription/general/SubscriptionPlansList';
 import { useAuth } from '@/providers/AuthProvider';
-import { Box } from '@mui/material';
+import { Box, Dialog, DialogContent, DialogTitle, IconButton, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import Stepper2 from '../atoms/Stepper2';
+import { FaTimes } from 'react-icons/fa';
 import TrialActivationModal from '../trial/TrialActivationModal';
-import ChoosePayment from './general/ChoosePayment';
 import ExploreUri from './general/ExploreUri';
 import MakePayment from './general/MakePayment';
 import PaymentMethod from './general/PaymentMethod';
@@ -17,6 +19,7 @@ const NewSubscription = () => {
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   const [transactionDetails, setTransactionDetails] = useState<SubscriptionResponseDto | null>(null);
   const [showTrialModal, setShowTrialModal] = useState(false);
+  const [showPlansModal, setShowPlansModal] = useState(false);
   const [isTrialEligible, setIsTrialEligible] = useState(false);
   const [checkingEligibility, setCheckingEligibility] = useState(true);
   const { userDetails } = useAuth();
@@ -75,7 +78,11 @@ const NewSubscription = () => {
     }
   };
 
-  const steps = ['Choose Plan', 'Make Payment', 'Payment Method', 'Explore Uri'];
+  const handlePlanSelection = (plan: SubscriptionPlan) => {
+    setSelectedPlan(plan);
+    setShowPlansModal(false);
+    setActiveStep(2);
+  };
 
   return (
     <>
@@ -85,33 +92,69 @@ const NewSubscription = () => {
           width: '100%',
           backgroundColor: '#fff',
           borderRadius: '20px',
-          py: '64px',
-          mt: '40px',
+          py: '40px',
+          mt: '20px',
           mx: 'auto',
+          px: { xs: 2, md: 4 },
         }}
       >
-        <Stepper2
-          steps={steps}
-          activeStep={activeStep}
-          handleStepClick={(step: number) => {
-            if (step > activeStep) return;
-            setActiveStep(step);
-          }}
-          disabled={activeStep > 2}
-        />
-        <Box sx={{ py: '40px' }}>
-          {activeStep === 1 && <ChoosePayment setStep={() => setActiveStep(2)} onSelectPlan={setSelectedPlan} selectedPlan={selectedPlan?.interval} />}
+        {activeStep === 1 && (
+          <Box>
+            <Box textAlign="center" mb={4}>
+              <Typography variant="h4" fontWeight={800} sx={{ color: '#141414', mb: 1 }}>
+                Choose Your Plan
+              </Typography>
+              <Typography variant="body1" sx={{ color: '#6B6B6B' }}>
+                Select the plan that best fits your needs
+              </Typography>
+            </Box>
 
-          {activeStep === 2 && <MakePayment selectedPlan={selectedPlan} setStep={() => setActiveStep(3)} setTransactionDetails={setTransactionDetails} />}
+            <UserJourneyCards
+              onStartTrial={() => setShowTrialModal(true)}
+              onViewPaidPlans={() => setShowPlansModal(true)}
+              isTrialDisabled={!isTrialEligible}
+              trialButtonText={checkingEligibility ? 'Loading...' : !isTrialEligible ? 'Trial Already Used' : 'Start Free Trial'}
+            />
 
-          {activeStep === 3 && <PaymentMethod selectedPlan={selectedPlan} setStep={() => setActiveStep(4)} transactionDetails={transactionDetails} />}
+            <Box sx={{ mt: 8 }}>
+              <LeadGenPricingSection />
+            </Box>
+          </Box>
+        )}
 
-          {activeStep === 4 && <ExploreUri />}
-        </Box>
+        {activeStep === 2 && (
+          <Box>
+            <Box mb={4}>
+              <IconButton onClick={() => setActiveStep(1)} sx={{ mb: 2 }}>
+                <Typography sx={{ textDecoration: 'underline', fontWeight: 600 }}>Back to Plans</Typography>
+              </IconButton>
+            </Box>
+            <MakePayment selectedPlan={selectedPlan} setStep={() => setActiveStep(3)} setTransactionDetails={setTransactionDetails} />
+          </Box>
+        )}
+
+        {activeStep === 3 && <PaymentMethod selectedPlan={selectedPlan} setStep={() => setActiveStep(4)} transactionDetails={transactionDetails} />}
+
+        {activeStep === 4 && <ExploreUri />}
       </Box>
 
-      {/* Trial Activation Modal - Auto-shows for eligible users */}
+      {/* Trial Activation Modal */}
       {userDetails?.userId && isTrialEligible && <TrialActivationModal open={showTrialModal} onClose={() => setShowTrialModal(false)} onSuccess={handleTrialSuccess} userId={userDetails.userId} />}
+
+      {/* Plan Selection Modal */}
+      <Dialog open={showPlansModal} onClose={() => setShowPlansModal(false)} maxWidth="lg" fullWidth>
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" fontWeight={700}>
+            Select Subscription Plan
+          </Typography>
+          <IconButton onClick={() => setShowPlansModal(false)}>
+            <FaTimes />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <SubscriptionPlansList onSelectPlan={handlePlanSelection} selectedPlan={selectedPlan?.plan_code} />
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

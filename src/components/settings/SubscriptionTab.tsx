@@ -4,6 +4,7 @@ import { useActiveSubscription } from '@/hooks/subscription/activeSubscription.h
 import { SubscriptionStatusEnum } from '@/models/enum-models/SubscriptionStatusEnum';
 import { useAuth } from '@/providers/AuthProvider';
 import { Box } from '@mui/material';
+import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import Spinner from '../loaders/Spinner';
 import HasActiveSubscription from '../subscription/HasActiveSubscription';
@@ -11,10 +12,18 @@ import HasActiveTrial from '../subscription/HasActiveTrial';
 import NewSubscription from '../subscription/NewSubscription';
 
 const SubscriptionTab = () => {
+  const router = useRouter();
   const { userDetails } = useAuth();
   const { activeSubscription, isLoadingActiveSubscription } = useActiveSubscription();
   const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null);
   const [loadingTrial, setLoadingTrial] = useState(true);
+  const [showUpgrade, setShowUpgrade] = useState(false);
+
+  useEffect(() => {
+    if (router.query.upgrade === 'true') {
+      setShowUpgrade(true);
+    }
+  }, [router.query]);
 
   // Fetch trial status
   useEffect(() => {
@@ -48,13 +57,17 @@ const SubscriptionTab = () => {
   }
 
   // Priority 1: Active Subscription
-  if (userDetails?.subscriptionStatus === SubscriptionStatusEnum.ACTIVE) {
+  if (userDetails?.subscriptionStatus === SubscriptionStatusEnum.ACTIVE && !showUpgrade) {
     return <HasActiveSubscription activeSubscription={activeSubscription} />;
+  }
+
+  if (showUpgrade) {
+    return <NewSubscription />;
   }
 
   // Priority 2: Active or Expired Trial
   if (trialStatus && (trialStatus.status === 'active' || trialStatus.status === 'expired')) {
-    return <HasActiveTrial />;
+    return <HasActiveTrial onUpgrade={() => setShowUpgrade(true)} />;
   }
 
   // Priority 3: No Subscription & No Trial - Show Payment Flow

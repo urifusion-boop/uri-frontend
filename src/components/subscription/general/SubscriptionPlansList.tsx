@@ -5,7 +5,6 @@ import { FaBuilding, FaHandshake, FaHeadphones, FaWallet } from 'react-icons/fa'
 import { PiStackSimpleFill } from 'react-icons/pi';
 
 import LoaderWrapper from '@/components/atoms/LoaderWrapper';
-import Toggle from '@/components/atoms/Toggle';
 import SubscriptionPlanCard from '@/components/subscription/general/SubscriptionPlanCard';
 import { planFeatures } from '@/data/subscription';
 import { useSubscriptionPlans } from '@/hooks/subscription/subscriptionPlans.hook';
@@ -121,21 +120,9 @@ const SubscriptionPlansList = ({ onSelectPlan, selectedPlan }: ChoosePaymentProp
 
   return (
     <>
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          mt: { xs: '30px', md: '40px' },
-          mb: { xs: '30px', md: '40px' },
-        }}
-      >
-        <Toggle onChange={(value) => setActiveTab(value)} options={tabs} selectedOption={activeTab} />
-      </Box>
-
       <LoaderWrapper isLoading={subscriptionPlansLoading} numberOfSkeletons={3} skeletonHeight="400px">
         {filteredSubscriptionPlans && filteredSubscriptionPlans.length > 0 ? (
-          <Grid container spacing={3} justifyContent="center">
+          <Grid container spacing={3} justifyContent="center" sx={{ mt: 2 }}>
             {filteredSubscriptionPlans.map((plan) => {
               const planTypeKey = getPlanType(plan);
               if (!planTypeKey) return null;

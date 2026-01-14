@@ -139,11 +139,12 @@ const UserTypeCard = ({ icon, iconBg, title, subtitle, description, features, is
 
 interface UserJourneyCardsProps {
   onStartTrial?: () => void;
+  onViewPaidPlans?: () => void;
   trialButtonText?: string;
   isTrialDisabled?: boolean;
 }
 
-export const UserJourneyCards = ({ onStartTrial, trialButtonText = 'Start Free Trial', isTrialDisabled = false }: UserJourneyCardsProps) => {
+export const UserJourneyCards = ({ onStartTrial, onViewPaidPlans, trialButtonText = 'Start Free Trial', isTrialDisabled = false }: UserJourneyCardsProps) => {
   const userTypes: UserTypeCardProps[] = [
     {
       icon: <MdTimer size={22} />,
@@ -171,6 +172,8 @@ export const UserJourneyCards = ({ onStartTrial, trialButtonText = 'Start Free T
       subtitle: 'Pro monitoring',
       description: 'For growing brands that need more comprehensive social tracking and reporting.',
       features: ['3 social accounts tracking', '4 reports per month', 'Access to Dera AI assistant', 'Enhanced tracking capabilities'],
+      actionLabel: 'View Plans',
+      onAction: onViewPaidPlans,
     },
     {
       icon: <FaBuilding size={20} />,
