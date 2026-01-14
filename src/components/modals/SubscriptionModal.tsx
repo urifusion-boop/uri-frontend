@@ -95,7 +95,7 @@ const SubscriptionModal: React.FC = () => {
   };
 
   // Trial features
-  const trialFeatures = ['100 Lead Credits', '150 Intent Signals', '1 Account Tracker', '1 Hashtag Tracker', '1 Keyword Tracker', 'Unlimited Reports'];
+  const trialFeatures = ['100 Lead Credits', '150 Intent Signals', '1 Account Tracker', '1 Hashtag Tracker', '1 Keyword Tracker', '5 AI-Powered Reports'];
 
   // Paid subscription features
   const paidFeatures = ['Monitor Keyword Trends', 'Setup Alerts', 'Track Sentiment', 'Generate Leads'];
