@@ -15,7 +15,7 @@ const TrialExpiredModal: React.FC<TrialExpiredModalProps> = ({ open, onClose, tr
   const router = useRouter();
 
   const handleUpgrade = () => {
-    router.push('/subscription');
+    router.push('/settings?tab=subscription&upgrade=true');
     onClose();
   };
 

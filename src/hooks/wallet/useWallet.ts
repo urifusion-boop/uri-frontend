@@ -15,6 +15,7 @@ export const useWallet = () => {
     isError: isWalletError,
   } = useQuery(['wallet', userId], () => WalletService.getWallet(userId), {
     enabled: !!userId,
+    retry: false,
     select: (res) => res.responseData,
   });
 

@@ -1,6 +1,6 @@
 import { LightThemeColors } from '@/configs/colors.config';
-import { alpha, Box, Card, CardContent, Chip, Grid, List, ListItem, ListItemIcon, ListItemText, Stack, Typography } from '@mui/material';
-import { FaCheck, FaCoins, FaHeadphones, FaWallet } from 'react-icons/fa';
+import { alpha, Box, Button, Card, CardContent, Chip, Grid, List, ListItem, ListItemIcon, ListItemText, Stack, Typography } from '@mui/material';
+import { FaBuilding, FaCheck, FaCoins, FaHandshake, FaHeadphones, FaWallet } from 'react-icons/fa';
 import { MdTimer } from 'react-icons/md';
 
 interface UserTypeCardProps {
@@ -12,9 +12,11 @@ interface UserTypeCardProps {
   features: string[];
   isHighlighted?: boolean;
   badge?: string;
+  actionLabel?: string;
+  onAction?: () => void;
 }
 
-const UserTypeCard = ({ icon, iconBg, title, subtitle, description, features, isHighlighted, badge }: UserTypeCardProps) => {
+const UserTypeCard = ({ icon, iconBg, title, subtitle, description, features, isHighlighted, badge, actionLabel, onAction }: UserTypeCardProps) => {
   return (
     <Card
       sx={{
@@ -97,13 +99,52 @@ const UserTypeCard = ({ icon, iconBg, title, subtitle, description, features, is
               </ListItem>
             ))}
           </List>
+
+          {/* Action Button */}
+          {actionLabel && (
+            <Button
+              variant={isHighlighted ? 'contained' : 'outlined'}
+              fullWidth
+              onClick={onAction}
+              disabled={!onAction}
+              sx={{
+                mt: 'auto',
+                borderRadius: 2.5,
+                textTransform: 'none',
+                fontWeight: 700,
+                borderColor: LightThemeColors.uriColor,
+                color: isHighlighted ? 'white' : LightThemeColors.uriColor,
+                backgroundColor: isHighlighted ? LightThemeColors.uriColor : 'transparent',
+                '&:hover': {
+                  borderColor: LightThemeColors.uriColor,
+                  backgroundColor: isHighlighted ? alpha(LightThemeColors.uriColor, 0.9) : alpha(LightThemeColors.uriColor, 0.05),
+                  color: isHighlighted ? 'white' : LightThemeColors.uriColor,
+                  boxShadow: isHighlighted ? `0 4px 12px ${alpha(LightThemeColors.uriColor, 0.3)}` : 'none',
+                },
+                '&.Mui-disabled': {
+                  borderColor: '#e0e0e0',
+                  color: '#9e9e9e',
+                  backgroundColor: '#f5f5f5',
+                },
+              }}
+            >
+              {actionLabel}
+            </Button>
+          )}
         </Stack>
       </CardContent>
     </Card>
   );
 };
 
-export const UserJourneyCards = () => {
+interface UserJourneyCardsProps {
+  onStartTrial?: () => void;
+  onViewPaidPlans?: () => void;
+  trialButtonText?: string;
+  isTrialDisabled?: boolean;
+}
+
+export const UserJourneyCards = ({ onStartTrial, onViewPaidPlans, trialButtonText = 'Start Free Trial', isTrialDisabled = false }: UserJourneyCardsProps) => {
   const userTypes: UserTypeCardProps[] = [
     {
       icon: <MdTimer size={22} />,
@@ -113,6 +154,8 @@ export const UserJourneyCards = () => {
       description: 'New to Uri? Start with our free trial to explore all premium features before committing.',
       features: ['7-day full access trial', 'All social listening features', 'Limited lead generation', 'Upgrade prompts when limits hit'],
       badge: 'NEW USERS',
+      actionLabel: trialButtonText,
+      onAction: isTrialDisabled ? undefined : onStartTrial,
     },
     {
       icon: <FaHeadphones size={20} />,
@@ -121,6 +164,24 @@ export const UserJourneyCards = () => {
       subtitle: 'Basic monitoring',
       description: 'Perfect for individuals who want to monitor social presence with optional lead gen access.',
       features: ['1 social account tracking', '1 report per month', 'Access to Dera AI assistant', 'PAYG or credits for leads'],
+    },
+    {
+      icon: <FaHandshake size={20} />,
+      iconBg: 'linear-gradient(135deg, #e67e22 0%, #d35400 100%)',
+      title: 'Social Listening (Paid)',
+      subtitle: 'Pro monitoring',
+      description: 'For growing brands that need more comprehensive social tracking and reporting.',
+      features: ['3 social accounts tracking', '4 reports per month', 'Access to Dera AI assistant', 'Enhanced tracking capabilities'],
+      actionLabel: 'View Plans',
+      onAction: onViewPaidPlans,
+    },
+    {
+      icon: <FaBuilding size={20} />,
+      iconBg: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
+      title: 'Enterprise',
+      subtitle: 'Unlimited access',
+      description: 'The ultimate solution for large organizations requiring unlimited capabilities.',
+      features: ['Unlimited social accounts', 'Unlimited reports', 'Full AI capabilities', 'Priority support & collaboration'],
     },
     {
       icon: <FaWallet size={20} />,

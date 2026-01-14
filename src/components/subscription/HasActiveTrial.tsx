@@ -9,7 +9,11 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { BsFillPatchCheckFill } from 'react-icons/bs';
 
-const HasActiveTrial = () => {
+interface HasActiveTrialProps {
+  onUpgrade?: () => void;
+}
+
+const HasActiveTrial = ({ onUpgrade }: HasActiveTrialProps) => {
   const router = useRouter();
   const { userDetails } = useAuth();
   const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null);
@@ -421,7 +425,7 @@ const HasActiveTrial = () => {
           >
             <Button
               variant="contained"
-              onClick={() => router.push('/pricing')}
+              onClick={onUpgrade || (() => router.push('/pricing'))}
               sx={{
                 borderRadius: '12px',
                 px: 5,

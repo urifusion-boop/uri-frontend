@@ -60,9 +60,9 @@ export const useLeadQueries = (
 
       return result.responseData;
     },
-    refetchInterval: 30000, // Auto-refresh every 30 seconds
+    refetchInterval: 60000, // Auto-refresh every 60 seconds
     refetchIntervalInBackground: false, // Only refetch when tab is active
-    refetchOnWindowFocus: true, // Refetch when user returns to tab
+    refetchOnWindowFocus: false, // Don't refetch on window focus to reduce noise
     keepPreviousData: true, // Keep showing old data while fetching new data
   });
 
@@ -74,9 +74,9 @@ export const useLeadQueries = (
       return response.responseData;
     },
     enabled: true, // Always enabled since analytics data is needed on the leads tab
-    refetchOnWindowFocus: true, // Refetch when user returns to tab
+    refetchOnWindowFocus: false, // Don't refetch on window focus to reduce noise
     refetchOnMount: true,
-    refetchInterval: 30000, // Auto-refetch every 30 seconds to update stats
+    refetchInterval: 60000, // Auto-refetch every 60 seconds to update stats
     refetchIntervalInBackground: false, // Only refetch when tab is active
     staleTime: 30000, // Consider data stale after 30 seconds
     keepPreviousData: true, // Keep showing old data while fetching new data

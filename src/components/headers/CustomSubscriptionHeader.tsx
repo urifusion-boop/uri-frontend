@@ -17,14 +17,11 @@ function CustomSubscriptionHeader({ subscribed = false }: Readonly<{ subscribed?
     switch (subscriptionPlanType) {
       case SubscriptionTypeEnum.FreeTrial:
         return '#000';
-      case SubscriptionTypeEnum.Standard:
-      case SubscriptionTypeEnum.StandardAnnually:
+      case SubscriptionTypeEnum.SocialListeningFree:
         return '#CD1B78';
-      case SubscriptionTypeEnum.Professional:
-      case SubscriptionTypeEnum.ProfessionalAnnually:
+      case SubscriptionTypeEnum.SocialListeningPaid:
         return '#D67E27';
-      case SubscriptionTypeEnum.Business:
-      case SubscriptionTypeEnum.BusinessAnnually:
+      case SubscriptionTypeEnum.LeadsGen:
         return '#C0C0C0';
       case SubscriptionTypeEnum.Enterprise:
         return '#FFD700';
