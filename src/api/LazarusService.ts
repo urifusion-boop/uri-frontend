@@ -58,9 +58,11 @@ export class LazarusService {
   }
 
   static async updateFocusContactScanFrequency(userId: string, focusId: string, scanFrequencyDays: number): Promise<UriResponse<{ scan_frequency_days: number }>> {
-    const response: AxiosResponse<UriResponse<{ scan_frequency_days: number }>> = await UriHttpClient.getClient().patch(
-      `${BASE_PATH}/focus-contacts/${focusId}/scan-frequency?user_id=${userId}&scan_frequency_days=${scanFrequencyDays}`
-    );
+    const url = `${BASE_PATH}/focus-contacts/${focusId}/scanfrequency?user_id=${userId}&scan_frequency_days=${scanFrequencyDays}`;
+    console.log('🔍 [LAZARUS] updateFocusContactScanFrequency URL:', url);
+    console.log('🔍 [LAZARUS] BASE_PATH:', BASE_PATH);
+    console.log('🔍 [LAZARUS] Full URL will be:', window.location.origin + url);
+    const response: AxiosResponse<UriResponse<{ scan_frequency_days: number }>> = await UriHttpClient.getClient().patch(url);
     return response.data;
   }
 
@@ -89,7 +91,7 @@ export class LazarusService {
 
   static async updateCompanyMonitorScanFrequency(userId: string, monitorId: string, scanFrequencyDays: number): Promise<UriResponse<{ scan_frequency_days: number }>> {
     const response: AxiosResponse<UriResponse<{ scan_frequency_days: number }>> = await UriHttpClient.getClient().patch(
-      `${BASE_PATH}/company-monitors/${monitorId}/scan-frequency?user_id=${userId}&scan_frequency_days=${scanFrequencyDays}`
+      `${BASE_PATH}/company-monitors/${monitorId}/scanfrequency?user_id=${userId}&scan_frequency_days=${scanFrequencyDays}`
     );
     return response.data;
   }
