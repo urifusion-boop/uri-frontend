@@ -1,5 +1,7 @@
 import { LazarusService } from '@/api/LazarusService';
-import { Box, Button, Card, Checkbox, Chip, FormControlLabel, Grid, Typography } from '@mui/material';
+import { LightThemeColors } from '@/configs/colors.config';
+import CloseIcon from '@mui/icons-material/Close';
+import { Box, Button, Checkbox, Dialog, DialogContent, FormControlLabel, IconButton, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { FaCheckCircle, FaFileUpload, FaLink } from 'react-icons/fa';
@@ -13,7 +15,7 @@ interface LazarusOnboardingProps {
   onComplete: () => void;
 }
 
-type OnboardingStep = 'welcome' | 'choose-method' | 'buying-signals' | 'crm-connect';
+type OnboardingStep = 'choose-method' | 'buying-signals';
 type UploadMethod = 'manual' | 'crm';
 
 interface BuyingSignal {
@@ -32,7 +34,7 @@ const BUYING_SIGNALS: BuyingSignal[] = [
 const LazarusOnboarding: React.FC<LazarusOnboardingProps> = ({ userId, onComplete }) => {
   const [step, setStep] = useState<OnboardingStep>('choose-method');
   const [selectedMethod, setSelectedMethod] = useState<UploadMethod | null>(null);
-  const [selectedSignals, setSelectedSignals] = useState<string[]>(['funding', 'hiring', 'pain', 'switch']); // All selected by default
+  const [selectedSignals, setSelectedSignals] = useState<string[]>(['funding', 'hiring', 'pain', 'switch']);
   const [showCSVModal, setShowCSVModal] = useState(false);
   const [showPasteModal, setShowPasteModal] = useState(false);
   const [showCRMModal, setShowCRMModal] = useState(false);
@@ -49,12 +51,10 @@ const LazarusOnboarding: React.FC<LazarusOnboardingProps> = ({ userId, onComplet
     }
 
     if (selectedMethod === 'crm') {
-      // Open CRM connection modal
       setShowCRMModal(true);
       return;
     }
 
-    // Go to buying signals selection
     setStep('buying-signals');
   };
 
@@ -70,7 +70,6 @@ const LazarusOnboarding: React.FC<LazarusOnboardingProps> = ({ userId, onComplet
 
     setSaving(true);
     try {
-      // Save buying signal preferences
       await LazarusService.updateAutoDetectionRules(userId, {
         enabled: true,
         detection_rules: {
@@ -84,7 +83,6 @@ const LazarusOnboarding: React.FC<LazarusOnboardingProps> = ({ userId, onComplet
     } catch (error) {
       console.error('Error saving onboarding preferences:', error);
       toast.error('Failed to save preferences. You can configure this later in Settings.');
-      // Still complete onboarding even if preferences fail
       onComplete();
     } finally {
       setSaving(false);
@@ -103,411 +101,339 @@ const LazarusOnboarding: React.FC<LazarusOnboardingProps> = ({ userId, onComplet
     setShowCSVModal(false);
     setShowPasteModal(false);
     setShowCRMModal(false);
-    // Go to buying signals step
     setStep('buying-signals');
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        p: 3,
-      }}
-    >
-      <Box sx={{ maxWidth: 900, width: '100%' }}>
+    <Dialog open={true} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '12px', maxWidth: '500px' } }}>
+      <DialogContent sx={{ p: 4, position: 'relative' }}>
+        {/* Close Button */}
+        <IconButton
+          onClick={onComplete}
+          sx={{
+            position: 'absolute',
+            top: 16,
+            right: 16,
+            color: LightThemeColors.secondary,
+          }}
+          size="small"
+        >
+          <CloseIcon fontSize="small" />
+        </IconButton>
+
         {/* STEP 1: Choose Method */}
         {step === 'choose-method' && (
           <Box>
             {/* Header */}
-            <Box sx={{ textAlign: 'center', mb: 5 }}>
-              <Box
-                sx={{
-                  width: 70,
-                  height: 70,
-                  borderRadius: '16px',
-                  background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 20px',
-                  boxShadow: '0 8px 24px rgba(124, 58, 237, 0.3)',
-                }}
-              >
-                <Typography fontSize="36px">🧬</Typography>
-              </Box>
-              <Typography variant="h3" fontWeight={700} color="#111827" mb={2} letterSpacing="-0.02em">
-                Lazarus Protocol
-              </Typography>
-              <Typography variant="h5" fontWeight={600} color="#374151" mb={1}>
+            <Box sx={{ textAlign: 'center', mb: 3, pr: 4 }}>
+              <Typography variant="h5" fontWeight={700} color={LightThemeColors.blackWhite} mb={1}>
                 Who do you want us to monitor for buying signals?
               </Typography>
-              <Typography variant="body1" color="#6B7280" fontSize="15px" maxWidth={600} mx="auto">
-                Choose how you'd like to add contacts and companies to monitor. We'll watch them for signals that they're ready to buy.
+              <Typography variant="body2" color={LightThemeColors.secondary} fontSize="14px">
+                Choose how you'd like to add contacts and companies
               </Typography>
             </Box>
 
-            {/* Two Option Cards */}
-            <Grid container spacing={3} mb={4}>
+            {/* Two Options */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
               {/* Option 1: Manual Upload */}
-              <Grid item xs={12} md={6}>
-                <Card
-                  onClick={() => handleMethodSelect('manual')}
-                  sx={{
-                    p: 4,
-                    cursor: 'pointer',
-                    border: selectedMethod === 'manual' ? '3px solid #7C3AED' : '2px solid #E5E7EB',
-                    borderRadius: '16px',
-                    transition: 'all 0.3s ease',
-                    height: '100%',
-                    position: 'relative',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: '0 12px 32px rgba(0,0,0,0.1)',
-                      borderColor: '#7C3AED',
-                    },
-                  }}
-                >
-                  {selectedMethod === 'manual' && (
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        top: 16,
-                        right: 16,
-                        width: 32,
-                        height: 32,
-                        borderRadius: '50%',
-                        background: '#7C3AED',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <FaCheckCircle size={18} color="#fff" />
-                    </Box>
-                  )}
-
-                  <Box
-                    sx={{
-                      width: 56,
-                      height: 56,
-                      borderRadius: '12px',
-                      background: '#F3E8FF',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      mb: 3,
-                    }}
-                  >
-                    <FaFileUpload size={28} color="#7C3AED" />
-                  </Box>
-
-                  <Typography variant="h6" fontWeight={700} color="#111827" mb={1.5}>
-                    Manual Upload
-                  </Typography>
-
-                  <Typography variant="body2" color="#6B7280" mb={3} lineHeight={1.6}>
-                    Upload a CSV or paste contacts directly. Great for quick setup and full control.
-                  </Typography>
-
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#7C3AED' }} />
-                      <Typography fontSize="13px" color="#374151" fontWeight={500}>
-                        Upload CSV file
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#7C3AED' }} />
-                      <Typography fontSize="13px" color="#374151" fontWeight={500}>
-                        Paste contacts directly
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#7C3AED' }} />
-                      <Typography fontSize="13px" color="#374151" fontWeight={500}>
-                        Quick 5-minute setup
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Card>
-              </Grid>
-
-              {/* Option 2: Connect CRM */}
-              <Grid item xs={12} md={6}>
-                <Card
-                  onClick={() => handleMethodSelect('crm')}
-                  sx={{
-                    p: 4,
-                    cursor: 'pointer',
-                    border: selectedMethod === 'crm' ? '3px solid #7C3AED' : '2px solid #E5E7EB',
-                    borderRadius: '16px',
-                    transition: 'all 0.3s ease',
-                    height: '100%',
-                    position: 'relative',
-                    background: 'linear-gradient(135deg, #FEFCFF 0%, #F9F5FF 100%)',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: '0 12px 32px rgba(124, 58, 237, 0.2)',
-                      borderColor: '#7C3AED',
-                    },
-                  }}
-                >
-                  {/* Recommended Badge */}
-                  <Chip
-                    label="⭐ RECOMMENDED"
-                    size="small"
-                    sx={{
-                      position: 'absolute',
-                      top: 16,
-                      right: 16,
-                      backgroundColor: '#7C3AED',
-                      color: '#fff',
-                      fontWeight: 700,
-                      fontSize: '11px',
-                      height: 26,
-                    }}
-                  />
-
-                  {selectedMethod === 'crm' && (
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        top: 16,
-                        left: 16,
-                        width: 32,
-                        height: 32,
-                        borderRadius: '50%',
-                        background: '#7C3AED',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <FaCheckCircle size={18} color="#fff" />
-                    </Box>
-                  )}
-
-                  <Box
-                    sx={{
-                      width: 56,
-                      height: 56,
-                      borderRadius: '12px',
-                      background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      mb: 3,
-                      boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
-                    }}
-                  >
-                    <FaLink size={28} color="#fff" />
-                  </Box>
-
-                  <Typography variant="h6" fontWeight={700} color="#111827" mb={1.5}>
-                    Connect CRM
-                  </Typography>
-
-                  <Typography variant="body2" color="#6B7280" mb={3} lineHeight={1.6}>
-                    Automatically sync your stalled deals, closed-lost leads, and active prospects.
-                  </Typography>
-
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#7C3AED' }} />
-                      <Typography fontSize="13px" color="#374151" fontWeight={500}>
-                        HubSpot & Salesforce
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#7C3AED' }} />
-                      <Typography fontSize="13px" color="#374151" fontWeight={500}>
-                        Auto-sync stalled deals
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#7C3AED' }} />
-                      <Typography fontSize="13px" color="#374151" fontWeight={500}>
-                        Sync insights back to CRM
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Card>
-              </Grid>
-            </Grid>
-
-            {/* Continue Button */}
-            <Box sx={{ textAlign: 'center' }}>
-              <Button
-                variant="contained"
-                size="large"
-                disabled={!selectedMethod}
-                onClick={handleContinueFromMethodSelection}
+              <Box
+                onClick={() => handleMethodSelect('manual')}
                 sx={{
-                  background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
-                  color: '#fff',
-                  px: 6,
-                  py: 1.5,
-                  fontSize: '16px',
-                  fontWeight: 700,
+                  p: 2.5,
+                  border: `2px solid ${selectedMethod === 'manual' ? LightThemeColors.primary : LightThemeColors.borderColor}`,
                   borderRadius: '10px',
-                  textTransform: 'none',
-                  boxShadow: '0 4px 14px rgba(124, 58, 237, 0.4)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  background: selectedMethod === 'manual' ? `${LightThemeColors.primary}08` : '#fff',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #6D28D9 0%, #4C1D95 100%)',
-                    boxShadow: '0 6px 20px rgba(124, 58, 237, 0.5)',
+                    borderColor: LightThemeColors.primary,
+                    background: `${LightThemeColors.primary}08`,
                   },
-                  '&:disabled': {
-                    background: '#E5E7EB',
-                    color: '#9CA3AF',
-                  },
+                  position: 'relative',
                 }}
               >
-                Continue
-              </Button>
+                {selectedMethod === 'manual' && (
+                  <Box sx={{ position: 'absolute', top: 12, right: 12 }}>
+                    <FaCheckCircle size={18} color={LightThemeColors.primary} />
+                  </Box>
+                )}
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                  <Box
+                    sx={{
+                      width: 42,
+                      height: 42,
+                      borderRadius: '8px',
+                      background: `${LightThemeColors.primary}15`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <FaFileUpload size={20} color={LightThemeColors.primary} />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="subtitle1" fontWeight={600} color={LightThemeColors.blackWhite} mb={0.5}>
+                      Manual Upload
+                    </Typography>
+                    <Typography variant="body2" color={LightThemeColors.secondary} fontSize="13px">
+                      Upload CSV or paste contacts directly
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
 
+              {/* Option 2: Connect CRM */}
+              <Box
+                onClick={() => handleMethodSelect('crm')}
+                sx={{
+                  p: 2.5,
+                  border: `2px solid ${selectedMethod === 'crm' ? LightThemeColors.primary : LightThemeColors.borderColor}`,
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  background: selectedMethod === 'crm' ? `${LightThemeColors.primary}08` : '#fff',
+                  '&:hover': {
+                    borderColor: LightThemeColors.primary,
+                    background: `${LightThemeColors.primary}08`,
+                  },
+                  position: 'relative',
+                }}
+              >
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 8,
+                    right: 8,
+                    px: 1.5,
+                    py: 0.5,
+                    background: LightThemeColors.primary,
+                    borderRadius: '6px',
+                  }}
+                >
+                  <Typography fontSize="10px" fontWeight={700} color="#fff">
+                    RECOMMENDED
+                  </Typography>
+                </Box>
+                {selectedMethod === 'crm' && (
+                  <Box sx={{ position: 'absolute', top: 40, right: 12 }}>
+                    <FaCheckCircle size={18} color={LightThemeColors.primary} />
+                  </Box>
+                )}
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                  <Box
+                    sx={{
+                      width: 42,
+                      height: 42,
+                      borderRadius: '8px',
+                      background: LightThemeColors.primary,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <FaLink size={20} color="#fff" />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="subtitle1" fontWeight={600} color={LightThemeColors.blackWhite} mb={0.5}>
+                      Connect CRM
+                    </Typography>
+                    <Typography variant="body2" color={LightThemeColors.secondary} fontSize="13px">
+                      Auto-sync from HubSpot or Salesforce
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+
+            {/* Action Buttons */}
+            <Box sx={{ display: 'flex', gap: 2 }}>
               {selectedMethod === 'manual' && (
-                <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'center' }}>
+                <>
                   <Button
+                    fullWidth
                     variant="outlined"
-                    startIcon={<FaFileUpload />}
+                    startIcon={<FaFileUpload size={14} />}
                     onClick={() => handleManualUploadChoice('csv')}
                     sx={{
-                      borderColor: '#7C3AED',
-                      color: '#7C3AED',
+                      borderColor: LightThemeColors.borderColor,
+                      color: LightThemeColors.blackWhite,
                       textTransform: 'none',
                       fontWeight: 600,
+                      fontSize: '13px',
+                      py: 1.2,
                       '&:hover': {
-                        borderColor: '#6D28D9',
-                        backgroundColor: '#F3E8FF',
+                        borderColor: LightThemeColors.primary,
+                        background: `${LightThemeColors.primary}05`,
                       },
                     }}
                   >
                     Upload CSV
                   </Button>
                   <Button
+                    fullWidth
                     variant="outlined"
-                    startIcon={<MdBusiness />}
+                    startIcon={<MdBusiness size={16} />}
                     onClick={() => handleManualUploadChoice('paste')}
                     sx={{
-                      borderColor: '#7C3AED',
-                      color: '#7C3AED',
+                      borderColor: LightThemeColors.borderColor,
+                      color: LightThemeColors.blackWhite,
                       textTransform: 'none',
                       fontWeight: 600,
+                      fontSize: '13px',
+                      py: 1.2,
                       '&:hover': {
-                        borderColor: '#6D28D9',
-                        backgroundColor: '#F3E8FF',
+                        borderColor: LightThemeColors.primary,
+                        background: `${LightThemeColors.primary}05`,
                       },
                     }}
                   >
                     Paste & Go
                   </Button>
-                </Box>
+                </>
+              )}
+              {selectedMethod === 'crm' && (
+                <Button
+                  fullWidth
+                  variant="contained"
+                  onClick={handleContinueFromMethodSelection}
+                  sx={{
+                    background: LightThemeColors.primary,
+                    color: '#fff',
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    fontSize: '14px',
+                    py: 1.2,
+                    boxShadow: 'none',
+                    '&:hover': {
+                      background: LightThemeColors.primary,
+                      opacity: 0.9,
+                      boxShadow: 'none',
+                    },
+                  }}
+                >
+                  Continue
+                </Button>
+              )}
+              {!selectedMethod && (
+                <Button
+                  fullWidth
+                  variant="contained"
+                  disabled
+                  sx={{
+                    background: LightThemeColors.borderColor,
+                    color: LightThemeColors.secondary,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    fontSize: '14px',
+                    py: 1.2,
+                    boxShadow: 'none',
+                  }}
+                >
+                  Select a method to continue
+                </Button>
               )}
             </Box>
           </Box>
         )}
 
-        {/* STEP 2: Buying Signals Selection */}
+        {/* STEP 2: Buying Signals */}
         {step === 'buying-signals' && (
           <Box>
-            <Box sx={{ textAlign: 'center', mb: 5 }}>
-              <Typography variant="h4" fontWeight={700} color="#111827" mb={2}>
+            <Box sx={{ textAlign: 'center', mb: 3, pr: 4 }}>
+              <Typography variant="h5" fontWeight={700} color={LightThemeColors.blackWhite} mb={1}>
                 What buying signals matter to you?
               </Typography>
-              <Typography variant="body1" color="#6B7280" fontSize="15px" maxWidth={600} mx="auto">
-                Select the signals you want us to watch for. We'll notify you when contacts show these signs.
+              <Typography variant="body2" color={LightThemeColors.secondary} fontSize="14px">
+                Select signals to monitor
               </Typography>
             </Box>
 
-            <Card sx={{ p: 4, borderRadius: '16px', maxWidth: 600, mx: 'auto', mb: 4 }}>
-              <Grid container spacing={2}>
-                {BUYING_SIGNALS.map((signal) => (
-                  <Grid item xs={12} key={signal.id}>
-                    <Box
-                      onClick={() => handleSignalToggle(signal.id)}
-                      sx={{
-                        p: 2.5,
-                        borderRadius: '12px',
-                        border: selectedSignals.includes(signal.id) ? '2px solid #7C3AED' : '2px solid #E5E7EB',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        background: selectedSignals.includes(signal.id) ? '#F9F5FF' : '#fff',
-                        '&:hover': {
-                          borderColor: '#7C3AED',
-                          background: '#F9F5FF',
-                        },
-                      }}
-                    >
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={selectedSignals.includes(signal.id)}
-                            sx={{
-                              color: '#7C3AED',
-                              '&.Mui-checked': {
-                                color: '#7C3AED',
-                              },
-                            }}
-                          />
-                        }
-                        label={
-                          <Box>
-                            <Typography fontWeight={600} color="#111827" fontSize="15px">
-                              {signal.name}
-                            </Typography>
-                            <Typography variant="caption" color="#6B7280" fontSize="13px">
-                              {signal.description}
-                            </Typography>
-                          </Box>
-                        }
-                        sx={{ m: 0, width: '100%' }}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 3 }}>
+              {BUYING_SIGNALS.map((signal) => (
+                <Box
+                  key={signal.id}
+                  onClick={() => handleSignalToggle(signal.id)}
+                  sx={{
+                    p: 2,
+                    borderRadius: '8px',
+                    border: `2px solid ${selectedSignals.includes(signal.id) ? LightThemeColors.primary : LightThemeColors.borderColor}`,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    background: selectedSignals.includes(signal.id) ? `${LightThemeColors.primary}08` : '#fff',
+                    '&:hover': {
+                      borderColor: LightThemeColors.primary,
+                      background: `${LightThemeColors.primary}08`,
+                    },
+                  }}
+                >
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={selectedSignals.includes(signal.id)}
+                        sx={{
+                          color: LightThemeColors.borderColor,
+                          '&.Mui-checked': {
+                            color: LightThemeColors.primary,
+                          },
+                        }}
                       />
-                    </Box>
-                  </Grid>
-                ))}
-              </Grid>
-            </Card>
+                    }
+                    label={
+                      <Box>
+                        <Typography fontWeight={600} color={LightThemeColors.blackWhite} fontSize="14px">
+                          {signal.name}
+                        </Typography>
+                        <Typography variant="caption" color={LightThemeColors.secondary} fontSize="12px">
+                          {signal.description}
+                        </Typography>
+                      </Box>
+                    }
+                    sx={{ m: 0, width: '100%' }}
+                  />
+                </Box>
+              ))}
+            </Box>
 
-            <Box sx={{ textAlign: 'center', display: 'flex', gap: 2, justifyContent: 'center' }}>
+            <Box sx={{ display: 'flex', gap: 2 }}>
               <Button
                 variant="outlined"
                 onClick={() => setStep('choose-method')}
                 sx={{
-                  borderColor: '#E5E7EB',
-                  color: '#6B7280',
+                  borderColor: LightThemeColors.borderColor,
+                  color: LightThemeColors.secondary,
                   textTransform: 'none',
                   fontWeight: 600,
-                  px: 4,
-                  py: 1.5,
+                  fontSize: '14px',
+                  px: 3,
+                  py: 1.2,
                 }}
               >
                 Back
               </Button>
               <Button
+                fullWidth
                 variant="contained"
-                size="large"
                 disabled={selectedSignals.length === 0 || saving}
                 onClick={handleCompleteOnboarding}
                 sx={{
-                  background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
+                  background: LightThemeColors.primary,
                   color: '#fff',
-                  px: 6,
-                  py: 1.5,
-                  fontSize: '16px',
-                  fontWeight: 700,
-                  borderRadius: '10px',
                   textTransform: 'none',
-                  boxShadow: '0 4px 14px rgba(124, 58, 237, 0.4)',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  py: 1.2,
+                  boxShadow: 'none',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #6D28D9 0%, #4C1D95 100%)',
+                    background: LightThemeColors.primary,
+                    opacity: 0.9,
+                    boxShadow: 'none',
                   },
                   '&:disabled': {
-                    background: '#E5E7EB',
-                    color: '#9CA3AF',
+                    background: LightThemeColors.borderColor,
+                    color: LightThemeColors.secondary,
                   },
                 }}
               >
@@ -516,13 +442,13 @@ const LazarusOnboarding: React.FC<LazarusOnboardingProps> = ({ userId, onComplet
             </Box>
           </Box>
         )}
-      </Box>
+      </DialogContent>
 
       {/* Modals */}
       <CSVUploadModal open={showCSVModal} onClose={() => setShowCSVModal(false)} userId={userId} onSuccess={handleUploadSuccess} />
       <PasteAndGoModal open={showPasteModal} onClose={() => setShowPasteModal(false)} userId={userId} onSuccess={handleUploadSuccess} />
       <ConnectCRMModal open={showCRMModal} onClose={() => setShowCRMModal(false)} userId={userId} onSuccess={handleUploadSuccess} />
-    </Box>
+    </Dialog>
   );
 };
 

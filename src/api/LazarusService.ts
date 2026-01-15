@@ -1,4 +1,5 @@
 import { UriHttpClient } from '@/configs/http.config';
+import { BackendUrlEnum } from '@/models/enum-models/BackendUrlEnum';
 import { UriResponse } from '@/models/responses/UriResponse';
 import {
   AddCompanyMonitorResponse,
@@ -20,7 +21,7 @@ import {
 } from '@/types/lazarus.types';
 import { AxiosResponse } from 'axios';
 
-const BASE_PATH = '/api/lazarus';
+const BASE_PATH = `${BackendUrlEnum.INSIGHTS}/api/lazarus`;
 
 export class LazarusService {
   // ============ FOCUS CONTACTS ============
@@ -56,6 +57,13 @@ export class LazarusService {
     return response.data;
   }
 
+  static async updateFocusContactScanFrequency(userId: string, focusId: string, scanFrequencyDays: number): Promise<UriResponse<{ scan_frequency_days: number }>> {
+    const response: AxiosResponse<UriResponse<{ scan_frequency_days: number }>> = await UriHttpClient.getClient().patch(
+      `${BASE_PATH}/focus-contacts/${focusId}/scan-frequency?user_id=${userId}&scan_frequency_days=${scanFrequencyDays}`
+    );
+    return response.data;
+  }
+
   // ============ COMPANY MONITORS ============
   static async addCompanyMonitor(userId: string, monitor: CompanyMonitorCreate, sourceLeadId?: string): Promise<UriResponse<AddCompanyMonitorResponse>> {
     const url = sourceLeadId ? `${BASE_PATH}/company-monitors/add?user_id=${userId}&source_lead_id=${sourceLeadId}` : `${BASE_PATH}/company-monitors/add?user_id=${userId}`;
@@ -76,6 +84,13 @@ export class LazarusService {
 
   static async removeCompanyMonitor(userId: string, monitorId: string): Promise<UriResponse<{ success: boolean; message: string }>> {
     const response: AxiosResponse<UriResponse<{ success: boolean; message: string }>> = await UriHttpClient.getClient().delete(`${BASE_PATH}/company-monitors/${monitorId}?user_id=${userId}`);
+    return response.data;
+  }
+
+  static async updateCompanyMonitorScanFrequency(userId: string, monitorId: string, scanFrequencyDays: number): Promise<UriResponse<{ scan_frequency_days: number }>> {
+    const response: AxiosResponse<UriResponse<{ scan_frequency_days: number }>> = await UriHttpClient.getClient().patch(
+      `${BASE_PATH}/company-monitors/${monitorId}/scan-frequency?user_id=${userId}&scan_frequency_days=${scanFrequencyDays}`
+    );
     return response.data;
   }
 

@@ -1,5 +1,4 @@
 import { LazarusService } from '@/api/LazarusService';
-import { LightThemeColors } from '@/configs/colors.config';
 import CloseIcon from '@mui/icons-material/Close';
 import {
   Alert,
@@ -60,7 +59,7 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
   const [loading, setLoading] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<CRMConnection | null>(null);
   const [checking, setChecking] = useState(false);
-  const [privateAppToken, setPrivateAppToken] = useState(`${LightThemeColors.primary}08`);
+  const [privateAppToken, setPrivateAppToken] = useState('');
   const [showPrivateAppForm, setShowPrivateAppForm] = useState(false);
 
   useEffect(() => {
@@ -164,7 +163,7 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
       if (response.status) {
         toast.success(`${selectedCRM === 'hubspot' ? 'HubSpot' : 'Salesforce'} connected successfully!`);
         setShowPrivateAppForm(false);
-        setPrivateAppToken(`${LightThemeColors.primary}08`);
+        setPrivateAppToken('');
         checkCRMStatus();
         onSuccess();
       } else {
@@ -241,10 +240,10 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box>
-            <Typography variant="h5" fontWeight={700} color={LightThemeColors.blackWhite}>
+            <Typography variant="h5" fontWeight={700} color="#111827">
               Connect Your CRM
             </Typography>
-            <Typography variant="body2" color={LightThemeColors.secondary} mt={0.5}>
+            <Typography variant="body2" color="#6B7280" mt={0.5}>
               Automatically sync your stalled deals and closed-lost leads
             </Typography>
           </Box>
@@ -257,8 +256,8 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
       <DialogContent sx={{ pb: 4 }}>
         {checking ? (
           <Box sx={{ textAlign: 'center', py: 4 }}>
-            <CircularProgress size={40} sx={{ color: LightThemeColors.primary }} />
-            <Typography variant="body2" color={LightThemeColors.secondary} mt={2}>
+            <CircularProgress size={40} sx={{ color: '#7C3AED' }} />
+            <Typography variant="body2" color="#6B7280" mt={2}>
               Checking CRM connection status...
             </Typography>
           </Box>
@@ -288,21 +287,21 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
 
             {/* Sync Stats */}
             {connectionStatus.total_syncs !== undefined && connectionStatus.total_syncs > 0 && (
-              <Box sx={{ mb: 3, p: 2, bgcolor: LightThemeColors.background, borderRadius: '8px' }}>
-                <Typography variant="subtitle2" fontWeight={600} color={LightThemeColors.blackWhite} mb={1}>
+              <Box sx={{ mb: 3, p: 2, bgcolor: '#F9FAFB', borderRadius: '8px' }}>
+                <Typography variant="subtitle2" fontWeight={600} color="#374151" mb={1}>
                   Sync Statistics
                 </Typography>
                 <Box display="flex" gap={3} flexWrap="wrap">
                   <Box>
-                    <Typography variant="caption" color={LightThemeColors.secondary}>
+                    <Typography variant="caption" color="#6B7280">
                       Total Syncs
                     </Typography>
-                    <Typography variant="h6" fontWeight={700} color={LightThemeColors.blackWhite}>
+                    <Typography variant="h6" fontWeight={700} color="#111827">
                       {connectionStatus.total_syncs}
                     </Typography>
                   </Box>
                   <Box>
-                    <Typography variant="caption" color={LightThemeColors.secondary}>
+                    <Typography variant="caption" color="#6B7280">
                       Successful
                     </Typography>
                     <Typography variant="h6" fontWeight={700} color="#10B981">
@@ -310,7 +309,7 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
                     </Typography>
                   </Box>
                   <Box>
-                    <Typography variant="caption" color={LightThemeColors.secondary}>
+                    <Typography variant="caption" color="#6B7280">
                       Failed
                     </Typography>
                     <Typography variant="h6" fontWeight={700} color="#DC2626">
@@ -318,10 +317,10 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
                     </Typography>
                   </Box>
                   <Box>
-                    <Typography variant="caption" color={LightThemeColors.secondary}>
+                    <Typography variant="caption" color="#6B7280">
                       Contacts Synced
                     </Typography>
-                    <Typography variant="h6" fontWeight={700} color={LightThemeColors.primary}>
+                    <Typography variant="h6" fontWeight={700} color="#7C3AED">
                       {connectionStatus.contacts_synced || 0}
                     </Typography>
                   </Box>
@@ -348,14 +347,14 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
                 onClick={() => handleSync(false)}
                 disabled={loading}
                 sx={{
-                  background: LightThemeColors.primary,
+                  background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
                   color: '#fff',
                   flex: 1,
                   py: 1.5,
                   textTransform: 'none',
                   fontWeight: 600,
                   '&:hover': {
-                    background: LightThemeColors.primary,
+                    background: 'linear-gradient(135deg, #6D28D9 0%, #4C1D95 100%)',
                   },
                 }}
               >
@@ -366,14 +365,14 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
                 onClick={() => handleSync(true)}
                 disabled={loading}
                 sx={{
-                  borderColor: LightThemeColors.primary,
-                  color: LightThemeColors.primary,
+                  borderColor: '#7C3AED',
+                  color: '#7C3AED',
                   py: 1.5,
                   textTransform: 'none',
                   fontWeight: 600,
                   '&:hover': {
-                    borderColor: LightThemeColors.primary,
-                    backgroundColor: `${LightThemeColors.primary}08`,
+                    borderColor: '#6D28D9',
+                    backgroundColor: '#F5F3FF',
                   },
                 }}
               >
@@ -406,7 +405,7 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
               size="small"
               onClick={() => {
                 setShowPrivateAppForm(false);
-                setPrivateAppToken(`${LightThemeColors.primary}08`);
+                setPrivateAppToken('');
               }}
               sx={{ mb: 2 }}
             >
@@ -481,13 +480,13 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
           // Not Connected - Show Options
           <Box>
             {/* Auth Method Tabs */}
-            <Tabs value={authMethod} onChange={(_, val) => setAuthMethod(val)} sx={{ mb: 3, borderBottom: `1px solid ${LightThemeColors.borderColor}` }}>
+            <Tabs value={authMethod} onChange={(_, val) => setAuthMethod(val)} sx={{ mb: 3, borderBottom: '1px solid #E5E7EB' }}>
               <Tab label="OAuth (Recommended)" value="oauth" sx={{ textTransform: 'none', fontWeight: 600 }} />
               <Tab label="Private App" value="private" sx={{ textTransform: 'none', fontWeight: 600 }} />
             </Tabs>
 
             {authMethod === 'oauth' && (
-              <Typography variant="body2" color={LightThemeColors.secondary} mb={3}>
+              <Typography variant="body2" color="#6B7280" mb={3}>
                 Choose your CRM platform. We'll securely connect via OAuth and automatically sync your leads.
               </Typography>
             )}
@@ -505,13 +504,13 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
                 p: 3,
                 mb: 2,
                 cursor: loading ? 'not-allowed' : 'pointer',
-                border: `2px solid ${LightThemeColors.borderColor}`,
+                border: '2px solid #E5E7EB',
                 borderRadius: '12px',
                 transition: 'all 0.3s ease',
                 opacity: loading && selectedCRM !== 'hubspot' ? 0.5 : 1,
                 '&:hover': {
-                  borderColor: loading ? LightThemeColors.borderColor : LightThemeColors.primary,
-                  boxShadow: loading ? 'none' : `0 4px 12px ${LightThemeColors.primary}33`,
+                  borderColor: loading ? '#E5E7EB' : '#FF7A59',
+                  boxShadow: loading ? 'none' : '0 4px 12px rgba(255, 122, 89, 0.2)',
                 },
               }}
             >
@@ -530,14 +529,14 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
                   <SiHubspot size={32} color="#fff" />
                 </Box>
                 <Box flex={1}>
-                  <Typography variant="h6" fontWeight={700} color={LightThemeColors.blackWhite}>
+                  <Typography variant="h6" fontWeight={700} color="#111827">
                     HubSpot
                   </Typography>
-                  <Typography variant="body2" color={LightThemeColors.secondary} fontSize="13px">
+                  <Typography variant="body2" color="#6B7280" fontSize="13px">
                     {authMethod === 'oauth' ? 'Connect via OAuth popup' : 'Use Private App token'}
                   </Typography>
                 </Box>
-                {loading && selectedCRM === 'hubspot' && <CircularProgress size={24} sx={{ color: LightThemeColors.primary }} />}
+                {loading && selectedCRM === 'hubspot' && <CircularProgress size={24} sx={{ color: '#FF7A59' }} />}
               </Box>
 
               <List dense sx={{ mt: 2 }}>
@@ -545,19 +544,19 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
                   <ListItemIcon sx={{ minWidth: 28 }}>
                     <FaCheckCircle size={14} color="#10B981" />
                   </ListItemIcon>
-                  <ListItemText primary="Auto-sync stalled & closed-lost deals" primaryTypographyProps={{ fontSize: '13px', color: LightThemeColors.blackWhite }} />
+                  <ListItemText primary="Auto-sync stalled & closed-lost deals" primaryTypographyProps={{ fontSize: '13px', color: '#374151' }} />
                 </ListItem>
                 <ListItem disablePadding>
                   <ListItemIcon sx={{ minWidth: 28 }}>
                     <FaCheckCircle size={14} color="#10B981" />
                   </ListItemIcon>
-                  <ListItemText primary="Sync insights back to HubSpot" primaryTypographyProps={{ fontSize: '13px', color: LightThemeColors.blackWhite }} />
+                  <ListItemText primary="Sync insights back to HubSpot" primaryTypographyProps={{ fontSize: '13px', color: '#374151' }} />
                 </ListItem>
                 <ListItem disablePadding>
                   <ListItemIcon sx={{ minWidth: 28 }}>
                     <FaCheckCircle size={14} color="#10B981" />
                   </ListItemIcon>
-                  <ListItemText primary="Read-only access (we don't modify your data)" primaryTypographyProps={{ fontSize: '13px', color: LightThemeColors.blackWhite }} />
+                  <ListItemText primary="Read-only access (we don't modify your data)" primaryTypographyProps={{ fontSize: '13px', color: '#374151' }} />
                 </ListItem>
               </List>
             </Card>
@@ -568,13 +567,13 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
               sx={{
                 p: 3,
                 cursor: loading || authMethod === 'private' ? 'not-allowed' : 'pointer',
-                border: `2px solid ${LightThemeColors.borderColor}`,
+                border: '2px solid #E5E7EB',
                 borderRadius: '12px',
                 transition: 'all 0.3s ease',
                 opacity: (loading && selectedCRM !== 'salesforce') || authMethod === 'private' ? 0.5 : 1,
                 '&:hover': {
-                  borderColor: loading || authMethod === 'private' ? LightThemeColors.borderColor : LightThemeColors.primary,
-                  boxShadow: loading || authMethod === 'private' ? 'none' : `0 4px 12px ${LightThemeColors.primary}33`,
+                  borderColor: loading || authMethod === 'private' ? '#E5E7EB' : '#00A1E0',
+                  boxShadow: loading || authMethod === 'private' ? 'none' : '0 4px 12px rgba(0, 161, 224, 0.2)',
                 },
               }}
             >
@@ -593,14 +592,14 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
                   <SiSalesforce size={32} color="#fff" />
                 </Box>
                 <Box flex={1}>
-                  <Typography variant="h6" fontWeight={700} color={LightThemeColors.blackWhite}>
+                  <Typography variant="h6" fontWeight={700} color="#111827">
                     Salesforce
                   </Typography>
-                  <Typography variant="body2" color={LightThemeColors.secondary} fontSize="13px">
+                  <Typography variant="body2" color="#6B7280" fontSize="13px">
                     {authMethod === 'oauth' ? 'Connect via OAuth popup' : 'OAuth only (Private App not supported)'}
                   </Typography>
                 </Box>
-                {loading && selectedCRM === 'salesforce' && <CircularProgress size={24} sx={{ color: LightThemeColors.primary }} />}
+                {loading && selectedCRM === 'salesforce' && <CircularProgress size={24} sx={{ color: '#00A1E0' }} />}
               </Box>
 
               <List dense sx={{ mt: 2 }}>
@@ -608,19 +607,19 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
                   <ListItemIcon sx={{ minWidth: 28 }}>
                     <FaCheckCircle size={14} color="#10B981" />
                   </ListItemIcon>
-                  <ListItemText primary="Sync opportunities and contacts" primaryTypographyProps={{ fontSize: '13px', color: LightThemeColors.blackWhite }} />
+                  <ListItemText primary="Sync opportunities and contacts" primaryTypographyProps={{ fontSize: '13px', color: '#374151' }} />
                 </ListItem>
                 <ListItem disablePadding>
                   <ListItemIcon sx={{ minWidth: 28 }}>
                     <FaCheckCircle size={14} color="#10B981" />
                   </ListItemIcon>
-                  <ListItemText primary="Create tasks for buying signals" primaryTypographyProps={{ fontSize: '13px', color: LightThemeColors.blackWhite }} />
+                  <ListItemText primary="Create tasks for buying signals" primaryTypographyProps={{ fontSize: '13px', color: '#374151' }} />
                 </ListItem>
                 <ListItem disablePadding>
                   <ListItemIcon sx={{ minWidth: 28 }}>
                     <FaCheckCircle size={14} color="#10B981" />
                   </ListItemIcon>
-                  <ListItemText primary="Secure read-only access" primaryTypographyProps={{ fontSize: '13px', color: LightThemeColors.blackWhite }} />
+                  <ListItemText primary="Secure read-only access" primaryTypographyProps={{ fontSize: '13px', color: '#374151' }} />
                 </ListItem>
               </List>
             </Card>

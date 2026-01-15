@@ -1,4 +1,5 @@
 import { LazarusService } from '@/api/LazarusService';
+import { LightThemeColors } from '@/configs/colors.config';
 import { CSVUploadRow, LazarusMonitorType } from '@/types/lazarus.types';
 import CloseIcon from '@mui/icons-material/Close';
 import DescriptionIcon from '@mui/icons-material/Description';
@@ -38,7 +39,7 @@ const CSVUploadModal = ({ open, onClose, userId, onSuccess }: CSVUploadModalProp
 
   const parseCSV = (csvText: string): CSVUploadRow[] => {
     const lines = csvText.split('\n');
-    const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
+    const headers = lines[0].split(',').map((h) => h.trim().toLowerCase().replace(/\s+/g, '_'));
 
     const rows: CSVUploadRow[] = [];
 
@@ -47,26 +48,59 @@ const CSVUploadModal = ({ open, onClose, userId, onSuccess }: CSVUploadModalProp
       if (!line) continue;
 
       const values = line.split(',').map((v) => v.trim());
-      const row: Partial<CSVUploadRow> = {};
+
+      // Extract data from CSV columns
+      let companyName = '';
+      let websiteUrl = '';
+      let contactName = '';
+      let socialHandle = '';
+      let location = '';
+      let countryCode = '';
+      let scanFrequency = 7; // Default to 7 days
 
       headers.forEach((header, index) => {
-        const value = values[index]?.replace(/^["']|["']$/g, ''); // Remove quotes
+        const value = values[index]?.replace(/^["']|["']$/g, '');
 
         if (header === 'company' || header === 'company_name') {
-          row.name = value;
-          row.type = LazarusMonitorType.COMPANY;
+          companyName = value;
         } else if (header === 'website' || header === 'website_url') {
-          row.website_url = value;
+          websiteUrl = value;
         } else if (header === 'contact' || header === 'contact_name' || header === 'name') {
-          row.name = value;
-          row.type = LazarusMonitorType.FOCUS_CONTACT;
+          contactName = value;
         } else if (header === 'social_handle' || header === 'handle' || header === 'twitter') {
-          row.social_handle = value;
+          socialHandle = value;
+        } else if (header === 'location' || header === 'city' || header === 'country') {
+          location = value;
+        } else if (header === 'country_code' || header === 'code') {
+          countryCode = value.toLowerCase(); // Lowercase for consistency (ng, us, uk)
+        } else if (header === 'scan_frequency' || header === 'scan_frequency_days' || header === 'frequency') {
+          const parsed = parseInt(value);
+          if (!isNaN(parsed) && parsed >= 1 && parsed <= 30) {
+            scanFrequency = parsed;
+          }
         }
       });
 
-      if (row.name && row.type) {
-        rows.push(row as CSVUploadRow);
+      // Create company monitor entry if company exists
+      if (companyName) {
+        rows.push({
+          type: LazarusMonitorType.COMPANY,
+          name: companyName,
+          website_url: websiteUrl || undefined,
+          location: location || undefined,
+          country_code: countryCode || undefined,
+          scan_frequency_days: scanFrequency,
+        } as CSVUploadRow);
+      }
+
+      // Create focus contact entry if contact exists
+      if (contactName) {
+        rows.push({
+          type: LazarusMonitorType.FOCUS_CONTACT,
+          name: contactName,
+          social_handle: socialHandle || undefined,
+          scan_frequency_days: scanFrequency,
+        } as CSVUploadRow);
       }
     }
 
@@ -92,13 +126,18 @@ const CSVUploadModal = ({ open, onClose, userId, onSuccess }: CSVUploadModalProp
         return;
       }
 
+      console.log('📤 Uploading CSV rows:', csvRows.length, 'rows');
+      console.log('📤 Sample row:', csvRows[0]);
+
       const response = await LazarusService.bulkUploadCSV(userId, csvRows);
+
+      console.log('📥 Upload response:', response);
+      console.log('📥 Response data:', response.responseData);
 
       if (response.status) {
         setUploadResult(response.responseData as any);
         onSuccess();
 
-        // Auto-close after 3 seconds if all succeeded
         if (response.responseData?.failed_count === 0) {
           setTimeout(() => {
             handleClose();
@@ -134,38 +173,37 @@ const CSVUploadModal = ({ open, onClose, userId, onSuccess }: CSVUploadModalProp
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '12px' } }}>
+      <DialogTitle sx={{ pb: 2 }}>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Box display="flex" alignItems="center" gap={1.5}>
             <Box
               sx={{
-                width: 40,
-                height: 40,
-                borderRadius: '10px',
-                background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
+                width: 36,
+                height: 36,
+                borderRadius: '8px',
+                background: LightThemeColors.primary,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 3px 10px rgba(124, 58, 237, 0.3)',
               }}
             >
-              <UploadFileIcon sx={{ color: '#fff', fontSize: 20 }} />
+              <UploadFileIcon sx={{ color: '#fff', fontSize: 18 }} />
             </Box>
-            <Typography variant="h6" fontWeight={600}>
+            <Typography variant="h6" fontWeight={600} fontSize="16px" color={LightThemeColors.blackWhite}>
               CSV Bulk Upload
             </Typography>
           </Box>
           <IconButton onClick={handleClose} size="small">
-            <CloseIcon />
+            <CloseIcon fontSize="small" />
           </IconButton>
         </Box>
       </DialogTitle>
 
       <DialogContent>
-        <Box sx={{ pt: 2 }}>
+        <Box>
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" sx={{ mb: 2, fontSize: '13px' }}>
               {error}
             </Alert>
           )}
@@ -177,55 +215,68 @@ const CSVUploadModal = ({ open, onClose, userId, onSuccess }: CSVUploadModalProp
               </Typography>
               <Typography fontSize="12px">
                 ✅ {uploadResult.added_count} added successfully
-                <br />
-                {uploadResult.failed_count > 0 && `❌ ${uploadResult.failed_count} failed`}
+                {uploadResult.failed_count > 0 && (
+                  <>
+                    <br />❌ {uploadResult.failed_count} failed
+                    {uploadResult.errors && uploadResult.errors.length > 0 && (
+                      <Box component="ul" sx={{ mt: 1, pl: 2, fontSize: '11px' }}>
+                        {uploadResult.errors.slice(0, 5).map((err: any, idx: number) => (
+                          <li key={idx}>
+                            {err.name}: {err.error}
+                          </li>
+                        ))}
+                        {uploadResult.errors.length > 5 && <li>...and {uploadResult.errors.length - 5} more</li>}
+                      </Box>
+                    )}
+                  </>
+                )}
               </Typography>
-              {uploadResult.errors.length > 0 && (
-                <Box mt={1}>
-                  <Typography fontSize="11px" color="error">
-                    Errors:
-                    {uploadResult.errors.slice(0, 3).map((err, i) => (
-                      <div key={i}>• {err}</div>
-                    ))}
-                  </Typography>
-                </Box>
-              )}
             </Alert>
           )}
 
           <Box
             sx={{
               p: 3,
-              border: '2px dashed #E5E7EB',
-              borderRadius: '12px',
+              border: `2px dashed ${LightThemeColors.borderColor}`,
+              borderRadius: '10px',
               textAlign: 'center',
-              background: file ? '#F9FAFB' : '#FAFBFC',
+              background: file ? LightThemeColors.background : '#FAFBFC',
               mb: 2,
             }}
           >
             {file ? (
               <Box>
-                <DescriptionIcon sx={{ fontSize: 48, color: '#7C3AED', mb: 1 }} />
-                <Typography fontSize="14px" fontWeight={600} color="#374151">
+                <DescriptionIcon sx={{ fontSize: 42, color: LightThemeColors.primary, mb: 1 }} />
+                <Typography fontSize="14px" fontWeight={600} color={LightThemeColors.blackWhite}>
                   {file.name}
                 </Typography>
-                <Typography fontSize="12px" color="#6B7280" mt={0.5}>
+                <Typography fontSize="12px" color={LightThemeColors.secondary} mt={0.5}>
                   {(file.size / 1024).toFixed(2)} KB
                 </Typography>
-                <Button size="small" onClick={() => setFile(null)} sx={{ mt: 1, textTransform: 'none', fontSize: '12px' }}>
+                <Button size="small" onClick={() => setFile(null)} sx={{ mt: 1, textTransform: 'none', fontSize: '12px', color: LightThemeColors.secondary }}>
                   Remove
                 </Button>
               </Box>
             ) : (
               <Box>
-                <UploadFileIcon sx={{ fontSize: 48, color: '#D1D5DB', mb: 1 }} />
-                <Typography fontSize="14px" fontWeight={600} color="#374151" mb={0.5}>
+                <UploadFileIcon sx={{ fontSize: 42, color: LightThemeColors.secondary, mb: 1 }} />
+                <Typography fontSize="14px" fontWeight={600} color={LightThemeColors.blackWhite} mb={0.5}>
                   Drop CSV file here
                 </Typography>
-                <Typography fontSize="12px" color="#6B7280" mb={2}>
+                <Typography fontSize="12px" color={LightThemeColors.secondary} mb={2}>
                   or click to browse
                 </Typography>
-                <Button variant="outlined" component="label" sx={{ textTransform: 'none', fontSize: '13px' }}>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  sx={{
+                    textTransform: 'none',
+                    fontSize: '13px',
+                    borderColor: LightThemeColors.borderColor,
+                    color: LightThemeColors.blackWhite,
+                    '&:hover': { borderColor: LightThemeColors.primary },
+                  }}
+                >
                   Select File
                   <input type="file" hidden accept=".csv" onChange={handleFileSelect} />
                 </Button>
@@ -236,21 +287,17 @@ const CSVUploadModal = ({ open, onClose, userId, onSuccess }: CSVUploadModalProp
           <Box
             sx={{
               p: 2,
-              background: '#FFFBEB',
-              borderRadius: '10px',
-              border: '1px solid #FDE68A',
+              background: `${LightThemeColors.primary}08`,
+              borderRadius: '8px',
+              border: `1px solid ${LightThemeColors.borderColor}`,
               mb: 2,
             }}
           >
-            <Typography fontSize="12px" fontWeight={600} color="#92400E" mb={1}>
+            <Typography fontSize="11px" fontWeight={600} color={LightThemeColors.blackWhite} mb={1}>
               CSV FORMAT
             </Typography>
-            <Typography fontSize="11px" color="#666" lineHeight={1.6} mb={1}>
-              Your CSV should have these columns:
-              <br />• <strong>Company</strong> - Company name (for company monitors)
-              <br />• <strong>Website</strong> - Company website URL
-              <br />• <strong>Contact Name</strong> - Individual name (for focus contacts)
-              <br />• <strong>Social Handle</strong> - Twitter/X handle
+            <Typography fontSize="11px" color={LightThemeColors.secondary} lineHeight={1.6} mb={1}>
+              Columns: <strong>Company</strong>, <strong>Website</strong>, <strong>Contact Name</strong>, <strong>Social Handle</strong>
             </Typography>
             <Link
               onClick={downloadTemplate}
@@ -258,7 +305,7 @@ const CSVUploadModal = ({ open, onClose, userId, onSuccess }: CSVUploadModalProp
                 fontSize: '12px',
                 fontWeight: 600,
                 cursor: 'pointer',
-                color: '#7C3AED',
+                color: LightThemeColors.primary,
               }}
             >
               Download Template CSV
@@ -267,17 +314,26 @@ const CSVUploadModal = ({ open, onClose, userId, onSuccess }: CSVUploadModalProp
 
           {loading && (
             <Box>
-              <Typography fontSize="12px" color="#6B7280" mb={1}>
+              <Typography fontSize="12px" color={LightThemeColors.secondary} mb={1}>
                 Uploading...
               </Typography>
-              <LinearProgress />
+              <LinearProgress sx={{ '& .MuiLinearProgress-bar': { backgroundColor: LightThemeColors.primary } }} />
             </Box>
           )}
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pb: 3 }}>
-        <Button onClick={handleClose} variant="outlined" sx={{ textTransform: 'none' }}>
+      <DialogActions sx={{ px: 3, pb: 2.5 }}>
+        <Button
+          onClick={handleClose}
+          variant="outlined"
+          sx={{
+            textTransform: 'none',
+            fontSize: '13px',
+            borderColor: LightThemeColors.borderColor,
+            color: LightThemeColors.secondary,
+          }}
+        >
           {uploadResult ? 'Close' : 'Cancel'}
         </Button>
         <Button
@@ -285,12 +341,19 @@ const CSVUploadModal = ({ open, onClose, userId, onSuccess }: CSVUploadModalProp
           variant="contained"
           disabled={loading || !file || !!uploadResult}
           sx={{
-            background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
+            background: LightThemeColors.primary,
             textTransform: 'none',
             fontWeight: 600,
-            boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
+            fontSize: '13px',
+            boxShadow: 'none',
             '&:hover': {
-              background: 'linear-gradient(135deg, #5B21B6 0%, #7C3AED 100%)',
+              background: LightThemeColors.primary,
+              opacity: 0.9,
+              boxShadow: 'none',
+            },
+            '&:disabled': {
+              background: LightThemeColors.borderColor,
+              color: LightThemeColors.secondary,
             },
           }}
         >

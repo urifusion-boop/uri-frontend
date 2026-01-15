@@ -2,6 +2,7 @@ import { LazarusService } from '@/api/LazarusService';
 import DashboardLayout from '@/components/atoms/DashboardLayout';
 import AddCompanyMonitorModal from '@/components/lazarus/AddCompanyMonitorModal';
 import AddFocusContactModal from '@/components/lazarus/AddFocusContactModal';
+import ConnectCRMModal from '@/components/lazarus/ConnectCRMModal';
 import CSVUploadModal from '@/components/lazarus/CSVUploadModal';
 import LazarusOnboarding from '@/components/lazarus/LazarusOnboarding';
 import PasteAndGoModal from '@/components/lazarus/PasteAndGoModal';
@@ -13,15 +14,17 @@ import BusinessIcon from '@mui/icons-material/Business';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import EmailIcon from '@mui/icons-material/Email';
 import LinkIcon from '@mui/icons-material/Link';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import PersonIcon from '@mui/icons-material/Person';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import ScheduleIcon from '@mui/icons-material/Schedule';
 import ScienceIcon from '@mui/icons-material/Science';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import { Box, Button, Chip, Container, Grid, IconButton, LinearProgress, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Button, Chip, Container, Grid, IconButton, LinearProgress, Menu, MenuItem, Tab, Tabs, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
@@ -53,10 +56,15 @@ const LazarusProtocolPage = () => {
   const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const [showAddContactModal, setShowAddContactModal] = useState(false);
   const [showAddCompanyModal, setShowAddCompanyModal] = useState(false);
   const [showCSVUploadModal, setShowCSVUploadModal] = useState(false);
   const [showPasteAndGoModal, setShowPasteAndGoModal] = useState(false);
+  const [showCRMModal, setShowCRMModal] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const [selectedContact, setSelectedContact] = useState<FocusContact | null>(null);
+  const [selectedMonitor, setSelectedMonitor] = useState<CompanyMonitor | null>(null);
 
   useEffect(() => {
     if (userId) {
@@ -69,22 +77,57 @@ const LazarusProtocolPage = () => {
     }
   }, [userId]);
 
+  const loadDashboardContent = async () => {
+    // Load all dashboard data WITHOUT checking onboarding conditions
+    try {
+      const metricsResponse = await LazarusService.getUserMetrics(userId!);
+      if (metricsResponse.responseData) {
+        setMetrics(metricsResponse.responseData);
+      }
+
+      const alertsResponse = await LazarusService.getAlerts(userId!, LazarusAlertStatus.NEW, 0, 50);
+      if (alertsResponse.responseData) {
+        setAlerts(alertsResponse.responseData);
+      }
+
+      const contactsResponse = await LazarusService.getFocusContacts(userId!, LazarusMonitoringStatus.ACTIVE, 0, 50);
+      if (contactsResponse.responseData) {
+        setFocusContacts(contactsResponse.responseData);
+      }
+
+      const monitorsResponse = await LazarusService.getCompanyMonitors(userId!, LazarusMonitoringStatus.ACTIVE, 0, 50);
+      if (monitorsResponse.responseData) {
+        setCompanyMonitors(monitorsResponse.responseData);
+      }
+    } catch (error) {
+      console.error('Failed to load Lazarus dashboard data:', error);
+    }
+  };
+
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      console.log('🔄 Loading Lazarus data for user:', userId);
 
       const metricsResponse = await LazarusService.getUserMetrics(userId!);
+
       if (metricsResponse.responseData) {
         setMetrics(metricsResponse.responseData);
 
         // PRD: Show onboarding if user has never added any contacts/companies (first-time)
-        const isFirstTime = metricsResponse.responseData.slots_used === 0;
-        if (isFirstTime) {
-          console.log('👋 First-time user detected - showing Lazarus onboarding');
+        // But respect if user already dismissed it
+        const isFirstTime = metricsResponse.responseData.used_slots === 0;
+
+        if (isFirstTime && !onboardingDismissed) {
           setShowOnboarding(true);
           setLoading(false);
           return; // Don't load other data yet
+        }
+      } else {
+        // responseData is null - likely first time user with no data yet
+        if (!onboardingDismissed) {
+          setShowOnboarding(true);
+          setLoading(false);
+          return;
         }
       }
 
@@ -102,19 +145,24 @@ const LazarusProtocolPage = () => {
       if (monitorsResponse.responseData) {
         setCompanyMonitors(monitorsResponse.responseData);
       }
-
-      console.log('✅ All Lazarus data loaded successfully');
     } catch (error) {
-      console.error('❌ Failed to load Lazarus dashboard data:', error);
+      console.error('Failed to load Lazarus dashboard data:', error);
+
+      // If API fails and we have no existing data, show onboarding (first-time user)
+      if ((!metrics || metrics.used_slots === 0) && !onboardingDismissed) {
+        setShowOnboarding(true);
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleOnboardingComplete = () => {
-    console.log('✅ Onboarding completed - loading dashboard');
+  const handleOnboardingComplete = async () => {
     setShowOnboarding(false);
-    loadDashboardData(); // Reload to show the dashboard
+    setOnboardingDismissed(true); // Mark as dismissed so it doesn't show again
+    setLoading(true);
+    await loadDashboardContent(); // Load data without checking onboarding conditions
+    setLoading(false);
   };
 
   const handleTabChange = async (event: React.SyntheticEvent, newValue: number) => {
@@ -139,6 +187,28 @@ const LazarusProtocolPage = () => {
       loadDashboardData();
     } catch (error) {
       console.error('Failed to mark alert as contacted:', error);
+    }
+  };
+
+  const handleUpdateContactFrequency = async (focusId: string, days: number) => {
+    try {
+      await LazarusService.updateFocusContactScanFrequency(userId!, focusId, days);
+      setMenuAnchor(null);
+      setSelectedContact(null);
+      loadDashboardContent();
+    } catch (error) {
+      console.error('Failed to update scan frequency:', error);
+    }
+  };
+
+  const handleUpdateMonitorFrequency = async (monitorId: string, days: number) => {
+    try {
+      await LazarusService.updateCompanyMonitorScanFrequency(userId!, monitorId, days);
+      setMenuAnchor(null);
+      setSelectedMonitor(null);
+      loadDashboardContent();
+    } catch (error) {
+      console.error('Failed to update scan frequency:', error);
     }
   };
 
@@ -272,6 +342,26 @@ const LazarusProtocolPage = () => {
           </Box>
           <Box display="flex" gap={1.5}>
             <Button
+              variant="contained"
+              startIcon={<LinkIcon />}
+              onClick={() => setShowCRMModal(true)}
+              sx={{
+                background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
+                color: '#fff',
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '13px',
+                borderRadius: '8px',
+                boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #6D28D9 0%, #4C1D95 100%)',
+                  boxShadow: '0 6px 16px rgba(124, 58, 237, 0.4)',
+                },
+              }}
+            >
+              Connect CRM
+            </Button>
+            <Button
               variant="outlined"
               startIcon={<LinkIcon />}
               onClick={() => setShowPasteAndGoModal(true)}
@@ -362,7 +452,7 @@ const LazarusProtocolPage = () => {
                 <AutoAwesomeIcon sx={{ color: '#fff', fontSize: 20 }} />
               </Box>
               <Typography fontSize="32px" fontWeight={700} color="#111827" lineHeight={1} mb={1} letterSpacing="-0.03em">
-                {metrics?.slots_used || 0}
+                {metrics?.used_slots || 0}
               </Typography>
               <Typography fontSize="13px" color="#6B7280" fontWeight={600} mb={0.5}>
                 Slots Used
@@ -379,7 +469,7 @@ const LazarusProtocolPage = () => {
                 }}
               >
                 <Typography fontSize="11px" color="#9CA3AF" fontWeight={600}>
-                  {metrics?.slots_available || 0} available
+                  {metrics ? metrics.max_slots - metrics.used_slots : 0} available
                 </Typography>
               </Box>
             </Box>
@@ -826,86 +916,104 @@ const LazarusProtocolPage = () => {
                   <Grid item xs={12} md={6} key={contact.focus_id}>
                     <Box
                       sx={{
-                        borderRadius: '12px',
+                        borderRadius: '16px',
                         background: '#fff',
-                        border: '1px solid #F3F4F6',
-                        p: 2.5,
+                        border: '1px solid #F5F5F5',
+                        p: 3,
                         height: '100%',
-                        transition: 'all 0.3s ease',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                         '&:hover': {
-                          boxShadow: '0 8px 16px rgba(0,0,0,0.08)',
-                          borderColor: '#3B82F630',
+                          boxShadow: '0 8px 20px rgba(201, 26, 121, 0.08)',
+                          borderColor: '#C91A7915',
                           transform: 'translateY(-2px)',
                         },
                       }}
                     >
-                      <Box display="flex" alignItems="center" gap={1.5} mb={2}>
-                        <Box
-                          sx={{
-                            width: 38,
-                            height: 38,
-                            borderRadius: '9px',
-                            background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
+                      <Box display="flex" alignItems="flex-start" justifyContent="space-between" mb={2.5}>
+                        <Box display="flex" alignItems="center" gap={2} flex={1}>
+                          <Box
+                            sx={{
+                              width: 48,
+                              height: 48,
+                              borderRadius: '12px',
+                              background: '#F9F9F9',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <PersonIcon sx={{ color: '#C91A79', fontSize: 22 }} />
+                          </Box>
+                          <Box flex={1}>
+                            <Typography fontSize="16px" fontWeight={600} color="#1A1A1A" mb={0.5}>
+                              {contact.name}
+                            </Typography>
+                            {contact.social_handle && (
+                              <Typography fontSize="12px" color="#9CA3AF" fontWeight={500}>
+                                {contact.social_handle}
+                              </Typography>
+                            )}
+                          </Box>
+                        </Box>
+                        <IconButton
+                          size="small"
+                          sx={{ color: '#9CA3AF' }}
+                          onClick={(e) => {
+                            setMenuAnchor(e.currentTarget);
+                            setSelectedContact(contact);
                           }}
                         >
-                          <PersonIcon sx={{ color: '#fff', fontSize: 18 }} />
-                        </Box>
-                        <Box flex={1}>
-                          <Typography fontSize="15px" fontWeight={700} color="#111827">
-                            {contact.name}
-                          </Typography>
-                          {contact.social_handle && (
-                            <Typography fontSize="12px" color="#6B7280" fontWeight={500}>
-                              @{contact.social_handle}
-                            </Typography>
+                          <MoreVertIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                      {contact.industry_keywords && contact.industry_keywords.length > 0 && (
+                        <Box display="flex" gap={1} flexWrap="wrap" mb={2.5}>
+                          {contact.industry_keywords.slice(0, 3).map((keyword, idx) => (
+                            <Chip
+                              key={idx}
+                              label={keyword}
+                              size="small"
+                              sx={{
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                background: '#FFF5FA',
+                                color: '#C91A79',
+                                border: '1px solid #FFEBF4',
+                                height: '24px',
+                              }}
+                            />
+                          ))}
+                          {contact.industry_keywords.length > 3 && (
+                            <Chip
+                              label={`+${contact.industry_keywords.length - 3}`}
+                              size="small"
+                              sx={{
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                background: '#C91A79',
+                                color: '#fff',
+                                height: '24px',
+                              }}
+                            />
                           )}
                         </Box>
-                      </Box>
-                      <Box display="flex" gap={0.75} flexWrap="wrap" mb={2}>
-                        {contact.industry_keywords.slice(0, 4).map((keyword, idx) => (
-                          <Chip
-                            key={idx}
-                            label={keyword}
-                            size="small"
-                            sx={{
-                              fontSize: '11px',
-                              fontWeight: 600,
-                              background: '#F3F4F6',
-                              color: '#374151',
-                              border: '1px solid #E5E7EB',
-                            }}
-                          />
-                        ))}
-                        {contact.industry_keywords.length > 4 && (
-                          <Chip
-                            label={`+${contact.industry_keywords.length - 4}`}
-                            size="small"
-                            sx={{
-                              fontSize: '11px',
-                              fontWeight: 600,
-                              background: '#3B82F6',
-                              color: '#fff',
-                            }}
-                          />
-                        )}
-                      </Box>
+                      )}
                       <Box
                         sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          pt: 1.5,
-                          borderTop: '1px solid #F3F4F6',
+                          pt: 2,
+                          borderTop: '1px solid #F5F5F5',
                         }}
                       >
-                        <Typography fontSize="11px" color="#9CA3AF" fontWeight={600}>
-                          {contact.scan_count} scans
-                        </Typography>
-                        <Typography fontSize="11px" color="#3B82F6" fontWeight={700}>
-                          {contact.alert_count} alerts
+                        <Box display="flex" justifyContent="space-between" mb={1}>
+                          <Typography fontSize="12px" color="#9CA3AF" fontWeight={600}>
+                            {contact.scan_count} scans
+                          </Typography>
+                          <Typography fontSize="12px" color="#C91A79" fontWeight={700}>
+                            {contact.alert_count} alerts
+                          </Typography>
+                        </Box>
+                        <Typography fontSize="11px" color="#9CA3AF" fontWeight={500}>
+                          Scans every {contact.scan_frequency_days || 7} days
                         </Typography>
                       </Box>
                     </Box>
@@ -960,73 +1068,88 @@ const LazarusProtocolPage = () => {
                   <Grid item xs={12} md={6} key={monitor.monitor_id}>
                     <Box
                       sx={{
-                        borderRadius: '12px',
+                        borderRadius: '16px',
                         background: '#fff',
-                        border: '1px solid #F3F4F6',
-                        p: 2.5,
+                        border: '1px solid #F5F5F5',
+                        p: 3,
                         height: '100%',
-                        transition: 'all 0.3s ease',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                         '&:hover': {
-                          boxShadow: '0 8px 16px rgba(0,0,0,0.08)',
-                          borderColor: '#10B98130',
+                          boxShadow: '0 8px 20px rgba(201, 26, 121, 0.08)',
+                          borderColor: '#C91A7915',
                           transform: 'translateY(-2px)',
                         },
                       }}
                     >
-                      <Box display="flex" alignItems="center" gap={1.5} mb={2}>
-                        <Box
-                          sx={{
-                            width: 38,
-                            height: 38,
-                            borderRadius: '9px',
-                            background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
+                      <Box display="flex" alignItems="flex-start" justifyContent="space-between" mb={2.5}>
+                        <Box display="flex" alignItems="center" gap={2} flex={1}>
+                          <Box
+                            sx={{
+                              width: 48,
+                              height: 48,
+                              borderRadius: '12px',
+                              background: '#F9F9F9',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <BusinessIcon sx={{ color: '#10B981', fontSize: 22 }} />
+                          </Box>
+                          <Box flex={1}>
+                            <Typography fontSize="16px" fontWeight={600} color="#1A1A1A" mb={0.5}>
+                              {monitor.company_name}
+                            </Typography>
+                            {monitor.website_url && (
+                              <Typography fontSize="12px" color="#9CA3AF" fontWeight={500} sx={{ wordBreak: 'break-all' }}>
+                                {monitor.website_url}
+                              </Typography>
+                            )}
+                          </Box>
+                        </Box>
+                        <IconButton
+                          size="small"
+                          sx={{ color: '#9CA3AF' }}
+                          onClick={(e) => {
+                            setMenuAnchor(e.currentTarget);
+                            setSelectedMonitor(monitor);
                           }}
                         >
-                          <BusinessIcon sx={{ color: '#fff', fontSize: 18 }} />
-                        </Box>
-                        <Box flex={1}>
-                          <Typography fontSize="15px" fontWeight={700} color="#111827">
-                            {monitor.company_name}
-                          </Typography>
-                          <Typography fontSize="12px" color="#6B7280" fontWeight={500}>
-                            {monitor.website_url}
-                          </Typography>
-                        </Box>
+                          <MoreVertIcon fontSize="small" />
+                        </IconButton>
                       </Box>
                       <Box
                         sx={{
-                          px: 2,
-                          py: 1.5,
-                          background: '#F9FAFB',
-                          borderRadius: '8px',
-                          border: '1px solid #E5E7EB',
-                          mb: 1.5,
+                          px: 2.5,
+                          py: 2,
+                          background: '#FAFAFA',
+                          borderRadius: '12px',
+                          mb: 2.5,
                         }}
                       >
-                        <Typography fontSize="11px" color="#6B7280" fontWeight={600} mb={0.5}>
+                        <Typography fontSize="11px" color="#6B7280" fontWeight={600} mb={0.5} textTransform="uppercase" letterSpacing="0.5px">
                           Current Job Openings
                         </Typography>
-                        <Typography fontSize="20px" fontWeight={700} color="#10B981">
+                        <Typography fontSize="28px" fontWeight={700} color="#1A1A1A">
                           {monitor.last_job_count}
                         </Typography>
                       </Box>
                       <Box
                         sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          pt: 1.5,
-                          borderTop: '1px solid #F3F4F6',
+                          pt: 2,
+                          borderTop: '1px solid #F5F5F5',
                         }}
                       >
-                        <Typography fontSize="11px" color="#9CA3AF" fontWeight={600}>
-                          {monitor.scan_count} scans
-                        </Typography>
-                        <Typography fontSize="11px" color="#10B981" fontWeight={700}>
-                          {monitor.alert_count} alerts
+                        <Box display="flex" justifyContent="space-between" mb={1}>
+                          <Typography fontSize="12px" color="#9CA3AF" fontWeight={500}>
+                            {monitor.scan_count} scans
+                          </Typography>
+                          <Typography fontSize="12px" color="#C91A79" fontWeight={600}>
+                            {monitor.alert_count} alerts
+                          </Typography>
+                        </Box>
+                        <Typography fontSize="11px" color="#9CA3AF" fontWeight={500}>
+                          Scans every {monitor.scan_frequency_days || 7} days
                         </Typography>
                       </Box>
                     </Box>
@@ -1342,13 +1465,71 @@ const LazarusProtocolPage = () => {
       </Container>
 
       {/* Modals */}
-      <AddFocusContactModal open={showAddContactModal} onClose={() => setShowAddContactModal(false)} userId={userId || ''} onSuccess={loadDashboardData} />
+      <ConnectCRMModal open={showCRMModal} onClose={() => setShowCRMModal(false)} userId={userId || ''} onSuccess={loadDashboardData} />
 
-      <AddCompanyMonitorModal open={showAddCompanyModal} onClose={() => setShowAddCompanyModal(false)} userId={userId || ''} onSuccess={loadDashboardData} />
+      <AddFocusContactModal open={showAddContactModal} onClose={() => setShowAddContactModal(false)} userId={userId || ''} onSuccess={loadDashboardContent} />
 
-      <CSVUploadModal open={showCSVUploadModal} onClose={() => setShowCSVUploadModal(false)} userId={userId || ''} onSuccess={loadDashboardData} />
+      <AddCompanyMonitorModal open={showAddCompanyModal} onClose={() => setShowAddCompanyModal(false)} userId={userId || ''} onSuccess={loadDashboardContent} />
 
-      <PasteAndGoModal open={showPasteAndGoModal} onClose={() => setShowPasteAndGoModal(false)} userId={userId || ''} onSuccess={loadDashboardData} />
+      <CSVUploadModal open={showCSVUploadModal} onClose={() => setShowCSVUploadModal(false)} userId={userId || ''} onSuccess={loadDashboardContent} />
+
+      <PasteAndGoModal open={showPasteAndGoModal} onClose={() => setShowPasteAndGoModal(false)} userId={userId || ''} onSuccess={loadDashboardContent} />
+
+      {/* Scan Frequency Menu */}
+      <Menu
+        anchorEl={menuAnchor}
+        open={Boolean(menuAnchor)}
+        onClose={() => {
+          setMenuAnchor(null);
+          setSelectedContact(null);
+          setSelectedMonitor(null);
+        }}
+        PaperProps={{
+          sx: {
+            borderRadius: '12px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+            minWidth: 200,
+          },
+        }}
+      >
+        <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid #F3F4F6' }}>
+          <Box display="flex" alignItems="center" gap={1} mb={0.5}>
+            <ScheduleIcon sx={{ fontSize: 16, color: '#C91A79' }} />
+            <Typography fontSize="13px" fontWeight={600} color="#1A1A1A">
+              Scan Frequency
+            </Typography>
+          </Box>
+          <Typography fontSize="11px" color="#9CA3AF">
+            How often to check for signals
+          </Typography>
+        </Box>
+        {[1, 3, 7, 14, 30].map((days) => (
+          <MenuItem
+            key={days}
+            onClick={() => {
+              if (selectedContact) {
+                handleUpdateContactFrequency(selectedContact.focus_id, days);
+              } else if (selectedMonitor) {
+                handleUpdateMonitorFrequency(selectedMonitor.monitor_id, days);
+              }
+            }}
+            sx={{
+              py: 1.5,
+              fontSize: '14px',
+              '&:hover': {
+                background: '#FFF5FA',
+              },
+            }}
+          >
+            <Box display="flex" alignItems="center" justifyContent="space-between" width="100%">
+              <Typography fontSize="14px">{days === 1 ? 'Daily' : days === 7 ? 'Weekly' : days === 30 ? 'Monthly' : `Every ${days} days`}</Typography>
+              <Typography fontSize="12px" color="#9CA3AF">
+                {days}d
+              </Typography>
+            </Box>
+          </MenuItem>
+        ))}
+      </Menu>
     </DashboardLayout>
   );
 };
