@@ -27,6 +27,12 @@ export class SubscriptionService {
     return response.data;
   }
 
+  static async freeSubscription(data: { email: string; plan: string }): Promise<UriResponse<any>> {
+    const response: Awaited<AxiosResponse<UriResponse<any>>> = await UriHttpClient.getClient().post(subscriptionRoutes.free, data);
+
+    return response.data;
+  }
+
   static async getActiveSubscriptionByPaystackId(paystackId: number): Promise<UriResponse<ActiveSubscriptionResponseDto>> {
     const response: Awaited<AxiosResponse<UriResponse<ActiveSubscriptionResponseDto>>> = await UriHttpClient.getClient().get(`${subscriptionRoutes.getByPaystackId}/${paystackId}`);
 

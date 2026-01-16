@@ -17,9 +17,8 @@ interface ChoosePaymentProps {
 }
 
 const getPlanType = (plan: SubscriptionPlanDto): keyof typeof planFeatures | undefined => {
-  // 1. Check exact match on plan_code
-  if (planFeatures[plan.plan_code as keyof typeof planFeatures]) {
-    return plan.plan_code as keyof typeof planFeatures;
+  if (planFeatures[plan.plan_type as keyof typeof planFeatures]) {
+    return plan.plan_type as keyof typeof planFeatures;
   }
 
   return undefined;

@@ -3,11 +3,12 @@ import { RouteHelper } from '../../helpers/RouteHelper';
 
 const URI_TRANSACTIONS_SVC_PATH = BackendUrlEnum.TRANSACTIONS;
 
-type ISubscriptionApi = 'charge' | 'trial' | 'getByPaystackId' | 'providerFilters' | 'getByEmail' | 'disable' | 'enable' | 'applyDiscount';
+type ISubscriptionApi = 'charge' | 'trial' | 'free' | 'getByPaystackId' | 'providerFilters' | 'getByEmail' | 'disable' | 'enable' | 'applyDiscount';
 
 const rawSubscriptionRoutes: Record<ISubscriptionApi, string> = {
   charge: '/subscription/charge',
   trial: '/subscription/trial/subscribe',
+  free: '/subscription/free/subscribe',
   getByPaystackId: '/subscription/getByPaystackId',
   providerFilters: '/subscription/providerFilters',
   getByEmail: '/subscription/getByEmail',

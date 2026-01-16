@@ -5,6 +5,8 @@ import { NumberHelper } from '@/helpers/NumberHelper';
 import { TextHelper } from '@/helpers/TextHelper';
 import { useSubscriptionHistory } from '@/hooks/subscription/subscriptionHistory';
 import { ActiveSubscriptionResponseDto, PaystackSubscriptionDto } from '@/models/dtos/SubscriptionDto';
+import { SubscriptionStatusEnum } from '@/models/enum-models/SubscriptionStatusEnum';
+import { useAuth } from '@/providers/AuthProvider';
 import dayjs from 'dayjs';
 import { BiX } from 'react-icons/bi';
 import SmartModal from '../modals/SmartModal';
@@ -20,13 +22,35 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
   const [cancelSubscriptionSuccessModal, setCancelSubscriptionSuccessModal] = useState(false);
 
   const { subscriptionHistory, isLoadingSubscriptionHistory, page, setPage, disableSubscriptionMutation } = useSubscriptionHistory();
+  const { userDetails } = useAuth();
 
   const cancelledButActiveSubscription = useMemo(
     () => subscriptionHistory?.data?.find((subscription: PaystackSubscriptionDto) => subscription?.status?.toLowerCase() === 'non-renewing' && dayjs(subscription.next_payment_date).isAfter(dayjs())),
     [subscriptionHistory]
   );
 
-  const _activeSubScription = useMemo(() => activeSubscription || cancelledButActiveSubscription, [activeSubscription, cancelledButActiveSubscription]);
+  const freeSubscriptionFallback = useMemo(() => {
+    if (!activeSubscription && !cancelledButActiveSubscription && userDetails?.subscriptionStatus === SubscriptionStatusEnum.ACTIVE) {
+      return {
+        amount: 0,
+        next_payment_date: null,
+        createdAt: userDetails.dateCreated,
+        plan: {
+          name: 'SOCIAL_LISTENING_FREE_MONTHLY',
+          plan_code: 'SOCIAL_LISTENING_FREE_MONTHLY',
+          interval: 'monthly',
+        },
+      } as unknown as ActiveSubscriptionResponseDto;
+    }
+    return undefined;
+  }, [activeSubscription, cancelledButActiveSubscription, userDetails?.subscriptionStatus, userDetails?.dateCreated]);
+
+  const _activeSubScription = useMemo(
+    () => activeSubscription || cancelledButActiveSubscription || freeSubscriptionFallback,
+    [activeSubscription, cancelledButActiveSubscription, freeSubscriptionFallback]
+  );
+
+  const isSocialListeningFree = _activeSubScription?.plan?.plan_code === 'SOCIAL_LISTENING_FREE_MONTHLY';
 
   return (
     <>
@@ -91,6 +115,30 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
               Current Plan
             </Typography>
 
+            {isSocialListeningFree && (
+              <Box
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  mt: 1,
+                  px: '10px',
+                  py: '4px',
+                  borderRadius: '999px',
+                  backgroundColor: '#E6F4EA',
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: '#166534',
+                  }}
+                >
+                  Social Listening Free • Active
+                </Typography>
+              </Box>
+            )}
+
             {/* Plan details */}
             <Box
               sx={{
@@ -119,7 +167,7 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
                       borderRadius: '4px',
                     }}
                   >
-                    {TextHelper.removeChar(_activeSubScription?.plan?.name ?? '', '_')}
+                    {isSocialListeningFree ? 'Social Listening Free' : TextHelper.removeChar(_activeSubScription?.plan?.name ?? '', '_')}
                   </Typography>
                   <Typography
                     sx={{
@@ -196,7 +244,7 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
                     color: '#141416',
                   }}
                 >
-                  {dayjs(_activeSubScription?.next_payment_date).format('MMM DD, YYYY')}
+                  {isSocialListeningFree || !_activeSubScription?.next_payment_date ? 'No upcoming payments' : dayjs(_activeSubScription.next_payment_date).format('MMM DD, YYYY')}
                 </Typography>
               </Box>
             </Box>

@@ -56,8 +56,10 @@ const SubscriptionTab = () => {
     );
   }
 
-  // Priority 1: Active Subscription
-  if (userDetails?.subscriptionStatus === SubscriptionStatusEnum.ACTIVE && !showUpgrade) {
+  const hasActiveSubscription = !!activeSubscription || userDetails?.subscriptionStatus === SubscriptionStatusEnum.ACTIVE;
+
+  // Priority 1: Active Subscription (including free plans)
+  if (hasActiveSubscription && !showUpgrade) {
     return <HasActiveSubscription activeSubscription={activeSubscription} />;
   }
 
@@ -65,8 +67,8 @@ const SubscriptionTab = () => {
     return <NewSubscription />;
   }
 
-  // Priority 2: Active or Expired Trial
-  if (trialStatus && (trialStatus.status === 'active' || trialStatus.status === 'expired')) {
+  // Priority 2: Active or Expired Trial (only when no subscription)
+  if (!hasActiveSubscription && trialStatus && (trialStatus.status === 'active' || trialStatus.status === 'expired')) {
     return <HasActiveTrial onUpgrade={() => setShowUpgrade(true)} />;
   }
 

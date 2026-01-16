@@ -95,10 +95,33 @@ export const useSubscription = () => {
     },
   });
 
+  const freeSubscription = useMutation({
+    mutationFn: async (planCode: string) => {
+      if (!userDetails?.email) return;
+
+      const response = await SubscriptionService.freeSubscription({
+        email: userDetails.email,
+        plan: planCode,
+      });
+
+      if (!response.status) {
+        throw Object.assign(new Error(response.responseMessage), {
+          code: response.responseCode,
+        });
+      }
+
+      return response.responseData;
+    },
+    onSuccess: async () => {
+      await getUserDetails.mutateAsync();
+    },
+  });
+
   return {
     initializeSubscription,
     trialSubscription,
     getUserDetails,
     applyDiscount,
+    freeSubscription,
   };
 };

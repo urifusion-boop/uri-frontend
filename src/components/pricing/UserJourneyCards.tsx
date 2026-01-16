@@ -1,5 +1,6 @@
 import { LightThemeColors } from '@/configs/colors.config';
 import { alpha, Box, Button, Card, CardContent, Chip, Grid, List, ListItem, ListItemIcon, ListItemText, Stack, Typography } from '@mui/material';
+import { useRouter } from 'next/router';
 import { FaBuilding, FaCheck, FaCoins, FaHandshake, FaHeadphones, FaWallet } from 'react-icons/fa';
 import { MdTimer } from 'react-icons/md';
 
@@ -140,11 +141,14 @@ const UserTypeCard = ({ icon, iconBg, title, subtitle, description, features, is
 interface UserJourneyCardsProps {
   onStartTrial?: () => void;
   onViewPaidPlans?: () => void;
+  onStartFreeSocialListening?: () => void;
   trialButtonText?: string;
   isTrialDisabled?: boolean;
 }
 
-export const UserJourneyCards = ({ onStartTrial, onViewPaidPlans, trialButtonText = 'Start Free Trial', isTrialDisabled = false }: UserJourneyCardsProps) => {
+export const UserJourneyCards = ({ onStartTrial, onViewPaidPlans, onStartFreeSocialListening, trialButtonText = 'Start Free Trial', isTrialDisabled = false }: UserJourneyCardsProps) => {
+  const router = useRouter();
+
   const userTypes: UserTypeCardProps[] = [
     {
       icon: <MdTimer size={22} />,
@@ -164,6 +168,8 @@ export const UserJourneyCards = ({ onStartTrial, onViewPaidPlans, trialButtonTex
       subtitle: 'Basic monitoring',
       description: 'Perfect for individuals who want to monitor social presence with optional lead gen access.',
       features: ['1 social account tracking', '1 report per month', 'Access to Dera AI assistant', 'PAYG or credits for leads'],
+      actionLabel: 'Start Free Social Listening',
+      onAction: onStartFreeSocialListening,
     },
     {
       icon: <FaHandshake size={20} />,
@@ -172,8 +178,8 @@ export const UserJourneyCards = ({ onStartTrial, onViewPaidPlans, trialButtonTex
       subtitle: 'Pro monitoring',
       description: 'For growing brands that need more comprehensive social tracking and reporting.',
       features: ['3 social accounts tracking', '4 reports per month', 'Access to Dera AI assistant', 'Enhanced tracking capabilities'],
-      actionLabel: 'View Plans',
-      onAction: onViewPaidPlans,
+      actionLabel: 'Activate Plan',
+      onAction: onViewPaidPlans ?? (() => router.push('/settings?tab=subscription')),
     },
     {
       icon: <FaBuilding size={20} />,
@@ -182,6 +188,8 @@ export const UserJourneyCards = ({ onStartTrial, onViewPaidPlans, trialButtonTex
       subtitle: 'Unlimited access',
       description: 'The ultimate solution for large organizations requiring unlimited capabilities.',
       features: ['Unlimited social accounts', 'Unlimited reports', 'Full AI capabilities', 'Priority support & collaboration'],
+      actionLabel: 'Activate Plan',
+      onAction: onViewPaidPlans ?? (() => router.push('/settings?tab=subscription')),
     },
     {
       icon: <FaWallet size={20} />,
@@ -190,6 +198,8 @@ export const UserJourneyCards = ({ onStartTrial, onViewPaidPlans, trialButtonTex
       subtitle: 'Pay as you go',
       description: 'Flexible payment for lead generation. Fund your wallet and pay only for what you use.',
       features: ['Fund wallet (min ₦5,000)', 'Pay per scan & lead action', 'No commitment required', 'Instant deductions'],
+      actionLabel: 'Activate PAYG',
+      onAction: () => router.push('/wallet'),
     },
     {
       icon: <FaCoins size={20} />,
@@ -200,6 +210,8 @@ export const UserJourneyCards = ({ onStartTrial, onViewPaidPlans, trialButtonTex
       features: ['Up to 10% savings vs PAYG', 'Bundles from 10-150 credits', 'Credits never expire', 'Discounted enrichment costs'],
       isHighlighted: true,
       badge: 'BEST VALUE',
+      actionLabel: 'Buy Credits',
+      onAction: () => router.push('/wallet'),
     },
   ];
 
