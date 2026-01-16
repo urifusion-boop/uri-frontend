@@ -48,12 +48,12 @@ export class LazarusService {
   }
 
   static async pauseFocusContact(userId: string, focusId: string): Promise<UriResponse<{ success: boolean; message: string }>> {
-    const response: AxiosResponse<UriResponse<{ success: boolean; message: string }>> = await UriHttpClient.getClient().patch(`${BASE_PATH}/focus-contacts/${focusId}/pause?user_id=${userId}`);
+    const response: AxiosResponse<UriResponse<{ success: boolean; message: string }>> = await UriHttpClient.getClient().put(`${BASE_PATH}/focus-contacts/${focusId}/pause?user_id=${userId}`);
     return response.data;
   }
 
   static async resumeFocusContact(userId: string, focusId: string): Promise<UriResponse<{ success: boolean; message: string }>> {
-    const response: AxiosResponse<UriResponse<{ success: boolean; message: string }>> = await UriHttpClient.getClient().patch(`${BASE_PATH}/focus-contacts/${focusId}/resume?user_id=${userId}`);
+    const response: AxiosResponse<UriResponse<{ success: boolean; message: string }>> = await UriHttpClient.getClient().put(`${BASE_PATH}/focus-contacts/${focusId}/resume?user_id=${userId}`);
     return response.data;
   }
 
@@ -114,12 +114,12 @@ export class LazarusService {
   }
 
   static async markAlertContacted(userId: string, alertId: string): Promise<UriResponse<{ success: boolean; message: string }>> {
-    const response: AxiosResponse<UriResponse<{ success: boolean; message: string }>> = await UriHttpClient.getClient().patch(`${BASE_PATH}/alerts/${alertId}/contacted?user_id=${userId}`);
+    const response: AxiosResponse<UriResponse<{ success: boolean; message: string }>> = await UriHttpClient.getClient().put(`${BASE_PATH}/alerts/${alertId}/contacted?user_id=${userId}`);
     return response.data;
   }
 
   static async dismissAlert(userId: string, alertId: string): Promise<UriResponse<{ success: boolean; message: string }>> {
-    const response: AxiosResponse<UriResponse<{ success: boolean; message: string }>> = await UriHttpClient.getClient().patch(`${BASE_PATH}/alerts/${alertId}/dismiss?user_id=${userId}`);
+    const response: AxiosResponse<UriResponse<{ success: boolean; message: string }>> = await UriHttpClient.getClient().put(`${BASE_PATH}/alerts/${alertId}/dismiss?user_id=${userId}`);
     return response.data;
   }
 
@@ -141,14 +141,14 @@ export class LazarusService {
 
   // ============ LEAD INTEGRATION ============
   static async markLeadAsDead(userId: string, leadId: string, reason: string, autoMonitor: boolean = false): Promise<UriResponse<MarkDeadResponse>> {
-    const response: AxiosResponse<UriResponse<MarkDeadResponse>> = await UriHttpClient.getClient().patch(
+    const response: AxiosResponse<UriResponse<MarkDeadResponse>> = await UriHttpClient.getClient().put(
       `${BASE_PATH}/leads/${leadId}/mark-dead?user_id=${userId}&reason=${encodeURIComponent(reason)}&auto_monitor=${autoMonitor}`
     );
     return response.data;
   }
 
   static async resurrectLead(userId: string, leadId: string, alertType: string): Promise<UriResponse<ResurrectLeadResponse>> {
-    const response: AxiosResponse<UriResponse<ResurrectLeadResponse>> = await UriHttpClient.getClient().patch(`${BASE_PATH}/leads/${leadId}/resurrect?user_id=${userId}&alert_type=${alertType}`);
+    const response: AxiosResponse<UriResponse<ResurrectLeadResponse>> = await UriHttpClient.getClient().put(`${BASE_PATH}/leads/${leadId}/resurrect?user_id=${userId}&alert_type=${alertType}`);
     return response.data;
   }
 
