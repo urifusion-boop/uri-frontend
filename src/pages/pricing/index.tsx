@@ -1,9 +1,11 @@
 import { TrialService } from '@/api/TrialService';
+import { triggerToast } from '@/components/atoms/CustomToast';
 import Footer from '@/components/landing/Footer';
 import Navigation from '@/components/Navigation';
 import LeadGenPricingSection from '@/components/pricing/LeadGenPricingSection';
 import UserJourneyCards from '@/components/pricing/UserJourneyCards';
 import TrialActivationModal from '@/components/trial/TrialActivationModal';
+import { useSubscription } from '@/hooks/subscription/subscription.hook';
 import { useAuth } from '@/providers/AuthProvider';
 import { Box, Button, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
@@ -15,6 +17,7 @@ function PricingPage() {
   const [showTrialModal, setShowTrialModal] = useState(false);
   const [isTrialEligible, setIsTrialEligible] = useState(false);
   const [checkingEligibility, setCheckingEligibility] = useState(true);
+  const { freeSubscription } = useSubscription();
 
   useEffect(() => {
     const checkTrialEligibility = async () => {
@@ -125,6 +128,22 @@ function PricingPage() {
             } else {
               router.push('/auth/login?redirect=/pricing');
             }
+          }}
+          onStartFreeSocialListening={() => {
+            if (!userDetails) {
+              router.push('/auth/login?redirect=/pricing');
+              return;
+            }
+
+            freeSubscription.mutate('SOCIAL_LISTENING_FREE_MONTHLY', {
+              onSuccess: () => {
+                triggerToast('success', 'Social Listening Free activated');
+                router.push('/dashboard');
+              },
+              onError: (err: any) => {
+                triggerToast('error', err?.message ?? 'Failed to activate free plan');
+              },
+            });
           }}
           trialButtonText={checkingEligibility ? 'Loading...' : userDetails && !isTrialEligible ? 'Trial Already Used' : 'Start Free Trial'}
           isTrialDisabled={checkingEligibility || (!!userDetails && !isTrialEligible)}

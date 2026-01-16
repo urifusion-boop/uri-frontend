@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 
 import BeaconBubble from '@/components/guide-tour/bubble';
 import { DateHelper } from '@/helpers/DateHelper';
+import { TextHelper } from '@/helpers/TextHelper';
+import { useActiveSubscription } from '@/hooks/subscription/activeSubscription.hook';
 import { SubscriptionStatusEnum } from '@/models/enum-models/SubscriptionStatusEnum';
 import { useAuth } from '@/providers/AuthProvider';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -57,6 +59,7 @@ const DashboardCard: React.FC<DashboardCardProps> = React.memo(({ username, star
   const [currentDateTime, setCurrentDateTime] = useState(dayjs());
   const { userDetails } = useAuth();
   const router = useRouter();
+  const { activeSubscription } = useActiveSubscription();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -65,6 +68,9 @@ const DashboardCard: React.FC<DashboardCardProps> = React.memo(({ username, star
 
     return () => clearInterval(timer);
   }, []);
+
+  const hasActiveSubscription = userDetails?.subscriptionStatus === SubscriptionStatusEnum.ACTIVE || !!activeSubscription;
+  const isSocialListeningFree = activeSubscription?.plan?.plan_code === 'SOCIAL_LISTENING_FREE_MONTHLY' || (!activeSubscription && userDetails?.subscriptionStatus === SubscriptionStatusEnum.ACTIVE);
 
   return (
     <Container>
@@ -92,7 +98,43 @@ const DashboardCard: React.FC<DashboardCardProps> = React.memo(({ username, star
             Supercharge Your Business with Lead Generation, AI-Powered Social and Campaign Insights.
           </Typography>
 
-          {userDetails?.subscriptionStatus !== SubscriptionStatusEnum.ACTIVE && (
+          {hasActiveSubscription && (
+            <Box
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                mt: 2,
+                px: 2,
+                py: 0.5,
+                borderRadius: '999px',
+                backgroundColor: 'rgba(34,197,94,0.15)',
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: '#BBF7D0',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                  mr: 1,
+                }}
+              >
+                {isSocialListeningFree ? 'Social Listening Free' : TextHelper.removeChar(activeSubscription?.plan?.name ?? 'Active Plan', '_')}
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  color: '#DCFCE7',
+                }}
+              >
+                Active
+              </Typography>
+            </Box>
+          )}
+
+          {!hasActiveSubscription && (
             <CustomButton mode="primary" textStyles="font-semibold" className="bg-white mt-4 max-w-fit font-semibold" textColor="#CD1B78" onClick={() => router.push('/dashboard')}>
               `Unlock Premium`
             </CustomButton>

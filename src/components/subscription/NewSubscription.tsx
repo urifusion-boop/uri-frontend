@@ -1,9 +1,12 @@
 import { SubscriptionPlan, SubscriptionResponseDto } from '@/models/dtos/SubscriptionDto';
 
 import { TrialService } from '@/api/TrialService';
+import { triggerToast } from '@/components/atoms/CustomToast';
 import LeadGenPricingSection from '@/components/pricing/LeadGenPricingSection';
 import { UserJourneyCards } from '@/components/pricing/UserJourneyCards';
 import SubscriptionPlansList from '@/components/subscription/general/SubscriptionPlansList';
+import { useSubscription } from '@/hooks/subscription/subscription.hook';
+import { SubscriptionTypeEnum } from '@/models/enum-models/SubscriptionStatusEnum';
 import { useAuth } from '@/providers/AuthProvider';
 import { Box, Dialog, DialogContent, DialogTitle, IconButton, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
@@ -23,6 +26,7 @@ const NewSubscription = () => {
   const [isTrialEligible, setIsTrialEligible] = useState(false);
   const [checkingEligibility, setCheckingEligibility] = useState(true);
   const { userDetails } = useAuth();
+  const { freeSubscription } = useSubscription();
   const router = useRouter();
 
   // Check if user is eligible for free trial
@@ -79,6 +83,20 @@ const NewSubscription = () => {
   };
 
   const handlePlanSelection = (plan: SubscriptionPlan) => {
+    if (plan.plan_type === SubscriptionTypeEnum.SocialListeningFree) {
+      freeSubscription.mutate(plan.plan_code, {
+        onSuccess: () => {
+          setSelectedPlan(plan);
+          setShowPlansModal(false);
+          setActiveStep(4);
+        },
+        onError: (err: any) => {
+          triggerToast('error', err?.message ?? 'Failed to activate free plan');
+        },
+      });
+      return;
+    }
+
     setSelectedPlan(plan);
     setShowPlansModal(false);
     setActiveStep(2);
@@ -112,6 +130,21 @@ const NewSubscription = () => {
             <UserJourneyCards
               onStartTrial={() => setShowTrialModal(true)}
               onViewPaidPlans={() => setShowPlansModal(true)}
+              onStartFreeSocialListening={() => {
+                if (!userDetails) {
+                  router.push('/auth/login?redirect=/settings?tab=subscription');
+                  return;
+                }
+
+                freeSubscription.mutate('SOCIAL_LISTENING_FREE_MONTHLY', {
+                  onSuccess: () => {
+                    setActiveStep(4);
+                  },
+                  onError: (err: any) => {
+                    triggerToast('error', err?.message ?? 'Failed to activate free plan');
+                  },
+                });
+              }}
               isTrialDisabled={!isTrialEligible}
               trialButtonText={checkingEligibility ? 'Loading...' : !isTrialEligible ? 'Trial Already Used' : 'Start Free Trial'}
             />
