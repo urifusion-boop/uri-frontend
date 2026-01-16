@@ -54,6 +54,7 @@ export interface FocusContact {
   source_lead_id?: string;
   last_scan_date?: string;
   next_scan_date: string;
+  scan_frequency_days: number;
   scan_count: number;
   alert_count: number;
   created_date: string;
@@ -65,6 +66,7 @@ export interface FocusContactCreate {
   social_handle?: string;
   last_bio_text?: string;
   industry_keywords: string[];
+  scan_frequency_days?: number;
 }
 
 export interface CompanyMonitor {
@@ -72,6 +74,8 @@ export interface CompanyMonitor {
   user_id: string;
   company_name: string;
   website_url: string;
+  location?: string;
+  country_code?: string;
   last_homepage_hash?: string;
   last_job_count: number;
   consecutive_404_count: number;
@@ -79,6 +83,7 @@ export interface CompanyMonitor {
   source_lead_id?: string;
   last_scan_date?: string;
   next_scan_date: string;
+  scan_frequency_days: number;
   scan_count: number;
   alert_count: number;
   created_date: string;
@@ -88,9 +93,12 @@ export interface CompanyMonitor {
 export interface CompanyMonitorCreate {
   company_name: string;
   website_url: string;
+  location?: string;
+  country_code?: string;
   industry_keywords?: string[];
   last_homepage_content?: string;
   last_job_count?: number;
+  scan_frequency_days?: number;
 }
 
 export interface LazarusAlertEvidence {
@@ -128,18 +136,20 @@ export interface LazarusSlots {
 }
 
 export interface LazarusMetrics {
-  slots_used: number;
-  slots_available: number;
+  used_slots: number;
   max_slots: number;
-  plan_type: LazarusPlanType;
-  focus_contacts_count: number;
-  company_monitors_count: number;
+  utilization_percent: number;
   active_focus_contacts: number;
   active_company_monitors: number;
-  new_alerts_count: number;
-  contacted_alerts_count: number;
-  dismissed_alerts_count: number;
   total_alerts: number;
+  new_alerts: number;
+  new_alerts_count: number;
+  resurrected_leads: number;
+  resurrection_rate: number;
+  should_upgrade: boolean;
+  upgrade_from: string;
+  upgrade_to: string;
+  plan_type: string;
 }
 
 export interface CSVUploadRow {
@@ -148,7 +158,10 @@ export interface CSVUploadRow {
   social_handle?: string;
   current_bio?: string;
   website_url?: string;
+  location?: string;
+  country_code?: string;
   industry_keywords?: string[];
+  scan_frequency_days?: number;
 }
 
 // ============ API RESPONSES ============

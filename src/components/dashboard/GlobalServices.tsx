@@ -125,7 +125,7 @@ const workflowData = [
       {
         id: 'lazarus-protocol',
         title: 'Lazarus Protocol',
-        description: 'Track focus contacts & companies for resurrection signals.',
+        description: 'Who do you want us to monitor for buying signals? Connect your CRM or upload contacts manually.',
         icon: <FaHeartbeat size={40} color={LightThemeColors.uriColor} />,
         href: '/lazarus',
       },

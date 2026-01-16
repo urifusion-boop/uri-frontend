@@ -1,0 +1,633 @@
+import { LazarusService } from '@/api/LazarusService';
+import CloseIcon from '@mui/icons-material/Close';
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Link,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Tab,
+  Tabs,
+  TextField,
+  Typography,
+} from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { FaCheckCircle, FaKey } from 'react-icons/fa';
+import { SiHubspot, SiSalesforce } from 'react-icons/si';
+
+interface ConnectCRMModalProps {
+  open: boolean;
+  onClose: () => void;
+  userId: string;
+  onSuccess: () => void;
+}
+
+type CRMType = 'hubspot' | 'salesforce';
+type AuthMethod = 'oauth' | 'private';
+
+interface CRMConnection {
+  crm_type: CRMType;
+  connected: boolean;
+  connected_at?: string;
+  last_sync?: string;
+  auth_type?: string;
+  account_name?: string;
+  hub_id?: string;
+  org_name?: string;
+  total_syncs?: number;
+  successful_syncs?: number;
+  failed_syncs?: number;
+  last_error?: string;
+  contacts_synced?: number;
+  companies_synced?: number;
+}
+
+const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId, onSuccess }) => {
+  const [selectedCRM, setSelectedCRM] = useState<CRMType | null>(null);
+  const [authMethod, setAuthMethod] = useState<AuthMethod>('oauth');
+  const [loading, setLoading] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<CRMConnection | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [privateAppToken, setPrivateAppToken] = useState('');
+  const [showPrivateAppForm, setShowPrivateAppForm] = useState(false);
+
+  useEffect(() => {
+    if (open && userId) {
+      checkCRMStatus();
+    }
+  }, [open, userId]);
+
+  const checkCRMStatus = async () => {
+    setChecking(true);
+    try {
+      const response = await LazarusService.getCRMStatus(userId);
+      if (response.status && response.responseData) {
+        setConnectionStatus(response.responseData);
+      }
+    } catch (error) {
+      console.error('Failed to check CRM status:', error);
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  const handleConnect = async (crmType: CRMType) => {
+    setSelectedCRM(crmType);
+
+    // If private app, show form
+    if (authMethod === 'private') {
+      setShowPrivateAppForm(true);
+      return;
+    }
+
+    // Otherwise, initiate OAuth
+    setLoading(true);
+
+    try {
+      const response = await LazarusService.initiateCRMConnection(userId, crmType);
+
+      if (response.status && response.responseData?.authorization_url) {
+        const authUrl = response.responseData.authorization_url;
+
+        // Open OAuth flow in popup
+        const width = 600;
+        const height = 700;
+        const left = window.screenX + (window.outerWidth - width) / 2;
+        const top = window.screenY + (window.outerHeight - height) / 2;
+
+        const popup = window.open(authUrl, `${crmType}-oauth`, `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no`);
+
+        // Listen for OAuth callback
+        const checkPopup = setInterval(() => {
+          if (popup && popup.closed) {
+            clearInterval(checkPopup);
+            setLoading(false);
+            checkCRMStatus();
+          }
+        }, 500);
+
+        // Listen for postMessage from OAuth callback
+        const handleMessage = (event: MessageEvent) => {
+          if (event.data.type === 'crm-oauth-success') {
+            clearInterval(checkPopup);
+            if (popup) popup.close();
+            toast.success(`${crmType === 'hubspot' ? 'HubSpot' : 'Salesforce'} connected successfully!`);
+            checkCRMStatus();
+            onSuccess();
+          } else if (event.data.type === 'crm-oauth-error') {
+            clearInterval(checkPopup);
+            if (popup) popup.close();
+            toast.error(`Failed to connect ${crmType === 'hubspot' ? 'HubSpot' : 'Salesforce'}`);
+            setLoading(false);
+          }
+        };
+
+        window.addEventListener('message', handleMessage);
+
+        // Cleanup
+        setTimeout(() => {
+          window.removeEventListener('message', handleMessage);
+        }, 300000); // 5 minutes timeout
+      } else {
+        throw new Error('Failed to get authorization URL');
+      }
+    } catch (error: any) {
+      console.error(`Failed to connect ${crmType}:`, error);
+      toast.error(error.response?.data?.responseMessage || `Failed to connect ${crmType}`);
+      setLoading(false);
+    }
+  };
+
+  const handlePrivateAppConnect = async () => {
+    if (!privateAppToken.trim() || !selectedCRM) {
+      toast.error('Please enter your Private App access token');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await LazarusService.connectPrivateApp(userId, selectedCRM, privateAppToken);
+
+      if (response.status) {
+        toast.success(`${selectedCRM === 'hubspot' ? 'HubSpot' : 'Salesforce'} connected successfully!`);
+        setShowPrivateAppForm(false);
+        setPrivateAppToken('');
+        checkCRMStatus();
+        onSuccess();
+      } else {
+        throw new Error('Failed to connect');
+      }
+    } catch (error: any) {
+      console.error('Failed to connect private app:', error);
+      toast.error(error.response?.data?.responseMessage || 'Invalid access token');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDisconnect = async () => {
+    if (!connectionStatus) return;
+
+    try {
+      setLoading(true);
+      const response = await LazarusService.disconnectCRM(userId);
+
+      if (response.status) {
+        toast.success('CRM disconnected successfully');
+        setConnectionStatus(null);
+        onClose();
+      } else {
+        throw new Error('Failed to disconnect');
+      }
+    } catch (error) {
+      console.error('Failed to disconnect CRM:', error);
+      toast.error('Failed to disconnect CRM');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSync = async (background = false) => {
+    try {
+      setLoading(true);
+      const response = await LazarusService.syncCRM(userId, background);
+
+      if (response.status && response.responseData) {
+        if (background) {
+          toast.success('Sync started in background. Check sync logs for progress.');
+        } else {
+          const { contacts_added, companies_added } = response.responseData;
+          toast.success(`Synced ${contacts_added} contacts and ${companies_added} companies!`);
+        }
+        onSuccess();
+        checkCRMStatus();
+      } else {
+        throw new Error('Sync failed');
+      }
+    } catch (error) {
+      console.error('Failed to sync CRM:', error);
+      toast.error('Failed to sync CRM data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: '16px',
+          maxWidth: 700,
+        },
+      }}
+    >
+      <DialogTitle>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Box>
+            <Typography variant="h5" fontWeight={700} color="#111827">
+              Connect Your CRM
+            </Typography>
+            <Typography variant="body2" color="#6B7280" mt={0.5}>
+              Automatically sync your stalled deals and closed-lost leads
+            </Typography>
+          </Box>
+          <IconButton onClick={onClose} size="small">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+      </DialogTitle>
+
+      <DialogContent sx={{ pb: 4 }}>
+        {checking ? (
+          <Box sx={{ textAlign: 'center', py: 4 }}>
+            <CircularProgress size={40} sx={{ color: '#7C3AED' }} />
+            <Typography variant="body2" color="#6B7280" mt={2}>
+              Checking CRM connection status...
+            </Typography>
+          </Box>
+        ) : connectionStatus?.connected ? (
+          // Already Connected - Enhanced Status Display
+          <Box>
+            <Alert
+              severity="success"
+              sx={{ mb: 3 }}
+              action={<Chip label={connectionStatus.auth_type === 'private_app' ? 'Private App' : 'OAuth'} size="small" sx={{ bgcolor: '#10B981', color: '#fff', fontWeight: 600 }} />}
+            >
+              <Typography fontWeight={600}>{connectionStatus.crm_type === 'hubspot' ? 'HubSpot' : 'Salesforce'} is connected!</Typography>
+              {connectionStatus.account_name && (
+                <Typography variant="caption" display="block" mt={0.5}>
+                  Account: {connectionStatus.account_name}
+                </Typography>
+              )}
+              <Typography variant="caption" display="block">
+                Connected on {connectionStatus.connected_at ? new Date(connectionStatus.connected_at).toLocaleDateString() : 'Unknown'}
+              </Typography>
+              {connectionStatus.last_sync && (
+                <Typography variant="caption" display="block">
+                  Last synced: {new Date(connectionStatus.last_sync).toLocaleString()}
+                </Typography>
+              )}
+            </Alert>
+
+            {/* Sync Stats */}
+            {connectionStatus.total_syncs !== undefined && connectionStatus.total_syncs > 0 && (
+              <Box sx={{ mb: 3, p: 2, bgcolor: '#F9FAFB', borderRadius: '8px' }}>
+                <Typography variant="subtitle2" fontWeight={600} color="#374151" mb={1}>
+                  Sync Statistics
+                </Typography>
+                <Box display="flex" gap={3} flexWrap="wrap">
+                  <Box>
+                    <Typography variant="caption" color="#6B7280">
+                      Total Syncs
+                    </Typography>
+                    <Typography variant="h6" fontWeight={700} color="#111827">
+                      {connectionStatus.total_syncs}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="#6B7280">
+                      Successful
+                    </Typography>
+                    <Typography variant="h6" fontWeight={700} color="#10B981">
+                      {connectionStatus.successful_syncs || 0}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="#6B7280">
+                      Failed
+                    </Typography>
+                    <Typography variant="h6" fontWeight={700} color="#DC2626">
+                      {connectionStatus.failed_syncs || 0}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="#6B7280">
+                      Contacts Synced
+                    </Typography>
+                    <Typography variant="h6" fontWeight={700} color="#7C3AED">
+                      {connectionStatus.contacts_synced || 0}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            )}
+
+            {/* Last Error */}
+            {connectionStatus.last_error && (
+              <Alert severity="warning" sx={{ mb: 3 }}>
+                <Typography variant="caption" fontWeight={600}>
+                  Last Sync Error:
+                </Typography>
+                <Typography variant="caption" display="block">
+                  {connectionStatus.last_error}
+                </Typography>
+              </Alert>
+            )}
+
+            {/* Action Buttons */}
+            <Box display="flex" gap={2}>
+              <Button
+                variant="contained"
+                onClick={() => handleSync(false)}
+                disabled={loading}
+                sx={{
+                  background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
+                  color: '#fff',
+                  flex: 1,
+                  py: 1.5,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #6D28D9 0%, #4C1D95 100%)',
+                  },
+                }}
+              >
+                {loading ? 'Syncing...' : 'Sync Now'}
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => handleSync(true)}
+                disabled={loading}
+                sx={{
+                  borderColor: '#7C3AED',
+                  color: '#7C3AED',
+                  py: 1.5,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  '&:hover': {
+                    borderColor: '#6D28D9',
+                    backgroundColor: '#F5F3FF',
+                  },
+                }}
+              >
+                Background Sync
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={handleDisconnect}
+                disabled={loading}
+                sx={{
+                  borderColor: '#DC2626',
+                  color: '#DC2626',
+                  py: 1.5,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  '&:hover': {
+                    borderColor: '#B91C1C',
+                    backgroundColor: '#FEE2E2',
+                  },
+                }}
+              >
+                Disconnect
+              </Button>
+            </Box>
+          </Box>
+        ) : showPrivateAppForm ? (
+          // Private App Token Form
+          <Box>
+            <Button
+              size="small"
+              onClick={() => {
+                setShowPrivateAppForm(false);
+                setPrivateAppToken('');
+              }}
+              sx={{ mb: 2 }}
+            >
+              ← Back to options
+            </Button>
+
+            <Alert severity="info" sx={{ mb: 3 }}>
+              <Typography variant="body2" fontWeight={600} mb={1}>
+                How to get your Private App token:
+              </Typography>
+              {selectedCRM === 'hubspot' ? (
+                <>
+                  <Typography variant="caption" display="block">
+                    1. Go to HubSpot Settings → Integrations → Private Apps
+                  </Typography>
+                  <Typography variant="caption" display="block">
+                    2. Click "Create private app"
+                  </Typography>
+                  <Typography variant="caption" display="block">
+                    3. Enable scopes: contacts.read, deals.read, companies.read
+                  </Typography>
+                  <Typography variant="caption" display="block">
+                    4. Copy your access token (starts with pat-na1-...)
+                  </Typography>
+                  <Link href="https://developers.hubspot.com/docs/api/private-apps" target="_blank" rel="noopener" sx={{ fontSize: '12px', mt: 1, display: 'block' }}>
+                    View HubSpot Documentation →
+                  </Link>
+                </>
+              ) : (
+                <Typography variant="caption">Salesforce Private App is not yet supported. Please use OAuth.</Typography>
+              )}
+            </Alert>
+
+            {selectedCRM === 'hubspot' && (
+              <>
+                <TextField
+                  fullWidth
+                  label="Private App Access Token"
+                  placeholder="pat-na1-..."
+                  value={privateAppToken}
+                  onChange={(e) => setPrivateAppToken(e.target.value)}
+                  disabled={loading}
+                  type="password"
+                  sx={{ mb: 3 }}
+                  InputProps={{
+                    startAdornment: <FaKey style={{ marginRight: 8, color: '#6B7280' }} />,
+                  }}
+                />
+
+                <Button
+                  variant="contained"
+                  onClick={handlePrivateAppConnect}
+                  disabled={loading || !privateAppToken.trim()}
+                  fullWidth
+                  sx={{
+                    background: 'linear-gradient(135deg, #FF7A59 0%, #D97706 100%)',
+                    color: '#fff',
+                    py: 1.5,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #EA580C 0%, #C2410C 100%)',
+                    },
+                  }}
+                >
+                  {loading ? 'Connecting...' : 'Connect with Private App'}
+                </Button>
+              </>
+            )}
+          </Box>
+        ) : (
+          // Not Connected - Show Options
+          <Box>
+            {/* Auth Method Tabs */}
+            <Tabs value={authMethod} onChange={(_, val) => setAuthMethod(val)} sx={{ mb: 3, borderBottom: '1px solid #E5E7EB' }}>
+              <Tab label="OAuth (Recommended)" value="oauth" sx={{ textTransform: 'none', fontWeight: 600 }} />
+              <Tab label="Private App" value="private" sx={{ textTransform: 'none', fontWeight: 600 }} />
+            </Tabs>
+
+            {authMethod === 'oauth' && (
+              <Typography variant="body2" color="#6B7280" mb={3}>
+                Choose your CRM platform. We'll securely connect via OAuth and automatically sync your leads.
+              </Typography>
+            )}
+
+            {authMethod === 'private' && (
+              <Alert severity="info" sx={{ mb: 3 }}>
+                <Typography variant="caption">Private App tokens are simpler but require manual setup in your CRM. Best for server-to-server integrations.</Typography>
+              </Alert>
+            )}
+
+            {/* HubSpot Card */}
+            <Card
+              onClick={() => !loading && handleConnect('hubspot')}
+              sx={{
+                p: 3,
+                mb: 2,
+                cursor: loading ? 'not-allowed' : 'pointer',
+                border: '2px solid #E5E7EB',
+                borderRadius: '12px',
+                transition: 'all 0.3s ease',
+                opacity: loading && selectedCRM !== 'hubspot' ? 0.5 : 1,
+                '&:hover': {
+                  borderColor: loading ? '#E5E7EB' : '#FF7A59',
+                  boxShadow: loading ? 'none' : '0 4px 12px rgba(255, 122, 89, 0.2)',
+                },
+              }}
+            >
+              <Box display="flex" alignItems="center" gap={2}>
+                <Box
+                  sx={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: '12px',
+                    background: '#FF7A59',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <SiHubspot size={32} color="#fff" />
+                </Box>
+                <Box flex={1}>
+                  <Typography variant="h6" fontWeight={700} color="#111827">
+                    HubSpot
+                  </Typography>
+                  <Typography variant="body2" color="#6B7280" fontSize="13px">
+                    {authMethod === 'oauth' ? 'Connect via OAuth popup' : 'Use Private App token'}
+                  </Typography>
+                </Box>
+                {loading && selectedCRM === 'hubspot' && <CircularProgress size={24} sx={{ color: '#FF7A59' }} />}
+              </Box>
+
+              <List dense sx={{ mt: 2 }}>
+                <ListItem disablePadding>
+                  <ListItemIcon sx={{ minWidth: 28 }}>
+                    <FaCheckCircle size={14} color="#10B981" />
+                  </ListItemIcon>
+                  <ListItemText primary="Auto-sync stalled & closed-lost deals" primaryTypographyProps={{ fontSize: '13px', color: '#374151' }} />
+                </ListItem>
+                <ListItem disablePadding>
+                  <ListItemIcon sx={{ minWidth: 28 }}>
+                    <FaCheckCircle size={14} color="#10B981" />
+                  </ListItemIcon>
+                  <ListItemText primary="Sync insights back to HubSpot" primaryTypographyProps={{ fontSize: '13px', color: '#374151' }} />
+                </ListItem>
+                <ListItem disablePadding>
+                  <ListItemIcon sx={{ minWidth: 28 }}>
+                    <FaCheckCircle size={14} color="#10B981" />
+                  </ListItemIcon>
+                  <ListItemText primary="Read-only access (we don't modify your data)" primaryTypographyProps={{ fontSize: '13px', color: '#374151' }} />
+                </ListItem>
+              </List>
+            </Card>
+
+            {/* Salesforce Card */}
+            <Card
+              onClick={() => !loading && authMethod === 'oauth' && handleConnect('salesforce')}
+              sx={{
+                p: 3,
+                cursor: loading || authMethod === 'private' ? 'not-allowed' : 'pointer',
+                border: '2px solid #E5E7EB',
+                borderRadius: '12px',
+                transition: 'all 0.3s ease',
+                opacity: (loading && selectedCRM !== 'salesforce') || authMethod === 'private' ? 0.5 : 1,
+                '&:hover': {
+                  borderColor: loading || authMethod === 'private' ? '#E5E7EB' : '#00A1E0',
+                  boxShadow: loading || authMethod === 'private' ? 'none' : '0 4px 12px rgba(0, 161, 224, 0.2)',
+                },
+              }}
+            >
+              <Box display="flex" alignItems="center" gap={2}>
+                <Box
+                  sx={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: '12px',
+                    background: '#00A1E0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <SiSalesforce size={32} color="#fff" />
+                </Box>
+                <Box flex={1}>
+                  <Typography variant="h6" fontWeight={700} color="#111827">
+                    Salesforce
+                  </Typography>
+                  <Typography variant="body2" color="#6B7280" fontSize="13px">
+                    {authMethod === 'oauth' ? 'Connect via OAuth popup' : 'OAuth only (Private App not supported)'}
+                  </Typography>
+                </Box>
+                {loading && selectedCRM === 'salesforce' && <CircularProgress size={24} sx={{ color: '#00A1E0' }} />}
+              </Box>
+
+              <List dense sx={{ mt: 2 }}>
+                <ListItem disablePadding>
+                  <ListItemIcon sx={{ minWidth: 28 }}>
+                    <FaCheckCircle size={14} color="#10B981" />
+                  </ListItemIcon>
+                  <ListItemText primary="Sync opportunities and contacts" primaryTypographyProps={{ fontSize: '13px', color: '#374151' }} />
+                </ListItem>
+                <ListItem disablePadding>
+                  <ListItemIcon sx={{ minWidth: 28 }}>
+                    <FaCheckCircle size={14} color="#10B981" />
+                  </ListItemIcon>
+                  <ListItemText primary="Create tasks for buying signals" primaryTypographyProps={{ fontSize: '13px', color: '#374151' }} />
+                </ListItem>
+                <ListItem disablePadding>
+                  <ListItemIcon sx={{ minWidth: 28 }}>
+                    <FaCheckCircle size={14} color="#10B981" />
+                  </ListItemIcon>
+                  <ListItemText primary="Secure read-only access" primaryTypographyProps={{ fontSize: '13px', color: '#374151' }} />
+                </ListItem>
+              </List>
+            </Card>
+          </Box>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default ConnectCRMModal;

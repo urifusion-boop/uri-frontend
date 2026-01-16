@@ -1,8 +1,10 @@
+import { LightThemeColors } from '@/configs/colors.config';
 import BusinessIcon from '@mui/icons-material/Business';
+import CloseIcon from '@mui/icons-material/Close';
 import LinkIcon from '@mui/icons-material/Link';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import TwitterIcon from '@mui/icons-material/Twitter';
-import { Alert, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { LazarusService } from '../../api/LazarusService';
 
@@ -34,13 +36,10 @@ const PasteAndGoModal: React.FC<PasteAndGoModalProps> = ({ open, onClose, userId
       const hostname = urlObj.hostname.toLowerCase();
       const pathname = urlObj.pathname;
 
-      // LinkedIn Profile Detection
       if (hostname.includes('linkedin.com')) {
-        // Pattern: linkedin.com/in/{handle}
         const linkedinMatch = pathname.match(/\/in\/([^\/\?]+)/);
         if (linkedinMatch) {
           const handle = linkedinMatch[1];
-          // Convert linkedin-handle to readable name
           const name = handle
             .split('-')
             .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -55,14 +54,11 @@ const PasteAndGoModal: React.FC<PasteAndGoModalProps> = ({ open, onClose, userId
         }
       }
 
-      // Twitter/X Profile Detection
       if (hostname.includes('twitter.com') || hostname.includes('x.com')) {
-        // Pattern: twitter.com/{handle} or x.com/{handle}
         const twitterMatch = pathname.match(/\/([^\/\?]+)/);
         if (twitterMatch) {
           const handle = twitterMatch[1].replace('@', '');
 
-          // Exclude non-profile paths
           if (!['home', 'explore', 'notifications', 'messages', 'i'].includes(handle)) {
             return {
               type: 'twitter',
@@ -74,8 +70,6 @@ const PasteAndGoModal: React.FC<PasteAndGoModalProps> = ({ open, onClose, userId
         }
       }
 
-      // Company Website Detection (fallback for any valid URL)
-      // Extract clean domain name
       const domainParts = hostname.replace('www.', '').split('.');
       const companyName = domainParts[0].charAt(0).toUpperCase() + domainParts[0].slice(1);
 
@@ -117,7 +111,6 @@ const PasteAndGoModal: React.FC<PasteAndGoModalProps> = ({ open, onClose, userId
 
     try {
       if (parsedData.type === 'linkedin' || parsedData.type === 'twitter') {
-        // Create Focus Contact
         const contactData = {
           name: parsedData.name || 'Unknown',
           social_handle: parsedData.handle,
@@ -126,7 +119,6 @@ const PasteAndGoModal: React.FC<PasteAndGoModalProps> = ({ open, onClose, userId
 
         await LazarusService.addFocusContact(userId, contactData);
       } else if (parsedData.type === 'website') {
-        // Create Company Monitor
         const monitorData = {
           company_name: parsedData.name || 'Unknown Company',
           website_url: parsedData.url,
@@ -136,7 +128,6 @@ const PasteAndGoModal: React.FC<PasteAndGoModalProps> = ({ open, onClose, userId
         await LazarusService.addCompanyMonitor(userId, monitorData);
       }
 
-      // Success
       if (onSuccess) onSuccess();
       handleClose();
     } catch (err: any) {
@@ -161,7 +152,7 @@ const PasteAndGoModal: React.FC<PasteAndGoModalProps> = ({ open, onClose, userId
       case 'twitter':
         return <TwitterIcon sx={{ color: '#1DA1F2' }} />;
       case 'website':
-        return <BusinessIcon sx={{ color: '#4CAF50' }} />;
+        return <BusinessIcon sx={{ color: LightThemeColors.primary }} />;
       default:
         return <LinkIcon />;
     }
@@ -176,20 +167,38 @@ const PasteAndGoModal: React.FC<PasteAndGoModalProps> = ({ open, onClose, userId
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <LinkIcon />
-          <Typography variant="h6">Paste & Go</Typography>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '12px' } }}>
+      <DialogTitle sx={{ pb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box
+              sx={{
+                width: 36,
+                height: 36,
+                borderRadius: '8px',
+                background: LightThemeColors.primary,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <LinkIcon sx={{ color: '#fff', fontSize: 18 }} />
+            </Box>
+            <Typography variant="h6" fontWeight={600} fontSize="16px" color={LightThemeColors.blackWhite}>
+              Paste & Go
+            </Typography>
+          </Box>
+          <IconButton onClick={handleClose} size="small">
+            <CloseIcon fontSize="small" />
+          </IconButton>
         </Box>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          Paste a LinkedIn, Twitter, or company website URL to quickly add a monitor
+        <Typography variant="body2" color={LightThemeColors.secondary} sx={{ mt: 1, fontSize: '13px' }}>
+          Paste a LinkedIn, Twitter, or company website URL
         </Typography>
       </DialogTitle>
 
       <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 1 }}>
-          {/* URL Input */}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
             fullWidth
             label="Paste URL"
@@ -202,71 +211,72 @@ const PasteAndGoModal: React.FC<PasteAndGoModalProps> = ({ open, onClose, userId
               }
             }}
             disabled={loading}
-            helperText="Supported: LinkedIn profiles, Twitter/X profiles, company websites"
+            size="small"
+            helperText="LinkedIn, Twitter/X, or company website"
             InputProps={{
               endAdornment: (
-                <Button onClick={handleParse} disabled={loading || !url.trim()} size="small" sx={{ minWidth: 'auto' }}>
+                <Button onClick={handleParse} disabled={loading || !url.trim()} size="small" sx={{ minWidth: 'auto', color: LightThemeColors.primary }}>
                   Parse
                 </Button>
               ),
             }}
           />
 
-          {/* Error Display */}
           {error && (
-            <Alert severity="error" onClose={() => setError(null)}>
+            <Alert severity="error" onClose={() => setError(null)} sx={{ fontSize: '13px' }}>
               {error}
             </Alert>
           )}
 
-          {/* Parsed Data Preview */}
           {parsedData && (
             <Box
               sx={{
-                p: 2.5,
-                borderRadius: '12px',
-                border: '1px solid',
-                borderColor: 'divider',
-                bgcolor: 'background.paper',
+                p: 2,
+                borderRadius: '10px',
+                border: `1px solid ${LightThemeColors.borderColor}`,
+                bgcolor: LightThemeColors.background,
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1.5 }}>
                 <Box
                   sx={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: '10px',
+                    width: 42,
+                    height: 42,
+                    borderRadius: '8px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    bgcolor: 'action.hover',
+                    bgcolor: '#fff',
+                    border: `1px solid ${LightThemeColors.borderColor}`,
                   }}
                 >
                   {getIcon()}
                 </Box>
                 <Box sx={{ flex: 1 }}>
-                  <Typography variant="subtitle1" fontWeight={600}>
+                  <Typography variant="subtitle1" fontWeight={600} fontSize="14px" color={LightThemeColors.blackWhite}>
                     {parsedData.name}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color={LightThemeColors.secondary} fontSize="12px">
                     {parsedData.handle || parsedData.domain}
                   </Typography>
                 </Box>
-                <Chip label={getMonitorType()} size="small" color="primary" variant="outlined" />
+                <Chip label={getMonitorType()} size="small" sx={{ bgcolor: `${LightThemeColors.primary}15`, color: LightThemeColors.primary, fontWeight: 600, fontSize: '11px' }} />
               </Box>
 
               <Box
                 sx={{
                   p: 1.5,
-                  borderRadius: '8px',
-                  bgcolor: 'action.hover',
+                  borderRadius: '6px',
+                  bgcolor: '#fff',
                 }}
               >
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color={LightThemeColors.secondary} fontSize="11px">
                   URL:
                 </Typography>
                 <Typography
                   variant="body2"
+                  fontSize="12px"
+                  color={LightThemeColors.blackWhite}
                   sx={{
                     wordBreak: 'break-all',
                     mt: 0.5,
@@ -275,22 +285,45 @@ const PasteAndGoModal: React.FC<PasteAndGoModalProps> = ({ open, onClose, userId
                   {parsedData.url}
                 </Typography>
               </Box>
-
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 2, fontStyle: 'italic' }}>
-                {parsedData.type === 'linkedin' || parsedData.type === 'twitter'
-                  ? '🎯 Will monitor this contact for job changes and pain signals'
-                  : '🏢 Will monitor this company for hiring sprees, funding, and pivots'}
-              </Typography>
             </Box>
           )}
         </Box>
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
-        <Button onClick={handleClose} disabled={loading}>
+        <Button
+          onClick={handleClose}
+          disabled={loading}
+          sx={{
+            textTransform: 'none',
+            fontSize: '13px',
+            color: LightThemeColors.secondary,
+          }}
+        >
           Cancel
         </Button>
-        <Button onClick={handleSubmit} variant="contained" disabled={!parsedData || loading} startIcon={loading ? <CircularProgress size={16} /> : null}>
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          disabled={!parsedData || loading}
+          startIcon={loading ? <CircularProgress size={14} sx={{ color: '#fff' }} /> : null}
+          sx={{
+            background: LightThemeColors.primary,
+            textTransform: 'none',
+            fontWeight: 600,
+            fontSize: '13px',
+            boxShadow: 'none',
+            '&:hover': {
+              background: LightThemeColors.primary,
+              opacity: 0.9,
+              boxShadow: 'none',
+            },
+            '&:disabled': {
+              background: LightThemeColors.borderColor,
+              color: LightThemeColors.secondary,
+            },
+          }}
+        >
           {loading ? 'Adding...' : 'Add Monitor'}
         </Button>
       </DialogActions>

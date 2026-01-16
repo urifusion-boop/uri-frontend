@@ -1,4 +1,5 @@
 import { UriHttpClient } from '@/configs/http.config';
+import { BackendUrlEnum } from '@/models/enum-models/BackendUrlEnum';
 import { UriResponse } from '@/models/responses/UriResponse';
 import {
   AddCompanyMonitorResponse,
@@ -20,7 +21,7 @@ import {
 } from '@/types/lazarus.types';
 import { AxiosResponse } from 'axios';
 
-const BASE_PATH = '/api/lazarus';
+const BASE_PATH = `${BackendUrlEnum.INSIGHTS}/api/lazarus`;
 
 export class LazarusService {
   // ============ FOCUS CONTACTS ============
@@ -56,6 +57,13 @@ export class LazarusService {
     return response.data;
   }
 
+  static async updateFocusContactScanFrequency(userId: string, focusId: string, scanFrequencyDays: number): Promise<UriResponse<{ scan_frequency_days: number }>> {
+    const response: AxiosResponse<UriResponse<{ scan_frequency_days: number }>> = await UriHttpClient.getClient().patch(
+      `${BASE_PATH}/focus-contacts/${focusId}/scan-frequency?user_id=${userId}&scan_frequency_days=${scanFrequencyDays}`
+    );
+    return response.data;
+  }
+
   // ============ COMPANY MONITORS ============
   static async addCompanyMonitor(userId: string, monitor: CompanyMonitorCreate, sourceLeadId?: string): Promise<UriResponse<AddCompanyMonitorResponse>> {
     const url = sourceLeadId ? `${BASE_PATH}/company-monitors/add?user_id=${userId}&source_lead_id=${sourceLeadId}` : `${BASE_PATH}/company-monitors/add?user_id=${userId}`;
@@ -76,6 +84,13 @@ export class LazarusService {
 
   static async removeCompanyMonitor(userId: string, monitorId: string): Promise<UriResponse<{ success: boolean; message: string }>> {
     const response: AxiosResponse<UriResponse<{ success: boolean; message: string }>> = await UriHttpClient.getClient().delete(`${BASE_PATH}/company-monitors/${monitorId}?user_id=${userId}`);
+    return response.data;
+  }
+
+  static async updateCompanyMonitorScanFrequency(userId: string, monitorId: string, scanFrequencyDays: number): Promise<UriResponse<{ scan_frequency_days: number }>> {
+    const response: AxiosResponse<UriResponse<{ scan_frequency_days: number }>> = await UriHttpClient.getClient().patch(
+      `${BASE_PATH}/company-monitors/${monitorId}/scan-frequency?user_id=${userId}&scan_frequency_days=${scanFrequencyDays}`
+    );
     return response.data;
   }
 
@@ -175,6 +190,42 @@ export class LazarusService {
   // ============ ANALYTICS ============
   static async getAnalyticsData(userId: string, days: number = 30): Promise<UriResponse<any>> {
     const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().get(`${BASE_PATH}/analytics?user_id=${userId}&days=${days}`);
+    return response.data;
+  }
+
+  // ============ CRM INTEGRATION ============
+  static async initiateCRMConnection(userId: string, crmType: 'hubspot' | 'salesforce'): Promise<UriResponse<{ authorization_url: string }>> {
+    const response: AxiosResponse<UriResponse<{ authorization_url: string }>> = await UriHttpClient.getClient().post(`${BASE_PATH}/crm/connect/initiate?user_id=${userId}&crm_type=${crmType}`);
+    return response.data;
+  }
+
+  // Priority 3: Private App connection
+  static async connectPrivateApp(userId: string, crmType: 'hubspot' | 'salesforce', accessToken: string): Promise<UriResponse<any>> {
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().post(
+      `${BASE_PATH}/crm/connect/private-app?user_id=${userId}&crm_type=${crmType}&access_token=${encodeURIComponent(accessToken)}`
+    );
+    return response.data;
+  }
+
+  static async getCRMStatus(userId: string): Promise<UriResponse<any>> {
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().get(`${BASE_PATH}/crm/status?user_id=${userId}`);
+    return response.data;
+  }
+
+  static async disconnectCRM(userId: string): Promise<UriResponse<{ success: boolean; message: string }>> {
+    const response: AxiosResponse<UriResponse<{ success: boolean; message: string }>> = await UriHttpClient.getClient().delete(`${BASE_PATH}/crm/disconnect?user_id=${userId}`);
+    return response.data;
+  }
+
+  // Priority 3: Background sync support
+  static async syncCRM(userId: string, background: boolean = false): Promise<UriResponse<{ contacts_added: number; companies_added: number; status?: string }>> {
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().post(`${BASE_PATH}/crm/sync?user_id=${userId}&background=${background}`);
+    return response.data;
+  }
+
+  // Priority 2: Sync logs viewer
+  static async getCRMSyncLogs(userId: string, limit: number = 10): Promise<UriResponse<any[]>> {
+    const response: AxiosResponse<UriResponse<any[]>> = await UriHttpClient.getClient().get(`${BASE_PATH}/crm/sync-logs?user_id=${userId}&limit=${limit}`);
     return response.data;
   }
 }
