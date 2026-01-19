@@ -26,6 +26,7 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { Box, Button, Chip, Container, Grid, IconButton, LinearProgress, Menu, MenuItem, Tab, Tabs, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 interface TabPanelProps {
@@ -267,11 +268,24 @@ const LazarusProtocolPage = () => {
 
   const handleScanContact = async (focusId: string) => {
     setScanningContactId(focusId);
+    const loadingToast = toast.loading('🔍 Scanning for buying signals and job changes...');
     try {
-      await LazarusService.scanFocusContacts(10);
+      console.log(`[SCAN] Starting scan for contact: ${focusId}`);
+      const response = await LazarusService.scanFocusContacts(10);
+      console.log('[SCAN] Scan response:', response);
+
       await loadDashboardContent();
-    } catch (error) {
-      console.error('Failed to scan contact:', error);
+
+      toast.success('✅ Scan completed! Check alerts tab for new signals.', {
+        id: loadingToast,
+        duration: 4000,
+      });
+    } catch (error: any) {
+      console.error('[SCAN ERROR] Failed to scan contact:', error);
+      toast.error(`❌ Scan failed: ${error.message || 'Unknown error'}`, {
+        id: loadingToast,
+        duration: 5000,
+      });
     } finally {
       setScanningContactId(null);
     }
@@ -279,11 +293,24 @@ const LazarusProtocolPage = () => {
 
   const handleScanMonitor = async (monitorId: string) => {
     setScanningMonitorId(monitorId);
+    const loadingToast = toast.loading('🔍 Scanning for company signals and hiring sprees...');
     try {
-      await LazarusService.scanCompanyMonitors(10);
+      console.log(`[SCAN] Starting scan for company monitor: ${monitorId}`);
+      const response = await LazarusService.scanCompanyMonitors(10);
+      console.log('[SCAN] Scan response:', response);
+
       await loadDashboardContent();
-    } catch (error) {
-      console.error('Failed to scan monitor:', error);
+
+      toast.success('✅ Scan completed! Check alerts tab for new signals.', {
+        id: loadingToast,
+        duration: 4000,
+      });
+    } catch (error: any) {
+      console.error('[SCAN ERROR] Failed to scan monitor:', error);
+      toast.error(`❌ Scan failed: ${error.message || 'Unknown error'}`, {
+        id: loadingToast,
+        duration: 5000,
+      });
     } finally {
       setScanningMonitorId(null);
     }

@@ -99,43 +99,94 @@ const AddFocusContactModal = ({ open, onClose, userId, onSuccess, initialData }:
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: '20px',
+          boxShadow: '0 20px 60px rgba(201, 26, 121, 0.15)',
+        },
+      }}
+    >
+      <DialogTitle sx={{ pb: 1 }}>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Box display="flex" alignItems="center" gap={1.5}>
             <Box
               sx={{
-                width: 40,
-                height: 40,
-                borderRadius: '10px',
-                background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+                width: 48,
+                height: 48,
+                borderRadius: '14px',
+                background: 'linear-gradient(135deg, #C91A79 0%, #A01560 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 3px 10px rgba(59, 130, 246, 0.3)',
+                boxShadow: '0 4px 14px rgba(201, 26, 121, 0.4)',
               }}
             >
-              <PersonIcon sx={{ color: '#fff', fontSize: 20 }} />
+              <PersonIcon sx={{ color: '#fff', fontSize: 24 }} />
             </Box>
-            <Typography variant="h6" fontWeight={600}>
-              Add Focus Contact
-            </Typography>
+            <Box>
+              <Typography variant="h6" fontWeight={700} color="#1A1A1A" letterSpacing="-0.02em">
+                Add Focus Contact
+              </Typography>
+              <Typography fontSize="12px" color="#6B7280" fontWeight={500}>
+                Monitor for buying signals & job changes
+              </Typography>
+            </Box>
           </Box>
-          <IconButton onClick={handleClose} size="small">
+          <IconButton
+            onClick={handleClose}
+            size="small"
+            sx={{
+              color: '#9CA3AF',
+              '&:hover': {
+                backgroundColor: '#FFF5FA',
+                color: '#C91A79',
+              },
+            }}
+          >
             <CloseIcon />
           </IconButton>
         </Box>
       </DialogTitle>
 
-      <DialogContent>
-        <Box sx={{ pt: 2 }}>
+      <DialogContent sx={{ px: 3 }}>
+        <Box sx={{ pt: 1 }}>
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert
+              severity="error"
+              sx={{
+                mb: 3,
+                borderRadius: '12px',
+                backgroundColor: '#FEF2F2',
+                border: '1px solid #FEE2E2',
+                '& .MuiAlert-icon': { color: '#EF4444' },
+              }}
+            >
               {error}
             </Alert>
           )}
 
-          <TextField label="Name" placeholder="e.g., Emeka Okonkwo" fullWidth value={name} onChange={(e) => setName(e.target.value)} required sx={{ mb: 2 }} />
+          <TextField
+            label="Name"
+            placeholder="e.g., Emeka Okonkwo"
+            fullWidth
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            sx={{
+              mb: 2.5,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '12px',
+                '&:hover fieldset': { borderColor: '#C91A79' },
+                '&.Mui-focused fieldset': { borderColor: '#C91A79' },
+              },
+              '& .MuiInputLabel-root.Mui-focused': { color: '#C91A79' },
+            }}
+          />
 
           <TextField
             label="Social Handle (Optional)"
@@ -144,7 +195,16 @@ const AddFocusContactModal = ({ open, onClose, userId, onSuccess, initialData }:
             value={socialHandle}
             onChange={(e) => setSocialHandle(e.target.value)}
             helperText="Twitter/X handle for monitoring job changes"
-            sx={{ mb: 2 }}
+            sx={{
+              mb: 2.5,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '12px',
+                '&:hover fieldset': { borderColor: '#C91A79' },
+                '&.Mui-focused fieldset': { borderColor: '#C91A79' },
+              },
+              '& .MuiInputLabel-root.Mui-focused': { color: '#C91A79' },
+              '& .MuiFormHelperText-root': { fontSize: '11px', color: '#6B7280' },
+            }}
           />
 
           <TextField
@@ -156,14 +216,26 @@ const AddFocusContactModal = ({ open, onClose, userId, onSuccess, initialData }:
             value={bioText}
             onChange={(e) => setBioText(e.target.value)}
             helperText="We'll track changes to detect job moves"
-            sx={{ mb: 2 }}
+            sx={{
+              mb: 2.5,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '12px',
+                '&:hover fieldset': { borderColor: '#C91A79' },
+                '&.Mui-focused fieldset': { borderColor: '#C91A79' },
+              },
+              '& .MuiInputLabel-root.Mui-focused': { color: '#C91A79' },
+              '& .MuiFormHelperText-root': { fontSize: '11px', color: '#6B7280' },
+            }}
           />
 
-          <Box sx={{ mb: 2 }}>
-            <Typography fontSize="13px" fontWeight={600} color="#374151" mb={1}>
-              Industry Keywords *
+          <Box sx={{ mb: 3 }}>
+            <Typography fontSize="13px" fontWeight={700} color="#1A1A1A" mb={1.5}>
+              Industry Keywords{' '}
+              <Box component="span" sx={{ color: '#C91A79' }}>
+                *
+              </Box>
             </Typography>
-            <Box display="flex" gap={1} mb={1}>
+            <Box display="flex" gap={1} mb={1.5}>
               <TextField
                 placeholder="e.g., logistics, inverter, diesel"
                 fullWidth
@@ -176,15 +248,49 @@ const AddFocusContactModal = ({ open, onClose, userId, onSuccess, initialData }:
                     handleAddKeyword();
                   }
                 }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '10px',
+                    '&:hover fieldset': { borderColor: '#C91A79' },
+                    '&.Mui-focused fieldset': { borderColor: '#C91A79' },
+                  },
+                }}
               />
-              <Button variant="outlined" onClick={handleAddKeyword} startIcon={<AddIcon />} sx={{ minWidth: '100px' }}>
+              <Button
+                variant="outlined"
+                onClick={handleAddKeyword}
+                startIcon={<AddIcon />}
+                sx={{
+                  minWidth: '100px',
+                  borderRadius: '10px',
+                  borderColor: '#C91A79',
+                  color: '#C91A79',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  '&:hover': {
+                    borderColor: '#A01560',
+                    backgroundColor: '#FFF5FA',
+                  },
+                }}
+              >
                 Add
               </Button>
             </Box>
-            <Typography fontSize="11px" color="#6B7280" mb={1}>
+            <Typography fontSize="11px" color="#6B7280" mb={1.5} fontWeight={500}>
               Keywords to monitor for buying intent (e.g., "logistics", "solar", "CRM")
             </Typography>
-            <Box display="flex" gap={0.75} flexWrap="wrap">
+            <Box
+              display="flex"
+              gap={0.75}
+              flexWrap="wrap"
+              sx={{
+                p: 2,
+                background: '#FAFAFA',
+                borderRadius: '12px',
+                border: '1px solid #F0F0F0',
+                minHeight: '56px',
+              }}
+            >
               {keywords.map((keyword) => (
                 <Chip
                   key={keyword}
@@ -192,15 +298,21 @@ const AddFocusContactModal = ({ open, onClose, userId, onSuccess, initialData }:
                   onDelete={() => handleRemoveKeyword(keyword)}
                   size="small"
                   sx={{
-                    background: '#3B82F6',
+                    background: 'linear-gradient(135deg, #C91A79 0%, #A01560 100%)',
                     color: '#fff',
                     fontWeight: 600,
                     fontSize: '11px',
+                    height: '28px',
+                    borderRadius: '8px',
+                    '& .MuiChip-deleteIcon': {
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      '&:hover': { color: '#fff' },
+                    },
                   }}
                 />
               ))}
               {keywords.length === 0 && (
-                <Typography fontSize="11px" color="#9CA3AF" fontStyle="italic">
+                <Typography fontSize="12px" color="#9CA3AF" fontStyle="italic" sx={{ py: 0.5 }}>
                   No keywords added yet
                 </Typography>
               )}
@@ -209,16 +321,16 @@ const AddFocusContactModal = ({ open, onClose, userId, onSuccess, initialData }:
 
           <Box
             sx={{
-              p: 2,
-              background: '#F0F4FF',
-              borderRadius: '10px',
-              border: '1px solid #E0E7FF',
+              p: 3,
+              background: 'linear-gradient(135deg, #FFF5FA 0%, #FFEBF4 100%)',
+              borderRadius: '14px',
+              border: '1px solid #FFEBF4',
             }}
           >
-            <Typography fontSize="12px" color="#6366F1" fontWeight={600} mb={0.5}>
+            <Typography fontSize="13px" color="#C91A79" fontWeight={700} mb={1} letterSpacing="0.3px">
               HOW IT WORKS
             </Typography>
-            <Typography fontSize="11px" color="#666" lineHeight={1.6}>
+            <Typography fontSize="12px" color="#6B7280" lineHeight={1.8} fontWeight={500}>
               • Weekly scans for job changes via bio updates
               <br />
               • Monitors tweets for pain signals & buying intent
@@ -228,8 +340,24 @@ const AddFocusContactModal = ({ open, onClose, userId, onSuccess, initialData }:
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pb: 3 }}>
-        <Button onClick={handleClose} variant="outlined" sx={{ textTransform: 'none' }}>
+      <DialogActions sx={{ px: 3, pb: 3, pt: 2, gap: 1.5 }}>
+        <Button
+          onClick={handleClose}
+          variant="outlined"
+          sx={{
+            textTransform: 'none',
+            fontWeight: 600,
+            borderRadius: '12px',
+            px: 3,
+            py: 1.25,
+            borderColor: '#E5E7EB',
+            color: '#6B7280',
+            '&:hover': {
+              borderColor: '#D1D5DB',
+              backgroundColor: '#F9FAFB',
+            },
+          }}
+        >
           Cancel
         </Button>
         <Button
@@ -237,13 +365,25 @@ const AddFocusContactModal = ({ open, onClose, userId, onSuccess, initialData }:
           variant="contained"
           disabled={loading || !name.trim() || keywords.length === 0}
           sx={{
-            background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+            background: 'linear-gradient(135deg, #C91A79 0%, #A01560 100%)',
             textTransform: 'none',
-            fontWeight: 600,
-            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+            fontWeight: 700,
+            fontSize: '14px',
+            borderRadius: '12px',
+            px: 4,
+            py: 1.25,
+            boxShadow: '0 6px 20px rgba(201, 26, 121, 0.35)',
             '&:hover': {
-              background: 'linear-gradient(135deg, #2563EB 0%, #3B82F6 100%)',
+              background: 'linear-gradient(135deg, #A01560 0%, #C91A79 100%)',
+              boxShadow: '0 8px 24px rgba(201, 26, 121, 0.45)',
+              transform: 'translateY(-1px)',
             },
+            '&:disabled': {
+              background: '#D1D5DB',
+              color: '#9CA3AF',
+              boxShadow: 'none',
+            },
+            transition: 'all 0.2s ease',
           }}
         >
           {loading ? 'Adding...' : 'Add to Watchlist'}
