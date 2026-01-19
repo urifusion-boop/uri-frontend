@@ -1,4 +1,5 @@
 import { Table, TableColumn } from '@/components/atoms/AlertTable';
+import AddFocusContactModal from '@/components/lazarus/AddFocusContactModal';
 import MarkAsDeadModal from '@/components/lazarus/MarkAsDeadModal';
 import { accountIcons } from '@/constants/accountIcons';
 import { PlatformHelper } from '@/helpers/PlatformHelper';
@@ -6,6 +7,7 @@ import useClipboard from '@/hooks/clipboard';
 import { useLeadTrackingHook } from '@/hooks/leads-tracking/leadsTracking.hook';
 import { LeadDto } from '@/models/dtos/LeadsDto';
 import { CampaignPlatformEnum } from '@/models/enum-models/PlatformEnum';
+import { useAuth } from '@/providers/AuthProvider';
 import EmailIcon from '@mui/icons-material/Email';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -13,7 +15,7 @@ import { Box, Button, Chip, FormControl, IconButton, Menu, MenuItem, Pagination,
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { FaHeartbeat, FaSkull } from 'react-icons/fa';
+import { FaHeartbeat, FaPlus, FaSkull } from 'react-icons/fa';
 import { MdAutorenew } from 'react-icons/md';
 import IdentityBox from '../boxes/IdentityBox';
 import RevealBox from '../boxes/RevealBox';
@@ -33,6 +35,8 @@ interface IndividualTableColumnProps {
 
 const IndividualTableCard = ({ data, total, page, pageSize, search, setPage, setPageSize, setSearch }: IndividualTableColumnProps) => {
   const router = useRouter();
+  const { userDetails } = useAuth();
+  const userId = userDetails?.userId || '';
   const { copyToClipboard } = useClipboard();
   const { enrichLead, isEnrichingLead } = useLeadTrackingHook('leads');
   const [selectedLead, setSelectedLead] = useState<LeadDto | null>(null);
@@ -45,6 +49,7 @@ const IndividualTableCard = ({ data, total, page, pageSize, search, setPage, set
 
   // Lazarus integration - Mark as Dead modal
   const [markDeadModalOpen, setMarkDeadModalOpen] = useState(false);
+  const [addToLazarusModalOpen, setAddToLazarusModalOpen] = useState(false);
   const [selectedLeadForAction, setSelectedLeadForAction] = useState<LeadDto | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -117,6 +122,11 @@ const IndividualTableCard = ({ data, total, page, pageSize, search, setPage, set
     if (selectedLeadForAction?.lazarus_focus_id) {
       router.push(`/lazarus?focus_id=${selectedLeadForAction.lazarus_focus_id}`);
     }
+  };
+
+  const handleAddToLazarus = () => {
+    handleCloseMenu();
+    setAddToLazarusModalOpen(true);
   };
 
   if (selectedLead) {
@@ -347,6 +357,12 @@ const IndividualTableCard = ({ data, total, page, pageSize, search, setPage, set
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
+        {!selectedLeadForAction?.is_lazarus_monitored && (
+          <MenuItem onClick={handleAddToLazarus}>
+            <FaPlus size={14} style={{ marginRight: 8 }} />
+            Add to Lazarus
+          </MenuItem>
+        )}
         <MenuItem onClick={handleMarkAsDead}>
           <FaSkull size={14} style={{ marginRight: 8 }} />
           Mark as Dead
@@ -378,6 +394,30 @@ const IndividualTableCard = ({ data, total, page, pageSize, search, setPage, set
           } else {
             toast.success('Lead marked as dead');
           }
+        }}
+      />
+
+      {/* Add to Lazarus Modal - Auto-populated with lead data */}
+      <AddFocusContactModal
+        open={addToLazarusModalOpen}
+        onClose={() => {
+          setAddToLazarusModalOpen(false);
+          setSelectedLeadForAction(null);
+        }}
+        userId={userId}
+        initialData={{
+          name: `${selectedLeadForAction?.first_name || ''} ${selectedLeadForAction?.last_name || ''}`.trim() || selectedLeadForAction?.username || '',
+          socialHandle: selectedLeadForAction?.linkedin_url || selectedLeadForAction?.twitter_url || '',
+          company: selectedLeadForAction?.company_name || '',
+          role: selectedLeadForAction?.job_title || '',
+        }}
+        onSuccess={() => {
+          toast.success('Lead added to Lazarus monitoring!', {
+            duration: 4000,
+          });
+          setAddToLazarusModalOpen(false);
+          setSelectedLeadForAction(null);
+          // Optionally refresh the leads list to show updated status
         }}
       />
     </Box>

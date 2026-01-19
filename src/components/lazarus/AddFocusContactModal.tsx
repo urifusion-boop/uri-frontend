@@ -4,23 +4,41 @@ import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import PersonIcon from '@mui/icons-material/Person';
 import { Alert, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface AddFocusContactModalProps {
   open: boolean;
   onClose: () => void;
   userId: string;
   onSuccess: () => void;
+  initialData?: {
+    name?: string;
+    socialHandle?: string;
+    company?: string;
+    role?: string;
+  };
 }
 
-const AddFocusContactModal = ({ open, onClose, userId, onSuccess }: AddFocusContactModalProps) => {
-  const [name, setName] = useState('');
-  const [socialHandle, setSocialHandle] = useState('');
+const AddFocusContactModal = ({ open, onClose, userId, onSuccess, initialData }: AddFocusContactModalProps) => {
+  const [name, setName] = useState(initialData?.name || '');
+  const [socialHandle, setSocialHandle] = useState(initialData?.socialHandle || '');
   const [bioText, setBioText] = useState('');
   const [keywordInput, setKeywordInput] = useState('');
-  const [keywords, setKeywords] = useState<string[]>([]);
+  const [keywords, setKeywords] = useState<string[]>(initialData?.company ? [initialData.company] : []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Update form when initialData changes (when modal opens with lead data)
+  useEffect(() => {
+    if (open && initialData) {
+      setName(initialData.name || '');
+      setSocialHandle(initialData.socialHandle || '');
+      const initialKeywords = [];
+      if (initialData.company) initialKeywords.push(initialData.company);
+      if (initialData.role) initialKeywords.push(initialData.role);
+      setKeywords(initialKeywords);
+    }
+  }, [open, initialData]);
 
   const handleAddKeyword = () => {
     if (keywordInput.trim() && !keywords.includes(keywordInput.trim())) {
