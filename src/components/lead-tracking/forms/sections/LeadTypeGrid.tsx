@@ -1,7 +1,5 @@
 import { Grid } from '@mui/material';
-import LazarusProtocolCard from './LazarusProtocolCard';
 import LeadTypeCard from './LeadTypeCard';
-import SignalRefineryTestCard from './SignalRefineryTestCard';
 
 const LeadTypeGrid = () => {
   return (
@@ -14,10 +12,6 @@ const LeadTypeGrid = () => {
           conversational: '#f9fafb', // gray-150
         }}
       />
-      {/* Signal Refinery Test Card - Separate Testing System */}
-      <SignalRefineryTestCard />
-      {/* Lazarus Protocol Card - CRM Resurrection Engine */}
-      <LazarusProtocolCard />
     </Grid>
   );
 };
