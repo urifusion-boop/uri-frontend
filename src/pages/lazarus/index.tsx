@@ -65,6 +65,8 @@ const LazarusProtocolPage = () => {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [selectedContact, setSelectedContact] = useState<FocusContact | null>(null);
   const [selectedMonitor, setSelectedMonitor] = useState<CompanyMonitor | null>(null);
+  const [scanningContactId, setScanningContactId] = useState<string | null>(null);
+  const [scanningMonitorId, setScanningMonitorId] = useState<string | null>(null);
 
   useEffect(() => {
     if (userId) {
@@ -261,6 +263,30 @@ const LazarusProtocolPage = () => {
 
     // Open WhatsApp Web with pre-filled message
     window.open(`https://wa.me/?text=${message}`, '_blank');
+  };
+
+  const handleScanContact = async (focusId: string) => {
+    setScanningContactId(focusId);
+    try {
+      await LazarusService.scanFocusContacts(10);
+      await loadDashboardContent();
+    } catch (error) {
+      console.error('Failed to scan contact:', error);
+    } finally {
+      setScanningContactId(null);
+    }
+  };
+
+  const handleScanMonitor = async (monitorId: string) => {
+    setScanningMonitorId(monitorId);
+    try {
+      await LazarusService.scanCompanyMonitors(10);
+      await loadDashboardContent();
+    } catch (error) {
+      console.error('Failed to scan monitor:', error);
+    } finally {
+      setScanningMonitorId(null);
+    }
   };
 
   // Show onboarding for first-time users (PRD flow)
@@ -955,16 +981,39 @@ const LazarusProtocolPage = () => {
                             )}
                           </Box>
                         </Box>
-                        <IconButton
-                          size="small"
-                          sx={{ color: '#9CA3AF' }}
-                          onClick={(e) => {
-                            setMenuAnchor(e.currentTarget);
-                            setSelectedContact(contact);
-                          }}
-                        >
-                          <MoreVertIcon fontSize="small" />
-                        </IconButton>
+                        <Box display="flex" gap={0.5}>
+                          <IconButton
+                            size="small"
+                            sx={{
+                              color: scanningContactId === contact.focus_id ? '#7C3AED' : '#9CA3AF',
+                              '&:hover': { color: '#7C3AED', backgroundColor: '#7C3AED10' },
+                            }}
+                            onClick={() => handleScanContact(contact.focus_id)}
+                            disabled={scanningContactId === contact.focus_id}
+                            title="Scan Now"
+                          >
+                            <RefreshIcon
+                              fontSize="small"
+                              sx={{
+                                animation: scanningContactId === contact.focus_id ? 'spin 1s linear infinite' : 'none',
+                                '@keyframes spin': {
+                                  '0%': { transform: 'rotate(0deg)' },
+                                  '100%': { transform: 'rotate(360deg)' },
+                                },
+                              }}
+                            />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            sx={{ color: '#9CA3AF' }}
+                            onClick={(e) => {
+                              setMenuAnchor(e.currentTarget);
+                              setSelectedContact(contact);
+                            }}
+                          >
+                            <MoreVertIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
                       </Box>
                       {contact.industry_keywords && contact.industry_keywords.length > 0 && (
                         <Box display="flex" gap={1} flexWrap="wrap" mb={2.5}>
@@ -1107,16 +1156,39 @@ const LazarusProtocolPage = () => {
                             )}
                           </Box>
                         </Box>
-                        <IconButton
-                          size="small"
-                          sx={{ color: '#9CA3AF' }}
-                          onClick={(e) => {
-                            setMenuAnchor(e.currentTarget);
-                            setSelectedMonitor(monitor);
-                          }}
-                        >
-                          <MoreVertIcon fontSize="small" />
-                        </IconButton>
+                        <Box display="flex" gap={0.5}>
+                          <IconButton
+                            size="small"
+                            sx={{
+                              color: scanningMonitorId === monitor.monitor_id ? '#10B981' : '#9CA3AF',
+                              '&:hover': { color: '#10B981', backgroundColor: '#10B98110' },
+                            }}
+                            onClick={() => handleScanMonitor(monitor.monitor_id)}
+                            disabled={scanningMonitorId === monitor.monitor_id}
+                            title="Scan Now"
+                          >
+                            <RefreshIcon
+                              fontSize="small"
+                              sx={{
+                                animation: scanningMonitorId === monitor.monitor_id ? 'spin 1s linear infinite' : 'none',
+                                '@keyframes spin': {
+                                  '0%': { transform: 'rotate(0deg)' },
+                                  '100%': { transform: 'rotate(360deg)' },
+                                },
+                              }}
+                            />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            sx={{ color: '#9CA3AF' }}
+                            onClick={(e) => {
+                              setMenuAnchor(e.currentTarget);
+                              setSelectedMonitor(monitor);
+                            }}
+                          >
+                            <MoreVertIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
                       </Box>
                       <Box
                         sx={{
