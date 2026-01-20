@@ -102,6 +102,25 @@ export class LazarusService {
     return response.data;
   }
 
+  // ============ AI KEYWORD EXTRACTION ============
+  static async extractKeywords(
+    userId: string,
+    data: {
+      name?: string;
+      bio?: string;
+      company?: string;
+      title?: string;
+      recent_post?: string;
+      signal_types?: string[];
+    }
+  ): Promise<UriResponse<{ keywords: string[]; confidence: number; reasoning?: string }>> {
+    const response: AxiosResponse<UriResponse<{ keywords: string[]; confidence: number; reasoning?: string }>> = await UriHttpClient.getClient().post(
+      `${BASE_PATH}/extract-keywords?user_id=${userId}`,
+      data
+    );
+    return response.data;
+  }
+
   // ============ ALERTS ============
   static async getAlerts(userId: string, status?: LazarusAlertStatus, skip: number = 0, limit: number = 50): Promise<UriResponse<LazarusAlert[]>> {
     let url = `${BASE_PATH}/alerts?user_id=${userId}&skip=${skip}&limit=${limit}`;

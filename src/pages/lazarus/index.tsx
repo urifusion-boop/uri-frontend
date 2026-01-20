@@ -676,6 +676,9 @@ const LazarusProtocolPage = () => {
             borderRadius: '14px 14px 0 0',
             border: '1px solid #F3F4F6',
             px: 2,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
           }}
         >
           <Tabs
@@ -703,6 +706,58 @@ const LazarusProtocolPage = () => {
             <Tab label={`Company Monitors (${companyMonitors.length})`} />
             <Tab label="Analytics" />
           </Tabs>
+
+          {/* Tab Action Buttons */}
+          <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', pb: 1 }}>
+            {tabValue === 1 && (
+              <Button
+                variant="contained"
+                size="small"
+                onClick={() => setShowAddContactModal(true)}
+                sx={{
+                  background: 'linear-gradient(135deg, #C91A79 0%, #A01560 100%)',
+                  color: '#fff',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '12px',
+                  px: 2,
+                  py: 0.75,
+                  borderRadius: '8px',
+                  boxShadow: '0 2px 8px rgba(201, 26, 121, 0.25)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #A01560 0%, #801248 100%)',
+                    boxShadow: '0 4px 12px rgba(201, 26, 121, 0.35)',
+                  },
+                }}
+              >
+                + Add Focus Contact
+              </Button>
+            )}
+            {tabValue === 2 && (
+              <Button
+                variant="contained"
+                size="small"
+                onClick={() => setShowAddCompanyModal(true)}
+                sx={{
+                  background: 'linear-gradient(135deg, #C91A79 0%, #A01560 100%)',
+                  color: '#fff',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '12px',
+                  px: 2,
+                  py: 0.75,
+                  borderRadius: '8px',
+                  boxShadow: '0 2px 8px rgba(201, 26, 121, 0.25)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #A01560 0%, #801248 100%)',
+                    boxShadow: '0 4px 12px rgba(201, 26, 121, 0.35)',
+                  },
+                }}
+              >
+                + Add Company Monitor
+              </Button>
+            )}
+          </Box>
         </Box>
 
         {/* Tab Content Container */}

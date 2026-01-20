@@ -57,6 +57,7 @@ const CSVUploadModal = ({ open, onClose, userId, onSuccess }: CSVUploadModalProp
       let location = '';
       let countryCode = '';
       let scanFrequency = 7; // Default to 7 days
+      let keywords: string[] = [];
 
       headers.forEach((header, index) => {
         const value = values[index]?.replace(/^["']|["']$/g, '');
@@ -78,6 +79,12 @@ const CSVUploadModal = ({ open, onClose, userId, onSuccess }: CSVUploadModalProp
           if (!isNaN(parsed) && parsed >= 1 && parsed <= 30) {
             scanFrequency = parsed;
           }
+        } else if (header === 'keywords' || header === 'industry_keywords') {
+          // Parse keywords - support comma-separated or pipe-separated
+          keywords = value
+            .split(/[,|;]/)
+            .map((k) => k.trim())
+            .filter((k) => k.length > 0);
         }
       });
 
@@ -90,6 +97,7 @@ const CSVUploadModal = ({ open, onClose, userId, onSuccess }: CSVUploadModalProp
           location: location || undefined,
           country_code: countryCode || undefined,
           scan_frequency_days: scanFrequency,
+          industry_keywords: keywords.length > 0 ? keywords : undefined,
         } as CSVUploadRow);
       }
 
@@ -100,6 +108,7 @@ const CSVUploadModal = ({ open, onClose, userId, onSuccess }: CSVUploadModalProp
           name: contactName,
           social_handle: socialHandle || undefined,
           scan_frequency_days: scanFrequency,
+          industry_keywords: keywords.length > 0 ? keywords : undefined,
         } as CSVUploadRow);
       }
     }
@@ -162,7 +171,10 @@ const CSVUploadModal = ({ open, onClose, userId, onSuccess }: CSVUploadModalProp
 
   const downloadTemplate = () => {
     const template =
-      'Company,Website,Contact Name,Social Handle\n' + 'Kobo360,https://kobo360.com,Emeka Okonkwo,@emeka_tech\n' + 'Moniepoint,,Chinedu Echeruo,@chinedu\n' + ',https://example.com,Jane Doe,@janedoe';
+      'Company,Website,Contact Name,Social Handle,Keywords\n' +
+      'Kobo360,https://kobo360.com,Emeka Okonkwo,@emeka_tech,"logistics,supply chain,Africa"\n' +
+      'Moniepoint,,Chinedu Echeruo,@chinedu,"fintech,payments,banking"\n' +
+      ',https://example.com,Jane Doe,@janedoe,"SaaS,marketing,automation"';
 
     const blob = new Blob([template], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -297,7 +309,10 @@ const CSVUploadModal = ({ open, onClose, userId, onSuccess }: CSVUploadModalProp
               CSV FORMAT
             </Typography>
             <Typography fontSize="11px" color={LightThemeColors.secondary} lineHeight={1.6} mb={1}>
-              Columns: <strong>Company</strong>, <strong>Website</strong>, <strong>Contact Name</strong>, <strong>Social Handle</strong>
+              Columns: <strong>Company</strong>, <strong>Website</strong>, <strong>Contact Name</strong>, <strong>Social Handle</strong>, <strong>Keywords</strong> (comma-separated)
+            </Typography>
+            <Typography fontSize="10px" color={LightThemeColors.secondary} lineHeight={1.4} mb={1} fontStyle="italic">
+              Keywords column is optional but recommended for better monitoring
             </Typography>
             <Link
               onClick={downloadTemplate}

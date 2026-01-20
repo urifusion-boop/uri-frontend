@@ -28,6 +28,9 @@ const PasteAndGoModal: React.FC<PasteAndGoModalProps> = ({ open, onClose, userId
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [parsedData, setParsedData] = useState<ParsedURL | null>(null);
+  const [keywords, setKeywords] = useState<string[]>([]);
+  const [keywordInput, setKeywordInput] = useState('');
+  const [extractingKeywords, setExtractingKeywords] = useState(false);
 
   const parseURL = (inputUrl: string): ParsedURL | null => {
     try {
@@ -84,9 +87,10 @@ const PasteAndGoModal: React.FC<PasteAndGoModalProps> = ({ open, onClose, userId
     }
   };
 
-  const handleParse = () => {
+  const handleParse = async () => {
     setError(null);
     setParsedData(null);
+    setKeywords([]);
 
     if (!url.trim()) {
       setError('Please enter a URL');
@@ -101,10 +105,41 @@ const PasteAndGoModal: React.FC<PasteAndGoModalProps> = ({ open, onClose, userId
     }
 
     setParsedData(parsed);
+
+    // Extract keywords using AI
+    setExtractingKeywords(true);
+    try {
+      const extractionData: any = {};
+
+      if (parsed.name) {
+        extractionData.name = parsed.name;
+      }
+
+      if (parsed.type === 'website' && parsed.domain) {
+        extractionData.company = parsed.name;
+      }
+
+      const result = await LazarusService.extractKeywords(userId, extractionData);
+
+      if (result.status && result.responseData?.keywords) {
+        setKeywords(result.responseData.keywords);
+      }
+    } catch (err: any) {
+      console.warn('Keyword extraction failed, user can add manually:', err);
+      // Don't show error, just let user add keywords manually
+    } finally {
+      setExtractingKeywords(false);
+    }
   };
 
   const handleSubmit = async () => {
     if (!parsedData) return;
+
+    // Validate keywords
+    if (keywords.length === 0) {
+      setError('Please add at least one keyword to monitor');
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -114,7 +149,7 @@ const PasteAndGoModal: React.FC<PasteAndGoModalProps> = ({ open, onClose, userId
         const contactData = {
           name: parsedData.name || 'Unknown',
           social_handle: parsedData.handle,
-          industry_keywords: [],
+          industry_keywords: keywords,
         };
 
         await LazarusService.addFocusContact(userId, contactData);
@@ -122,7 +157,7 @@ const PasteAndGoModal: React.FC<PasteAndGoModalProps> = ({ open, onClose, userId
         const monitorData = {
           company_name: parsedData.name || 'Unknown Company',
           website_url: parsedData.url,
-          industry_keywords: [],
+          industry_keywords: keywords,
         };
 
         await LazarusService.addCompanyMonitor(userId, monitorData);
@@ -141,7 +176,21 @@ const PasteAndGoModal: React.FC<PasteAndGoModalProps> = ({ open, onClose, userId
     setUrl('');
     setParsedData(null);
     setError(null);
+    setKeywords([]);
+    setKeywordInput('');
     onClose();
+  };
+
+  const handleAddKeyword = () => {
+    const trimmed = keywordInput.trim();
+    if (trimmed && !keywords.includes(trimmed)) {
+      setKeywords([...keywords, trimmed]);
+      setKeywordInput('');
+    }
+  };
+
+  const handleRemoveKeyword = (keyword: string) => {
+    setKeywords(keywords.filter((k) => k !== keyword));
   };
 
   const getIcon = () => {
@@ -285,6 +334,75 @@ const PasteAndGoModal: React.FC<PasteAndGoModalProps> = ({ open, onClose, userId
                   {parsedData.url}
                 </Typography>
               </Box>
+            </Box>
+          )}
+
+          {parsedData && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body2" fontWeight={600} fontSize="13px" color={LightThemeColors.blackWhite} sx={{ mb: 1 }}>
+                Industry Keywords {extractingKeywords && <CircularProgress size={12} sx={{ ml: 1 }} />}
+              </Typography>
+              <Typography variant="caption" color={LightThemeColors.secondary} fontSize="11px" sx={{ mb: 1.5, display: 'block' }}>
+                Add keywords to monitor in their posts (e.g., "AI", "SaaS", "marketing automation")
+              </Typography>
+
+              <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  placeholder="Add keyword..."
+                  value={keywordInput}
+                  onChange={(e) => setKeywordInput(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleAddKeyword();
+                    }
+                  }}
+                  disabled={loading || extractingKeywords}
+                />
+                <Button
+                  onClick={handleAddKeyword}
+                  variant="outlined"
+                  size="small"
+                  disabled={!keywordInput.trim() || loading || extractingKeywords}
+                  sx={{
+                    textTransform: 'none',
+                    fontSize: '12px',
+                    minWidth: '70px',
+                    borderColor: LightThemeColors.primary,
+                    color: LightThemeColors.primary,
+                  }}
+                >
+                  Add
+                </Button>
+              </Box>
+
+              {keywords.length > 0 && (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                  {keywords.map((keyword, index) => (
+                    <Chip
+                      key={index}
+                      label={keyword}
+                      onDelete={() => handleRemoveKeyword(keyword)}
+                      size="small"
+                      sx={{
+                        bgcolor: `${LightThemeColors.primary}15`,
+                        color: LightThemeColors.primary,
+                        fontWeight: 600,
+                        fontSize: '11px',
+                        '& .MuiChip-deleteIcon': {
+                          color: LightThemeColors.primary,
+                          fontSize: '16px',
+                          '&:hover': {
+                            color: LightThemeColors.primary,
+                            opacity: 0.7,
+                          },
+                        },
+                      }}
+                    />
+                  ))}
+                </Box>
+              )}
             </Box>
           )}
         </Box>
