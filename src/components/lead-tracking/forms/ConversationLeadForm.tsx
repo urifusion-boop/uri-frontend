@@ -1400,16 +1400,32 @@ const ConversationLeadFormV2 = () => {
     setCancelError(null);
 
     try {
-      console.log('🛑 Requesting cancellation for job:', activeJobId);
+      console.log('🛑 FORCE-CANCELLING job immediately:', activeJobId);
 
-      const response = await LeadFormService.cancelLeadGenerationJob(activeJobId, userId);
+      // Use force-cancel to immediately stop the job without waiting for worker
+      const response = await LeadFormService.forceCancelLeadGenerationJob(activeJobId, userId);
 
       if (response.status) {
-        triggerToast('success', 'Cancelling job... This may take 5-15 seconds');
+        triggerToast('success', '✅ Job cancelled successfully!');
         setShowCancelConfirmation(false);
 
-        // Continue polling - job status will change to "cancelled"
-        // The existing polling logic will handle showing final stats
+        // Immediately stop all polling and clear state
+        clearAllIntervals();
+        clearJobFromLocalStorage();
+
+        // Reset UI state
+        setActiveJobId(null);
+        setIsFetchingLeads(false);
+        setTargetProgress(0);
+        setFetchingProgress(0);
+        setFetchingStatus('');
+
+        // Show final stats if available
+        if (response.responseData?.stats) {
+          setLeadStats(response.responseData.stats);
+        }
+
+        console.log('✅ Job cancelled and UI reset complete');
       } else {
         setCancelError(response.responseMessage || 'Failed to cancel job');
         triggerToast('error', response.responseMessage || 'Failed to cancel job');

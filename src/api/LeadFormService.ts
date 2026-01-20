@@ -214,6 +214,30 @@ export class LeadsService {
     return response.data;
   }
 
+  static async forceCancelLeadGenerationJob(
+    jobId: string,
+    userId: string
+  ): Promise<
+    UriResponse<{
+      job_id: string;
+      status: string;
+      message: string;
+      stats?: any;
+    }>
+  > {
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().post(
+      `${leadFormApiRoutes.conversationalSearchJobStatus}/${jobId}/force-cancel?user_id=${userId}`,
+      {},
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    return response.data;
+  }
+
   static async hasLeadsByType(userId: string, leadType: string): Promise<boolean> {
     try {
       const response = await this.getByFilters({
