@@ -6,6 +6,7 @@ import ConnectCRMModal from '@/components/lazarus/ConnectCRMModal';
 import CSVUploadModal from '@/components/lazarus/CSVUploadModal';
 import LazarusOnboarding from '@/components/lazarus/LazarusOnboarding';
 import PasteAndGoModal from '@/components/lazarus/PasteAndGoModal';
+import ScanLogViewerModal from '@/components/lazarus/ScanLogViewerModal';
 import { useAuth } from '@/providers/AuthProvider';
 import { CompanyMonitor, FocusContact, LazarusAlert, LazarusAlertStatus, LazarusMetrics, LazarusMonitoringStatus } from '@/types/lazarus.types';
 import AddIcon from '@mui/icons-material/Add';
@@ -68,6 +69,8 @@ const LazarusProtocolPage = () => {
   const [selectedMonitor, setSelectedMonitor] = useState<CompanyMonitor | null>(null);
   const [scanningContactId, setScanningContactId] = useState<string | null>(null);
   const [scanningMonitorId, setScanningMonitorId] = useState<string | null>(null);
+  const [showScanLogViewer, setShowScanLogViewer] = useState(false);
+  const [scanLogType, setScanLogType] = useState<'contact' | 'company'>('contact');
 
   useEffect(() => {
     if (userId) {
@@ -268,7 +271,9 @@ const LazarusProtocolPage = () => {
 
   const handleScanContact = async (focusId: string) => {
     setScanningContactId(focusId);
-    const loadingToast = toast.loading('🔍 Scanning for buying signals and job changes...');
+    setScanLogType('contact');
+    setShowScanLogViewer(true);
+
     try {
       console.log(`[SCAN] Starting scan for contact: ${focusId}`);
       const response = await LazarusService.scanFocusContacts(10);
@@ -276,24 +281,25 @@ const LazarusProtocolPage = () => {
 
       await loadDashboardContent();
 
-      toast.success('✅ Scan completed! Check alerts tab for new signals.', {
-        id: loadingToast,
-        duration: 4000,
-      });
+      // Don't close modal automatically - user can close it
     } catch (error: any) {
       console.error('[SCAN ERROR] Failed to scan contact:', error);
       toast.error(`❌ Scan failed: ${error.message || 'Unknown error'}`, {
-        id: loadingToast,
         duration: 5000,
       });
     } finally {
-      setScanningContactId(null);
+      // Keep modal open, just stop the scanning state after a delay
+      setTimeout(() => {
+        setScanningContactId(null);
+      }, 1000);
     }
   };
 
   const handleScanMonitor = async (monitorId: string) => {
     setScanningMonitorId(monitorId);
-    const loadingToast = toast.loading('🔍 Scanning for company signals and hiring sprees...');
+    setScanLogType('company');
+    setShowScanLogViewer(true);
+
     try {
       console.log(`[SCAN] Starting scan for company monitor: ${monitorId}`);
       const response = await LazarusService.scanCompanyMonitors(10);
@@ -301,18 +307,17 @@ const LazarusProtocolPage = () => {
 
       await loadDashboardContent();
 
-      toast.success('✅ Scan completed! Check alerts tab for new signals.', {
-        id: loadingToast,
-        duration: 4000,
-      });
+      // Don't close modal automatically - user can close it
     } catch (error: any) {
       console.error('[SCAN ERROR] Failed to scan monitor:', error);
       toast.error(`❌ Scan failed: ${error.message || 'Unknown error'}`, {
-        id: loadingToast,
         duration: 5000,
       });
     } finally {
-      setScanningMonitorId(null);
+      // Keep modal open, just stop the scanning state after a delay
+      setTimeout(() => {
+        setScanningMonitorId(null);
+      }, 1000);
     }
   };
 
@@ -1628,6 +1633,8 @@ const LazarusProtocolPage = () => {
       <CSVUploadModal open={showCSVUploadModal} onClose={() => setShowCSVUploadModal(false)} userId={userId || ''} onSuccess={loadDashboardContent} />
 
       <PasteAndGoModal open={showPasteAndGoModal} onClose={() => setShowPasteAndGoModal(false)} userId={userId || ''} onSuccess={loadDashboardContent} />
+
+      <ScanLogViewerModal open={showScanLogViewer} onClose={() => setShowScanLogViewer(false)} scanType={scanLogType} scanningId={scanLogType === 'contact' ? scanningContactId : scanningMonitorId} />
 
       {/* Scan Frequency Menu */}
       <Menu
