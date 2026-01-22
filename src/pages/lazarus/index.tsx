@@ -8,7 +8,7 @@ import LazarusOnboarding from '@/components/lazarus/LazarusOnboarding';
 import PasteAndGoModal from '@/components/lazarus/PasteAndGoModal';
 import ScanLogViewerModal from '@/components/lazarus/ScanLogViewerModal';
 import { useAuth } from '@/providers/AuthProvider';
-import { CompanyMonitor, FocusContact, LazarusAlert, LazarusAlertStatus, LazarusMetrics, LazarusMonitoringStatus } from '@/types/lazarus.types';
+import { CompanyMonitor, FocusContact, LazarusAlert, LazarusAlertStatus, LazarusMetrics, LazarusMonitoringStatus, SocialMediaPost } from '@/types/lazarus.types';
 import AddIcon from '@mui/icons-material/Add';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import BusinessIcon from '@mui/icons-material/Business';
@@ -71,6 +71,7 @@ const LazarusProtocolPage = () => {
   const [scanningMonitorId, setScanningMonitorId] = useState<string | null>(null);
   const [showScanLogViewer, setShowScanLogViewer] = useState(false);
   const [scanLogType, setScanLogType] = useState<'contact' | 'company'>('contact');
+  const [scanSamplePosts, setScanSamplePosts] = useState<SocialMediaPost[]>([]);
 
   useEffect(() => {
     if (userId) {
@@ -272,12 +273,19 @@ const LazarusProtocolPage = () => {
   const handleScanContact = async (focusId: string) => {
     setScanningContactId(focusId);
     setScanLogType('contact');
+    setScanSamplePosts([]);
     setShowScanLogViewer(true);
 
     try {
       console.log(`[SCAN] Starting scan for contact: ${focusId}`);
       const response = await LazarusService.scanFocusContacts(10);
       console.log('[SCAN] Scan response:', response);
+
+      // Store sample posts for modal display
+      if (response.responseData?.sample_posts) {
+        console.log('[SCAN] Sample posts fetched:', response.responseData.sample_posts);
+        setScanSamplePosts(response.responseData.sample_posts);
+      }
 
       await loadDashboardContent();
 
@@ -298,12 +306,19 @@ const LazarusProtocolPage = () => {
   const handleScanMonitor = async (monitorId: string) => {
     setScanningMonitorId(monitorId);
     setScanLogType('company');
+    setScanSamplePosts([]);
     setShowScanLogViewer(true);
 
     try {
       console.log(`[SCAN] Starting scan for company monitor: ${monitorId}`);
       const response = await LazarusService.scanCompanyMonitors(10);
       console.log('[SCAN] Scan response:', response);
+
+      // Store sample posts for modal display
+      if (response.responseData?.sample_posts) {
+        console.log('[SCAN] Sample posts fetched:', response.responseData.sample_posts);
+        setScanSamplePosts(response.responseData.sample_posts);
+      }
 
       await loadDashboardContent();
 
@@ -1634,7 +1649,13 @@ const LazarusProtocolPage = () => {
 
       <PasteAndGoModal open={showPasteAndGoModal} onClose={() => setShowPasteAndGoModal(false)} userId={userId || ''} onSuccess={loadDashboardContent} />
 
-      <ScanLogViewerModal open={showScanLogViewer} onClose={() => setShowScanLogViewer(false)} scanType={scanLogType} scanningId={scanLogType === 'contact' ? scanningContactId : scanningMonitorId} />
+      <ScanLogViewerModal
+        open={showScanLogViewer}
+        onClose={() => setShowScanLogViewer(false)}
+        scanType={scanLogType}
+        scanningId={scanLogType === 'contact' ? scanningContactId : scanningMonitorId}
+        samplePosts={scanSamplePosts}
+      />
 
       {/* Scan Frequency Menu */}
       <Menu

@@ -206,6 +206,17 @@ export interface ResurrectLeadResponse {
   resurrection_count?: number;
 }
 
+export interface SocialMediaPost {
+  text?: string;
+  author?: string;
+  platform?: string;
+  created_at?: string;
+  likes?: number;
+  comments?: number;
+  retweets?: number;
+  shares?: number;
+}
+
 export interface ScanResponse {
   success: boolean;
   total_scanned: number;
@@ -213,11 +224,14 @@ export interface ScanResponse {
   focus_contacts?: {
     scanned: number;
     alerts_created: number;
+    sample_posts?: SocialMediaPost[];
   };
   company_monitors?: {
     scanned: number;
     alerts_created: number;
+    sample_posts?: SocialMediaPost[];
   };
+  sample_posts?: SocialMediaPost[];
 }
 
 // ============ HELPER TYPES ============

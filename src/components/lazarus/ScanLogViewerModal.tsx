@@ -1,3 +1,4 @@
+import { SocialMediaPost } from '@/types/lazarus.types';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import ErrorIcon from '@mui/icons-material/Error';
@@ -21,9 +22,10 @@ interface ScanLogViewerModalProps {
   onClose: () => void;
   scanType: 'contact' | 'company';
   scanningId?: string | null;
+  samplePosts?: SocialMediaPost[];
 }
 
-const ScanLogViewerModal: React.FC<ScanLogViewerModalProps> = ({ open, onClose, scanType, scanningId }) => {
+const ScanLogViewerModal: React.FC<ScanLogViewerModalProps> = ({ open, onClose, scanType, scanningId, samplePosts = [] }) => {
   const [logs, setLogs] = useState<ScanLog[]>([]);
   const [isScanning, setIsScanning] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -81,6 +83,23 @@ const ScanLogViewerModal: React.FC<ScanLogViewerModalProps> = ({ open, onClose, 
           addLog('success', `✅ Fetched ${Math.floor(Math.random() * 15 + 5)} LinkedIn posts`, 'check');
         } else {
           addLog('success', `✅ Fetched ${Math.floor(Math.random() * 20 + 10)} tweets via Origami method`, 'check');
+        }
+
+        // Display actual posts if available
+        if (samplePosts && samplePosts.length > 0) {
+          addLog('info', `\n📝 Sample Posts (${samplePosts.length} fetched):`, 'info');
+          samplePosts.slice(0, 3).forEach((post, idx) => {
+            const text = post.text ? post.text.substring(0, 120) + (post.text.length > 120 ? '...' : '') : 'No text';
+            const author = post.author || 'Unknown';
+            const platform = post.platform || 'Unknown platform';
+            const engagement = `${post.likes || 0} likes, ${post.comments || 0} comments`;
+
+            addLog('info', `\n   Post ${idx + 1}:`, 'info');
+            addLog('info', `   📄 "${text}"`, 'info');
+            addLog('info', `   👤 Author: ${author}`, 'info');
+            addLog('info', `   📱 Platform: ${platform}`, 'info');
+            addLog('info', `   💬 Engagement: ${engagement}`, 'info');
+          });
         }
       }, 3500);
 
@@ -336,6 +355,109 @@ const ScanLogViewerModal: React.FC<ScanLogViewerModalProps> = ({ open, onClose, 
             </Box>
           )}
         </Box>
+
+        {/* Fetched Posts Display */}
+        {!isScanning && samplePosts && samplePosts.length > 0 && (
+          <Box sx={{ mt: 3 }}>
+            <Typography fontSize="16px" fontWeight={700} color="#1F2937" mb={2} display="flex" alignItems="center" gap={1}>
+              📝 Fetched Posts ({samplePosts.length} total)
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {samplePosts.slice(0, 3).map((post, idx) => (
+                <Box
+                  key={idx}
+                  sx={{
+                    p: 2.5,
+                    borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%)',
+                    border: '1px solid #E5E7EB',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      boxShadow: '0 4px 12px rgba(124, 58, 237, 0.1)',
+                      borderColor: '#7C3AED30',
+                    },
+                  }}
+                >
+                  <Box display="flex" alignItems="flex-start" gap={1.5} mb={1.5}>
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '8px',
+                        background: post.platform?.toLowerCase().includes('linkedin')
+                          ? '#0A66C2'
+                          : post.platform?.toLowerCase().includes('twitter')
+                            ? '#1DA1F2'
+                            : post.platform?.toLowerCase().includes('tiktok')
+                              ? '#000000'
+                              : '#1877F2',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {post.platform?.toLowerCase().includes('linkedin') ? <LinkedInIcon sx={{ color: '#fff', fontSize: 18 }} /> : <TwitterIcon sx={{ color: '#fff', fontSize: 18 }} />}
+                    </Box>
+                    <Box flex={1}>
+                      <Typography fontSize="13px" fontWeight={700} color="#1F2937" mb={0.3}>
+                        {post.author || 'Unknown Author'}
+                      </Typography>
+                      <Typography fontSize="11px" color="#9CA3AF" fontWeight={600}>
+                        {post.platform || 'Unknown Platform'} • {post.created_at ? new Date(post.created_at).toLocaleDateString() : 'Unknown date'}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Typography
+                    fontSize="13px"
+                    color="#374151"
+                    lineHeight={1.6}
+                    mb={2}
+                    sx={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 4,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {post.text || 'No text content'}
+                  </Typography>
+                  <Box display="flex" gap={3}>
+                    <Box display="flex" alignItems="center" gap={0.5}>
+                      <Typography fontSize="12px" color="#6B7280" fontWeight={600}>
+                        ❤️ {post.likes || 0}
+                      </Typography>
+                    </Box>
+                    <Box display="flex" alignItems="center" gap={0.5}>
+                      <Typography fontSize="12px" color="#6B7280" fontWeight={600}>
+                        💬 {post.comments || 0}
+                      </Typography>
+                    </Box>
+                    {post.retweets !== undefined && (
+                      <Box display="flex" alignItems="center" gap={0.5}>
+                        <Typography fontSize="12px" color="#6B7280" fontWeight={600}>
+                          🔄 {post.retweets}
+                        </Typography>
+                      </Box>
+                    )}
+                    {post.shares !== undefined && (
+                      <Box display="flex" alignItems="center" gap={0.5}>
+                        <Typography fontSize="12px" color="#6B7280" fontWeight={600}>
+                          📤 {post.shares}
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+            {samplePosts.length > 3 && (
+              <Typography fontSize="12px" color="#6B7280" fontStyle="italic" mt={2} textAlign="center">
+                + {samplePosts.length - 3} more posts analyzed
+              </Typography>
+            )}
+          </Box>
+        )}
 
         {/* Summary Stats */}
         {!isScanning && logs.length > 0 && (
