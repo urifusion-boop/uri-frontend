@@ -425,11 +425,11 @@ const LazarusProtocolPage = () => {
 
   return (
     <DashboardLayout>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
         {/* Header */}
-        <Box mb={4} display="flex" justifyContent="space-between" alignItems="flex-start">
-          <Box>
-            <Box display="flex" alignItems="center" gap={1.5} mb={1}>
+        <Box mb={4}>
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+            <Box display="flex" alignItems="center" gap={1.5}>
               <Box
                 sx={{
                   width: 42,
@@ -444,15 +444,34 @@ const LazarusProtocolPage = () => {
               >
                 <ScienceIcon sx={{ color: '#fff', fontSize: 22 }} />
               </Box>
-              <Typography variant="h4" fontWeight={700} color="#111827" letterSpacing="-0.02em">
-                Lazarus Protocol
-              </Typography>
+              <Box>
+                <Typography variant="h4" fontWeight={700} color="#111827" letterSpacing="-0.02em">
+                  Lazarus Protocol
+                </Typography>
+                <Typography variant="body2" color="#6B7280" fontSize="13px" fontWeight={500}>
+                  Automated CRM Resurrection Engine
+                </Typography>
+              </Box>
             </Box>
-            <Typography variant="body1" color="#6B7280" fontSize="14px" fontWeight={500}>
-              Automated CRM Resurrection Engine - Monitor dead leads for buying signals
-            </Typography>
+            <IconButton
+              onClick={loadDashboardData}
+              sx={{
+                width: 40,
+                height: 40,
+                color: '#7C3AED',
+                '&:hover': {
+                  backgroundColor: '#7C3AED10',
+                  transform: 'rotate(180deg)',
+                },
+                transition: 'all 0.4s ease',
+              }}
+            >
+              <RefreshIcon />
+            </IconButton>
           </Box>
-          <Box display="flex" gap={1.5}>
+
+          {/* Action Buttons Row */}
+          <Box display="flex" gap={2} flexWrap="wrap">
             <Button
               variant="contained"
               startIcon={
@@ -471,6 +490,8 @@ const LazarusProtocolPage = () => {
                 fontWeight: 600,
                 fontSize: '13px',
                 borderRadius: '8px',
+                px: 2.5,
+                py: 1,
                 boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
                 '&:hover': {
                   background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
@@ -484,6 +505,7 @@ const LazarusProtocolPage = () => {
             >
               {isBatchScanning ? 'Scanning...' : 'Scan All Due'}
             </Button>
+
             <Button
               variant="contained"
               startIcon={<LinkIcon />}
@@ -495,6 +517,8 @@ const LazarusProtocolPage = () => {
                 fontWeight: 600,
                 fontSize: '13px',
                 borderRadius: '8px',
+                px: 2.5,
+                py: 1,
                 boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
                 '&:hover': {
                   background: 'linear-gradient(135deg, #6D28D9 0%, #4C1D95 100%)',
@@ -504,59 +528,50 @@ const LazarusProtocolPage = () => {
             >
               Connect CRM
             </Button>
+
             <Button
               variant="outlined"
               startIcon={<LinkIcon />}
               onClick={() => setShowPasteAndGoModal(true)}
               sx={{
-                borderColor: '#7C3AED40',
-                color: '#7C3AED',
+                borderColor: '#C91A7940',
+                color: '#C91A79',
                 textTransform: 'none',
                 fontWeight: 600,
                 fontSize: '13px',
                 borderRadius: '8px',
+                px: 2.5,
+                py: 1,
                 '&:hover': {
-                  borderColor: '#7C3AED',
-                  backgroundColor: '#7C3AED08',
+                  borderColor: '#C91A79',
+                  backgroundColor: '#C91A7908',
                 },
               }}
             >
               Paste & Go
             </Button>
+
             <Button
               variant="outlined"
               startIcon={<UploadFileIcon />}
               onClick={() => setShowCSVUploadModal(true)}
               sx={{
-                borderColor: '#7C3AED40',
-                color: '#7C3AED',
+                borderColor: '#C91A7940',
+                color: '#C91A79',
                 textTransform: 'none',
                 fontWeight: 600,
                 fontSize: '13px',
                 borderRadius: '8px',
+                px: 2.5,
+                py: 1,
                 '&:hover': {
-                  borderColor: '#7C3AED',
-                  backgroundColor: '#7C3AED08',
+                  borderColor: '#C91A79',
+                  backgroundColor: '#C91A7908',
                 },
               }}
             >
               CSV Upload
             </Button>
-            <IconButton
-              onClick={loadDashboardData}
-              sx={{
-                width: 40,
-                height: 40,
-                color: '#7C3AED',
-                '&:hover': {
-                  backgroundColor: '#7C3AED10',
-                  transform: 'rotate(180deg)',
-                },
-                transition: 'all 0.4s ease',
-              }}
-            >
-              <RefreshIcon />
-            </IconButton>
           </Box>
         </Box>
 
