@@ -217,10 +217,22 @@ export interface SocialMediaPost {
   shares?: number;
 }
 
+export interface AlertDetectionData {
+  alert_type?: string;
+  alert_message?: string;
+  suggested_pitch?: string;
+  confidence?: number;
+  signal_type?: string;
+}
+
 export interface ScanResponse {
   success: boolean;
-  total_scanned: number;
-  total_alerts: number;
+  total_scanned?: number;
+  total_alerts?: number;
+  scanned?: number;
+  alerts_created?: number;
+  message?: string;
+  platform?: string;
   focus_contacts?: {
     scanned: number;
     alerts_created: number;
@@ -232,6 +244,7 @@ export interface ScanResponse {
     sample_posts?: SocialMediaPost[];
   };
   sample_posts?: SocialMediaPost[];
+  alert_data?: AlertDetectionData;
 }
 
 // ============ HELPER TYPES ============

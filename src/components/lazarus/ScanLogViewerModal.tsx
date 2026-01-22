@@ -1,9 +1,10 @@
-import { SocialMediaPost } from '@/types/lazarus.types';
+import { AlertDetectionData, SocialMediaPost } from '@/types/lazarus.types';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import ErrorIcon from '@mui/icons-material/Error';
 import InfoIcon from '@mui/icons-material/Info';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import SearchIcon from '@mui/icons-material/Search';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -23,9 +24,10 @@ interface ScanLogViewerModalProps {
   scanType: 'contact' | 'company';
   scanningId?: string | null;
   samplePosts?: SocialMediaPost[];
+  alertData?: AlertDetectionData;
 }
 
-const ScanLogViewerModal: React.FC<ScanLogViewerModalProps> = ({ open, onClose, scanType, scanningId, samplePosts = [] }) => {
+const ScanLogViewerModal: React.FC<ScanLogViewerModalProps> = ({ open, onClose, scanType, scanningId, samplePosts = [], alertData }) => {
   const [logs, setLogs] = useState<ScanLog[]>([]);
   const [isScanning, setIsScanning] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -76,6 +78,26 @@ const ScanLogViewerModal: React.FC<ScanLogViewerModalProps> = ({ open, onClose, 
       setTimeout(() => {
         addLog('success', `✅ Fetched ${samplePosts.length} posts successfully!`, 'check');
         addLog('info', '🤖 AI analysis complete', 'info');
+
+        // Show alert detection if available
+        if (alertData) {
+          const alertType = alertData.alert_type || 'SIGNAL';
+          const signalType = alertData.signal_type || 'unknown';
+          const confidence = alertData.confidence ? `${Math.round(alertData.confidence * 100)}%` : 'N/A';
+
+          addLog('success', `🎯 BUYING SIGNAL DETECTED!`, 'check');
+          addLog('info', `   Alert Type: ${alertType}`, 'info');
+          addLog('info', `   Signal Type: ${signalType}`, 'info');
+          addLog('info', `   Confidence: ${confidence}`, 'info');
+          addLog('info', `   Message: ${alertData.alert_message || 'No message'}`, 'info');
+          if (alertData.suggested_pitch) {
+            const pitchPreview = alertData.suggested_pitch.length > 100 ? alertData.suggested_pitch.substring(0, 100) + '...' : alertData.suggested_pitch;
+            addLog('info', `   Suggested Pitch: ${pitchPreview}`, 'info');
+          }
+        } else {
+          addLog('info', 'ℹ️  No buying signals detected', 'info');
+        }
+
         addLog('success', '✅ Scan completed!', 'check');
         setProgress(100);
         setIsScanning(false);
@@ -88,7 +110,7 @@ const ScanLogViewerModal: React.FC<ScanLogViewerModalProps> = ({ open, onClose, 
         setIsScanning(false);
       }, 3000);
     }
-  }, [samplePosts, isScanning]);
+  }, [samplePosts, isScanning, alertData]);
 
   const addLog = (level: ScanLog['level'], message: string, icon?: ScanLog['icon']) => {
     setLogs((prev) => [
@@ -415,6 +437,107 @@ const ScanLogViewerModal: React.FC<ScanLogViewerModalProps> = ({ open, onClose, 
                 + {samplePosts.length - 3} more posts analyzed
               </Typography>
             )}
+          </Box>
+        )}
+
+        {/* Alert Detection Card */}
+        {!isScanning && alertData && (
+          <Box
+            sx={{
+              mt: 3,
+              p: 3,
+              borderRadius: '16px',
+              background: 'linear-gradient(135deg, #7C3AED15 0%, #A78BFA15 100%)',
+              border: '2px solid #7C3AED',
+              boxShadow: '0 4px 14px rgba(124, 58, 237, 0.2)',
+            }}
+          >
+            <Box display="flex" alignItems="center" gap={1.5} mb={2}>
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <NotificationsActiveIcon sx={{ color: '#fff', fontSize: 20 }} />
+              </Box>
+              <Box>
+                <Typography fontSize="16px" fontWeight={700} color="#7C3AED">
+                  🎯 Buying Signal Detected!
+                </Typography>
+                <Typography fontSize="12px" color="#6B7280">
+                  Alert created and saved
+                </Typography>
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Box>
+                <Typography fontSize="11px" color="#6B7280" fontWeight={600} textTransform="uppercase" mb={0.5}>
+                  Alert Type
+                </Typography>
+                <Typography fontSize="14px" fontWeight={600} color="#1F2937">
+                  {alertData.alert_type || 'SIGNAL'}
+                </Typography>
+              </Box>
+
+              {alertData.signal_type && (
+                <Box>
+                  <Typography fontSize="11px" color="#6B7280" fontWeight={600} textTransform="uppercase" mb={0.5}>
+                    Signal Type
+                  </Typography>
+                  <Typography fontSize="14px" fontWeight={600} color="#1F2937">
+                    {alertData.signal_type}
+                  </Typography>
+                </Box>
+              )}
+
+              {alertData.confidence && (
+                <Box>
+                  <Typography fontSize="11px" color="#6B7280" fontWeight={600} textTransform="uppercase" mb={0.5}>
+                    Confidence
+                  </Typography>
+                  <Typography fontSize="14px" fontWeight={700} color="#10B981">
+                    {Math.round(alertData.confidence * 100)}%
+                  </Typography>
+                </Box>
+              )}
+
+              <Box>
+                <Typography fontSize="11px" color="#6B7280" fontWeight={600} textTransform="uppercase" mb={0.5}>
+                  Alert Message
+                </Typography>
+                <Typography fontSize="13px" color="#374151" lineHeight={1.6}>
+                  {alertData.alert_message || 'No message available'}
+                </Typography>
+              </Box>
+
+              {alertData.suggested_pitch && (
+                <Box>
+                  <Typography fontSize="11px" color="#6B7280" fontWeight={600} textTransform="uppercase" mb={0.5}>
+                    Suggested Pitch
+                  </Typography>
+                  <Typography
+                    fontSize="13px"
+                    color="#374151"
+                    lineHeight={1.6}
+                    sx={{
+                      p: 2,
+                      borderRadius: '10px',
+                      backgroundColor: '#F9FAFB',
+                      border: '1px solid #E5E7EB',
+                    }}
+                  >
+                    {alertData.suggested_pitch}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
           </Box>
         )}
 

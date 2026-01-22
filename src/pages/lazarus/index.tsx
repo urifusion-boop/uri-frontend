@@ -8,7 +8,7 @@ import LazarusOnboarding from '@/components/lazarus/LazarusOnboarding';
 import PasteAndGoModal from '@/components/lazarus/PasteAndGoModal';
 import ScanLogViewerModal from '@/components/lazarus/ScanLogViewerModal';
 import { useAuth } from '@/providers/AuthProvider';
-import { CompanyMonitor, FocusContact, LazarusAlert, LazarusAlertStatus, LazarusMetrics, LazarusMonitoringStatus, SocialMediaPost } from '@/types/lazarus.types';
+import { AlertDetectionData, CompanyMonitor, FocusContact, LazarusAlert, LazarusAlertStatus, LazarusMetrics, LazarusMonitoringStatus, SocialMediaPost } from '@/types/lazarus.types';
 import AddIcon from '@mui/icons-material/Add';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import BusinessIcon from '@mui/icons-material/Business';
@@ -73,6 +73,7 @@ const LazarusProtocolPage = () => {
   const [showScanLogViewer, setShowScanLogViewer] = useState(false);
   const [scanLogType, setScanLogType] = useState<'contact' | 'company'>('contact');
   const [scanSamplePosts, setScanSamplePosts] = useState<SocialMediaPost[]>([]);
+  const [scanAlertData, setScanAlertData] = useState<AlertDetectionData | undefined>(undefined);
   const [isBatchScanning, setIsBatchScanning] = useState(false);
 
   useEffect(() => {
@@ -276,6 +277,7 @@ const LazarusProtocolPage = () => {
     setScanningContactId(focusId);
     setScanLogType('contact');
     setScanSamplePosts([]);
+    setScanAlertData(undefined);
     setShowScanLogViewer(true);
 
     try {
@@ -284,6 +286,13 @@ const LazarusProtocolPage = () => {
       console.log('[SCAN] Full response:', JSON.stringify(response, null, 2));
       console.log('[SCAN] responseData:', response.responseData);
       console.log('[SCAN] sample_posts:', response.responseData?.sample_posts);
+      console.log('[SCAN] alert_data:', response.responseData?.alert_data);
+
+      // Store alert data if available
+      if (response.responseData?.alert_data) {
+        console.log('[SCAN] Alert detected:', response.responseData.alert_data);
+        setScanAlertData(response.responseData.alert_data);
+      }
 
       // Store sample posts for modal display - sanitize the data
       if (response.responseData && response.responseData.sample_posts && response.responseData.sample_posts.length > 0) {
@@ -1758,6 +1767,7 @@ const LazarusProtocolPage = () => {
         scanType={scanLogType}
         scanningId={isBatchScanning ? 'batch' : scanLogType === 'contact' ? scanningContactId : scanningMonitorId}
         samplePosts={scanSamplePosts}
+        alertData={scanAlertData}
       />
 
       {/* Scan Frequency Menu */}
