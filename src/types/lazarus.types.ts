@@ -102,11 +102,30 @@ export interface CompanyMonitorCreate {
 }
 
 export interface LazarusAlertEvidence {
-  detected_date: string;
-  signal_source: string;
-  old_value?: string;
-  new_value?: string;
-  tweets?: string[];
+  // Job changes
+  old_bio?: string;
+  new_bio?: string;
+  old_company?: string;
+  new_company?: string;
+  // Social signals (platform-agnostic)
+  post_url?: string;
+  post_text?: string;
+  post_platform?: string;
+  // Legacy fields
+  tweet_url?: string;
+  tweet_text?: string;
+  // Company signals
+  news_url?: string;
+  news_title?: string;
+  old_job_count?: number;
+  new_job_count?: number;
+  // Homepage changes
+  detected_keywords?: string[];
+  // AI Analysis
+  signal_type?: string;
+  confidence?: number;
+  evidence_text?: string;
+  signal_source?: string;
 }
 
 export interface LazarusAlert {
@@ -114,14 +133,18 @@ export interface LazarusAlert {
   user_id: string;
   source_type: LazarusMonitorType;
   source_id: string;
+  source_name: string;
   alert_type: LazarusAlertType;
   alert_message: string;
   evidence: LazarusAlertEvidence;
   suggested_pitch?: string;
   status: LazarusAlertStatus;
-  resurrected_lead_id?: string;
-  created_date: string;
-  last_updated: string;
+  viewed_at?: string;
+  acted_at?: string;
+  dismissed_at?: string;
+  user_feedback?: string;
+  source_lead_id?: string;
+  created_at: string;
 }
 
 export interface LazarusSlots {

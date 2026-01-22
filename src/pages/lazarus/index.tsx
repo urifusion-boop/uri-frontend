@@ -957,7 +957,7 @@ const LazarusProtocolPage = () => {
                               }}
                             />
                             <Typography variant="caption" color="#9CA3AF" fontWeight={500}>
-                              {new Date(alert.created_date).toLocaleDateString('en-US', {
+                              {new Date(alert.created_at).toLocaleDateString('en-US', {
                                 month: 'short',
                                 day: 'numeric',
                                 year: 'numeric',
