@@ -693,7 +693,7 @@ const LazarusProtocolPage = () => {
                 <NotificationsActiveIcon sx={{ color: '#fff', fontSize: 20 }} />
               </Box>
               <Typography fontSize="32px" fontWeight={700} color="#111827" lineHeight={1} mb={1} letterSpacing="-0.03em">
-                {metrics?.new_alerts_count || 0}
+                {metrics?.new_alerts || 0}
               </Typography>
               <Typography fontSize="13px" color="#6B7280" fontWeight={600} mb={0.5}>
                 New Alerts
