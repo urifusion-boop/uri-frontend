@@ -281,12 +281,16 @@ const LazarusProtocolPage = () => {
     try {
       console.log(`[SCAN] Starting scan for SPECIFIC contact: ${focusId}`);
       const response = await LazarusService.scanSingleFocusContact(userId!, focusId);
-      console.log('[SCAN] Scan response:', response);
+      console.log('[SCAN] Full response:', JSON.stringify(response, null, 2));
+      console.log('[SCAN] responseData:', response.responseData);
+      console.log('[SCAN] sample_posts:', response.responseData?.sample_posts);
 
       // Store sample posts for modal display
-      if (response.responseData?.sample_posts) {
-        console.log('[SCAN] Sample posts fetched:', response.responseData.sample_posts);
+      if (response.responseData && response.responseData.sample_posts && response.responseData.sample_posts.length > 0) {
+        console.log('[SCAN] Setting sample posts:', response.responseData.sample_posts);
         setScanSamplePosts(response.responseData.sample_posts);
+      } else {
+        console.error('[SCAN] No sample posts in response!');
       }
 
       await loadDashboardContent();
