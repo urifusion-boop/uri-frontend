@@ -18,6 +18,7 @@ import LinkIcon from '@mui/icons-material/Link';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import PersonIcon from '@mui/icons-material/Person';
+import RadarIcon from '@mui/icons-material/Radar';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import ScienceIcon from '@mui/icons-material/Science';
@@ -72,6 +73,7 @@ const LazarusProtocolPage = () => {
   const [showScanLogViewer, setShowScanLogViewer] = useState(false);
   const [scanLogType, setScanLogType] = useState<'contact' | 'company'>('contact');
   const [scanSamplePosts, setScanSamplePosts] = useState<SocialMediaPost[]>([]);
+  const [isBatchScanning, setIsBatchScanning] = useState(false);
 
   useEffect(() => {
     if (userId) {
@@ -277,8 +279,8 @@ const LazarusProtocolPage = () => {
     setShowScanLogViewer(true);
 
     try {
-      console.log(`[SCAN] Starting scan for contact: ${focusId}`);
-      const response = await LazarusService.scanFocusContacts(10);
+      console.log(`[SCAN] Starting scan for SPECIFIC contact: ${focusId}`);
+      const response = await LazarusService.scanSingleFocusContact(userId!, focusId);
       console.log('[SCAN] Scan response:', response);
 
       // Store sample posts for modal display
@@ -332,6 +334,43 @@ const LazarusProtocolPage = () => {
       // Keep modal open, just stop the scanning state after a delay
       setTimeout(() => {
         setScanningMonitorId(null);
+      }, 1000);
+    }
+  };
+
+  const handleBatchScanAll = async () => {
+    setIsBatchScanning(true);
+    setScanLogType('contact');
+    setScanSamplePosts([]);
+    setShowScanLogViewer(true);
+
+    try {
+      console.log('[BATCH SCAN] Starting batch scan for all due contacts...');
+      const response = await LazarusService.scanFocusContacts(100);
+      console.log('[BATCH SCAN] Scan response:', response);
+
+      // Store sample posts for modal display
+      if (response.responseData?.sample_posts) {
+        console.log('[BATCH SCAN] Sample posts fetched:', response.responseData.sample_posts);
+        setScanSamplePosts(response.responseData.sample_posts);
+      }
+
+      const scanned = response.responseData?.total_scanned || 0;
+      const alerts = response.responseData?.total_alerts || 0;
+
+      toast.success(`✅ Scanned ${scanned} contacts, created ${alerts} alerts`, {
+        duration: 5000,
+      });
+
+      await loadDashboardContent();
+    } catch (error: any) {
+      console.error('[BATCH SCAN ERROR] Failed to batch scan:', error);
+      toast.error(`❌ Batch scan failed: ${error.message || 'Unknown error'}`, {
+        duration: 5000,
+      });
+    } finally {
+      setTimeout(() => {
+        setIsBatchScanning(false);
       }, 1000);
     }
   };
@@ -414,6 +453,37 @@ const LazarusProtocolPage = () => {
             </Typography>
           </Box>
           <Box display="flex" gap={1.5}>
+            <Button
+              variant="contained"
+              startIcon={
+                isBatchScanning ? (
+                  <RefreshIcon sx={{ animation: 'spin 1s linear infinite', '@keyframes spin': { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } } }} />
+                ) : (
+                  <RadarIcon />
+                )
+              }
+              onClick={handleBatchScanAll}
+              disabled={isBatchScanning}
+              sx={{
+                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                color: '#fff',
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '13px',
+                borderRadius: '8px',
+                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                  boxShadow: '0 6px 16px rgba(16, 185, 129, 0.4)',
+                },
+                '&:disabled': {
+                  background: '#D1D5DB',
+                  color: '#9CA3AF',
+                },
+              }}
+            >
+              {isBatchScanning ? 'Scanning...' : 'Scan All Due'}
+            </Button>
             <Button
               variant="contained"
               startIcon={<LinkIcon />}
@@ -1653,7 +1723,7 @@ const LazarusProtocolPage = () => {
         open={showScanLogViewer}
         onClose={() => setShowScanLogViewer(false)}
         scanType={scanLogType}
-        scanningId={scanLogType === 'contact' ? scanningContactId : scanningMonitorId}
+        scanningId={isBatchScanning ? 'batch' : scanLogType === 'contact' ? scanningContactId : scanningMonitorId}
         samplePosts={scanSamplePosts}
       />
 

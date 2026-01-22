@@ -182,6 +182,11 @@ export class LazarusService {
     return response.data;
   }
 
+  static async scanSingleFocusContact(userId: string, focusId: string): Promise<UriResponse<ScanResponse>> {
+    const response: AxiosResponse<UriResponse<ScanResponse>> = await UriHttpClient.getClient().post(`${BASE_PATH}/scan/focus-contact/${focusId}?user_id=${userId}`);
+    return response.data;
+  }
+
   static async scanCompanyMonitors(batchSize: number = 100): Promise<UriResponse<ScanResponse>> {
     const response: AxiosResponse<UriResponse<ScanResponse>> = await UriHttpClient.getClient().post(`${BASE_PATH}/scan/company-monitors?batch_size=${batchSize}`);
     return response.data;
