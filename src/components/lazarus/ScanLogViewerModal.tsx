@@ -38,7 +38,7 @@ const ScanLogViewerModal: React.FC<ScanLogViewerModalProps> = ({ open, onClose, 
     }
   }, [logs]);
 
-  // Simulate scan progress
+  // Show scan progress and completion
   useEffect(() => {
     if (open && scanningId) {
       setIsScanning(true);
@@ -48,88 +48,47 @@ const ScanLogViewerModal: React.FC<ScanLogViewerModalProps> = ({ open, onClose, 
       // Initial log
       addLog('info', `🔍 Starting ${scanType} scan...`, 'search');
 
-      // Simulated progress updates
+      // Progress simulation (just UI feedback)
       const progressInterval = setInterval(() => {
         setProgress((prev) => {
           if (prev >= 90) {
             clearInterval(progressInterval);
             return prev;
           }
-          return prev + 10;
+          return prev + 15;
         });
-      }, 500);
+      }, 800);
 
-      // Simulated log updates (in production, these would come from backend)
-      setTimeout(() => addLog('info', '📦 Processing batch for user...', 'info'), 800);
-      setTimeout(() => addLog('info', '🔍 Detecting platform type...', 'search'), 1500);
+      // Show "fetching" state
       setTimeout(() => {
-        const platform = Math.random() > 0.5 ? 'linkedin' : 'twitter';
-        if (platform === 'linkedin') {
-          addLog('success', '✅ Platform detected: LinkedIn', 'linkedin');
-          addLog('info', '🚀 Starting Apify actor to fetch LinkedIn posts...', 'linkedin');
-          addLog('info', '   Deep scrape: ✅ Enabled', 'info');
-          addLog('info', '   Limit per source: 10 posts', 'info');
-        } else {
-          addLog('success', '✅ Platform detected: Twitter/X', 'twitter');
-          addLog('info', '🔍 Building Origami query...', 'twitter');
-          addLog('info', '   Query: (from:handle) AND ("keywords")', 'info');
-        }
-      }, 2200);
-
-      setTimeout(() => {
-        const platform = Math.random() > 0.5 ? 'linkedin' : 'twitter';
-        if (platform === 'linkedin') {
-          addLog('info', '📦 Retrieved items from Apify dataset...', 'linkedin');
-          addLog('success', `✅ Fetched ${Math.floor(Math.random() * 15 + 5)} LinkedIn posts`, 'check');
-        } else {
-          addLog('success', `✅ Fetched ${Math.floor(Math.random() * 20 + 10)} tweets via Origami method`, 'check');
-        }
-
-        // Display actual posts if available
-        if (samplePosts && samplePosts.length > 0) {
-          addLog('info', `\n📝 Sample Posts (${samplePosts.length} fetched):`, 'info');
-          samplePosts.slice(0, 3).forEach((post, idx) => {
-            const text = post.text ? post.text.substring(0, 120) + (post.text.length > 120 ? '...' : '') : 'No text';
-            const author = post.author || 'Unknown';
-            const platform = post.platform || 'Unknown platform';
-            const engagement = `${post.likes || 0} likes, ${post.comments || 0} comments`;
-
-            addLog('info', `\n   Post ${idx + 1}:`, 'info');
-            addLog('info', `   📄 "${text}"`, 'info');
-            addLog('info', `   👤 Author: ${author}`, 'info');
-            addLog('info', `   📱 Platform: ${platform}`, 'info');
-            addLog('info', `   💬 Engagement: ${engagement}`, 'info');
-          });
-        }
-      }, 3500);
-
-      setTimeout(() => {
-        addLog('info', '🤖 Analyzing content with AI for buying signals...', 'search');
-      }, 4200);
-
-      setTimeout(() => {
-        const signalDetected = Math.random() > 0.5;
-        if (signalDetected) {
-          addLog('success', '🎯 Buying signal detected!', 'check');
-          addLog('success', '   Signal Type: Pain / Switch Intent', 'check');
-          addLog('success', '   Confidence: 85%', 'check');
-          addLog('info', '📬 Creating alert...', 'info');
-        } else {
-          addLog('info', 'ℹ️  No buying signals detected in recent posts', 'info');
-        }
-      }, 5500);
-
-      setTimeout(() => {
-        addLog('success', '✅ Scan completed successfully!', 'check');
-        setProgress(100);
-        setIsScanning(false);
-      }, 6500);
+        addLog('info', '📡 Fetching posts from social media...', 'search');
+      }, 1000);
 
       return () => {
         clearInterval(progressInterval);
       };
     }
   }, [open, scanningId, scanType]);
+
+  // When posts arrive, show completion
+  useEffect(() => {
+    if (samplePosts && samplePosts.length > 0 && isScanning) {
+      setTimeout(() => {
+        addLog('success', `✅ Fetched ${samplePosts.length} posts successfully!`, 'check');
+        addLog('info', '🤖 AI analysis complete', 'info');
+        addLog('success', '✅ Scan completed!', 'check');
+        setProgress(100);
+        setIsScanning(false);
+      }, 500);
+    } else if (samplePosts && samplePosts.length === 0 && isScanning) {
+      // If scan finished but no posts
+      setTimeout(() => {
+        addLog('info', 'ℹ️  No posts found or scan in progress...', 'info');
+        setProgress(100);
+        setIsScanning(false);
+      }, 3000);
+    }
+  }, [samplePosts, isScanning]);
 
   const addLog = (level: ScanLog['level'], message: string, icon?: ScanLog['icon']) => {
     setLogs((prev) => [
