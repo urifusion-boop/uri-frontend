@@ -146,11 +146,18 @@ const PasteAndGoModal: React.FC<PasteAndGoModalProps> = ({ open, onClose, userId
 
     try {
       if (parsedData.type === 'linkedin' || parsedData.type === 'twitter') {
-        const contactData = {
+        const contactData: any = {
           name: parsedData.name || 'Unknown',
-          social_handle: parsedData.handle,
+          social_handle: parsedData.url, // Full URL
           industry_keywords: keywords,
         };
+
+        // Explicitly set linkedin_url or twitter_url based on detected type
+        if (parsedData.type === 'linkedin') {
+          contactData.linkedin_url = parsedData.url;
+        } else if (parsedData.type === 'twitter') {
+          contactData.twitter_url = parsedData.url;
+        }
 
         await LazarusService.addFocusContact(userId, contactData);
       } else if (parsedData.type === 'website') {
