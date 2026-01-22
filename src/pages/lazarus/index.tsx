@@ -285,10 +285,24 @@ const LazarusProtocolPage = () => {
       console.log('[SCAN] responseData:', response.responseData);
       console.log('[SCAN] sample_posts:', response.responseData?.sample_posts);
 
-      // Store sample posts for modal display
+      // Store sample posts for modal display - sanitize the data
       if (response.responseData && response.responseData.sample_posts && response.responseData.sample_posts.length > 0) {
-        console.log('[SCAN] Setting sample posts:', response.responseData.sample_posts);
-        setScanSamplePosts(response.responseData.sample_posts);
+        console.log('[SCAN] Raw sample posts:', response.responseData.sample_posts);
+
+        // Sanitize posts to ensure all fields are proper types
+        const sanitizedPosts = response.responseData.sample_posts.map((post: any) => ({
+          text: post.text || 'No content',
+          author: typeof post.author === 'object' ? post.author.name || `${post.author.firstName || ''} ${post.author.lastName || ''}`.trim() || 'Unknown' : post.author || 'Unknown',
+          platform: post.platform || 'Unknown',
+          created_at: post.created_at,
+          likes: post.likes || 0,
+          comments: Array.isArray(post.comments) ? post.comments.length : post.comments || 0,
+          retweets: post.retweets || 0,
+          shares: post.shares || 0,
+        }));
+
+        console.log('[SCAN] Sanitized posts:', sanitizedPosts);
+        setScanSamplePosts(sanitizedPosts);
       } else {
         console.error('[SCAN] No sample posts in response!');
       }
