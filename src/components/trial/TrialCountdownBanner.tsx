@@ -1,6 +1,5 @@
 import { TrialStatus } from '@/api/TrialService';
-import { useActiveSubscription } from '@/hooks/subscription/activeSubscription.hook';
-import { SubscriptionStatusEnum } from '@/models/enum-models/SubscriptionStatusEnum';
+import { SubscriptionTypeEnum } from '@/models/enum-models/SubscriptionStatusEnum';
 import { useAuth } from '@/providers/AuthProvider';
 import { Box, Button, LinearProgress, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
@@ -13,14 +12,9 @@ interface TrialCountdownBannerProps {
 
 const TrialCountdownBanner: React.FC<TrialCountdownBannerProps> = ({ trialStatus, hideUpgradeButton = false }) => {
   const router = useRouter();
-  const { userDetails } = useAuth();
-  const { activeSubscription, isLoadingActiveSubscription } = useActiveSubscription();
+  const { subscriptionPlanType } = useAuth();
 
-  if (isLoadingActiveSubscription) {
-    return null;
-  }
-
-  if (userDetails?.subscriptionStatus === SubscriptionStatusEnum.ACTIVE || activeSubscription) {
+  if (subscriptionPlanType && subscriptionPlanType !== SubscriptionTypeEnum.FreeTrial) {
     return null;
   }
 

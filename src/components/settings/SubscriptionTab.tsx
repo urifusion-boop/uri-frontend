@@ -1,7 +1,7 @@
 import { TrialService, TrialStatus } from '@/api/TrialService';
 import { LightThemeColors } from '@/configs/colors.config';
-import { useActiveSubscription } from '@/hooks/subscription/activeSubscription.hook';
-import { SubscriptionStatusEnum } from '@/models/enum-models/SubscriptionStatusEnum';
+import useFeatureLimit from '@/hooks/subscription/featureLimit.hooks';
+import { SubscriptionTypeEnum } from '@/models/enum-models/SubscriptionStatusEnum';
 import { useAuth } from '@/providers/AuthProvider';
 import { Box } from '@mui/material';
 import { useRouter } from 'next/router';
@@ -14,7 +14,7 @@ import NewSubscription from '../subscription/NewSubscription';
 const SubscriptionTab = () => {
   const router = useRouter();
   const { userDetails } = useAuth();
-  const { activeSubscription, isLoadingActiveSubscription } = useActiveSubscription();
+  const { data: featureLimit, isLoading: isLoadingFeatureLimit } = useFeatureLimit(userDetails?.userId ?? '');
   const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null);
   const [loadingTrial, setLoadingTrial] = useState(true);
   const [showUpgrade, setShowUpgrade] = useState(false);
@@ -48,7 +48,7 @@ const SubscriptionTab = () => {
     fetchTrialStatus();
   }, [userDetails?.userId]);
 
-  if (isLoadingActiveSubscription || loadingTrial) {
+  if (isLoadingFeatureLimit || loadingTrial) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
         <Spinner color={LightThemeColors.uriColor} />
@@ -56,11 +56,11 @@ const SubscriptionTab = () => {
     );
   }
 
-  const hasActiveSubscription = !!activeSubscription || userDetails?.subscriptionStatus === SubscriptionStatusEnum.ACTIVE;
+  const hasActiveSubscription = !!featureLimit?.subscriptionPlan && featureLimit.subscriptionPlan !== SubscriptionTypeEnum.FreeTrial;
 
   // Priority 1: Active Subscription (including free plans)
-  if (hasActiveSubscription && !showUpgrade) {
-    return <HasActiveSubscription activeSubscription={activeSubscription} />;
+  if (hasActiveSubscription && !showUpgrade && featureLimit) {
+    return <HasActiveSubscription featureLimit={featureLimit} />;
   }
 
   if (showUpgrade) {

@@ -4,9 +4,8 @@ import React, { useEffect, useState } from 'react';
 import BeaconBubble from '@/components/guide-tour/bubble';
 import { DateHelper } from '@/helpers/DateHelper';
 import { TextHelper } from '@/helpers/TextHelper';
-import { useActiveSubscription } from '@/hooks/subscription/activeSubscription.hook';
-import { SubscriptionStatusEnum } from '@/models/enum-models/SubscriptionStatusEnum';
-import { useAuth } from '@/providers/AuthProvider';
+import { SubscriptionStatusEnum, SubscriptionTypeEnum } from '@/models/enum-models/SubscriptionStatusEnum';
+import { useFeatureLimitStore } from '@/store/useFeatureLimitStore';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/navigation';
@@ -57,9 +56,8 @@ interface DashboardCardProps {
 
 const DashboardCard: React.FC<DashboardCardProps> = React.memo(({ username, startTour }) => {
   const [currentDateTime, setCurrentDateTime] = useState(dayjs());
-  const { userDetails } = useAuth();
+  const featureLimit = useFeatureLimitStore((state) => state.featureLimit);
   const router = useRouter();
-  const { activeSubscription } = useActiveSubscription();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -69,8 +67,12 @@ const DashboardCard: React.FC<DashboardCardProps> = React.memo(({ username, star
     return () => clearInterval(timer);
   }, []);
 
-  const hasActiveSubscription = userDetails?.subscriptionStatus === SubscriptionStatusEnum.ACTIVE || !!activeSubscription;
-  const isSocialListeningFree = activeSubscription?.plan?.plan_code === 'SOCIAL_LISTENING_FREE_MONTHLY' || (!activeSubscription && userDetails?.subscriptionStatus === SubscriptionStatusEnum.ACTIVE);
+  const subscriptionPlan = (featureLimit as any)?.subscriptionPlan as string | undefined;
+  const subscriptionStatus = (featureLimit as any)?.subscriptionStatus as string | undefined;
+
+  const hasActiveSubscription = subscriptionStatus === SubscriptionStatusEnum.ACTIVE && !!subscriptionPlan && subscriptionPlan !== SubscriptionTypeEnum.FreeTrial;
+
+  const isSocialListeningFree = subscriptionStatus === SubscriptionStatusEnum.ACTIVE && subscriptionPlan === SubscriptionTypeEnum.SocialListeningFree;
 
   return (
     <Container>
@@ -120,7 +122,7 @@ const DashboardCard: React.FC<DashboardCardProps> = React.memo(({ username, star
                   mr: 1,
                 }}
               >
-                {isSocialListeningFree ? 'Social Listening Free' : TextHelper.removeChar(activeSubscription?.plan?.name ?? 'Active Plan', '_')}
+                {isSocialListeningFree ? 'Social Listening Free' : TextHelper.removeChar(subscriptionPlan ?? 'Active Plan', '_')}
               </Typography>
               <Typography
                 sx={{
@@ -135,8 +137,8 @@ const DashboardCard: React.FC<DashboardCardProps> = React.memo(({ username, star
           )}
 
           {!hasActiveSubscription && (
-            <CustomButton mode="primary" textStyles="font-semibold" className="bg-white mt-4 max-w-fit font-semibold" textColor="#CD1B78" onClick={() => router.push('/dashboard')}>
-              `Unlock Premium`
+            <CustomButton mode="primary" textStyles="font-semibold" className="mt-4 max-w-fit font-semibold shadow-lg hover:shadow-xl" textColor="#FFFFFF" onClick={() => router.push('/pricing')}>
+              Unlock Premium
             </CustomButton>
           )}
         </Box>

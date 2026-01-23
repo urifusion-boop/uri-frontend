@@ -55,6 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useFeatureLimit(userDetails?.userId ?? '');
 
   const resetFeatureLimitStore = useFeatureLimitStore((state) => state.resetFeatureLimitStore);
+  const featureLimit = useFeatureLimitStore((state) => state.featureLimit);
 
   const [isPending, setIsPending] = useState(true);
   const [userRoutes, setUserRoutes] = useState<Record<IUserRoutes, string>>(creativeUserRoutes); //
@@ -135,6 +136,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem(STORE_KEYS.USER_SUBSCRIPTION_PLAN_TYPE, data);
     setSubscriptionPlanType(data);
   };
+
+  useEffect(() => {
+    const subscriptionPlan = (featureLimit as any)?.subscriptionPlan;
+    if (subscriptionPlan) {
+      localStorage.setItem(STORE_KEYS.USER_SUBSCRIPTION_PLAN_TYPE, subscriptionPlan);
+      setSubscriptionPlanType(subscriptionPlan);
+    }
+  }, [featureLimit]);
 
   const logoutUser = useCallback(() => {
     localStorage.removeItem(STORE_KEYS.USER_DETAILS);

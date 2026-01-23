@@ -20,7 +20,7 @@ interface Props {
 const FreeTrialPlansList = ({ onSelectPlan, selectedPlan }: Props) => {
   const [trialComplete, setTrialComplete] = useState(false);
   const { getUserDetails } = useSubscription();
-  const { userDetails } = useAuth();
+  const { userDetails, saveUserTokens } = useAuth();
 
   const freeTrialPlan: SubscriptionPlanDto = {
     name: SubscriptionTypeEnum.FreeTrial,
@@ -43,8 +43,13 @@ const FreeTrialPlansList = ({ onSelectPlan, selectedPlan }: Props) => {
       }
       const accessToken = response?.responseData?.accessToken;
       const refreshToken = response?.responseData?.refreshToken;
-      if (accessToken) localStorage.setItem('token', accessToken);
-      if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
+      if (accessToken && refreshToken) {
+        // Save tokens to both localStorage AND AuthProvider context
+        // This ensures getUserDetails uses the new tokens, not stale ones
+        localStorage.setItem('token', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        saveUserTokens({ accessToken, refreshToken });
+      }
       await getUserDetails.mutateAsync();
       setTrialComplete(true);
     } catch (error: any) {
