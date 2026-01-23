@@ -4,8 +4,9 @@ import { useMemo, useState } from 'react';
 import { NumberHelper } from '@/helpers/NumberHelper';
 import { TextHelper } from '@/helpers/TextHelper';
 import { useSubscriptionHistory } from '@/hooks/subscription/subscriptionHistory';
-import { ActiveSubscriptionResponseDto, PaystackSubscriptionDto } from '@/models/dtos/SubscriptionDto';
-import { SubscriptionStatusEnum } from '@/models/enum-models/SubscriptionStatusEnum';
+import { FeatureLimitDto } from '@/models/dtos/FeatureLimitDto';
+import { PaystackSubscriptionDto } from '@/models/dtos/SubscriptionDto';
+import { SubscriptionTypeEnum } from '@/models/enum-models/SubscriptionStatusEnum';
 import { useAuth } from '@/providers/AuthProvider';
 import dayjs from 'dayjs';
 import { BiX } from 'react-icons/bi';
@@ -13,10 +14,10 @@ import SmartModal from '../modals/SmartModal';
 import SubscriptionsTable from './SubscriptionsTable';
 
 interface HasActiveSubscriptionProps {
-  activeSubscription: ActiveSubscriptionResponseDto | null | undefined;
+  featureLimit: FeatureLimitDto;
 }
 
-const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProps) => {
+const HasActiveSubscription = ({ featureLimit }: HasActiveSubscriptionProps) => {
   const [cancelSubscriptionConfirmationModal, setCancelSubscriptionConfirmationModal] = useState(false);
 
   const [cancelSubscriptionSuccessModal, setCancelSubscriptionSuccessModal] = useState(false);
@@ -24,33 +25,27 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
   const { subscriptionHistory, isLoadingSubscriptionHistory, page, setPage, disableSubscriptionMutation } = useSubscriptionHistory();
   const { userDetails } = useAuth();
 
-  const cancelledButActiveSubscription = useMemo(
-    () => subscriptionHistory?.data?.find((subscription: PaystackSubscriptionDto) => subscription?.status?.toLowerCase() === 'non-renewing' && dayjs(subscription.next_payment_date).isAfter(dayjs())),
+  const hasPlan = featureLimit.subscriptionStatus === 'ACTIVE';
+  const isSocialListeningFree = featureLimit.subscriptionPlan === SubscriptionTypeEnum.SocialListeningFree;
+
+  const activePaystackSubscription = useMemo(
+    () =>
+      subscriptionHistory?.data?.find((subscription: PaystackSubscriptionDto) => {
+        const status = subscription?.status?.toLowerCase();
+        return status === 'active' || status === 'non-renewing';
+      }),
     [subscriptionHistory]
   );
 
-  const freeSubscriptionFallback = useMemo(() => {
-    if (!activeSubscription && !cancelledButActiveSubscription && userDetails?.subscriptionStatus === SubscriptionStatusEnum.ACTIVE) {
-      return {
-        amount: 0,
-        next_payment_date: null,
-        createdAt: userDetails.dateCreated,
-        plan: {
-          name: 'SOCIAL_LISTENING_FREE_MONTHLY',
-          plan_code: 'SOCIAL_LISTENING_FREE_MONTHLY',
-          interval: 'monthly',
-        },
-      } as unknown as ActiveSubscriptionResponseDto;
-    }
-    return undefined;
-  }, [activeSubscription, cancelledButActiveSubscription, userDetails?.subscriptionStatus, userDetails?.dateCreated]);
+  const joinedDate = useMemo(() => {
+    const raw = (featureLimit as any).created_at ?? (featureLimit as any).createdAt ?? userDetails?.dateCreated;
+    return raw ? dayjs(raw).format('MMMM YYYY ') : '';
+  }, [featureLimit, userDetails?.dateCreated]);
 
-  const _activeSubScription = useMemo(
-    () => activeSubscription || cancelledButActiveSubscription || freeSubscriptionFallback,
-    [activeSubscription, cancelledButActiveSubscription, freeSubscriptionFallback]
-  );
+  const planDisplayName = isSocialListeningFree ? 'Social Listening Free' : TextHelper.removeChar(featureLimit.subscriptionPlan ?? '', '_');
 
-  const isSocialListeningFree = _activeSubScription?.plan?.plan_code === 'SOCIAL_LISTENING_FREE_MONTHLY';
+  const amountValue = isSocialListeningFree ? 0 : (activePaystackSubscription?.amount ?? 0) / 100;
+  const intervalLabel = isSocialListeningFree ? 'monthly' : (activePaystackSubscription?.plan?.interval ?? 'monthly');
 
   return (
     <>
@@ -90,7 +85,7 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
         </Typography>
 
         {/* Current Plan */}
-        {_activeSubScription ? (
+        {hasPlan ? (
           <Box
             sx={{
               maxWidth: '629px',
@@ -167,7 +162,7 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
                       borderRadius: '4px',
                     }}
                   >
-                    {isSocialListeningFree ? 'Social Listening Free' : TextHelper.removeChar(_activeSubScription?.plan?.name ?? '', '_')}
+                    {planDisplayName}
                   </Typography>
                   <Typography
                     sx={{
@@ -186,7 +181,7 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
                     color: '#6C727F',
                   }}
                 >
-                  Joined {dayjs(_activeSubScription?.createdAt).format('MMMM YYYY ')}
+                  Joined {joinedDate || '—'}
                 </Typography>
               </Box>
               <Box
@@ -202,7 +197,7 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
                     color: '#141416',
                   }}
                 >
-                  {NumberHelper.formatNumber((_activeSubScription?.amount ?? 0) / 100)}
+                  {NumberHelper.formatNumber(amountValue)}
                 </Typography>
                 <Typography
                   sx={{
@@ -211,7 +206,7 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
                     color: '#363636',
                   }}
                 >
-                  /{_activeSubScription?.plan?.interval}
+                  /{intervalLabel}
                 </Typography>
               </Box>
             </Box>
@@ -244,13 +239,13 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
                     color: '#141416',
                   }}
                 >
-                  {isSocialListeningFree || !_activeSubScription?.next_payment_date ? 'No upcoming payments' : dayjs(_activeSubScription.next_payment_date).format('MMM DD, YYYY')}
+                  {!activePaystackSubscription?.next_payment_date ? 'No upcoming payments' : dayjs(activePaystackSubscription.next_payment_date).format('MMM DD, YYYY')}
                 </Typography>
               </Box>
             </Box>
 
             {/* CTA */}
-            {activeSubscription && (
+            {activePaystackSubscription && (
               <Box
                 sx={{
                   display: 'flex',
@@ -440,11 +435,11 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
         mainText="Cancel Subscription"
         subText="You'll lose access after your billing cycle ends. You can resubscribe anytime."
         onClick={() => {
-          if (!activeSubscription?.subscription_code || !activeSubscription?.email_token) return;
+          if (!activePaystackSubscription?.subscription_code || !activePaystackSubscription?.email_token) return;
           disableSubscriptionMutation.mutate(
             {
-              code: activeSubscription?.subscription_code,
-              token: activeSubscription?.email_token,
+              code: activePaystackSubscription?.subscription_code,
+              token: activePaystackSubscription?.email_token,
             },
             {
               onSuccess: () => {

@@ -15,27 +15,50 @@ interface UserTypeCardProps {
   badge?: string;
   actionLabel?: string;
   onAction?: () => void;
+  isActive?: boolean;
 }
 
-const UserTypeCard = ({ icon, iconBg, title, subtitle, description, features, isHighlighted, badge, actionLabel, onAction }: UserTypeCardProps) => {
+const UserTypeCard = ({ icon, iconBg, title, subtitle, description, features, isHighlighted, badge, actionLabel, onAction, isActive }: UserTypeCardProps) => {
+  const activeBorderColor = '#16a34a';
+
   return (
     <Card
       sx={{
         borderRadius: 4,
         height: '100%',
-        border: isHighlighted ? `2px solid ${LightThemeColors.uriColor}` : '1px solid #e0e0e0',
+        border: isActive ? `2px solid ${activeBorderColor}` : isHighlighted ? `2px solid ${LightThemeColors.uriColor}` : '1px solid #e0e0e0',
         position: 'relative',
         overflow: 'visible',
         transition: 'all 200ms ease',
         display: 'flex',
         flexDirection: 'column',
+        backgroundColor: isActive ? alpha(activeBorderColor, 0.02) : 'white',
         '&:hover': {
           transform: 'translateY(-4px)',
-          boxShadow: isHighlighted ? `0 12px 40px ${alpha(LightThemeColors.uriColor, 0.2)}` : '0 12px 40px rgba(0,0,0,0.1)',
+          boxShadow: isActive ? `0 12px 40px ${alpha(activeBorderColor, 0.2)}` : isHighlighted ? `0 12px 40px ${alpha(LightThemeColors.uriColor, 0.2)}` : '0 12px 40px rgba(0,0,0,0.1)',
         },
       }}
     >
-      {badge && (
+      {isActive && (
+        <Chip
+          icon={<FaCheck size={10} />}
+          label="ACTIVE"
+          size="small"
+          sx={{
+            position: 'absolute',
+            top: -10,
+            right: 16,
+            backgroundColor: activeBorderColor,
+            color: 'white',
+            fontWeight: 800,
+            fontSize: 10,
+            '& .MuiChip-icon': {
+              color: 'white',
+            },
+          }}
+        />
+      )}
+      {badge && !isActive && (
         <Chip
           label={badge}
           size="small"
@@ -104,32 +127,33 @@ const UserTypeCard = ({ icon, iconBg, title, subtitle, description, features, is
           {/* Action Button */}
           {actionLabel && (
             <Button
-              variant={isHighlighted ? 'contained' : 'outlined'}
+              variant={isActive ? 'contained' : isHighlighted ? 'contained' : 'outlined'}
               fullWidth
               onClick={onAction}
-              disabled={!onAction}
+              disabled={!onAction || isActive}
               sx={{
                 mt: 'auto',
                 borderRadius: 2.5,
                 textTransform: 'none',
                 fontWeight: 700,
-                borderColor: LightThemeColors.uriColor,
-                color: isHighlighted ? 'white' : LightThemeColors.uriColor,
-                backgroundColor: isHighlighted ? LightThemeColors.uriColor : 'transparent',
+                borderColor: isActive ? '#16a34a' : LightThemeColors.uriColor,
+                color: isActive ? 'white' : isHighlighted ? 'white' : LightThemeColors.uriColor,
+                backgroundColor: isActive ? '#16a34a' : isHighlighted ? LightThemeColors.uriColor : 'transparent',
                 '&:hover': {
-                  borderColor: LightThemeColors.uriColor,
-                  backgroundColor: isHighlighted ? alpha(LightThemeColors.uriColor, 0.9) : alpha(LightThemeColors.uriColor, 0.05),
-                  color: isHighlighted ? 'white' : LightThemeColors.uriColor,
-                  boxShadow: isHighlighted ? `0 4px 12px ${alpha(LightThemeColors.uriColor, 0.3)}` : 'none',
+                  borderColor: isActive ? '#16a34a' : LightThemeColors.uriColor,
+                  backgroundColor: isActive ? '#16a34a' : isHighlighted ? alpha(LightThemeColors.uriColor, 0.9) : alpha(LightThemeColors.uriColor, 0.05),
+                  color: isActive ? 'white' : isHighlighted ? 'white' : LightThemeColors.uriColor,
+                  boxShadow: isActive ? 'none' : isHighlighted ? `0 4px 12px ${alpha(LightThemeColors.uriColor, 0.3)}` : 'none',
                 },
                 '&.Mui-disabled': {
-                  borderColor: '#e0e0e0',
-                  color: '#9e9e9e',
-                  backgroundColor: '#f5f5f5',
+                  borderColor: isActive ? '#16a34a' : '#e0e0e0',
+                  color: isActive ? 'white' : '#9e9e9e',
+                  backgroundColor: isActive ? '#16a34a' : '#f5f5f5',
+                  opacity: isActive ? 1 : 0.7,
                 },
               }}
             >
-              {actionLabel}
+              {isActive ? 'Current Plan' : actionLabel}
             </Button>
           )}
         </Stack>
@@ -140,14 +164,25 @@ const UserTypeCard = ({ icon, iconBg, title, subtitle, description, features, is
 
 interface UserJourneyCardsProps {
   onStartTrial?: () => void;
-  onViewPaidPlans?: () => void;
   onStartFreeSocialListening?: () => void;
   trialButtonText?: string;
   isTrialDisabled?: boolean;
+  isFreeSocialListeningActive?: boolean;
+  isFreeSocialListeningLoading?: boolean;
 }
 
-export const UserJourneyCards = ({ onStartTrial, onViewPaidPlans, onStartFreeSocialListening, trialButtonText = 'Start Free Trial', isTrialDisabled = false }: UserJourneyCardsProps) => {
+export const UserJourneyCards = ({
+  onStartTrial,
+  onStartFreeSocialListening,
+  trialButtonText = 'Start Free Trial',
+  isTrialDisabled = false,
+  isFreeSocialListeningActive = false,
+  isFreeSocialListeningLoading = false,
+}: UserJourneyCardsProps) => {
   const router = useRouter();
+
+  const freeSocialListeningActionLabel = isFreeSocialListeningActive ? 'On this plan' : isFreeSocialListeningLoading ? 'Checking plan...' : 'Start Free Social Listening';
+  const freeSocialListeningOnAction = isFreeSocialListeningActive || isFreeSocialListeningLoading ? undefined : onStartFreeSocialListening;
 
   const userTypes: UserTypeCardProps[] = [
     {
@@ -168,8 +203,9 @@ export const UserJourneyCards = ({ onStartTrial, onViewPaidPlans, onStartFreeSoc
       subtitle: 'Basic monitoring',
       description: 'Perfect for individuals who want to monitor social presence with optional lead gen access.',
       features: ['1 social account tracking', '1 report per month', 'Access to Dera AI assistant', 'PAYG or credits for leads'],
-      actionLabel: 'Start Free Social Listening',
-      onAction: onStartFreeSocialListening,
+      actionLabel: freeSocialListeningActionLabel,
+      onAction: freeSocialListeningOnAction,
+      isActive: isFreeSocialListeningActive,
     },
     {
       icon: <FaHandshake size={20} />,
@@ -179,7 +215,7 @@ export const UserJourneyCards = ({ onStartTrial, onViewPaidPlans, onStartFreeSoc
       description: 'For growing brands that need more comprehensive social tracking and reporting.',
       features: ['3 social accounts tracking', '4 reports per month', 'Access to Dera AI assistant', 'Enhanced tracking capabilities'],
       actionLabel: 'Activate Plan',
-      onAction: onViewPaidPlans ?? (() => router.push('/settings?tab=subscription')),
+      onAction: undefined,
     },
     {
       icon: <FaBuilding size={20} />,
@@ -189,7 +225,7 @@ export const UserJourneyCards = ({ onStartTrial, onViewPaidPlans, onStartFreeSoc
       description: 'The ultimate solution for large organizations requiring unlimited capabilities.',
       features: ['Unlimited social accounts', 'Unlimited reports', 'Full AI capabilities', 'Priority support & collaboration'],
       actionLabel: 'Activate Plan',
-      onAction: onViewPaidPlans ?? (() => router.push('/settings?tab=subscription')),
+      onAction: undefined,
     },
     {
       icon: <FaWallet size={20} />,
@@ -199,7 +235,7 @@ export const UserJourneyCards = ({ onStartTrial, onViewPaidPlans, onStartFreeSoc
       description: 'Flexible payment for lead generation. Fund your wallet and pay only for what you use.',
       features: ['Fund wallet (min ₦5,000)', 'Pay per scan & lead action', 'No commitment required', 'Instant deductions'],
       actionLabel: 'Activate PAYG',
-      onAction: () => router.push('/wallet'),
+      onAction: undefined,
     },
     {
       icon: <FaCoins size={20} />,
@@ -211,7 +247,7 @@ export const UserJourneyCards = ({ onStartTrial, onViewPaidPlans, onStartFreeSoc
       isHighlighted: true,
       badge: 'BEST VALUE',
       actionLabel: 'Buy Credits',
-      onAction: () => router.push('/wallet'),
+      onAction: undefined,
     },
   ];
 

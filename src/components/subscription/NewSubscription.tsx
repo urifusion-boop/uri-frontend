@@ -8,6 +8,7 @@ import SubscriptionPlansList from '@/components/subscription/general/Subscriptio
 import { useSubscription } from '@/hooks/subscription/subscription.hook';
 import { SubscriptionTypeEnum } from '@/models/enum-models/SubscriptionStatusEnum';
 import { useAuth } from '@/providers/AuthProvider';
+import { useFeatureLimitStore } from '@/store/useFeatureLimitStore';
 import { Box, Dialog, DialogContent, DialogTitle, IconButton, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -28,11 +29,18 @@ const NewSubscription = () => {
   const { userDetails } = useAuth();
   const { freeSubscription } = useSubscription();
   const router = useRouter();
+  const featureLimit = useFeatureLimitStore((state) => state.featureLimit);
+  const isFeatureLimitLoading = useFeatureLimitStore((state) => state.isLoading);
+
+  // Check if user already has Social Listening Free plan active
+  const isFreeSocialListeningActive = featureLimit?.subscriptionPlan === SubscriptionTypeEnum.SocialListeningFree && featureLimit?.subscriptionStatus === 'ACTIVE';
 
   // Check if user is eligible for free trial
   useEffect(() => {
     const checkTrialEligibility = async () => {
       if (!userDetails?.userId) {
+        // User not logged in - they're still eligible to try (will redirect to login)
+        setIsTrialEligible(true);
         setCheckingEligibility(false);
         return;
       }
@@ -41,16 +49,18 @@ const NewSubscription = () => {
         const response = await TrialService.getTrialStatus(userDetails.userId);
         if (response.status && response.responseData) {
           const { hasUsedFreeTrial, status } = response.responseData;
-          // User is eligible if they haven't used trial and it's not started
-          const eligible = !hasUsedFreeTrial && status === 'not_started';
+          // User is eligible if they haven't used trial OR if trial status allows starting
+          // (not_started means never started, but we should also allow if status check fails)
+          const eligible = !hasUsedFreeTrial && (status === 'not_started' || status === undefined);
           setIsTrialEligible(eligible);
-          // Auto-show trial modal for eligible users
-          if (eligible) {
-            setShowTrialModal(true);
-          }
+        } else {
+          // API returned but no valid data - assume eligible
+          setIsTrialEligible(true);
         }
       } catch (error) {
         console.error('Error checking trial eligibility:', error);
+        // On error, default to eligible (let the activation endpoint handle validation)
+        setIsTrialEligible(true);
       } finally {
         setCheckingEligibility(false);
       }
@@ -128,8 +138,13 @@ const NewSubscription = () => {
             </Box>
 
             <UserJourneyCards
-              onStartTrial={() => setShowTrialModal(true)}
-              onViewPaidPlans={() => setShowPlansModal(true)}
+              onStartTrial={() => {
+                if (!userDetails) {
+                  router.push('/auth/login?redirect=/settings?tab=subscription');
+                  return;
+                }
+                setShowTrialModal(true);
+              }}
               onStartFreeSocialListening={() => {
                 if (!userDetails) {
                   router.push('/auth/login?redirect=/settings?tab=subscription');
@@ -147,6 +162,8 @@ const NewSubscription = () => {
               }}
               isTrialDisabled={!isTrialEligible}
               trialButtonText={checkingEligibility ? 'Loading...' : !isTrialEligible ? 'Trial Already Used' : 'Start Free Trial'}
+              isFreeSocialListeningActive={isFreeSocialListeningActive}
+              isFreeSocialListeningLoading={isFeatureLimitLoading}
             />
 
             <Box sx={{ mt: 8 }}>
@@ -172,7 +189,7 @@ const NewSubscription = () => {
       </Box>
 
       {/* Trial Activation Modal */}
-      {userDetails?.userId && isTrialEligible && <TrialActivationModal open={showTrialModal} onClose={() => setShowTrialModal(false)} onSuccess={handleTrialSuccess} userId={userDetails.userId} />}
+      {userDetails?.userId && <TrialActivationModal open={showTrialModal} onClose={() => setShowTrialModal(false)} onSuccess={handleTrialSuccess} userId={userDetails.userId} />}
 
       {/* Plan Selection Modal */}
       <Dialog open={showPlansModal} onClose={() => setShowPlansModal(false)} maxWidth="lg" fullWidth>

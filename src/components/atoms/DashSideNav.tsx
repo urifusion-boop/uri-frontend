@@ -4,7 +4,6 @@ import React, { Fragment, memo, useCallback, useEffect, useState } from 'react';
 import { useWorkflowFilter } from '@/contexts/WorkflowFilterContext';
 import useCustomTheme from '@/hooks/theme.hook';
 import { useUserWorkflows } from '@/hooks/useUserWorkflows';
-import { SubscriptionStatusEnum } from '@/models/enum-models/SubscriptionStatusEnum';
 import styles from '@/styles/Dashboard.module.css';
 import { Box } from '@mui/material';
 import Link from 'next/link';
@@ -26,7 +25,7 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
   const { themeColors } = useCustomTheme();
   const router = useRouter();
   const { pathname, asPath, query } = router;
-  const { userDetails } = useAuth();
+  const { userDetails, subscriptionPlanType } = useAuth();
   const { selectedWorkflows } = useWorkflowFilter();
 
   const [profileRoute, setProfileRoute] = useState('');
@@ -198,7 +197,7 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
       <Box onMouseLeave={() => setOpen(false)} className={`${styles.dSidebar} desktop-only`} sx={{ width: open ? '300px !important' : '80px', backgroundColor: bgColor || '#fff' }}>
         <Box className="d-flex justify-between" mb={7}>
           <Box sx={{ mt: 2, ml: open ? 3 : '15px', width: 50, height: 30 }}>
-            <UriLogo href={userDetails?.subscriptionStatus === SubscriptionStatusEnum.ACTIVE ? '/dashboard' : '/'} />
+            <UriLogo href={subscriptionPlanType ? '/dashboard' : '/'} />
           </Box>
 
           <GrClose
