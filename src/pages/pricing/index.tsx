@@ -17,6 +17,7 @@ function PricingPage() {
   const { data: featureLimit, isLoading: isLoadingFeatureLimit, refetch: refetchFeatureLimit } = useFeatureLimit(userDetails?.userId ?? '');
   const isFreeSocialListeningActive = !!userDetails && featureLimit?.subscriptionPlan === SubscriptionTypeEnum.SocialListeningFree && featureLimit.subscriptionStatus === 'ACTIVE';
   const isFreeSocialListeningLoading = !!userDetails && isLoadingFeatureLimit;
+  const isPaygActive = !!userDetails && featureLimit?.subscriptionPlan === SubscriptionTypeEnum.LeadsGen && featureLimit.subscriptionStatus === 'ACTIVE';
 
   return (
     <div className="bg-[#FFFCFE]">
@@ -72,8 +73,32 @@ function PricingPage() {
               },
             });
           }}
+          onActivatePayg={() => {
+            if (!userDetails) {
+              router.push('/auth/login?redirect=/pricing');
+              return;
+            }
+
+            freeSubscription.mutate('LEADS_GEN_MONTHLY', {
+              onSuccess: async () => {
+                triggerToast('success', 'PAYG Lead Gen activated');
+                try {
+                  await getUserDetails.mutateAsync();
+                  await refetchFeatureLimit();
+                } catch (error) {
+                  console.error('Error refetching user data after activating PAYG plan', error);
+                }
+                router.push('/dashboard');
+              },
+              onError: (err: any) => {
+                triggerToast('error', err?.message ?? 'Failed to activate PAYG plan');
+              },
+            });
+          }}
           isFreeSocialListeningActive={isFreeSocialListeningActive}
           isFreeSocialListeningLoading={isFreeSocialListeningLoading}
+          isPaygActive={isPaygActive}
+          isPaygLoading={freeSubscription.isLoading}
         />
 
         {/* Lead Generation Pricing Section */}

@@ -31,35 +31,18 @@ export const useWallet = () => {
 
   const initiateFundingMutation = useMutation((data: FundWalletRequestDto) => WalletService.initiateFunding(data), {
     onSuccess: (response) => {
-      if (response.responseData?.access_code && response.responseData?.reference) {
-        handlePaystackPayment(response.responseData.access_code, response.responseData.reference);
+      // Squad returns authorization_url (checkout_url)
+      const authorizationUrl = response.responseData?.authorization_url;
+      if (authorizationUrl) {
+        window.open(authorizationUrl, '_blank');
+      } else {
+        toast.error('Could not get payment URL');
       }
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || 'Failed to initiate funding');
     },
   });
-
-  const handlePaystackPayment = (accessCode: string, reference: string) => {
-    // @ts-ignore
-    const PaystackPop = require('@paystack/inline-js').default;
-    const popup = new PaystackPop();
-
-    popup.resumeTransaction(accessCode, {
-      onSuccess: () => {
-        verifyFundingMutation.mutate(reference);
-      },
-      onClose: () => {
-        toast('Payment window closed');
-      },
-      onCancel: () => {
-        toast('Payment cancelled');
-      },
-      onError: () => {
-        toast.error('Payment failed');
-      },
-    });
-  };
 
   const fundWallet = async (data: FundWalletRequestDto) => {
     if (!userId) {
@@ -73,7 +56,7 @@ export const useWallet = () => {
       return;
     }
 
-    const callbackUrl = typeof window !== 'undefined' ? `${window.location.origin}/wallet` : undefined;
+    const callbackUrl = typeof window !== 'undefined' ? `${window.location.origin}/wallet/verify` : undefined;
 
     await initiateFundingMutation.mutateAsync({
       ...data,

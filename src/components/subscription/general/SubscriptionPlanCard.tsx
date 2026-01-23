@@ -16,9 +16,25 @@ interface SubscriptionPlanCardProps {
   actionLabel?: string;
   onAction?: () => void;
   isLoading?: boolean;
+  isDisabled?: boolean;
 }
 
-const SubscriptionPlanCard = ({ icon, iconBg, title, subtitle, description, features, price, interval, isHighlighted, badge, actionLabel, onAction, isLoading }: SubscriptionPlanCardProps) => {
+const SubscriptionPlanCard = ({
+  icon,
+  iconBg,
+  title,
+  subtitle,
+  description,
+  features,
+  price,
+  interval,
+  isHighlighted,
+  badge,
+  actionLabel,
+  onAction,
+  isLoading,
+  isDisabled,
+}: SubscriptionPlanCardProps) => {
   return (
     <Card
       sx={{
@@ -125,7 +141,7 @@ const SubscriptionPlanCard = ({ icon, iconBg, title, subtitle, description, feat
               variant={isHighlighted ? 'contained' : 'outlined'}
               fullWidth
               onClick={onAction}
-              disabled={!onAction || isLoading}
+              disabled={!onAction || isLoading || isDisabled}
               sx={{
                 mt: 'auto',
                 borderRadius: 2.5,

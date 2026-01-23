@@ -1,16 +1,23 @@
-import { Box, Button, Pagination, Typography } from '@mui/material';
+import { Box, Button, Dialog, DialogContent, DialogTitle, IconButton, Pagination, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 
+import { triggerToast } from '@/components/atoms/CustomToast';
 import { NumberHelper } from '@/helpers/NumberHelper';
 import { TextHelper } from '@/helpers/TextHelper';
+import { useSubscription } from '@/hooks/subscription/subscription.hook';
 import { useSubscriptionHistory } from '@/hooks/subscription/subscriptionHistory';
 import { FeatureLimitDto } from '@/models/dtos/FeatureLimitDto';
-import { PaystackSubscriptionDto } from '@/models/dtos/SubscriptionDto';
+import { PaystackSubscriptionDto, SubscriptionPlan, SubscriptionResponseDto } from '@/models/dtos/SubscriptionDto';
 import { SubscriptionTypeEnum } from '@/models/enum-models/SubscriptionStatusEnum';
 import { useAuth } from '@/providers/AuthProvider';
 import dayjs from 'dayjs';
+import { useRouter } from 'next/router';
 import { BiX } from 'react-icons/bi';
+import { FaTimes } from 'react-icons/fa';
 import SmartModal from '../modals/SmartModal';
+import MakePayment from './general/MakePayment';
+import PaymentMethod from './general/PaymentMethod';
+import SubscriptionPlansList from './general/SubscriptionPlansList';
 import SubscriptionsTable from './SubscriptionsTable';
 
 interface HasActiveSubscriptionProps {
@@ -19,11 +26,89 @@ interface HasActiveSubscriptionProps {
 
 const HasActiveSubscription = ({ featureLimit }: HasActiveSubscriptionProps) => {
   const [cancelSubscriptionConfirmationModal, setCancelSubscriptionConfirmationModal] = useState(false);
-
   const [cancelSubscriptionSuccessModal, setCancelSubscriptionSuccessModal] = useState(false);
+
+  const [showPlansModal, setShowPlansModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'payment' | 'method'>('list');
+  const [transactionDetails, setTransactionDetails] = useState<SubscriptionResponseDto | null>(null);
+  const [loadingPlanType, setLoadingPlanType] = useState<string | undefined>(undefined);
 
   const { subscriptionHistory, isLoadingSubscriptionHistory, page, setPage, disableSubscriptionMutation } = useSubscriptionHistory();
   const { userDetails } = useAuth();
+  const { freeSubscription } = useSubscription();
+  const router = useRouter();
+
+  const handlePlanSelection = (planType: string, planCode: string) => {
+    // Handle Credit Bundles - redirect to credits purchase page
+    if (planType === 'CREDIT_BUNDLES') {
+      setShowPlansModal(false);
+      router.push('/credits');
+      return;
+    }
+
+    // Handle Free Trial
+    if (planType === SubscriptionTypeEnum.FreeTrial) {
+      setLoadingPlanType(planType);
+      freeSubscription.mutate(planCode, {
+        onSuccess: () => {
+          setShowPlansModal(false);
+          window.location.reload();
+        },
+        onError: (err: any) => {
+          triggerToast('error', err?.message ?? 'Failed to start free trial');
+          setLoadingPlanType(undefined);
+        },
+      });
+      return;
+    }
+
+    // Handle Social Listening Free (no payment required)
+    if (planType === SubscriptionTypeEnum.SocialListeningFree) {
+      setLoadingPlanType(planType);
+      freeSubscription.mutate(planCode, {
+        onSuccess: () => {
+          setShowPlansModal(false);
+          window.location.reload();
+        },
+        onError: (err: any) => {
+          triggerToast('error', err?.message ?? 'Failed to activate free plan');
+          setLoadingPlanType(undefined);
+        },
+      });
+      return;
+    }
+
+    // Handle PAYG Lead Gen activation (no payment required, users fund wallet separately)
+    if (planType === SubscriptionTypeEnum.LeadsGen) {
+      setLoadingPlanType(planType);
+      freeSubscription.mutate(planCode, {
+        onSuccess: () => {
+          setShowPlansModal(false);
+          window.location.reload();
+        },
+        onError: (err: any) => {
+          triggerToast('error', err?.message ?? 'Failed to activate PAYG plan');
+          setLoadingPlanType(undefined);
+        },
+      });
+      return;
+    }
+
+    // Handle paid plans (Social Listening Paid, Enterprise) - show payment flow
+    const plan: SubscriptionPlan = {
+      plan_code: planCode,
+      plan_type: planType,
+      name: planType,
+      amount: 0, // Will be fetched/set in payment step
+      description: '',
+      interval: 'monthly',
+      created_at: '',
+      updated_at: '',
+    };
+    setSelectedPlan(plan);
+    setViewMode('payment');
+  };
 
   const hasPlan = featureLimit.subscriptionStatus === 'ACTIVE';
   const isSocialListeningFree = featureLimit.subscriptionPlan === SubscriptionTypeEnum.SocialListeningFree;
@@ -245,7 +330,7 @@ const HasActiveSubscription = ({ featureLimit }: HasActiveSubscriptionProps) => 
             </Box>
 
             {/* CTA */}
-            {activePaystackSubscription && (
+            {(activePaystackSubscription || isSocialListeningFree) && (
               <Box
                 sx={{
                   display: 'flex',
@@ -256,25 +341,31 @@ const HasActiveSubscription = ({ featureLimit }: HasActiveSubscriptionProps) => 
                   gap: '16px',
                 }}
               >
+                {activePaystackSubscription && (
+                  <Button
+                    variant="outlined"
+                    sx={{
+                      px: '61px',
+                      width: { xs: '100%', md: 'auto' },
+                    }}
+                    onClick={() => setCancelSubscriptionConfirmationModal(true)}
+                  >
+                    Cancel Subscription
+                  </Button>
+                )}
                 <Button
-                  variant="outlined"
+                  variant="contained"
                   sx={{
                     px: '61px',
                     width: { xs: '100%', md: 'auto' },
                   }}
-                  onClick={() => setCancelSubscriptionConfirmationModal(true)}
+                  onClick={() => {
+                    setViewMode('list');
+                    setShowPlansModal(true);
+                  }}
                 >
-                  Cancel Subscription
+                  {isSocialListeningFree ? 'Upgrade Plan' : 'Change Plan'}
                 </Button>
-                {/* <Button
-            variant="contained"
-            sx={{
-              px: "61px",
-              width: { xs: "100%", md: "auto" },
-            }}
-          >
-            Change Plan
-          </Button> */}
               </Box>
             )}
           </Box>
@@ -482,6 +573,54 @@ const HasActiveSubscription = ({ featureLimit }: HasActiveSubscriptionProps) => 
         image={<img src="/assets/images/success.png" alt="success-icon" width={100} height={100} />}
         buttonText="Okay"
       />
+
+      {/* Plan Selection Modal */}
+      <Dialog
+        open={showPlansModal}
+        onClose={() => setShowPlansModal(false)}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '20px',
+            maxWidth: '1200px',
+          },
+        }}
+      >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" fontWeight={700}>
+            {viewMode === 'list' && 'Select Subscription Plan'}
+            {viewMode === 'payment' && 'Review Subscription'}
+            {viewMode === 'method' && 'Payment Method'}
+          </Typography>
+          <IconButton onClick={() => setShowPlansModal(false)}>
+            <FaTimes />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          {viewMode === 'list' && (
+            <SubscriptionPlansList onSelectPlan={handlePlanSelection} currentPlanType={featureLimit?.subscriptionPlan} isLoading={freeSubscription.isLoading} loadingPlanType={loadingPlanType} />
+          )}
+          {viewMode === 'payment' && (
+            <Box>
+              <Button onClick={() => setViewMode('list')} sx={{ mb: 2 }}>
+                &larr; Back to Plans
+              </Button>
+              <MakePayment selectedPlan={selectedPlan} setStep={() => setViewMode('method')} setTransactionDetails={setTransactionDetails} onBack={() => setViewMode('list')} />
+            </Box>
+          )}
+          {viewMode === 'method' && (
+            <PaymentMethod
+              selectedPlan={selectedPlan}
+              setStep={() => {
+                setShowPlansModal(false);
+                window.location.reload();
+              }}
+              transactionDetails={transactionDetails}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
