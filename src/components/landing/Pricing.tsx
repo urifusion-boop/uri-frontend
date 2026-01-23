@@ -6,7 +6,7 @@ function Pricing() {
 
   return (
     <div className="mx-4">
-      <SubscriptionPlansList selectedPlan={'selectedPlan'} onSelectPlan={() => router.push('/settings?tab=subscription')} />
+      <SubscriptionPlansList onSelectPlan={() => router.push('/settings?tab=subscription')} currentPlanType={undefined} />
     </div>
   );
 }

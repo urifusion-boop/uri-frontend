@@ -1,6 +1,5 @@
 import CustomButton from '@/components/atoms/CustomButton';
 import SeoHead from '@/components/atoms/SeoHead';
-import { dashboardRoutes } from '@/constants/ClientRoute';
 import { useWallet } from '@/hooks/wallet/useWallet.hook';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
@@ -22,7 +21,7 @@ const WalletVerifyPage = () => {
     try {
       await verifyFunding(ref);
       setTimeout(() => {
-        router.push(dashboardRoutes.dashboardHome);
+        router.push('/wallet');
       }, 3000);
     } catch (error) {
       console.error('Verification failed', error);
@@ -63,8 +62,8 @@ const WalletVerifyPage = () => {
             ) : (
               <Typography variant="h6">Payment Processed</Typography>
             )}
-            <CustomButton mode="primary" onClick={() => router.push(dashboardRoutes.dashboardHome)}>
-              Go to Dashboard
+            <CustomButton mode="primary" onClick={() => router.push('/wallet')}>
+              Go to Wallet
             </CustomButton>
           </>
         )}

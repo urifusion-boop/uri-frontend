@@ -16,30 +16,54 @@ interface UserTypeCardProps {
   actionLabel?: string;
   onAction?: () => void;
   isActive?: boolean;
+  comingSoon?: boolean;
 }
 
-const UserTypeCard = ({ icon, iconBg, title, subtitle, description, features, isHighlighted, badge, actionLabel, onAction, isActive }: UserTypeCardProps) => {
+const UserTypeCard = ({ icon, iconBg, title, subtitle, description, features, isHighlighted, badge, actionLabel, onAction, isActive, comingSoon }: UserTypeCardProps) => {
   const activeBorderColor = '#16a34a';
+  const disabledStyles = comingSoon;
 
   return (
     <Card
       sx={{
         borderRadius: 4,
         height: '100%',
-        border: isActive ? `2px solid ${activeBorderColor}` : isHighlighted ? `2px solid ${LightThemeColors.uriColor}` : '1px solid #e0e0e0',
+        border: isActive ? `2px solid ${activeBorderColor}` : isHighlighted && !disabledStyles ? `2px solid ${LightThemeColors.uriColor}` : '1px solid #e0e0e0',
         position: 'relative',
         overflow: 'visible',
         transition: 'all 200ms ease',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: isActive ? alpha(activeBorderColor, 0.02) : 'white',
+        backgroundColor: isActive ? alpha(activeBorderColor, 0.02) : disabledStyles ? '#fafafa' : 'white',
+        opacity: disabledStyles ? 0.7 : 1,
         '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: isActive ? `0 12px 40px ${alpha(activeBorderColor, 0.2)}` : isHighlighted ? `0 12px 40px ${alpha(LightThemeColors.uriColor, 0.2)}` : '0 12px 40px rgba(0,0,0,0.1)',
+          transform: disabledStyles ? 'none' : 'translateY(-4px)',
+          boxShadow: disabledStyles
+            ? 'none'
+            : isActive
+              ? `0 12px 40px ${alpha(activeBorderColor, 0.2)}`
+              : isHighlighted
+                ? `0 12px 40px ${alpha(LightThemeColors.uriColor, 0.2)}`
+                : '0 12px 40px rgba(0,0,0,0.1)',
         },
       }}
     >
-      {isActive && (
+      {comingSoon && (
+        <Chip
+          label="COMING SOON"
+          size="small"
+          sx={{
+            position: 'absolute',
+            top: -10,
+            right: 16,
+            backgroundColor: '#6B6B6B',
+            color: 'white',
+            fontWeight: 800,
+            fontSize: 10,
+          }}
+        />
+      )}
+      {isActive && !comingSoon && (
         <Chip
           icon={<FaCheck size={10} />}
           label="ACTIVE"
@@ -58,7 +82,7 @@ const UserTypeCard = ({ icon, iconBg, title, subtitle, description, features, is
           }}
         />
       )}
-      {badge && !isActive && (
+      {badge && !isActive && !comingSoon && (
         <Chip
           label={badge}
           size="small"
@@ -127,23 +151,23 @@ const UserTypeCard = ({ icon, iconBg, title, subtitle, description, features, is
           {/* Action Button */}
           {actionLabel && (
             <Button
-              variant={isActive ? 'contained' : isHighlighted ? 'contained' : 'outlined'}
+              variant={isActive ? 'contained' : isHighlighted && !disabledStyles ? 'contained' : 'outlined'}
               fullWidth
               onClick={onAction}
-              disabled={!onAction || isActive}
+              disabled={!onAction || isActive || comingSoon}
               sx={{
                 mt: 'auto',
                 borderRadius: 2.5,
                 textTransform: 'none',
                 fontWeight: 700,
                 borderColor: isActive ? '#16a34a' : LightThemeColors.uriColor,
-                color: isActive ? 'white' : isHighlighted ? 'white' : LightThemeColors.uriColor,
-                backgroundColor: isActive ? '#16a34a' : isHighlighted ? LightThemeColors.uriColor : 'transparent',
+                color: isActive ? 'white' : isHighlighted && !disabledStyles ? 'white' : LightThemeColors.uriColor,
+                backgroundColor: isActive ? '#16a34a' : isHighlighted && !disabledStyles ? LightThemeColors.uriColor : 'transparent',
                 '&:hover': {
                   borderColor: isActive ? '#16a34a' : LightThemeColors.uriColor,
-                  backgroundColor: isActive ? '#16a34a' : isHighlighted ? alpha(LightThemeColors.uriColor, 0.9) : alpha(LightThemeColors.uriColor, 0.05),
-                  color: isActive ? 'white' : isHighlighted ? 'white' : LightThemeColors.uriColor,
-                  boxShadow: isActive ? 'none' : isHighlighted ? `0 4px 12px ${alpha(LightThemeColors.uriColor, 0.3)}` : 'none',
+                  backgroundColor: isActive ? '#16a34a' : isHighlighted && !disabledStyles ? alpha(LightThemeColors.uriColor, 0.9) : alpha(LightThemeColors.uriColor, 0.05),
+                  color: isActive ? 'white' : isHighlighted && !disabledStyles ? 'white' : LightThemeColors.uriColor,
+                  boxShadow: isActive ? 'none' : isHighlighted && !disabledStyles ? `0 4px 12px ${alpha(LightThemeColors.uriColor, 0.3)}` : 'none',
                 },
                 '&.Mui-disabled': {
                   borderColor: isActive ? '#16a34a' : '#e0e0e0',
@@ -153,7 +177,7 @@ const UserTypeCard = ({ icon, iconBg, title, subtitle, description, features, is
                 },
               }}
             >
-              {isActive ? 'Current Plan' : actionLabel}
+              {isActive ? 'Current Plan' : comingSoon ? 'Coming Soon' : actionLabel}
             </Button>
           )}
         </Stack>
@@ -165,24 +189,33 @@ const UserTypeCard = ({ icon, iconBg, title, subtitle, description, features, is
 interface UserJourneyCardsProps {
   onStartTrial?: () => void;
   onStartFreeSocialListening?: () => void;
+  onActivatePayg?: () => void;
   trialButtonText?: string;
   isTrialDisabled?: boolean;
   isFreeSocialListeningActive?: boolean;
   isFreeSocialListeningLoading?: boolean;
+  isPaygActive?: boolean;
+  isPaygLoading?: boolean;
 }
 
 export const UserJourneyCards = ({
   onStartTrial,
   onStartFreeSocialListening,
+  onActivatePayg,
   trialButtonText = 'Start Free Trial',
   isTrialDisabled = false,
   isFreeSocialListeningActive = false,
   isFreeSocialListeningLoading = false,
+  isPaygActive = false,
+  isPaygLoading = false,
 }: UserJourneyCardsProps) => {
   const router = useRouter();
 
   const freeSocialListeningActionLabel = isFreeSocialListeningActive ? 'On this plan' : isFreeSocialListeningLoading ? 'Checking plan...' : 'Start Free Social Listening';
   const freeSocialListeningOnAction = isFreeSocialListeningActive || isFreeSocialListeningLoading ? undefined : onStartFreeSocialListening;
+
+  const paygActionLabel = isPaygActive ? 'On this plan' : isPaygLoading ? 'Activating...' : 'Activate PAYG';
+  const paygOnAction = isPaygActive || isPaygLoading ? undefined : onActivatePayg;
 
   const userTypes: UserTypeCardProps[] = [
     {
@@ -216,6 +249,7 @@ export const UserJourneyCards = ({
       features: ['3 social accounts tracking', '4 reports per month', 'Access to Dera AI assistant', 'Enhanced tracking capabilities'],
       actionLabel: 'Activate Plan',
       onAction: undefined,
+      comingSoon: true,
     },
     {
       icon: <FaBuilding size={20} />,
@@ -226,6 +260,7 @@ export const UserJourneyCards = ({
       features: ['Unlimited social accounts', 'Unlimited reports', 'Full AI capabilities', 'Priority support & collaboration'],
       actionLabel: 'Activate Plan',
       onAction: undefined,
+      comingSoon: true,
     },
     {
       icon: <FaWallet size={20} />,
@@ -234,8 +269,9 @@ export const UserJourneyCards = ({
       subtitle: 'Pay as you go',
       description: 'Flexible payment for lead generation. Fund your wallet and pay only for what you use.',
       features: ['Fund wallet (min ₦5,000)', 'Pay per scan & lead action', 'No commitment required', 'Instant deductions'],
-      actionLabel: 'Activate PAYG',
-      onAction: undefined,
+      actionLabel: paygActionLabel,
+      onAction: paygOnAction,
+      isActive: isPaygActive,
     },
     {
       icon: <FaCoins size={20} />,
@@ -245,9 +281,9 @@ export const UserJourneyCards = ({
       description: 'Buy credit bundles upfront for the best per-action pricing. Ideal for power users.',
       features: ['Up to 10% savings vs PAYG', 'Bundles from 10-150 credits', 'Credits never expire', 'Discounted enrichment costs'],
       isHighlighted: true,
-      badge: 'BEST VALUE',
       actionLabel: 'Buy Credits',
       onAction: undefined,
+      comingSoon: true,
     },
   ];
 

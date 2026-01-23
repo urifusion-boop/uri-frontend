@@ -35,6 +35,9 @@ const NewSubscription = () => {
   // Check if user already has Social Listening Free plan active
   const isFreeSocialListeningActive = featureLimit?.subscriptionPlan === SubscriptionTypeEnum.SocialListeningFree && featureLimit?.subscriptionStatus === 'ACTIVE';
 
+  // Check if user already has PAYG Lead Gen plan active
+  const isPaygActive = featureLimit?.subscriptionPlan === SubscriptionTypeEnum.LeadsGen && featureLimit?.subscriptionStatus === 'ACTIVE';
+
   // Check if user is eligible for free trial
   useEffect(() => {
     const checkTrialEligibility = async () => {
@@ -92,11 +95,29 @@ const NewSubscription = () => {
     }
   };
 
-  const handlePlanSelection = (plan: SubscriptionPlan) => {
-    if (plan.plan_type === SubscriptionTypeEnum.SocialListeningFree) {
-      freeSubscription.mutate(plan.plan_code, {
+  const handlePlanSelection = (planType: string, planCode: string) => {
+    // Handle Credit Bundles - redirect to credits purchase page
+    if (planType === 'CREDIT_BUNDLES') {
+      setShowPlansModal(false);
+      router.push('/credits');
+      return;
+    }
+
+    // Handle Free Trial
+    if (planType === SubscriptionTypeEnum.FreeTrial) {
+      if (!userDetails) {
+        router.push('/auth/login?redirect=/settings?tab=subscription');
+        return;
+      }
+      setShowPlansModal(false);
+      setShowTrialModal(true);
+      return;
+    }
+
+    // Handle Social Listening Free
+    if (planType === SubscriptionTypeEnum.SocialListeningFree) {
+      freeSubscription.mutate(planCode, {
         onSuccess: () => {
-          setSelectedPlan(plan);
           setShowPlansModal(false);
           setActiveStep(4);
         },
@@ -107,6 +128,31 @@ const NewSubscription = () => {
       return;
     }
 
+    // Handle PAYG Lead Gen activation (no payment required, users fund wallet separately)
+    if (planType === SubscriptionTypeEnum.LeadsGen) {
+      freeSubscription.mutate(planCode, {
+        onSuccess: () => {
+          setShowPlansModal(false);
+          setActiveStep(4);
+        },
+        onError: (err: any) => {
+          triggerToast('error', err?.message ?? 'Failed to activate PAYG plan');
+        },
+      });
+      return;
+    }
+
+    // Handle paid plans (Social Listening Paid, Enterprise) - show payment flow
+    const plan: SubscriptionPlan = {
+      plan_code: planCode,
+      plan_type: planType,
+      name: planType,
+      amount: 0,
+      description: '',
+      interval: 'monthly',
+      created_at: '',
+      updated_at: '',
+    };
     setSelectedPlan(plan);
     setShowPlansModal(false);
     setActiveStep(2);
@@ -160,10 +206,27 @@ const NewSubscription = () => {
                   },
                 });
               }}
+              onActivatePayg={() => {
+                if (!userDetails) {
+                  router.push('/auth/login?redirect=/settings?tab=subscription');
+                  return;
+                }
+
+                freeSubscription.mutate('LEADS_GEN_MONTHLY', {
+                  onSuccess: () => {
+                    setActiveStep(4);
+                  },
+                  onError: (err: any) => {
+                    triggerToast('error', err?.message ?? 'Failed to activate PAYG plan');
+                  },
+                });
+              }}
               isTrialDisabled={!isTrialEligible}
               trialButtonText={checkingEligibility ? 'Loading...' : !isTrialEligible ? 'Trial Already Used' : 'Start Free Trial'}
               isFreeSocialListeningActive={isFreeSocialListeningActive}
               isFreeSocialListeningLoading={isFeatureLimitLoading}
+              isPaygActive={isPaygActive}
+              isPaygLoading={freeSubscription.isLoading}
             />
 
             <Box sx={{ mt: 8 }}>
@@ -202,7 +265,7 @@ const NewSubscription = () => {
           </IconButton>
         </DialogTitle>
         <DialogContent>
-          <SubscriptionPlansList onSelectPlan={handlePlanSelection} selectedPlan={selectedPlan?.plan_code} />
+          <SubscriptionPlansList onSelectPlan={handlePlanSelection} currentPlanType={featureLimit?.subscriptionPlan} isLoading={freeSubscription.isLoading} />
         </DialogContent>
       </Dialog>
     </>
