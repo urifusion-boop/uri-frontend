@@ -1,56 +1,136 @@
-import { Box, Button, Pagination, Typography } from '@mui/material';
+import { Box, Button, Dialog, DialogContent, DialogTitle, IconButton, Pagination, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 
+import { triggerToast } from '@/components/atoms/CustomToast';
 import { NumberHelper } from '@/helpers/NumberHelper';
 import { TextHelper } from '@/helpers/TextHelper';
+import { useSubscription } from '@/hooks/subscription/subscription.hook';
 import { useSubscriptionHistory } from '@/hooks/subscription/subscriptionHistory';
-import { ActiveSubscriptionResponseDto, PaystackSubscriptionDto } from '@/models/dtos/SubscriptionDto';
-import { SubscriptionStatusEnum } from '@/models/enum-models/SubscriptionStatusEnum';
+import { FeatureLimitDto } from '@/models/dtos/FeatureLimitDto';
+import { PaystackSubscriptionDto, SubscriptionPlan, SubscriptionResponseDto } from '@/models/dtos/SubscriptionDto';
+import { SubscriptionTypeEnum } from '@/models/enum-models/SubscriptionStatusEnum';
 import { useAuth } from '@/providers/AuthProvider';
 import dayjs from 'dayjs';
+import { useRouter } from 'next/router';
 import { BiX } from 'react-icons/bi';
+import { FaTimes } from 'react-icons/fa';
 import SmartModal from '../modals/SmartModal';
+import MakePayment from './general/MakePayment';
+import PaymentMethod from './general/PaymentMethod';
+import SubscriptionPlansList from './general/SubscriptionPlansList';
 import SubscriptionsTable from './SubscriptionsTable';
 
 interface HasActiveSubscriptionProps {
-  activeSubscription: ActiveSubscriptionResponseDto | null | undefined;
+  featureLimit: FeatureLimitDto;
 }
 
-const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProps) => {
+const HasActiveSubscription = ({ featureLimit }: HasActiveSubscriptionProps) => {
   const [cancelSubscriptionConfirmationModal, setCancelSubscriptionConfirmationModal] = useState(false);
-
   const [cancelSubscriptionSuccessModal, setCancelSubscriptionSuccessModal] = useState(false);
+
+  const [showPlansModal, setShowPlansModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'payment' | 'method'>('list');
+  const [transactionDetails, setTransactionDetails] = useState<SubscriptionResponseDto | null>(null);
+  const [loadingPlanType, setLoadingPlanType] = useState<string | undefined>(undefined);
 
   const { subscriptionHistory, isLoadingSubscriptionHistory, page, setPage, disableSubscriptionMutation } = useSubscriptionHistory();
   const { userDetails } = useAuth();
+  const { freeSubscription } = useSubscription();
+  const router = useRouter();
 
-  const cancelledButActiveSubscription = useMemo(
-    () => subscriptionHistory?.data?.find((subscription: PaystackSubscriptionDto) => subscription?.status?.toLowerCase() === 'non-renewing' && dayjs(subscription.next_payment_date).isAfter(dayjs())),
+  const handlePlanSelection = (planType: string, planCode: string) => {
+    // Handle Credit Bundles - redirect to credits purchase page
+    if (planType === 'CREDIT_BUNDLES') {
+      setShowPlansModal(false);
+      router.push('/credits');
+      return;
+    }
+
+    // Handle Free Trial
+    if (planType === SubscriptionTypeEnum.FreeTrial) {
+      setLoadingPlanType(planType);
+      freeSubscription.mutate(planCode, {
+        onSuccess: () => {
+          setShowPlansModal(false);
+          window.location.reload();
+        },
+        onError: (err: any) => {
+          triggerToast('error', err?.message ?? 'Failed to start free trial');
+          setLoadingPlanType(undefined);
+        },
+      });
+      return;
+    }
+
+    // Handle Social Listening Free (no payment required)
+    if (planType === SubscriptionTypeEnum.SocialListeningFree) {
+      setLoadingPlanType(planType);
+      freeSubscription.mutate(planCode, {
+        onSuccess: () => {
+          setShowPlansModal(false);
+          window.location.reload();
+        },
+        onError: (err: any) => {
+          triggerToast('error', err?.message ?? 'Failed to activate free plan');
+          setLoadingPlanType(undefined);
+        },
+      });
+      return;
+    }
+
+    // Handle PAYG Lead Gen activation (no payment required, users fund wallet separately)
+    if (planType === SubscriptionTypeEnum.LeadsGen) {
+      setLoadingPlanType(planType);
+      freeSubscription.mutate(planCode, {
+        onSuccess: () => {
+          setShowPlansModal(false);
+          window.location.reload();
+        },
+        onError: (err: any) => {
+          triggerToast('error', err?.message ?? 'Failed to activate PAYG plan');
+          setLoadingPlanType(undefined);
+        },
+      });
+      return;
+    }
+
+    // Handle paid plans (Social Listening Paid, Enterprise) - show payment flow
+    const plan: SubscriptionPlan = {
+      plan_code: planCode,
+      plan_type: planType,
+      name: planType,
+      amount: 0, // Will be fetched/set in payment step
+      description: '',
+      interval: 'monthly',
+      created_at: '',
+      updated_at: '',
+    };
+    setSelectedPlan(plan);
+    setViewMode('payment');
+  };
+
+  const hasPlan = featureLimit.subscriptionStatus === 'ACTIVE';
+  const isSocialListeningFree = featureLimit.subscriptionPlan === SubscriptionTypeEnum.SocialListeningFree;
+
+  const activePaystackSubscription = useMemo(
+    () =>
+      subscriptionHistory?.data?.find((subscription: PaystackSubscriptionDto) => {
+        const status = subscription?.status?.toLowerCase();
+        return status === 'active' || status === 'non-renewing';
+      }),
     [subscriptionHistory]
   );
 
-  const freeSubscriptionFallback = useMemo(() => {
-    if (!activeSubscription && !cancelledButActiveSubscription && userDetails?.subscriptionStatus === SubscriptionStatusEnum.ACTIVE) {
-      return {
-        amount: 0,
-        next_payment_date: null,
-        createdAt: userDetails.dateCreated,
-        plan: {
-          name: 'SOCIAL_LISTENING_FREE_MONTHLY',
-          plan_code: 'SOCIAL_LISTENING_FREE_MONTHLY',
-          interval: 'monthly',
-        },
-      } as unknown as ActiveSubscriptionResponseDto;
-    }
-    return undefined;
-  }, [activeSubscription, cancelledButActiveSubscription, userDetails?.subscriptionStatus, userDetails?.dateCreated]);
+  const joinedDate = useMemo(() => {
+    const raw = (featureLimit as any).created_at ?? (featureLimit as any).createdAt ?? userDetails?.dateCreated;
+    return raw ? dayjs(raw).format('MMMM YYYY ') : '';
+  }, [featureLimit, userDetails?.dateCreated]);
 
-  const _activeSubScription = useMemo(
-    () => activeSubscription || cancelledButActiveSubscription || freeSubscriptionFallback,
-    [activeSubscription, cancelledButActiveSubscription, freeSubscriptionFallback]
-  );
+  const planDisplayName = isSocialListeningFree ? 'Social Listening Free' : TextHelper.removeChar(featureLimit.subscriptionPlan ?? '', '_');
 
-  const isSocialListeningFree = _activeSubScription?.plan?.plan_code === 'SOCIAL_LISTENING_FREE_MONTHLY';
+  const amountValue = isSocialListeningFree ? 0 : (activePaystackSubscription?.amount ?? 0) / 100;
+  const intervalLabel = isSocialListeningFree ? 'monthly' : (activePaystackSubscription?.plan?.interval ?? 'monthly');
 
   return (
     <>
@@ -90,7 +170,7 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
         </Typography>
 
         {/* Current Plan */}
-        {_activeSubScription ? (
+        {hasPlan ? (
           <Box
             sx={{
               maxWidth: '629px',
@@ -167,7 +247,7 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
                       borderRadius: '4px',
                     }}
                   >
-                    {isSocialListeningFree ? 'Social Listening Free' : TextHelper.removeChar(_activeSubScription?.plan?.name ?? '', '_')}
+                    {planDisplayName}
                   </Typography>
                   <Typography
                     sx={{
@@ -186,7 +266,7 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
                     color: '#6C727F',
                   }}
                 >
-                  Joined {dayjs(_activeSubScription?.createdAt).format('MMMM YYYY ')}
+                  Joined {joinedDate || '—'}
                 </Typography>
               </Box>
               <Box
@@ -202,7 +282,7 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
                     color: '#141416',
                   }}
                 >
-                  {NumberHelper.formatNumber((_activeSubScription?.amount ?? 0) / 100)}
+                  {NumberHelper.formatNumber(amountValue)}
                 </Typography>
                 <Typography
                   sx={{
@@ -211,7 +291,7 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
                     color: '#363636',
                   }}
                 >
-                  /{_activeSubScription?.plan?.interval}
+                  /{intervalLabel}
                 </Typography>
               </Box>
             </Box>
@@ -244,13 +324,13 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
                     color: '#141416',
                   }}
                 >
-                  {isSocialListeningFree || !_activeSubScription?.next_payment_date ? 'No upcoming payments' : dayjs(_activeSubScription.next_payment_date).format('MMM DD, YYYY')}
+                  {!activePaystackSubscription?.next_payment_date ? 'No upcoming payments' : dayjs(activePaystackSubscription.next_payment_date).format('MMM DD, YYYY')}
                 </Typography>
               </Box>
             </Box>
 
             {/* CTA */}
-            {activeSubscription && (
+            {(activePaystackSubscription || isSocialListeningFree) && (
               <Box
                 sx={{
                   display: 'flex',
@@ -261,25 +341,31 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
                   gap: '16px',
                 }}
               >
+                {activePaystackSubscription && (
+                  <Button
+                    variant="outlined"
+                    sx={{
+                      px: '61px',
+                      width: { xs: '100%', md: 'auto' },
+                    }}
+                    onClick={() => setCancelSubscriptionConfirmationModal(true)}
+                  >
+                    Cancel Subscription
+                  </Button>
+                )}
                 <Button
-                  variant="outlined"
+                  variant="contained"
                   sx={{
                     px: '61px',
                     width: { xs: '100%', md: 'auto' },
                   }}
-                  onClick={() => setCancelSubscriptionConfirmationModal(true)}
+                  onClick={() => {
+                    setViewMode('list');
+                    setShowPlansModal(true);
+                  }}
                 >
-                  Cancel Subscription
+                  {isSocialListeningFree ? 'Upgrade Plan' : 'Change Plan'}
                 </Button>
-                {/* <Button
-            variant="contained"
-            sx={{
-              px: "61px",
-              width: { xs: "100%", md: "auto" },
-            }}
-          >
-            Change Plan
-          </Button> */}
               </Box>
             )}
           </Box>
@@ -440,11 +526,11 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
         mainText="Cancel Subscription"
         subText="You'll lose access after your billing cycle ends. You can resubscribe anytime."
         onClick={() => {
-          if (!activeSubscription?.subscription_code || !activeSubscription?.email_token) return;
+          if (!activePaystackSubscription?.subscription_code || !activePaystackSubscription?.email_token) return;
           disableSubscriptionMutation.mutate(
             {
-              code: activeSubscription?.subscription_code,
-              token: activeSubscription?.email_token,
+              code: activePaystackSubscription?.subscription_code,
+              token: activePaystackSubscription?.email_token,
             },
             {
               onSuccess: () => {
@@ -487,6 +573,54 @@ const HasActiveSubscription = ({ activeSubscription }: HasActiveSubscriptionProp
         image={<img src="/assets/images/success.png" alt="success-icon" width={100} height={100} />}
         buttonText="Okay"
       />
+
+      {/* Plan Selection Modal */}
+      <Dialog
+        open={showPlansModal}
+        onClose={() => setShowPlansModal(false)}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '20px',
+            maxWidth: '1200px',
+          },
+        }}
+      >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" fontWeight={700}>
+            {viewMode === 'list' && 'Select Subscription Plan'}
+            {viewMode === 'payment' && 'Review Subscription'}
+            {viewMode === 'method' && 'Payment Method'}
+          </Typography>
+          <IconButton onClick={() => setShowPlansModal(false)}>
+            <FaTimes />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          {viewMode === 'list' && (
+            <SubscriptionPlansList onSelectPlan={handlePlanSelection} currentPlanType={featureLimit?.subscriptionPlan} isLoading={freeSubscription.isLoading} loadingPlanType={loadingPlanType} />
+          )}
+          {viewMode === 'payment' && (
+            <Box>
+              <Button onClick={() => setViewMode('list')} sx={{ mb: 2 }}>
+                &larr; Back to Plans
+              </Button>
+              <MakePayment selectedPlan={selectedPlan} setStep={() => setViewMode('method')} setTransactionDetails={setTransactionDetails} onBack={() => setViewMode('list')} />
+            </Box>
+          )}
+          {viewMode === 'method' && (
+            <PaymentMethod
+              selectedPlan={selectedPlan}
+              setStep={() => {
+                setShowPlansModal(false);
+                window.location.reload();
+              }}
+              transactionDetails={transactionDetails}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

@@ -10,6 +10,7 @@ import GuideTour from '@/components/guide-tour/guide-tour';
 import { DASHBOARD_TOUR_STEPS } from '@/components/guide-tour/tour-steps/dashboard-tour';
 import useGuideTour from '@/components/guide-tour/useGuideTour';
 import CustomModal from '@/components/modals/CustomModal';
+import SubscriptionStatusBanner from '@/components/subscription/SubscriptionStatusBanner';
 import TrialCountdownBanner from '@/components/trial/TrialCountdownBanner';
 import TrialExpiredModal from '@/components/trial/TrialExpiredModal';
 import { useClientsDashHook } from '@/hooks/clients/dashboard.hook';
@@ -75,6 +76,11 @@ const ClientsDashboard = () => {
               <TrialCountdownBanner trialStatus={trialStatus} />
             </Box>
           )}
+
+          {/* Subscription Status Banner (for Free Social Listening users) */}
+          <Box sx={{ mt: 3 }}>
+            <SubscriptionStatusBanner />
+          </Box>
 
           <Box display="flex" borderBottom="1px solid #E0E0E0" justifyContent="flex-start" width={'100%'} overflow="auto" mt={3} mb={3}>
             {tabButtons.map((tab) => (
