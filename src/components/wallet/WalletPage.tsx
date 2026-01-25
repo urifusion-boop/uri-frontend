@@ -47,7 +47,7 @@ const HoverRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-const MIN_FUNDING_AMOUNT = 5000;
+const MIN_FUNDING_AMOUNT = 500;
 
 export const WalletPage = () => {
   const { balance, currency, transactions, isLoadingWallet, isWalletError, fundWallet, isFunding } = useWallet();
@@ -463,10 +463,10 @@ export const WalletPage = () => {
                   '&:hover': { backgroundColor: '#B8186A', boxShadow: '0 12px 35px rgba(0,0,0,0.12)' },
                 }}
               >
-                {isFunding ? <Spinner size={20} color="white" /> : 'Proceed to Paystack'}
+                {isFunding ? <Spinner size={20} color="white" /> : 'Proceed to Payment'}
               </Button>
               <Typography variant="caption" sx={{ color: '#8A8A8A', display: 'block', mt: 1, textAlign: 'center' }}>
-                You’ll be redirected to Paystack to complete payment.
+                You'll be redirected to complete payment.
               </Typography>
             </Box>
           </Box>
