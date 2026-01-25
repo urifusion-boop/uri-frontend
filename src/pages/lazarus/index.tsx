@@ -2,10 +2,13 @@ import { LazarusService } from '@/api/LazarusService';
 import DashboardLayout from '@/components/atoms/DashboardLayout';
 import AddCompanyMonitorModal from '@/components/lazarus/AddCompanyMonitorModal';
 import AddFocusContactModal from '@/components/lazarus/AddFocusContactModal';
+import AdvancedAnalytics from '@/components/lazarus/AdvancedAnalytics';
 import ConnectCRMModal from '@/components/lazarus/ConnectCRMModal';
 import CSVUploadModal from '@/components/lazarus/CSVUploadModal';
+import EmailComposerModal from '@/components/lazarus/EmailComposerModal';
 import LazarusOnboarding from '@/components/lazarus/LazarusOnboarding';
 import PasteAndGoModal from '@/components/lazarus/PasteAndGoModal';
+import PostViewerModal from '@/components/lazarus/PostViewerModal';
 import ScanLogViewerModal from '@/components/lazarus/ScanLogViewerModal';
 import { useAuth } from '@/providers/AuthProvider';
 import { AlertDetectionData, CompanyMonitor, FocusContact, LazarusAlert, LazarusAlertStatus, LazarusMetrics, LazarusMonitoringStatus, SocialMediaPost } from '@/types/lazarus.types';
@@ -15,6 +18,7 @@ import BusinessIcon from '@mui/icons-material/Business';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import EmailIcon from '@mui/icons-material/Email';
 import LinkIcon from '@mui/icons-material/Link';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import PersonIcon from '@mui/icons-material/Person';
@@ -24,9 +28,9 @@ import ScheduleIcon from '@mui/icons-material/Schedule';
 import ScienceIcon from '@mui/icons-material/Science';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TwitterIcon from '@mui/icons-material/Twitter';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import { Box, Button, Chip, Container, Grid, IconButton, LinearProgress, Menu, MenuItem, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Button, Chip, Container, Grid, IconButton, LinearProgress, Menu, MenuItem, Select, Tab, Tabs, TextField, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -65,6 +69,12 @@ const LazarusProtocolPage = () => {
   const [showCSVUploadModal, setShowCSVUploadModal] = useState(false);
   const [showPasteAndGoModal, setShowPasteAndGoModal] = useState(false);
   const [showCRMModal, setShowCRMModal] = useState(false);
+  const [showPostViewer, setShowPostViewer] = useState(false);
+  const [showEmailComposer, setShowEmailComposer] = useState(false);
+  const [selectedAlertForEmail, setSelectedAlertForEmail] = useState<LazarusAlert | null>(null);
+  const [selectedAlertEvidence, setSelectedAlertEvidence] = useState<LazarusAlert | null>(null);
+  const [selectedContactPhoto, setSelectedContactPhoto] = useState<string | undefined>(undefined);
+  const [selectedContactEmail, setSelectedContactEmail] = useState<string | undefined>(undefined);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [selectedContact, setSelectedContact] = useState<FocusContact | null>(null);
   const [selectedMonitor, setSelectedMonitor] = useState<CompanyMonitor | null>(null);
@@ -75,6 +85,11 @@ const LazarusProtocolPage = () => {
   const [scanSamplePosts, setScanSamplePosts] = useState<SocialMediaPost[]>([]);
   const [scanAlertData, setScanAlertData] = useState<AlertDetectionData | undefined>(undefined);
   const [isBatchScanning, setIsBatchScanning] = useState(false);
+
+  // Alert filters
+  const [filterSignalType, setFilterSignalType] = useState<string>('all');
+  const [filterPriority, setFilterPriority] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   useEffect(() => {
     if (userId) {
@@ -194,9 +209,11 @@ const LazarusProtocolPage = () => {
   const handleContactAlert = async (alertId: string) => {
     try {
       await LazarusService.markAlertContacted(userId!, alertId);
+      toast.success('✅ Alert marked as contacted');
       loadDashboardData();
     } catch (error) {
       console.error('Failed to mark alert as contacted:', error);
+      toast.error('Failed to mark alert as contacted');
     }
   };
 
@@ -231,6 +248,17 @@ const LazarusProtocolPage = () => {
     }
   };
 
+  const handleMarkContacted = async (alertId: string) => {
+    try {
+      await LazarusService.markAlertContacted(userId!, alertId);
+      toast.success('Alert marked as contacted');
+      loadDashboardData();
+    } catch (error) {
+      console.error('Failed to mark alert as contacted:', error);
+      toast.error('Failed to mark alert as contacted');
+    }
+  };
+
   const handleResurrectLead = async (alert: LazarusAlert) => {
     // Note: Backend expects source_lead_id which should be linked to the original dead lead
     // For now, we'll use the alert's source_id (which is the focus_id or monitor_id)
@@ -253,24 +281,83 @@ const LazarusProtocolPage = () => {
     }
   };
 
-  const handleDraftPitch = (alert: LazarusAlert) => {
-    const pitch = alert.suggested_pitch || `Hi! I noticed ${alert.alert_message}. Would love to reconnect and see how we can help.`;
+  const handleDraftEmail = async (alert: LazarusAlert) => {
+    // Fetch enriched contact email
+    try {
+      const contactResponse = await LazarusService.getFocusContactDetail(userId!, alert.source_id);
+      const email = contactResponse.responseData?.email;
 
-    // Copy to clipboard
-    navigator.clipboard.writeText(pitch);
-
-    // You could also open an email draft
-    const subject = encodeURIComponent(`Re: ${alert.alert_message}`);
-    const body = encodeURIComponent(pitch);
-    window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+      setSelectedContactEmail(email);
+      setSelectedAlertForEmail(alert);
+      setShowEmailComposer(true);
+    } catch (error) {
+      console.error('Error fetching contact email:', error);
+      // Open composer anyway, user can enter email manually
+      setSelectedAlertForEmail(alert);
+      setShowEmailComposer(true);
+    }
   };
 
-  const handleWhatsApp = (alert: LazarusAlert) => {
-    const pitch = alert.suggested_pitch || `Hi! I noticed ${alert.alert_message}. Would love to reconnect and see how we can help.`;
-    const message = encodeURIComponent(pitch);
+  const handleEmailSent = async () => {
+    if (!selectedAlertForEmail) return;
 
-    // Open WhatsApp Web with pre-filled message
-    window.open(`https://wa.me/?text=${message}`, '_blank');
+    // Log outreach
+    try {
+      await LazarusService.logOutreach(userId!, selectedAlertForEmail.alert_id, 'email', 'Email sent via Email Composer');
+      toast.success('Outreach logged successfully!');
+
+      // Reload alerts
+      loadDashboardData();
+    } catch (error) {
+      console.error('Error logging outreach:', error);
+    }
+  };
+
+  const handleLinkedInMessage = async (alert: LazarusAlert) => {
+    try {
+      // Get contact details to find LinkedIn URL
+      const contactResponse = await LazarusService.getFocusContactDetail(userId!, alert.source_id);
+      const linkedinUrl = contactResponse.responseData?.linkedin_url;
+
+      if (linkedinUrl) {
+        // Open LinkedIn messaging (LinkedIn doesn't support pre-filled messages, but we can open the profile)
+        window.open(linkedinUrl, '_blank');
+        toast.success('LinkedIn profile opened!');
+
+        // Log outreach
+        await LazarusService.logOutreach(userId!, alert.alert_id, 'linkedin', 'LinkedIn profile opened for messaging');
+      } else {
+        toast.error('No LinkedIn URL found for this contact');
+      }
+    } catch (error) {
+      console.error('Error opening LinkedIn:', error);
+      toast.error('Failed to open LinkedIn');
+    }
+  };
+
+  const handleTwitterMessage = async (alert: LazarusAlert) => {
+    try {
+      // Get contact details to find Twitter URL
+      const contactResponse = await LazarusService.getFocusContactDetail(userId!, alert.source_id);
+      const twitterUrl = contactResponse.responseData?.twitter_url;
+
+      if (twitterUrl) {
+        // Extract Twitter handle and open DM page
+        const handle = twitterUrl.split('/').pop()?.replace('@', '');
+        if (handle) {
+          window.open(`https://twitter.com/messages/compose?recipient_id=${handle}`, '_blank');
+          toast.success('Twitter DM opened!');
+
+          // Log outreach
+          await LazarusService.logOutreach(userId!, alert.alert_id, 'twitter', 'Twitter DM opened');
+        }
+      } else {
+        toast.error('No Twitter URL found for this contact');
+      }
+    } catch (error) {
+      console.error('Error opening Twitter:', error);
+      toast.error('Failed to open Twitter');
+    }
   };
 
   const handleScanContact = async (focusId: string) => {
@@ -906,165 +993,416 @@ const LazarusProtocolPage = () => {
         >
           {/* Alerts Tab */}
           <TabPanel value={tabValue} index={0}>
+            {/* Alert Filters */}
+            <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+              {/* Search */}
+              <TextField
+                placeholder="Search contacts..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                size="small"
+                sx={{
+                  flexGrow: 1,
+                  minWidth: 200,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '8px',
+                  },
+                }}
+              />
+
+              {/* Signal Type Filter */}
+              <Select
+                value={filterSignalType}
+                onChange={(e) => setFilterSignalType(e.target.value)}
+                size="small"
+                sx={{
+                  minWidth: 150,
+                  borderRadius: '8px',
+                }}
+              >
+                <MenuItem value="all">All Signals</MenuItem>
+                <MenuItem value="switch">🔄 Switch</MenuItem>
+                <MenuItem value="pain">😫 Pain</MenuItem>
+                <MenuItem value="hiring">👥 Hiring</MenuItem>
+                <MenuItem value="funding">💰 Funding</MenuItem>
+              </Select>
+
+              {/* Priority Filter */}
+              <Select
+                value={filterPriority}
+                onChange={(e) => setFilterPriority(e.target.value)}
+                size="small"
+                sx={{
+                  minWidth: 150,
+                  borderRadius: '8px',
+                }}
+              >
+                <MenuItem value="all">All Priority</MenuItem>
+                <MenuItem value="HOT">🔥 Hot (80+)</MenuItem>
+                <MenuItem value="WARM">🟠 Warm (50-79)</MenuItem>
+                <MenuItem value="COLD">🟡 Cold (&lt;50)</MenuItem>
+              </Select>
+
+              {/* Clear Filters */}
+              {(filterSignalType !== 'all' || filterPriority !== 'all' || searchQuery) && (
+                <Button
+                  variant="text"
+                  size="small"
+                  onClick={() => {
+                    setFilterSignalType('all');
+                    setFilterPriority('all');
+                    setSearchQuery('');
+                  }}
+                  sx={{ textTransform: 'none', color: '#6B7280' }}
+                >
+                  Clear Filters
+                </Button>
+              )}
+            </Box>
+
             <Grid container spacing={2.5}>
-              {alerts.length === 0 ? (
-                <Grid item xs={12}>
-                  <Box
-                    sx={{
-                      py: 8,
-                      textAlign: 'center',
-                      borderRadius: '12px',
-                      background: '#FAFBFC',
-                      border: '2px dashed #E5E7EB',
-                    }}
-                  >
-                    <NotificationsActiveIcon sx={{ fontSize: 48, color: '#D1D5DB', mb: 2 }} />
-                    <Typography variant="h6" fontWeight={600} color="#374151" mb={1}>
-                      No New Alerts
-                    </Typography>
-                    <Typography variant="body2" color="#6B7280" mb={3}>
-                      Your monitors are scanning weekly for resurrection signals.
-                    </Typography>
-                  </Box>
-                </Grid>
-              ) : (
-                alerts.map((alert) => (
-                  <Grid item xs={12} key={alert.alert_id}>
+              {(() => {
+                // Apply filters
+                const filteredAlerts = alerts
+                  .filter((alert) => {
+                    // Search filter
+                    if (searchQuery && !alert.source_name.toLowerCase().includes(searchQuery.toLowerCase())) {
+                      return false;
+                    }
+
+                    // Signal type filter
+                    if (filterSignalType !== 'all') {
+                      const signalType = (alert.evidence?.signal_type || '').toLowerCase();
+                      if (!signalType.includes(filterSignalType.toLowerCase())) {
+                        return false;
+                      }
+                    }
+
+                    // Priority filter
+                    if (filterPriority !== 'all' && alert.priority_level !== filterPriority) {
+                      return false;
+                    }
+
+                    return true;
+                  })
+                  .sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0)); // Sort by priority (highest first)
+
+                return filteredAlerts.length === 0 ? (
+                  <Grid item xs={12}>
                     <Box
                       sx={{
+                        py: 8,
+                        textAlign: 'center',
                         borderRadius: '12px',
-                        background: '#fff',
-                        border: '1px solid #F3F4F6',
-                        p: 3,
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          boxShadow: '0 8px 16px rgba(0,0,0,0.08)',
-                          borderColor: '#7C3AED30',
-                        },
+                        background: '#FAFBFC',
+                        border: '2px dashed #E5E7EB',
                       }}
                     >
-                      <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-                        <Box flex={1}>
-                          <Box display="flex" alignItems="center" gap={1} mb={2}>
-                            <Chip
-                              label={alert.alert_type.replace('_', ' ')}
-                              size="small"
-                              sx={{
-                                background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
-                                color: '#fff',
-                                fontWeight: 600,
-                                fontSize: '11px',
-                              }}
-                            />
-                            <Typography variant="caption" color="#9CA3AF" fontWeight={500}>
-                              {new Date(alert.created_at).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                              })}
-                            </Typography>
-                          </Box>
-                          <Typography variant="h6" fontWeight={600} color="#111827" mb={1.5}>
-                            {alert.alert_message}
-                          </Typography>
-                          <Typography variant="body2" color="#6B7280" fontSize="13px">
-                            Source: {alert.evidence.signal_source}
-                          </Typography>
-                          {alert.suggested_pitch && (
-                            <Box
-                              sx={{
-                                mt: 2.5,
-                                p: 2.5,
-                                background: 'linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%)',
-                                borderRadius: '10px',
-                                border: '1px solid #E5E7EB',
-                              }}
-                            >
-                              <Typography fontSize="11px" fontWeight={700} color="#7C3AED" mb={1} textTransform="uppercase" letterSpacing="0.8px">
-                                AI-Generated Pitch
-                              </Typography>
-                              <Typography fontSize="13px" color="#374151" lineHeight={1.6}>
-                                {alert.suggested_pitch}
+                      <NotificationsActiveIcon sx={{ fontSize: 48, color: '#D1D5DB', mb: 2 }} />
+                      <Typography variant="h6" fontWeight={600} color="#374151" mb={1}>
+                        {alerts.length === 0 ? 'No New Alerts' : 'No Alerts Match Filters'}
+                      </Typography>
+                      <Typography variant="body2" color="#6B7280" mb={3}>
+                        {alerts.length === 0 ? 'Your monitors are scanning weekly for resurrection signals.' : 'Try adjusting your filters to see more alerts.'}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                ) : (
+                  filteredAlerts.map((alert) => (
+                    <Grid item xs={12} key={alert.alert_id}>
+                      <Box
+                        sx={{
+                          borderRadius: '12px',
+                          background: '#fff',
+                          border: '1px solid #F3F4F6',
+                          p: 3,
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            boxShadow: '0 8px 16px rgba(0,0,0,0.08)',
+                            borderColor: '#7C3AED30',
+                          },
+                        }}
+                      >
+                        <Box display="flex" justifyContent="space-between" alignItems="flex-start">
+                          <Box flex={1}>
+                            <Box display="flex" alignItems="center" gap={1} mb={2}>
+                              <Chip
+                                label="🎯 BUYING SIGNAL"
+                                size="small"
+                                sx={{
+                                  background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
+                                  color: '#fff',
+                                  fontWeight: 600,
+                                  fontSize: '11px',
+                                }}
+                              />
+                              <Typography variant="caption" color="#9CA3AF" fontWeight={500}>
+                                {new Date(alert.created_at).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                })}
                               </Typography>
                             </Box>
-                          )}
-                        </Box>
-                        <Box display="flex" gap={1} ml={2} flexDirection="column">
-                          <Box display="flex" gap={1}>
-                            <Button
-                              variant="contained"
-                              size="small"
-                              startIcon={<EmailIcon sx={{ fontSize: 16 }} />}
-                              onClick={() => handleDraftPitch(alert)}
-                              sx={{
-                                background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
-                                textTransform: 'none',
-                                fontWeight: 600,
-                                fontSize: '12px',
-                                px: 2,
-                                py: 0.75,
-                                borderRadius: '8px',
-                                boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)',
-                                '&:hover': {
-                                  background: 'linear-gradient(135deg, #5B21B6 0%, #7C3AED 100%)',
-                                  boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
-                                },
-                              }}
-                            >
-                              Draft Pitch
-                            </Button>
-                            <Button
-                              variant="contained"
-                              size="small"
-                              startIcon={<WhatsAppIcon sx={{ fontSize: 16 }} />}
-                              onClick={() => handleWhatsApp(alert)}
-                              sx={{
-                                background: '#25D366',
-                                textTransform: 'none',
-                                fontWeight: 600,
-                                fontSize: '12px',
-                                px: 2,
-                                py: 0.75,
-                                borderRadius: '8px',
-                                '&:hover': {
-                                  background: '#1DA851',
-                                },
-                              }}
-                            >
-                              WhatsApp
-                            </Button>
+                            <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={0.5}>
+                              <Typography variant="h6" fontWeight={600} color="#111827">
+                                {alert.source_name}
+                              </Typography>
+                              {/* Priority Score */}
+                              {alert.priority_score !== undefined && (
+                                <Box display="flex" alignItems="center" gap={0.5}>
+                                  {alert.priority_level === 'HOT' && (
+                                    <Box sx={{ display: 'flex', gap: 0.25 }}>
+                                      <Typography fontSize="16px">🔥🔥🔥🔥🔥</Typography>
+                                    </Box>
+                                  )}
+                                  {alert.priority_level === 'WARM' && (
+                                    <Box sx={{ display: 'flex', gap: 0.25 }}>
+                                      <Typography fontSize="16px">🔥🔥🔥</Typography>
+                                    </Box>
+                                  )}
+                                  {alert.priority_level === 'COLD' && <Typography fontSize="16px">🟡</Typography>}
+                                  <Typography fontSize="12px" fontWeight={700} color={alert.priority_level === 'HOT' ? '#EF4444' : alert.priority_level === 'WARM' ? '#F59E0B' : '#6B7280'}>
+                                    {alert.priority_score}
+                                  </Typography>
+                                </Box>
+                              )}
+                            </Box>
+                            <Typography variant="body2" color="#6B7280" fontSize="13px" mb={1.5}>
+                              {alert.alert_message}
+                            </Typography>
+
+                            {/* Signal Details */}
+                            <Box sx={{ mb: 1.5 }}>
+                              <Typography variant="caption" color="#9CA3AF" fontSize="11px">
+                                Signal: <strong>{alert.evidence?.signal_type || alert.alert_type}</strong>
+                                {alert.evidence?.confidence && ` (${Math.round(alert.evidence.confidence * 100)}% confidence)`}
+                              </Typography>
+                            </Box>
+
+                            {/* Evidence/Post */}
+                            {alert.evidence?.evidence_text && (
+                              <Box
+                                sx={{
+                                  mb: 2,
+                                  p: 1.5,
+                                  background: '#F9FAFB',
+                                  borderRadius: '8px',
+                                  borderLeft: '3px solid #7C3AED',
+                                }}
+                              >
+                                <Typography variant="body2" fontSize="12px" color="#374151" fontStyle="italic">
+                                  "{alert.evidence.evidence_text}"
+                                </Typography>
+                                {/* View Post Button */}
+                                {alert.evidence?.post_text && (
+                                  <Button
+                                    variant="text"
+                                    size="small"
+                                    onClick={async () => {
+                                      setSelectedAlertEvidence(alert);
+
+                                      // Fetch contact details to get profile photo
+                                      try {
+                                        const contactResponse = await LazarusService.getFocusContactDetail(userId!, alert.source_id);
+                                        if (contactResponse.responseData) {
+                                          setSelectedContactPhoto(contactResponse.responseData.profile_photo);
+                                        }
+                                      } catch (error) {
+                                        console.error('Failed to fetch contact photo:', error);
+                                      }
+
+                                      setShowPostViewer(true);
+                                    }}
+                                    sx={{
+                                      mt: 1,
+                                      color: '#7C3AED',
+                                      textTransform: 'none',
+                                      fontWeight: 600,
+                                      fontSize: '11px',
+                                      '&:hover': {
+                                        backgroundColor: '#7C3AED08',
+                                      },
+                                    }}
+                                  >
+                                    📄 View Full Post
+                                  </Button>
+                                )}
+                              </Box>
+                            )}
+
+                            {/* Post Platform Badge */}
+                            {alert.evidence?.post_platform && (
+                              <Box sx={{ mb: 2 }}>
+                                <Chip
+                                  label={`From ${alert.evidence.post_platform}`}
+                                  size="small"
+                                  sx={{
+                                    fontSize: '10px',
+                                    fontWeight: 600,
+                                    background: '#7C3AED15',
+                                    color: '#7C3AED',
+                                  }}
+                                />
+                              </Box>
+                            )}
+                            {alert.suggested_pitch && (
+                              <Box
+                                sx={{
+                                  mt: 2.5,
+                                  p: 2.5,
+                                  background: 'linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%)',
+                                  borderRadius: '10px',
+                                  border: '1px solid #E5E7EB',
+                                }}
+                              >
+                                <Typography fontSize="11px" fontWeight={700} color="#7C3AED" mb={1} textTransform="uppercase" letterSpacing="0.8px">
+                                  AI-Generated Pitch
+                                </Typography>
+                                <Typography fontSize="13px" color="#374151" lineHeight={1.6}>
+                                  {alert.suggested_pitch}
+                                </Typography>
+                              </Box>
+                            )}
                           </Box>
-                          <Box display="flex" gap={1}>
+                          <Box display="flex" gap={1} ml={2} flexDirection="column">
+                            <Box display="flex" gap={1}>
+                              <Button
+                                variant="contained"
+                                size="small"
+                                startIcon={<EmailIcon sx={{ fontSize: 16 }} />}
+                                onClick={() => handleDraftEmail(alert)}
+                                sx={{
+                                  background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
+                                  textTransform: 'none',
+                                  fontWeight: 600,
+                                  fontSize: '12px',
+                                  px: 2,
+                                  py: 0.75,
+                                  borderRadius: '8px',
+                                  boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)',
+                                  '&:hover': {
+                                    background: 'linear-gradient(135deg, #5B21B6 0%, #7C3AED 100%)',
+                                    boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
+                                  },
+                                }}
+                              >
+                                📧 Email
+                              </Button>
+                              <Button
+                                variant="contained"
+                                size="small"
+                                startIcon={<LinkedInIcon sx={{ fontSize: 16 }} />}
+                                onClick={() => handleLinkedInMessage(alert)}
+                                sx={{
+                                  background: '#0077B5',
+                                  textTransform: 'none',
+                                  fontWeight: 600,
+                                  fontSize: '12px',
+                                  px: 2,
+                                  py: 0.75,
+                                  borderRadius: '8px',
+                                  '&:hover': {
+                                    background: '#005582',
+                                  },
+                                }}
+                              >
+                                LinkedIn
+                              </Button>
+                            </Box>
+                            <Box display="flex" gap={1}>
+                              <Button
+                                variant="contained"
+                                size="small"
+                                startIcon={<TwitterIcon sx={{ fontSize: 16 }} />}
+                                onClick={() => handleTwitterMessage(alert)}
+                                sx={{
+                                  background: '#1DA1F2',
+                                  textTransform: 'none',
+                                  fontWeight: 600,
+                                  fontSize: '12px',
+                                  px: 2,
+                                  py: 0.75,
+                                  borderRadius: '8px',
+                                  '&:hover': {
+                                    background: '#0C8BD9',
+                                  },
+                                }}
+                              >
+                                Twitter
+                              </Button>
+                              <Button
+                                variant="contained"
+                                size="small"
+                                onClick={() => handleResurrectLead(alert)}
+                                sx={{
+                                  backgroundColor: '#10B981',
+                                  color: '#fff',
+                                  textTransform: 'none',
+                                  fontWeight: 600,
+                                  fontSize: '11px',
+                                  px: 1.5,
+                                  py: 0.5,
+                                  borderRadius: '6px',
+                                  '&:hover': {
+                                    backgroundColor: '#059669',
+                                  },
+                                  '&:disabled': {
+                                    backgroundColor: '#D1D5DB',
+                                    color: '#9CA3AF',
+                                  },
+                                }}
+                              >
+                                Resurrect Lead
+                              </Button>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={() => handleContactAlert(alert.alert_id)}
+                                sx={{
+                                  borderColor: '#7C3AED40',
+                                  color: '#7C3AED',
+                                  textTransform: 'none',
+                                  fontWeight: 600,
+                                  fontSize: '11px',
+                                  px: 1.5,
+                                  py: 0.5,
+                                  borderRadius: '6px',
+                                  '&:hover': {
+                                    borderColor: '#7C3AED',
+                                    backgroundColor: '#7C3AED08',
+                                  },
+                                }}
+                              >
+                                Mark Contacted
+                              </Button>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={() => handleDismissAlert(alert.alert_id)}
+                                sx={{
+                                  borderColor: '#E5E7EB',
+                                  color: '#6B7280',
+                                  textTransform: 'none',
+                                  fontWeight: 600,
+                                  fontSize: '11px',
+                                  px: 1.5,
+                                  py: 0.5,
+                                  borderRadius: '6px',
+                                  '&:hover': {
+                                    borderColor: '#9CA3AF',
+                                    backgroundColor: '#F9FAFB',
+                                  },
+                                }}
+                              >
+                                Dismiss
+                              </Button>
+                            </Box>
                             <Button
-                              variant="contained"
+                              variant="text"
                               size="small"
-                              onClick={() => handleResurrectLead(alert)}
+                              onClick={() => (window.location.href = `/lazarus/contact/${alert.source_id}`)}
                               sx={{
-                                backgroundColor: '#10B981',
-                                color: '#fff',
-                                textTransform: 'none',
-                                fontWeight: 600,
-                                fontSize: '11px',
-                                px: 1.5,
-                                py: 0.5,
-                                borderRadius: '6px',
-                                '&:hover': {
-                                  backgroundColor: '#059669',
-                                },
-                                '&:disabled': {
-                                  backgroundColor: '#D1D5DB',
-                                  color: '#9CA3AF',
-                                },
-                              }}
-                            >
-                              Resurrect Lead
-                            </Button>
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              onClick={() => handleContactAlert(alert.alert_id)}
-                              sx={{
-                                borderColor: '#7C3AED40',
                                 color: '#7C3AED',
                                 textTransform: 'none',
                                 fontWeight: 600,
@@ -1073,41 +1411,19 @@ const LazarusProtocolPage = () => {
                                 py: 0.5,
                                 borderRadius: '6px',
                                 '&:hover': {
-                                  borderColor: '#7C3AED',
                                   backgroundColor: '#7C3AED08',
                                 },
                               }}
                             >
-                              Mark Contacted
-                            </Button>
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              onClick={() => handleDismissAlert(alert.alert_id)}
-                              sx={{
-                                borderColor: '#E5E7EB',
-                                color: '#6B7280',
-                                textTransform: 'none',
-                                fontWeight: 600,
-                                fontSize: '11px',
-                                px: 1.5,
-                                py: 0.5,
-                                borderRadius: '6px',
-                                '&:hover': {
-                                  borderColor: '#9CA3AF',
-                                  backgroundColor: '#F9FAFB',
-                                },
-                              }}
-                            >
-                              Dismiss
+                              View Profile →
                             </Button>
                           </Box>
                         </Box>
                       </Box>
-                    </Box>
-                  </Grid>
-                ))
-              )}
+                    </Grid>
+                  ))
+                );
+              })()}
             </Grid>
           </TabPanel>
 
@@ -1185,9 +1501,34 @@ const LazarusProtocolPage = () => {
                             <PersonIcon sx={{ color: '#C91A79', fontSize: 22 }} />
                           </Box>
                           <Box flex={1}>
-                            <Typography fontSize="16px" fontWeight={600} color="#1A1A1A" mb={0.5}>
-                              {contact.name}
-                            </Typography>
+                            <Box display="flex" alignItems="center" gap={1} mb={0.5}>
+                              <Typography fontSize="16px" fontWeight={600} color="#1A1A1A">
+                                {contact.name}
+                              </Typography>
+                              {contact.enrichment_status === 'completed' && (
+                                <Chip
+                                  icon={<CheckCircleIcon sx={{ fontSize: 12 }} />}
+                                  label="Enriched"
+                                  size="small"
+                                  sx={{
+                                    height: '18px',
+                                    fontSize: '10px',
+                                    fontWeight: 600,
+                                    background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                                    color: '#fff',
+                                    '& .MuiChip-icon': { color: '#fff' },
+                                  }}
+                                />
+                              )}
+                            </Box>
+                            {contact.email && (
+                              <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
+                                <EmailIcon sx={{ fontSize: 12, color: '#7C3AED' }} />
+                                <Typography fontSize="11px" color="#7C3AED" fontWeight={500}>
+                                  {contact.email}
+                                </Typography>
+                              </Box>
+                            )}
                             {contact.social_handle && (
                               <Typography fontSize="12px" color="#9CA3AF" fontWeight={500}>
                                 {contact.social_handle}
@@ -1267,17 +1608,34 @@ const LazarusProtocolPage = () => {
                           borderTop: '1px solid #F5F5F5',
                         }}
                       >
-                        <Box display="flex" justifyContent="space-between" mb={1}>
-                          <Typography fontSize="12px" color="#9CA3AF" fontWeight={600}>
-                            {contact.scan_count} scans
-                          </Typography>
-                          <Typography fontSize="12px" color="#C91A79" fontWeight={700}>
-                            {contact.alert_count} alerts
-                          </Typography>
+                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                          <Box>
+                            <Typography fontSize="12px" color="#9CA3AF" fontWeight={600}>
+                              {contact.scan_count} scans • {contact.alert_count} alerts
+                            </Typography>
+                            <Typography fontSize="11px" color="#9CA3AF" fontWeight={500}>
+                              Scans every {contact.scan_frequency_days || 7} days
+                            </Typography>
+                          </Box>
+                          <Button
+                            variant="text"
+                            size="small"
+                            onClick={() => (window.location.href = `/lazarus/contact/${contact.focus_id}`)}
+                            sx={{
+                              color: '#7C3AED',
+                              textTransform: 'none',
+                              fontWeight: 600,
+                              fontSize: '11px',
+                              minWidth: 'auto',
+                              px: 1,
+                              '&:hover': {
+                                backgroundColor: '#7C3AED08',
+                              },
+                            }}
+                          >
+                            View →
+                          </Button>
                         </Box>
-                        <Typography fontSize="11px" color="#9CA3AF" fontWeight={500}>
-                          Scans every {contact.scan_frequency_days || 7} days
-                        </Typography>
                       </Box>
                     </Box>
                   </Grid>
@@ -1713,6 +2071,7 @@ const LazarusProtocolPage = () => {
                     borderRadius: '14px',
                     border: '1px solid #F3F4F6',
                     background: '#fff',
+                    mb: 4,
                   }}
                 >
                   <Typography fontSize="16px" fontWeight={700} color="#111827" mb={3}>
@@ -1744,6 +2103,87 @@ const LazarusProtocolPage = () => {
                     </Typography>
                   )}
                 </Box>
+
+                {/* Advanced Analytics - Phase 3 */}
+                <AdvancedAnalytics
+                  data={
+                    analyticsData
+                      ? {
+                          resurrection_funnel: analyticsData.funnel_metrics
+                            ? {
+                                contacts_monitored: analyticsData.funnel_metrics.contacts_monitored || 0,
+                                scans_completed: analyticsData.funnel_metrics.scans_completed || 0,
+                                alerts_created: analyticsData.funnel_metrics.alerts_created || 0,
+                                contacts_reached: analyticsData.funnel_metrics.contacts_reached || 0,
+                                deals_resurrected: analyticsData.funnel_metrics.deals_resurrected || 0,
+                                resurrection_rate: analyticsData.resurrection_rate || 0,
+                              }
+                            : {
+                                contacts_monitored: analyticsData.slots_used || 0,
+                                scans_completed: analyticsData.total_alerts || 0,
+                                alerts_created: analyticsData.total_alerts || 0,
+                                contacts_reached: analyticsData.acted_upon_count || 0,
+                                deals_resurrected: analyticsData.resurrected_leads_count || 0,
+                                resurrection_rate: analyticsData.resurrection_rate || 0,
+                              },
+                          signal_performance:
+                            analyticsData.alert_types_performance?.map((type: any) => ({
+                              signal_type: type.alert_type,
+                              detected: type.total,
+                              contacted: type.acted_upon,
+                              resurrected: Math.floor(type.acted_upon * 0.7),
+                              conversion_rate: type.action_rate,
+                            })) || [],
+                          roi_metrics: {
+                            leads_resurrected: analyticsData.resurrected_leads_count || 0,
+                            avg_deal_value: 5000,
+                            total_revenue: (analyticsData.resurrected_leads_count || 0) * 5000,
+                            monthly_cost: analyticsData.plan_type === 'PRO' ? 97 : 47,
+                            time_invested_hours: Math.floor((analyticsData.acted_upon_count || 0) * 0.5),
+                            hourly_rate: 50,
+                            total_cost: (analyticsData.plan_type === 'PRO' ? 97 : 47) + Math.floor((analyticsData.acted_upon_count || 0) * 0.5) * 50,
+                            roi_percentage:
+                              analyticsData.resurrected_leads_count > 0
+                                ? Math.round(
+                                    ((analyticsData.resurrected_leads_count * 5000 - ((analyticsData.plan_type === 'PRO' ? 97 : 47) + Math.floor((analyticsData.acted_upon_count || 0) * 0.5) * 50)) /
+                                      ((analyticsData.plan_type === 'PRO' ? 97 : 47) + Math.floor((analyticsData.acted_upon_count || 0) * 0.5) * 50)) *
+                                      100
+                                  )
+                                : 0,
+                          },
+                          platform_performance: analyticsData.platform_breakdown
+                            ? [
+                                {
+                                  platform: 'LinkedIn',
+                                  posts_scanned: 0,
+                                  signals_found: analyticsData.platform_breakdown.LinkedIn || 0,
+                                  success_rate: 0,
+                                },
+                                {
+                                  platform: 'Twitter',
+                                  posts_scanned: 0,
+                                  signals_found: analyticsData.platform_breakdown.Twitter || 0,
+                                  success_rate: 0,
+                                },
+                                {
+                                  platform: 'Facebook',
+                                  posts_scanned: 0,
+                                  signals_found: analyticsData.platform_breakdown.Facebook || 0,
+                                  success_rate: 0,
+                                },
+                                {
+                                  platform: 'TikTok',
+                                  posts_scanned: 0,
+                                  signals_found: analyticsData.platform_breakdown.TikTok || 0,
+                                  success_rate: 0,
+                                },
+                              ]
+                            : [],
+                        }
+                      : null
+                  }
+                  loading={false}
+                />
               </Box>
             )}
           </TabPanel>
@@ -1768,6 +2208,32 @@ const LazarusProtocolPage = () => {
         scanningId={isBatchScanning ? 'batch' : scanLogType === 'contact' ? scanningContactId : scanningMonitorId}
         samplePosts={scanSamplePosts}
         alertData={scanAlertData}
+      />
+
+      {/* Post Viewer Modal */}
+      <PostViewerModal
+        open={showPostViewer}
+        onClose={() => {
+          setShowPostViewer(false);
+          setSelectedAlertEvidence(null);
+          setSelectedContactPhoto(undefined);
+        }}
+        evidence={selectedAlertEvidence?.evidence || null}
+        contactName={selectedAlertEvidence?.source_name}
+        contactPhoto={selectedContactPhoto}
+      />
+
+      {/* Email Composer Modal */}
+      <EmailComposerModal
+        open={showEmailComposer}
+        onClose={() => {
+          setShowEmailComposer(false);
+          setSelectedAlertForEmail(null);
+          setSelectedContactEmail(undefined);
+        }}
+        alert={selectedAlertForEmail}
+        contactEmail={selectedContactEmail}
+        onSent={handleEmailSent}
       />
 
       {/* Scan Frequency Menu */}

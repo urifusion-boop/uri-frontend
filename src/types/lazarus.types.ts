@@ -47,6 +47,9 @@ export interface FocusContact {
   user_id: string;
   name: string;
   social_handle?: string;
+  linkedin_url?: string;
+  twitter_url?: string;
+  current_company?: string;
   last_bio_text?: string;
   last_bio_hash?: string;
   industry_keywords: string[];
@@ -59,6 +62,22 @@ export interface FocusContact {
   alert_count: number;
   created_date: string;
   last_updated: string;
+
+  // Phase 1: Enrichment fields
+  email?: string;
+  phone?: string;
+  profile_photo?: string;
+  headline?: string;
+  location?: string;
+  connections_count?: number;
+  about?: string;
+  work_experience?: any[];
+  education?: any[];
+  skills?: string[];
+  languages?: string[];
+  certifications?: any[];
+  enriched_at?: string;
+  enrichment_status?: 'pending' | 'completed' | 'failed';
 }
 
 export interface FocusContactCreate {
@@ -107,10 +126,14 @@ export interface LazarusAlertEvidence {
   new_bio?: string;
   old_company?: string;
   new_company?: string;
-  // Social signals (platform-agnostic)
+  // Social signals (platform-agnostic) - THE POST THAT TRIGGERED THE ALERT
   post_url?: string;
   post_text?: string;
   post_platform?: string;
+  post_author?: string;
+  post_created_at?: string;
+  post_likes?: number;
+  post_comments?: number;
   // Legacy fields
   tweet_url?: string;
   tweet_text?: string;
@@ -144,6 +167,11 @@ export interface LazarusAlert {
   dismissed_at?: string;
   user_feedback?: string;
   source_lead_id?: string;
+  assigned_to?: string;
+  assigned_at?: string;
+  assigned_by?: string;
+  priority_score?: number; // 0-100 AI priority score
+  priority_level?: 'HOT' | 'WARM' | 'COLD';
   created_at: string;
 }
 

@@ -66,6 +66,18 @@ export class LazarusService {
     return response.data;
   }
 
+  static async getFocusContactDetail(userId: string, focusId: string): Promise<UriResponse<FocusContact>> {
+    const response: AxiosResponse<UriResponse<FocusContact>> = await UriHttpClient.getClient().get(`${BASE_PATH}/focus-contacts/${focusId}/detail?user_id=${userId}`);
+    return response.data;
+  }
+
+  static async enrichFocusContact(userId: string, focusId: string): Promise<UriResponse<{ email?: string; phone?: string; profile_data?: any }>> {
+    const response: AxiosResponse<UriResponse<{ email?: string; phone?: string; profile_data?: any }>> = await UriHttpClient.getClient().post(
+      `${BASE_PATH}/focus-contacts/${focusId}/enrich?user_id=${userId}`
+    );
+    return response.data;
+  }
+
   // ============ COMPANY MONITORS ============
   static async addCompanyMonitor(userId: string, monitor: CompanyMonitorCreate, sourceLeadId?: string): Promise<UriResponse<AddCompanyMonitorResponse>> {
     const url = sourceLeadId ? `${BASE_PATH}/company-monitors/add?user_id=${userId}&source_lead_id=${sourceLeadId}` : `${BASE_PATH}/company-monitors/add?user_id=${userId}`;
@@ -139,6 +151,25 @@ export class LazarusService {
 
   static async dismissAlert(userId: string, alertId: string): Promise<UriResponse<{ success: boolean; message: string }>> {
     const response: AxiosResponse<UriResponse<{ success: boolean; message: string }>> = await UriHttpClient.getClient().put(`${BASE_PATH}/alerts/${alertId}/dismiss?user_id=${userId}`);
+    return response.data;
+  }
+
+  static async markAlertViewed(userId: string, alertId: string): Promise<UriResponse<{ success: boolean; message: string }>> {
+    const response: AxiosResponse<UriResponse<{ success: boolean; message: string }>> = await UriHttpClient.getClient().put(`${BASE_PATH}/alerts/${alertId}/viewed?user_id=${userId}`);
+    return response.data;
+  }
+
+  static async markAlertResurrected(userId: string, alertId: string): Promise<UriResponse<{ success: boolean; message: string }>> {
+    const response: AxiosResponse<UriResponse<{ success: boolean; message: string }>> = await UriHttpClient.getClient().put(`${BASE_PATH}/alerts/${alertId}/resurrected?user_id=${userId}`);
+    return response.data;
+  }
+
+  static async logOutreach(userId: string, alertId: string, outreachType: string, notes?: string): Promise<UriResponse<{ outreach_id: string }>> {
+    let url = `${BASE_PATH}/alerts/${alertId}/outreach?user_id=${userId}&outreach_type=${outreachType}`;
+    if (notes) {
+      url += `&notes=${encodeURIComponent(notes)}`;
+    }
+    const response: AxiosResponse<UriResponse<{ outreach_id: string }>> = await UriHttpClient.getClient().post(url);
     return response.data;
   }
 
