@@ -16,14 +16,14 @@ const FundWalletModal: React.FC<IProps> = ({ open, onClose }) => {
   const { themeColors } = useCustomTheme();
   const { fundWallet, isFundingWallet } = useWallet();
   const { userDetails } = useAuth();
-  const [amount, setAmount] = useState<string>('5000');
+  const [amount, setAmount] = useState<string>('500');
   const [error, setError] = useState<string>('');
 
   const handleFund = async () => {
     setError('');
     const numAmount = Number(amount.replace(/,/g, ''));
-    if (isNaN(numAmount) || numAmount < 5000) {
-      setError('Minimum funding amount is ₦5,000');
+    if (isNaN(numAmount) || numAmount < 500) {
+      setError('Minimum funding amount is ₦500');
       return;
     }
 
@@ -69,7 +69,7 @@ const FundWalletModal: React.FC<IProps> = ({ open, onClose }) => {
         </Text>
 
         <Text size={14} weight={400} mode="secondary" center style={{ marginBottom: 24 }}>
-          Enter the amount you want to add to your wallet. Minimum amount is ₦5,000.
+          Enter the amount you want to add to your wallet. Minimum amount is ₦500.
         </Text>
 
         <InputField
@@ -80,7 +80,7 @@ const FundWalletModal: React.FC<IProps> = ({ open, onClose }) => {
             setAmount(digitsOnly);
           }}
           formatNumber
-          placeholder="5,000"
+          placeholder="500"
           type="text"
           inputMode="numeric"
           pattern="[0-9]*"
