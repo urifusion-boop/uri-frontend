@@ -317,10 +317,18 @@ const LazarusProtocolPage = () => {
     try {
       // Get contact details to find LinkedIn URL
       const contactResponse = await LazarusService.getFocusContactDetail(userId!, alert.source_id);
-      const linkedinUrl = contactResponse.responseData?.linkedin_url;
+      const contact = contactResponse.responseData;
+
+      // Build LinkedIn URL from linkedin_url field or social_handle
+      let linkedinUrl = contact?.linkedin_url;
+      if (!linkedinUrl && contact?.social_handle) {
+        // If social_handle is just the handle (e.g., "john-doe"), build the full URL
+        const handle = contact.social_handle.replace('@', '').replace('https://www.linkedin.com/in/', '');
+        linkedinUrl = `https://www.linkedin.com/in/${handle}`;
+      }
 
       if (linkedinUrl) {
-        // Open LinkedIn messaging (LinkedIn doesn't support pre-filled messages, but we can open the profile)
+        // Open LinkedIn profile
         window.open(linkedinUrl, '_blank');
         toast.success('LinkedIn profile opened!');
 
@@ -1267,70 +1275,54 @@ const LazarusProtocolPage = () => {
                           </Box>
                           <Box display="flex" gap={1} ml={2} flexDirection="column">
                             <Box display="flex" gap={1}>
-                              <Button
-                                variant="contained"
-                                size="small"
-                                startIcon={<EmailIcon sx={{ fontSize: 16 }} />}
-                                onClick={() => handleDraftEmail(alert)}
-                                sx={{
-                                  background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
-                                  textTransform: 'none',
-                                  fontWeight: 600,
-                                  fontSize: '12px',
-                                  px: 2,
-                                  py: 0.75,
-                                  borderRadius: '8px',
-                                  boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)',
-                                  '&:hover': {
-                                    background: 'linear-gradient(135deg, #5B21B6 0%, #7C3AED 100%)',
-                                    boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
-                                  },
-                                }}
-                              >
-                                📧 Email
-                              </Button>
-                              <Button
-                                variant="contained"
-                                size="small"
-                                startIcon={<LinkedInIcon sx={{ fontSize: 16 }} />}
-                                onClick={() => handleLinkedInMessage(alert)}
-                                sx={{
-                                  background: '#0077B5',
-                                  textTransform: 'none',
-                                  fontWeight: 600,
-                                  fontSize: '12px',
-                                  px: 2,
-                                  py: 0.75,
-                                  borderRadius: '8px',
-                                  '&:hover': {
-                                    background: '#005582',
-                                  },
-                                }}
-                              >
-                                LinkedIn
-                              </Button>
+                              {/* Only show LinkedIn button if signal is from LinkedIn or if we don't know the platform */}
+                              {(!alert.evidence?.post_platform || alert.evidence?.post_platform === 'LinkedIn') && (
+                                <Button
+                                  variant="contained"
+                                  size="small"
+                                  startIcon={<LinkedInIcon sx={{ fontSize: 16 }} />}
+                                  onClick={() => handleLinkedInMessage(alert)}
+                                  sx={{
+                                    background: '#0077B5',
+                                    textTransform: 'none',
+                                    fontWeight: 600,
+                                    fontSize: '12px',
+                                    px: 2,
+                                    py: 0.75,
+                                    borderRadius: '8px',
+                                    '&:hover': {
+                                      background: '#005582',
+                                    },
+                                  }}
+                                >
+                                  LinkedIn
+                                </Button>
+                              )}
                             </Box>
                             <Box display="flex" gap={1}>
-                              <Button
-                                variant="contained"
-                                size="small"
-                                startIcon={<TwitterIcon sx={{ fontSize: 16 }} />}
-                                onClick={() => handleTwitterMessage(alert)}
-                                sx={{
-                                  background: '#1DA1F2',
-                                  textTransform: 'none',
-                                  fontWeight: 600,
-                                  fontSize: '12px',
-                                  px: 2,
-                                  py: 0.75,
-                                  borderRadius: '8px',
-                                  '&:hover': {
-                                    background: '#0C8BD9',
-                                  },
-                                }}
-                              >
-                                Twitter
-                              </Button>
+                              {/* Only show Twitter button if signal is from Twitter */}
+                              {alert.evidence?.post_platform === 'Twitter' && (
+                                <Button
+                                  variant="contained"
+                                  size="small"
+                                  startIcon={<TwitterIcon sx={{ fontSize: 16 }} />}
+                                  onClick={() => handleTwitterMessage(alert)}
+                                  sx={{
+                                    background: '#1DA1F2',
+                                    textTransform: 'none',
+                                    fontWeight: 600,
+                                    fontSize: '12px',
+                                    px: 2,
+                                    py: 0.75,
+                                    borderRadius: '8px',
+                                    '&:hover': {
+                                      background: '#0C8BD9',
+                                    },
+                                  }}
+                                >
+                                  Twitter
+                                </Button>
+                              )}
                               <Button
                                 variant="contained"
                                 size="small"
@@ -1401,7 +1393,27 @@ const LazarusProtocolPage = () => {
                             <Button
                               variant="text"
                               size="small"
-                              onClick={() => (window.location.href = `/lazarus/contact/${alert.source_id}`)}
+                              onClick={async () => {
+                                // Get contact and open LinkedIn profile
+                                try {
+                                  const contactResponse = await LazarusService.getFocusContactDetail(userId!, alert.source_id);
+                                  const contact = contactResponse.responseData;
+
+                                  let linkedinUrl = contact?.linkedin_url;
+                                  if (!linkedinUrl && contact?.social_handle) {
+                                    const handle = contact.social_handle.replace('@', '').replace('https://www.linkedin.com/in/', '');
+                                    linkedinUrl = `https://www.linkedin.com/in/${handle}`;
+                                  }
+
+                                  if (linkedinUrl) {
+                                    window.open(linkedinUrl, '_blank');
+                                  } else {
+                                    toast.error('No LinkedIn profile found');
+                                  }
+                                } catch (error) {
+                                  toast.error('Failed to open profile');
+                                }
+                              }}
                               sx={{
                                 color: '#7C3AED',
                                 textTransform: 'none',
@@ -1415,7 +1427,7 @@ const LazarusProtocolPage = () => {
                                 },
                               }}
                             >
-                              View Profile →
+                              View LinkedIn Profile →
                             </Button>
                           </Box>
                         </Box>
