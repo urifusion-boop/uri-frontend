@@ -315,8 +315,20 @@ const LazarusProtocolPage = () => {
 
   const handleLinkedInMessage = async (alert: LazarusAlert) => {
     try {
+      // Only works for focus contacts, not company monitors
+      if (alert.source_type !== 'FOCUS_CONTACT') {
+        toast.error('LinkedIn messaging only available for individual contacts');
+        return;
+      }
+
       // Get contact details to find LinkedIn URL
       const contactResponse = await LazarusService.getFocusContactDetail(userId!, alert.source_id);
+
+      if (!contactResponse.responseData) {
+        toast.error('Contact not found');
+        return;
+      }
+
       const contact = contactResponse.responseData;
 
       // Build LinkedIn URL from linkedin_url field or social_handle
@@ -339,7 +351,7 @@ const LazarusProtocolPage = () => {
       }
     } catch (error) {
       console.error('Error opening LinkedIn:', error);
-      toast.error('Failed to open LinkedIn');
+      toast.error('Failed to load contact details');
     }
   };
 
@@ -1394,9 +1406,21 @@ const LazarusProtocolPage = () => {
                               variant="text"
                               size="small"
                               onClick={async () => {
+                                // Only works for focus contacts
+                                if (alert.source_type !== 'FOCUS_CONTACT') {
+                                  toast.error('Profile only available for individual contacts');
+                                  return;
+                                }
+
                                 // Get contact and open LinkedIn profile
                                 try {
                                   const contactResponse = await LazarusService.getFocusContactDetail(userId!, alert.source_id);
+
+                                  if (!contactResponse.responseData) {
+                                    toast.error('Contact not found');
+                                    return;
+                                  }
+
                                   const contact = contactResponse.responseData;
 
                                   let linkedinUrl = contact?.linkedin_url;
@@ -1411,7 +1435,7 @@ const LazarusProtocolPage = () => {
                                     toast.error('No LinkedIn profile found');
                                   }
                                 } catch (error) {
-                                  toast.error('Failed to open profile');
+                                  toast.error('Failed to load contact');
                                 }
                               }}
                               sx={{
