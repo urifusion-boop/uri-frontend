@@ -16,17 +16,31 @@ export enum LazarusMonitoringStatus {
 }
 
 export enum LazarusAlertType {
-  // Focus Contact alerts
+  // Focus Contact alerts - Career Change (Highest Priority)
   JOB_EXIT = 'JOB_EXIT',
   CHAMPION_MOVE = 'CHAMPION_MOVE',
+  PROMOTED = 'PROMOTED',
+  CHANGED_JOBS = 'CHANGED_JOBS',
+  NEW_DECISION_MAKER = 'NEW_DECISION_MAKER',
+
+  // Focus Contact alerts - Pain/Interest
   PAIN_SIGNAL = 'PAIN_SIGNAL',
   BUYING_INTENT = 'BUYING_INTENT',
+  COMPETITOR_COMPLAINT = 'COMPETITOR_COMPLAINT',
+  SWITCH_SIGNAL = 'SWITCH_SIGNAL',
 
-  // Company alerts
+  // Company alerts - Business Growth
   HIRING_SPREE = 'HIRING_SPREE',
   CASH_INJECTION = 'CASH_INJECTION',
+  EXPANSION = 'EXPANSION',
+
+  // Company alerts - Other
   STRATEGIC_PIVOT = 'STRATEGIC_PIVOT',
   COMPANY_DEAD = 'COMPANY_DEAD',
+
+  // Engagement Signals
+  LIKES_COMPETITOR = 'LIKES_COMPETITOR',
+  INTERACTS_WITH_CONTENT = 'INTERACTS_WITH_CONTENT',
 }
 
 export enum LazarusAlertStatus {

@@ -1036,15 +1036,20 @@ const LazarusProtocolPage = () => {
                 onChange={(e) => setFilterSignalType(e.target.value)}
                 size="small"
                 sx={{
-                  minWidth: 150,
+                  minWidth: 180,
                   borderRadius: '8px',
                 }}
               >
                 <MenuItem value="all">All Signals</MenuItem>
-                <MenuItem value="switch">🔄 Switch</MenuItem>
-                <MenuItem value="pain">😫 Pain</MenuItem>
+                <MenuItem value="promoted">🎯 Promoted</MenuItem>
+                <MenuItem value="changed_jobs">🚀 Changed Jobs</MenuItem>
+                <MenuItem value="new_decision_maker">👑 Decision Maker</MenuItem>
+                <MenuItem value="raised_funds">💰 Raised Funds</MenuItem>
                 <MenuItem value="hiring">👥 Hiring</MenuItem>
-                <MenuItem value="funding">💰 Funding</MenuItem>
+                <MenuItem value="expansion">📈 Expansion</MenuItem>
+                <MenuItem value="pain">😫 Pain Signal</MenuItem>
+                <MenuItem value="competitor_complaint">🔴 Competitor Complaint</MenuItem>
+                <MenuItem value="switch">🔄 Switch Signal</MenuItem>
               </Select>
 
               {/* Priority Filter */}
