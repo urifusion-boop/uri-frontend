@@ -21,11 +21,14 @@ const LeadsIndexPage = () => {
       {/* Summary Section */}
       <Grid container spacing={2} mb={2} mt={2} bgcolor="#f9fafb" p={2} borderRadius={2}>
         <Grid item md={2.5} xs={12} className="tour-lead-total">
-          <SummaryCard count={(featureLimit?.lead?.noOfLeads?.limit ?? 0) - (featureLimit?.lead?.noOfLeads?.count ?? 0)} label="No of Leads Remaining" />
+          <SummaryCard
+            count={isFeatureUnlimited(featureLimit?.lead?.noOfLeads?.limit) ? '∞' : (featureLimit?.lead?.noOfLeads?.limit ?? 0) - (featureLimit?.lead?.noOfLeads?.count ?? 0)}
+            label="No of Leads Remaining"
+          />
         </Grid>
         <Grid item md={2.5} xs={12} className="tour-lead-total">
           <SummaryCard
-            count={(featureLimit.lead?.credits?.limit ?? 0) - (featureLimit?.lead?.credits?.count ?? 0)}
+            count={isFeatureUnlimited(featureLimit?.lead?.credits?.limit) ? '∞' : (featureLimit.lead?.credits?.limit ?? 0) - (featureLimit?.lead?.credits?.count ?? 0)}
             label="Credit Balance"
             tooltipText={`1 Credit = Unlock 1 Email Address\n 9 Credits = Unlock 1 Phone Number`}
           />
