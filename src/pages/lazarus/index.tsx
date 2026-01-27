@@ -30,7 +30,7 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import { Box, Button, Chip, Container, Grid, IconButton, LinearProgress, Menu, MenuItem, Select, Tab, Tabs, TextField, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Button, Chip, Container, Grid, IconButton, LinearProgress, Menu, MenuItem, Select, Tab, Tabs, TextField, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -90,6 +90,9 @@ const LazarusProtocolPage = () => {
   const [filterSignalType, setFilterSignalType] = useState<string>('all');
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // System status
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
 
   useEffect(() => {
     if (userId) {
@@ -428,9 +431,19 @@ const LazarusProtocolPage = () => {
       // Don't close modal automatically - user can close it
     } catch (error: any) {
       console.error('[SCAN ERROR] Failed to scan contact:', error);
-      toast.error(`❌ Scan failed: ${error.message || 'Unknown error'}`, {
-        duration: 5000,
-      });
+
+      // Check if it's a quota error (infrastructure issue)
+      const errorMsg = error.message || error.toString() || '';
+      if (errorMsg.toLowerCase().includes('usage') && errorMsg.toLowerCase().includes('limit')) {
+        setQuotaExceeded(true);
+        toast.error('Scanning temporarily unavailable. Our team has been notified.', {
+          duration: 6000,
+        });
+      } else {
+        toast.error(`❌ Scan failed: ${error.message || 'Unknown error'}`, {
+          duration: 5000,
+        });
+      }
     } finally {
       // Keep modal open, just stop the scanning state after a delay
       setTimeout(() => {
@@ -560,6 +573,14 @@ const LazarusProtocolPage = () => {
   return (
     <DashboardLayout>
       <Container maxWidth="xl" sx={{ py: 4 }}>
+        {/* Service Issue Banner - Internal infrastructure problem */}
+        {quotaExceeded && (
+          <Alert severity="info" onClose={() => setQuotaExceeded(false)} sx={{ mb: 3 }}>
+            <AlertTitle>Scanning Temporarily Unavailable</AlertTitle>
+            We're experiencing high demand. Our team has been notified and is working to restore full scanning capacity. Your existing alerts and monitoring will continue to work normally.
+          </Alert>
+        )}
+
         {/* Header */}
         <Box mb={4}>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
