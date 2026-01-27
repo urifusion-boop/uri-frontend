@@ -1159,6 +1159,16 @@ const ConversationLeadFormV2 = () => {
       monitoring_platforms: enabledPlatforms,
     };
 
+    // 🔍 DEBUG: Log the payload being sent to backend
+    console.log('📤 FRONTEND PAYLOAD DEBUG (before save/update):');
+    console.log('   keywords:', payload.keywords);
+    console.log('   implied_keywords:', payload.implied_keywords);
+    console.log('   job_keywords:', payload.job_keywords);
+    console.log('   solution_context:', payload.solution_context);
+    console.log('   platform_configs:', payload.platform_configs);
+    console.log('   monitoring_platforms:', payload.monitoring_platforms);
+    console.log('   Full payload:', payload);
+
     if (existingFormId) {
       const updatePayload: ConversationalSearchFormDto = {
         user_id: userId || '',
