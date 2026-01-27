@@ -1219,25 +1219,14 @@ const LazarusProtocolPage = () => {
                                 <Typography variant="body2" fontSize="12px" color="#374151" fontStyle="italic">
                                   "{alert.evidence.evidence_text}"
                                 </Typography>
-                                {/* View Post Button */}
-                                {alert.evidence?.post_text && (
+                                {/* View Post Button - Opens actual LinkedIn/Twitter post */}
+                                {alert.evidence?.post_url && (
                                   <Button
                                     variant="text"
                                     size="small"
-                                    onClick={async () => {
-                                      setSelectedAlertEvidence(alert);
-
-                                      // Fetch contact details to get profile photo
-                                      try {
-                                        const contactResponse = await LazarusService.getFocusContactDetail(userId!, alert.source_id);
-                                        if (contactResponse.responseData) {
-                                          setSelectedContactPhoto(contactResponse.responseData.profile_photo);
-                                        }
-                                      } catch (error) {
-                                        console.error('Failed to fetch contact photo:', error);
-                                      }
-
-                                      setShowPostViewer(true);
+                                    onClick={() => {
+                                      window.open(alert.evidence.post_url, '_blank');
+                                      toast.success('Opening post...');
                                     }}
                                     sx={{
                                       mt: 1,
@@ -1250,7 +1239,7 @@ const LazarusProtocolPage = () => {
                                       },
                                     }}
                                   >
-                                    📄 View Full Post
+                                    📄 View Original Post
                                   </Button>
                                 )}
                               </Box>
@@ -1407,57 +1396,6 @@ const LazarusProtocolPage = () => {
                                 Dismiss
                               </Button>
                             </Box>
-                            <Button
-                              variant="text"
-                              size="small"
-                              onClick={async () => {
-                                // Only works for focus contacts
-                                if (alert.source_type !== 'FOCUS_CONTACT') {
-                                  toast.error('Profile only available for individual contacts');
-                                  return;
-                                }
-
-                                // Get contact and open LinkedIn profile
-                                try {
-                                  const contactResponse = await LazarusService.getFocusContactDetail(userId!, alert.source_id);
-
-                                  if (!contactResponse.responseData) {
-                                    toast.error('Contact not found');
-                                    return;
-                                  }
-
-                                  const contact = contactResponse.responseData;
-
-                                  let linkedinUrl = contact?.linkedin_url;
-                                  if (!linkedinUrl && contact?.social_handle) {
-                                    const handle = contact.social_handle.replace('@', '').replace('https://www.linkedin.com/in/', '');
-                                    linkedinUrl = `https://www.linkedin.com/in/${handle}`;
-                                  }
-
-                                  if (linkedinUrl) {
-                                    window.open(linkedinUrl, '_blank');
-                                  } else {
-                                    toast.error('No LinkedIn profile found');
-                                  }
-                                } catch (error) {
-                                  toast.error('Failed to load contact');
-                                }
-                              }}
-                              sx={{
-                                color: '#7C3AED',
-                                textTransform: 'none',
-                                fontWeight: 600,
-                                fontSize: '11px',
-                                px: 1.5,
-                                py: 0.5,
-                                borderRadius: '6px',
-                                '&:hover': {
-                                  backgroundColor: '#7C3AED08',
-                                },
-                              }}
-                            >
-                              View LinkedIn Profile →
-                            </Button>
                           </Box>
                         </Box>
                       </Box>
