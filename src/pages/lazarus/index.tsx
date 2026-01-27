@@ -1605,7 +1605,36 @@ const LazarusProtocolPage = () => {
                           <Button
                             variant="text"
                             size="small"
-                            onClick={() => (window.location.href = `/lazarus/contact/${contact.focus_id}`)}
+                            onClick={() => {
+                              // Try different platform URLs in priority order
+                              let profileUrl = contact.linkedin_url || contact.twitter_url;
+
+                              // Fallback: Build URL from social_handle
+                              if (!profileUrl && contact.social_handle) {
+                                const handle = contact.social_handle.replace('@', '');
+
+                                // Detect platform from social_handle
+                                if (handle.includes('linkedin.com')) {
+                                  profileUrl = handle.startsWith('http') ? handle : `https://www.linkedin.com/in/${handle}`;
+                                } else if (handle.includes('twitter.com') || handle.includes('x.com')) {
+                                  profileUrl = handle.startsWith('http') ? handle : `https://twitter.com/${handle}`;
+                                } else if (handle.includes('tiktok.com')) {
+                                  profileUrl = handle.startsWith('http') ? handle : `https://www.tiktok.com/@${handle}`;
+                                } else if (handle.includes('facebook.com')) {
+                                  profileUrl = handle.startsWith('http') ? handle : `https://www.facebook.com/${handle}`;
+                                } else {
+                                  // Default to LinkedIn if no platform detected
+                                  profileUrl = `https://www.linkedin.com/in/${handle}`;
+                                }
+                              }
+
+                              if (profileUrl) {
+                                window.open(profileUrl, '_blank');
+                                toast.success('Opening profile...');
+                              } else {
+                                toast.error('No profile URL found');
+                              }
+                            }}
                             sx={{
                               color: '#7C3AED',
                               textTransform: 'none',
