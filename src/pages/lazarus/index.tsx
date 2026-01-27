@@ -1220,13 +1220,19 @@ const LazarusProtocolPage = () => {
                                   "{alert.evidence.evidence_text}"
                                 </Typography>
                                 {/* View Post Button - Opens actual LinkedIn/Twitter post */}
-                                {alert.evidence?.post_url && (
+                                {(alert.evidence?.post_url || alert.evidence?.post_text) && (
                                   <Button
                                     variant="text"
                                     size="small"
                                     onClick={() => {
-                                      window.open(alert.evidence.post_url, '_blank');
-                                      toast.success('Opening post...');
+                                      if (alert.evidence?.post_url) {
+                                        window.open(alert.evidence.post_url, '_blank');
+                                        toast.success('Opening post...');
+                                      } else {
+                                        // Fallback: show modal if no URL but has text
+                                        setSelectedAlertEvidence(alert);
+                                        setShowPostViewer(true);
+                                      }
                                     }}
                                     sx={{
                                       mt: 1,
@@ -1239,7 +1245,7 @@ const LazarusProtocolPage = () => {
                                       },
                                     }}
                                   >
-                                    📄 View Original Post
+                                    📄 {alert.evidence?.post_url ? 'View Original Post' : 'View Full Post'}
                                   </Button>
                                 )}
                               </Box>
