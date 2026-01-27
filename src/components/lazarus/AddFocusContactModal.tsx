@@ -17,9 +17,17 @@ interface AddFocusContactModalProps {
     company?: string;
     role?: string;
   };
+  editMode?: boolean;
+  contactId?: string;
+  existingContact?: {
+    name: string;
+    social_handle?: string;
+    last_bio_text?: string;
+    industry_keywords: string[];
+  };
 }
 
-const AddFocusContactModal = ({ open, onClose, userId, onSuccess, initialData }: AddFocusContactModalProps) => {
+const AddFocusContactModal = ({ open, onClose, userId, onSuccess, initialData, editMode = false, contactId, existingContact }: AddFocusContactModalProps) => {
   const [name, setName] = useState(initialData?.name || '');
   const [socialHandle, setSocialHandle] = useState(initialData?.socialHandle || '');
   const [bioText, setBioText] = useState('');
@@ -28,17 +36,26 @@ const AddFocusContactModal = ({ open, onClose, userId, onSuccess, initialData }:
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Update form when initialData changes (when modal opens with lead data)
+  // Update form when initialData or existingContact changes
   useEffect(() => {
-    if (open && initialData) {
-      setName(initialData.name || '');
-      setSocialHandle(initialData.socialHandle || '');
-      const initialKeywords = [];
-      if (initialData.company) initialKeywords.push(initialData.company);
-      if (initialData.role) initialKeywords.push(initialData.role);
-      setKeywords(initialKeywords);
+    if (open) {
+      if (editMode && existingContact) {
+        // Editing existing contact
+        setName(existingContact.name);
+        setSocialHandle(existingContact.social_handle || '');
+        setBioText(existingContact.last_bio_text || '');
+        setKeywords(existingContact.industry_keywords || []);
+      } else if (initialData) {
+        // Adding new contact from lead data
+        setName(initialData.name || '');
+        setSocialHandle(initialData.socialHandle || '');
+        const initialKeywords = [];
+        if (initialData.company) initialKeywords.push(initialData.company);
+        if (initialData.role) initialKeywords.push(initialData.role);
+        setKeywords(initialKeywords);
+      }
     }
-  }, [open, initialData]);
+  }, [open, initialData, editMode, existingContact]);
 
   const handleAddKeyword = () => {
     if (keywordInput.trim() && !keywords.includes(keywordInput.trim())) {
@@ -73,16 +90,23 @@ const AddFocusContactModal = ({ open, onClose, userId, onSuccess, initialData }:
         industry_keywords: keywords,
       };
 
-      const response = await LazarusService.addFocusContact(userId, contactData);
+      let response;
+      if (editMode && contactId) {
+        // Update existing contact
+        response = await LazarusService.updateFocusContact(userId, contactId, contactData);
+      } else {
+        // Add new contact
+        response = await LazarusService.addFocusContact(userId, contactData);
+      }
 
       if (response.status) {
         onSuccess();
         handleClose();
       } else {
-        setError(response.responseMessage || 'Failed to add focus contact');
+        setError(response.responseMessage || `Failed to ${editMode ? 'update' : 'add'} focus contact`);
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to add focus contact');
+      setError(err.response?.data?.message || `Failed to ${editMode ? 'update' : 'add'} focus contact`);
     } finally {
       setLoading(false);
     }
@@ -130,7 +154,7 @@ const AddFocusContactModal = ({ open, onClose, userId, onSuccess, initialData }:
             </Box>
             <Box>
               <Typography variant="h6" fontWeight={700} color="#1A1A1A" letterSpacing="-0.02em">
-                Add Focus Contact
+                {editMode ? 'Edit Focus Contact' : 'Add Focus Contact'}
               </Typography>
               <Typography fontSize="12px" color="#6B7280" fontWeight={500}>
                 Monitor for buying signals & job changes
@@ -386,7 +410,7 @@ const AddFocusContactModal = ({ open, onClose, userId, onSuccess, initialData }:
             transition: 'all 0.2s ease',
           }}
         >
-          {loading ? 'Adding...' : 'Add to Watchlist'}
+          {loading ? (editMode ? 'Updating...' : 'Adding...') : editMode ? 'Update Contact' : 'Add to Watchlist'}
         </Button>
       </DialogActions>
     </Dialog>

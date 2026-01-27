@@ -42,6 +42,11 @@ export class LazarusService {
     return response.data;
   }
 
+  static async updateFocusContact(userId: string, focusId: string, contact: FocusContactCreate): Promise<UriResponse<FocusContact>> {
+    const response: AxiosResponse<UriResponse<FocusContact>> = await UriHttpClient.getClient().put(`${BASE_PATH}/focus-contacts/${focusId}?user_id=${userId}`, contact);
+    return response.data;
+  }
+
   static async removeFocusContact(userId: string, focusId: string): Promise<UriResponse<{ success: boolean; message: string }>> {
     const response: AxiosResponse<UriResponse<{ success: boolean; message: string }>> = await UriHttpClient.getClient().delete(`${BASE_PATH}/focus-contacts/${focusId}?user_id=${userId}`);
     return response.data;

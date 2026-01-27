@@ -85,6 +85,7 @@ const LazarusProtocolPage = () => {
   const [scanSamplePosts, setScanSamplePosts] = useState<SocialMediaPost[]>([]);
   const [scanAlertData, setScanAlertData] = useState<AlertDetectionData | undefined>(undefined);
   const [isBatchScanning, setIsBatchScanning] = useState(false);
+  const [editingContact, setEditingContact] = useState<FocusContact | null>(null);
 
   // Alert filters
   const [filterSignalType, setFilterSignalType] = useState<string>('all');
@@ -2228,7 +2229,30 @@ const LazarusProtocolPage = () => {
       {/* Modals */}
       <ConnectCRMModal open={showCRMModal} onClose={() => setShowCRMModal(false)} userId={userId || ''} onSuccess={loadDashboardData} />
 
-      <AddFocusContactModal open={showAddContactModal} onClose={() => setShowAddContactModal(false)} userId={userId || ''} onSuccess={loadDashboardContent} />
+      <AddFocusContactModal
+        open={showAddContactModal || editingContact !== null}
+        onClose={() => {
+          setShowAddContactModal(false);
+          setEditingContact(null);
+        }}
+        userId={userId || ''}
+        onSuccess={() => {
+          loadDashboardContent();
+          setEditingContact(null);
+        }}
+        editMode={editingContact !== null}
+        contactId={editingContact?.focus_id}
+        existingContact={
+          editingContact
+            ? {
+                name: editingContact.name,
+                social_handle: editingContact.social_handle,
+                last_bio_text: editingContact.last_bio_text,
+                industry_keywords: editingContact.industry_keywords,
+              }
+            : undefined
+        }
+      />
 
       <AddCompanyMonitorModal open={showAddCompanyModal} onClose={() => setShowAddCompanyModal(false)} userId={userId || ''} onSuccess={loadDashboardContent} />
 
@@ -2271,7 +2295,7 @@ const LazarusProtocolPage = () => {
         onSent={handleEmailSent}
       />
 
-      {/* Scan Frequency Menu */}
+      {/* Contact/Monitor Actions Menu */}
       <Menu
         anchorEl={menuAnchor}
         open={Boolean(menuAnchor)}
@@ -2288,6 +2312,32 @@ const LazarusProtocolPage = () => {
           },
         }}
       >
+        {selectedContact && (
+          <>
+            <MenuItem
+              onClick={() => {
+                setEditingContact(selectedContact);
+                setMenuAnchor(null);
+                setSelectedContact(null);
+              }}
+              sx={{
+                py: 1.5,
+                fontSize: '14px',
+                '&:hover': {
+                  background: '#FFF5FA',
+                },
+              }}
+            >
+              <Box display="flex" alignItems="center" gap={1}>
+                <PersonIcon sx={{ fontSize: 18, color: '#C91A79' }} />
+                <Typography fontSize="14px" fontWeight={500}>
+                  Edit Contact
+                </Typography>
+              </Box>
+            </MenuItem>
+            <Box sx={{ height: '1px', background: '#F3F4F6', my: 1 }} />
+          </>
+        )}
         <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid #F3F4F6' }}>
           <Box display="flex" alignItems="center" gap={1} mb={0.5}>
             <ScheduleIcon sx={{ fontSize: 16, color: '#C91A79' }} />
