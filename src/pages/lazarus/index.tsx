@@ -10,6 +10,7 @@ import LazarusOnboarding from '@/components/lazarus/LazarusOnboarding';
 import PasteAndGoModal from '@/components/lazarus/PasteAndGoModal';
 import PostViewerModal from '@/components/lazarus/PostViewerModal';
 import ScanLogViewerModal from '@/components/lazarus/ScanLogViewerModal';
+import ScannedContentTab from '@/components/lazarus/ScannedContentTab';
 import { useAuth } from '@/providers/AuthProvider';
 import { AlertDetectionData, CompanyMonitor, FocusContact, LazarusAlert, LazarusAlertStatus, LazarusMetrics, LazarusMonitoringStatus, SocialMediaPost } from '@/types/lazarus.types';
 import AddIcon from '@mui/icons-material/Add';
@@ -197,8 +198,8 @@ const LazarusProtocolPage = () => {
   const handleTabChange = async (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
 
-    // Load analytics data when Analytics tab is selected
-    if (newValue === 3 && userId && !analyticsData) {
+    // Load analytics data when Analytics tab is selected (now tab 4)
+    if (newValue === 4 && userId && !analyticsData) {
       try {
         const analyticsResponse = await LazarusService.getAnalyticsData(userId, 30);
         if (analyticsResponse.responseData) {
@@ -965,6 +966,7 @@ const LazarusProtocolPage = () => {
             <Tab label={`Alerts (${alerts.length})`} />
             <Tab label={`Focus Contacts (${focusContacts.length})`} />
             <Tab label={`Company Monitors (${companyMonitors.length})`} />
+            <Tab label="Scanned Content" />
             <Tab label="Analytics" />
           </Tabs>
 
@@ -1839,8 +1841,13 @@ const LazarusProtocolPage = () => {
             </Grid>
           </TabPanel>
 
-          {/* Analytics Tab */}
+          {/* Scanned Content Tab */}
           <TabPanel value={tabValue} index={3}>
+            <ScannedContentTab userId={userId || ''} />
+          </TabPanel>
+
+          {/* Analytics Tab */}
+          <TabPanel value={tabValue} index={4}>
             {!analyticsData ? (
               <Box sx={{ textAlign: 'center', py: 8 }}>
                 <Typography variant="body1" color="text.secondary" mb={2}>
