@@ -17,6 +17,7 @@ import AddIcon from '@mui/icons-material/Add';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import BusinessIcon from '@mui/icons-material/Business';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import DeleteIcon from '@mui/icons-material/Delete';
 import EmailIcon from '@mui/icons-material/Email';
 import LinkIcon from '@mui/icons-material/Link';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
@@ -230,6 +231,23 @@ const LazarusProtocolPage = () => {
       loadDashboardContent();
     } catch (error) {
       console.error('Failed to update scan frequency:', error);
+    }
+  };
+
+  const handleDeleteContact = async (focusId: string) => {
+    if (!confirm('Are you sure you want to delete this contact? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await LazarusService.removeFocusContact(userId!, focusId);
+      setMenuAnchor(null);
+      setSelectedContact(null);
+      toast.success('✅ Contact deleted successfully');
+      loadDashboardContent();
+    } catch (error) {
+      console.error('Failed to delete contact:', error);
+      toast.error('Failed to delete contact');
     }
   };
 
@@ -2339,6 +2357,23 @@ const LazarusProtocolPage = () => {
                 <PersonIcon sx={{ fontSize: 18, color: '#C91A79' }} />
                 <Typography fontSize="14px" fontWeight={500}>
                   Edit Contact
+                </Typography>
+              </Box>
+            </MenuItem>
+            <MenuItem
+              onClick={() => handleDeleteContact(selectedContact.focus_id)}
+              sx={{
+                py: 1.5,
+                fontSize: '14px',
+                '&:hover': {
+                  background: '#FEF2F2',
+                },
+              }}
+            >
+              <Box display="flex" alignItems="center" gap={1}>
+                <DeleteIcon sx={{ fontSize: 18, color: '#EF4444' }} />
+                <Typography fontSize="14px" fontWeight={500} color="#EF4444">
+                  Delete Contact
                 </Typography>
               </Box>
             </MenuItem>
