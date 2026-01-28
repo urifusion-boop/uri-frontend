@@ -32,7 +32,30 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import { Alert, AlertTitle, Box, Button, Chip, Container, Grid, IconButton, LinearProgress, Menu, MenuItem, Select, Tab, Tabs, TextField, Typography } from '@mui/material';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import {
+  Alert,
+  AlertTitle,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  IconButton,
+  LinearProgress,
+  Menu,
+  MenuItem,
+  Select,
+  Tab,
+  Tabs,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -88,6 +111,9 @@ const LazarusProtocolPage = () => {
   const [scanAlertData, setScanAlertData] = useState<AlertDetectionData | undefined>(undefined);
   const [isBatchScanning, setIsBatchScanning] = useState(false);
   const [editingContact, setEditingContact] = useState<FocusContact | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [contactToDelete, setContactToDelete] = useState<FocusContact | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Alert filters
   const [filterSignalType, setFilterSignalType] = useState<string>('all');
@@ -234,13 +260,14 @@ const LazarusProtocolPage = () => {
     }
   };
 
-  const handleDeleteContact = async (focusId: string) => {
-    if (!confirm('Are you sure you want to delete this contact? This action cannot be undone.')) {
-      return;
-    }
+  const handleDeleteContact = async () => {
+    if (!contactToDelete) return;
 
+    setIsDeleting(true);
     try {
-      await LazarusService.removeFocusContact(userId!, focusId);
+      await LazarusService.removeFocusContact(userId!, contactToDelete.focus_id);
+      setShowDeleteModal(false);
+      setContactToDelete(null);
       setMenuAnchor(null);
       setSelectedContact(null);
       toast.success('✅ Contact deleted successfully');
@@ -248,6 +275,8 @@ const LazarusProtocolPage = () => {
     } catch (error) {
       console.error('Failed to delete contact:', error);
       toast.error('Failed to delete contact');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -2361,7 +2390,11 @@ const LazarusProtocolPage = () => {
               </Box>
             </MenuItem>
             <MenuItem
-              onClick={() => handleDeleteContact(selectedContact.focus_id)}
+              onClick={() => {
+                setContactToDelete(selectedContact);
+                setShowDeleteModal(true);
+                setMenuAnchor(null);
+              }}
               sx={{
                 py: 1.5,
                 fontSize: '14px',
@@ -2418,6 +2451,165 @@ const LazarusProtocolPage = () => {
           </MenuItem>
         ))}
       </Menu>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog
+        open={showDeleteModal}
+        onClose={() => !isDeleting && setShowDeleteModal(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
+          },
+        }}
+      >
+        <DialogTitle sx={{ pb: 2 }}>
+          <Box display="flex" alignItems="center" gap={2}>
+            <Box
+              sx={{
+                width: 48,
+                height: 48,
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+              }}
+            >
+              <WarningAmberIcon sx={{ color: '#fff', fontSize: 24 }} />
+            </Box>
+            <Box>
+              <Typography fontSize="20px" fontWeight={700} color="#1A1A1A">
+                Delete Focus Contact?
+              </Typography>
+              <Typography fontSize="13px" color="#6B7280" mt={0.5}>
+                This action cannot be undone
+              </Typography>
+            </Box>
+          </Box>
+        </DialogTitle>
+
+        <DialogContent sx={{ pb: 3 }}>
+          <Box
+            sx={{
+              background: '#FEF2F2',
+              border: '1px solid #FECACA',
+              borderRadius: '12px',
+              p: 2.5,
+              mb: 2,
+            }}
+          >
+            <Typography fontSize="14px" color="#1A1A1A" fontWeight={600} mb={1}>
+              You are about to delete:
+            </Typography>
+            <Box display="flex" alignItems="center" gap={1.5} mb={1.5}>
+              <PersonIcon sx={{ fontSize: 18, color: '#C91A79' }} />
+              <Typography fontSize="15px" fontWeight={600} color="#1A1A1A">
+                {contactToDelete?.name}
+              </Typography>
+            </Box>
+            {contactToDelete?.email && (
+              <Box display="flex" alignItems="center" gap={1.5} mb={1}>
+                <EmailIcon sx={{ fontSize: 14, color: '#7C3AED' }} />
+                <Typography fontSize="13px" color="#6B7280">
+                  {contactToDelete.email}
+                </Typography>
+              </Box>
+            )}
+            {contactToDelete?.current_company && (
+              <Box display="flex" alignItems="center" gap={1.5}>
+                <BusinessIcon sx={{ fontSize: 14, color: '#9CA3AF' }} />
+                <Typography fontSize="13px" color="#6B7280">
+                  {contactToDelete.current_company}
+                </Typography>
+              </Box>
+            )}
+          </Box>
+
+          <Box
+            sx={{
+              background: '#FFFBEB',
+              border: '1px solid #FDE68A',
+              borderRadius: '12px',
+              p: 2,
+            }}
+          >
+            <Typography fontSize="13px" color="#92400E" fontWeight={600} mb={1}>
+              ⚠️ Warning: This will permanently delete:
+            </Typography>
+            <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
+              <Typography component="li" fontSize="12px" color="#92400E" mb={0.5}>
+                All scan history ({contactToDelete?.scan_count || 0} scans)
+              </Typography>
+              <Typography component="li" fontSize="12px" color="#92400E" mb={0.5}>
+                All related alerts ({contactToDelete?.alert_count || 0} alerts)
+              </Typography>
+              <Typography component="li" fontSize="12px" color="#92400E">
+                Contact enrichment data
+              </Typography>
+            </Box>
+          </Box>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, pb: 3, gap: 1.5 }}>
+          <Button
+            onClick={() => setShowDeleteModal(false)}
+            disabled={isDeleting}
+            variant="outlined"
+            sx={{
+              flex: 1,
+              py: 1.5,
+              borderRadius: '10px',
+              textTransform: 'none',
+              fontSize: '14px',
+              fontWeight: 600,
+              borderColor: '#E5E7EB',
+              color: '#6B7280',
+              '&:hover': {
+                borderColor: '#D1D5DB',
+                background: '#F9FAFB',
+              },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDeleteContact}
+            disabled={isDeleting}
+            variant="contained"
+            sx={{
+              flex: 1,
+              py: 1.5,
+              borderRadius: '10px',
+              textTransform: 'none',
+              fontSize: '14px',
+              fontWeight: 600,
+              background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
+              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)',
+                boxShadow: '0 6px 16px rgba(239, 68, 68, 0.4)',
+              },
+              '&:disabled': {
+                background: '#E5E7EB',
+                color: '#9CA3AF',
+              },
+            }}
+          >
+            {isDeleting ? (
+              <Box display="flex" alignItems="center" gap={1}>
+                <CircularProgress size={16} sx={{ color: '#fff' }} />
+                Deleting...
+              </Box>
+            ) : (
+              'Delete Contact'
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </DashboardLayout>
   );
 };
