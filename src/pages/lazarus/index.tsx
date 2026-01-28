@@ -32,7 +32,6 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import {
   Alert,
   AlertTitle,
@@ -2456,142 +2455,61 @@ const LazarusProtocolPage = () => {
       <Dialog
         open={showDeleteModal}
         onClose={() => !isDeleting && setShowDeleteModal(false)}
-        maxWidth="sm"
-        fullWidth
+        maxWidth="xs"
         PaperProps={{
           sx: {
-            borderRadius: '16px',
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
+            borderRadius: '12px',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+            overflow: 'hidden',
           },
         }}
       >
-        <DialogTitle sx={{ pb: 2 }}>
-          <Box display="flex" alignItems="center" gap={2}>
-            <Box
-              sx={{
-                width: 48,
-                height: 48,
-                borderRadius: '12px',
-                background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
-              }}
-            >
-              <WarningAmberIcon sx={{ color: '#fff', fontSize: 24 }} />
-            </Box>
-            <Box>
-              <Typography fontSize="20px" fontWeight={700} color="#1A1A1A">
-                Delete Focus Contact?
-              </Typography>
-              <Typography fontSize="13px" color="#6B7280" mt={0.5}>
-                This action cannot be undone
-              </Typography>
-            </Box>
+        <DialogTitle sx={{ textAlign: 'center', pt: 3, pb: 2, px: 3 }}>
+          <Box
+            sx={{
+              width: 56,
+              height: 56,
+              borderRadius: '50%',
+              background: '#FEE2E2',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px',
+            }}
+          >
+            <DeleteIcon sx={{ color: '#EF4444', fontSize: 28 }} />
           </Box>
+          <Typography fontSize="18px" fontWeight={700} color="#1A1A1A" mb={0.5}>
+            Delete Contact?
+          </Typography>
+          <Typography fontSize="13px" color="#6B7280" lineHeight={1.5}>
+            Are you sure you want to delete <strong>{contactToDelete?.name}</strong>?
+          </Typography>
         </DialogTitle>
 
-        <DialogContent sx={{ pb: 3 }}>
-          <Box
-            sx={{
-              background: '#FEF2F2',
-              border: '1px solid #FECACA',
-              borderRadius: '12px',
-              p: 2.5,
-              mb: 2,
-            }}
-          >
-            <Typography fontSize="14px" color="#1A1A1A" fontWeight={600} mb={1}>
-              You are about to delete:
-            </Typography>
-            <Box display="flex" alignItems="center" gap={1.5} mb={1.5}>
-              <PersonIcon sx={{ fontSize: 18, color: '#C91A79' }} />
-              <Typography fontSize="15px" fontWeight={600} color="#1A1A1A">
-                {contactToDelete?.name}
-              </Typography>
-            </Box>
-            {contactToDelete?.email && (
-              <Box display="flex" alignItems="center" gap={1.5} mb={1}>
-                <EmailIcon sx={{ fontSize: 14, color: '#7C3AED' }} />
-                <Typography fontSize="13px" color="#6B7280">
-                  {contactToDelete.email}
-                </Typography>
-              </Box>
-            )}
-            {contactToDelete?.current_company && (
-              <Box display="flex" alignItems="center" gap={1.5}>
-                <BusinessIcon sx={{ fontSize: 14, color: '#9CA3AF' }} />
-                <Typography fontSize="13px" color="#6B7280">
-                  {contactToDelete.current_company}
-                </Typography>
-              </Box>
-            )}
-          </Box>
-
-          <Box
-            sx={{
-              background: '#FFFBEB',
-              border: '1px solid #FDE68A',
-              borderRadius: '12px',
-              p: 2,
-            }}
-          >
-            <Typography fontSize="13px" color="#92400E" fontWeight={600} mb={1}>
-              ⚠️ Warning: This will permanently delete:
-            </Typography>
-            <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
-              <Typography component="li" fontSize="12px" color="#92400E" mb={0.5}>
-                All scan history ({contactToDelete?.scan_count || 0} scans)
-              </Typography>
-              <Typography component="li" fontSize="12px" color="#92400E" mb={0.5}>
-                All related alerts ({contactToDelete?.alert_count || 0} alerts)
-              </Typography>
-              <Typography component="li" fontSize="12px" color="#92400E">
-                Contact enrichment data
-              </Typography>
-            </Box>
-          </Box>
+        <DialogContent sx={{ px: 3, pb: 2, pt: 0 }}>
+          <Typography fontSize="12px" color="#9CA3AF" textAlign="center">
+            {contactToDelete?.scan_count || 0} scans • {contactToDelete?.alert_count || 0} alerts will be permanently removed
+          </Typography>
         </DialogContent>
 
-        <DialogActions sx={{ px: 3, pb: 3, gap: 1.5 }}>
-          <Button
-            onClick={() => setShowDeleteModal(false)}
-            disabled={isDeleting}
-            variant="outlined"
-            sx={{
-              flex: 1,
-              py: 1.5,
-              borderRadius: '10px',
-              textTransform: 'none',
-              fontSize: '14px',
-              fontWeight: 600,
-              borderColor: '#E5E7EB',
-              color: '#6B7280',
-              '&:hover': {
-                borderColor: '#D1D5DB',
-                background: '#F9FAFB',
-              },
-            }}
-          >
-            Cancel
-          </Button>
+        <DialogActions sx={{ px: 3, pb: 3, gap: 2, flexDirection: 'column' }}>
           <Button
             onClick={handleDeleteContact}
             disabled={isDeleting}
+            fullWidth
             variant="contained"
             sx={{
-              flex: 1,
-              py: 1.5,
-              borderRadius: '10px',
+              py: 1.25,
+              borderRadius: '8px',
               textTransform: 'none',
               fontSize: '14px',
               fontWeight: 600,
-              background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
-              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+              background: '#EF4444',
+              boxShadow: 'none',
               '&:hover': {
-                background: 'linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)',
-                boxShadow: '0 6px 16px rgba(239, 68, 68, 0.4)',
+                background: '#DC2626',
+                boxShadow: 'none',
               },
               '&:disabled': {
                 background: '#E5E7EB',
@@ -2605,8 +2523,27 @@ const LazarusProtocolPage = () => {
                 Deleting...
               </Box>
             ) : (
-              'Delete Contact'
+              'Yes, Delete'
             )}
+          </Button>
+          <Button
+            onClick={() => setShowDeleteModal(false)}
+            disabled={isDeleting}
+            fullWidth
+            variant="text"
+            sx={{
+              py: 1.25,
+              borderRadius: '8px',
+              textTransform: 'none',
+              fontSize: '14px',
+              fontWeight: 600,
+              color: '#6B7280',
+              '&:hover': {
+                background: '#F9FAFB',
+              },
+            }}
+          >
+            Cancel
           </Button>
         </DialogActions>
       </Dialog>
