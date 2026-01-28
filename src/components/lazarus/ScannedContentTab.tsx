@@ -15,6 +15,7 @@ import { toast } from 'react-hot-toast';
 
 interface ScannedPost {
   post_id: string;
+  alert_id: string;
   source_type: string;
   source_id: string;
   source_name: string;
@@ -29,6 +30,8 @@ interface ScannedPost {
   alert_created: string;
   signal_type?: string;
   confidence?: number;
+  is_triggering_post?: boolean;
+  post_index?: number;
 }
 
 interface ProfileScan {
@@ -206,17 +209,41 @@ const ScannedContentTab = ({ userId }: ScannedContentTabProps) => {
                   <Box
                     sx={{
                       borderRadius: '16px',
-                      background: '#fff',
-                      border: '1px solid #F5F5F5',
+                      background: post.is_triggering_post ? '#FFF9FC' : '#fff',
+                      border: post.is_triggering_post ? '2px solid #C91A79' : '1px solid #F5F5F5',
                       p: 3,
+                      position: 'relative',
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       '&:hover': {
-                        boxShadow: '0 8px 20px rgba(201, 26, 121, 0.08)',
-                        borderColor: '#C91A7915',
+                        boxShadow: post.is_triggering_post ? '0 8px 20px rgba(201, 26, 121, 0.15)' : '0 8px 20px rgba(201, 26, 121, 0.08)',
+                        borderColor: post.is_triggering_post ? '#C91A79' : '#C91A7915',
                         transform: 'translateY(-2px)',
                       },
                     }}
                   >
+                    {/* Triggering Post Badge */}
+                    {post.is_triggering_post && (
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          top: 12,
+                          right: 12,
+                          background: 'linear-gradient(135deg, #C91A79 0%, #A01560 100%)',
+                          color: '#fff',
+                          px: 1.5,
+                          py: 0.5,
+                          borderRadius: '6px',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          letterSpacing: '0.5px',
+                          textTransform: 'uppercase',
+                          boxShadow: '0 2px 8px rgba(201, 26, 121, 0.25)',
+                        }}
+                      >
+                        ⚡ Alert Trigger
+                      </Box>
+                    )}
+
                     {/* Post Header */}
                     <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
                       <Box display="flex" alignItems="center" gap={1.5}>

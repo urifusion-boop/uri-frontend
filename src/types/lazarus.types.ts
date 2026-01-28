@@ -56,6 +56,17 @@ export enum LazarusPlanType {
 
 // ============ INTERFACES ============
 
+export interface ScannedPost {
+  post_url: string;
+  post_text: string;
+  post_platform: string;
+  post_author?: string;
+  post_created_at?: string;
+  post_likes?: number;
+  post_comments?: number;
+  post_index: number;
+}
+
 export interface FocusContact {
   focus_id: string;
   user_id: string;
@@ -148,6 +159,9 @@ export interface LazarusAlertEvidence {
   post_created_at?: string;
   post_likes?: number;
   post_comments?: number;
+  // All scanned posts
+  scanned_posts?: ScannedPost[];
+  triggering_post_index?: number;
   // Legacy fields
   tweet_url?: string;
   tweet_text?: string;
