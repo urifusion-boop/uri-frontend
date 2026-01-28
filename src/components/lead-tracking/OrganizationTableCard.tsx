@@ -18,6 +18,7 @@ import { MdAutorenew } from 'react-icons/md';
 import IdentityBox from '../boxes/IdentityBox';
 import RevealBox from '../boxes/RevealBox';
 import Spinner from '../loaders/Spinner';
+import LeadProfile from '../profile/lead/LeadProfile';
 
 interface OrganizationTableColumnProps {
   data: LeadDto[];
@@ -34,6 +35,7 @@ const OrganizationTableCard = ({ data, total, page, pageSize, search, setPage, s
   const router = useRouter();
   const { copyToClipboard } = useClipboard();
   const { enrichLead, isEnrichingLead } = useLeadTrackingHook('leads');
+  const [selectedLead, setSelectedLead] = useState<LeadDto | null>(null);
 
   // State for selected leads
   const [selectedLeadIds, setSelectedLeadIds] = useState<string[]>([]);
@@ -109,11 +111,23 @@ const OrganizationTableCard = ({ data, total, page, pageSize, search, setPage, s
     }
   };
 
+  const handleClick = (lead: LeadDto) => {
+    setSelectedLead(lead);
+  };
+
+  const handleClose = () => {
+    setSelectedLead(null);
+  };
+
+  if (selectedLead) {
+    return <LeadProfile lead={selectedLead} onClose={handleClose} />;
+  }
+
   const columns: TableColumn<LeadDto>[] = [
     {
       key: 'company_name',
       title: 'Company',
-      render: (_, row) => <IdentityBox name={row.company_name ?? '-'} jobTitle={row.industry ?? ''} imageUrl={row.company_logo} />,
+      render: (_, row) => <IdentityBox name={row.company_name ?? '-'} jobTitle={row.industry ?? ''} imageUrl={row.company_logo} onClick={() => handleClick(row)} />,
     },
     {
       key: 'organization_revenue',
