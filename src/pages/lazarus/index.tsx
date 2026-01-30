@@ -17,6 +17,7 @@ import AddIcon from '@mui/icons-material/Add';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import BusinessIcon from '@mui/icons-material/Business';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import DeleteIcon from '@mui/icons-material/Delete';
 import EmailIcon from '@mui/icons-material/Email';
 import LinkIcon from '@mui/icons-material/Link';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
@@ -31,7 +32,29 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import { Alert, AlertTitle, Box, Button, Chip, Container, Grid, IconButton, LinearProgress, Menu, MenuItem, Select, Tab, Tabs, TextField, Typography } from '@mui/material';
+import {
+  Alert,
+  AlertTitle,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  IconButton,
+  LinearProgress,
+  Menu,
+  MenuItem,
+  Select,
+  Tab,
+  Tabs,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -87,6 +110,9 @@ const LazarusProtocolPage = () => {
   const [scanAlertData, setScanAlertData] = useState<AlertDetectionData | undefined>(undefined);
   const [isBatchScanning, setIsBatchScanning] = useState(false);
   const [editingContact, setEditingContact] = useState<FocusContact | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [contactToDelete, setContactToDelete] = useState<FocusContact | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Alert filters
   const [filterSignalType, setFilterSignalType] = useState<string>('all');
@@ -230,6 +256,26 @@ const LazarusProtocolPage = () => {
       loadDashboardContent();
     } catch (error) {
       console.error('Failed to update scan frequency:', error);
+    }
+  };
+
+  const handleDeleteContact = async () => {
+    if (!contactToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await LazarusService.removeFocusContact(userId!, contactToDelete.focus_id);
+      setShowDeleteModal(false);
+      setContactToDelete(null);
+      setMenuAnchor(null);
+      setSelectedContact(null);
+      toast.success('✅ Contact deleted successfully');
+      loadDashboardContent();
+    } catch (error) {
+      console.error('Failed to delete contact:', error);
+      toast.error('Failed to delete contact');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -2342,6 +2388,27 @@ const LazarusProtocolPage = () => {
                 </Typography>
               </Box>
             </MenuItem>
+            <MenuItem
+              onClick={() => {
+                setContactToDelete(selectedContact);
+                setShowDeleteModal(true);
+                setMenuAnchor(null);
+              }}
+              sx={{
+                py: 1.5,
+                fontSize: '14px',
+                '&:hover': {
+                  background: '#FEF2F2',
+                },
+              }}
+            >
+              <Box display="flex" alignItems="center" gap={1}>
+                <DeleteIcon sx={{ fontSize: 18, color: '#EF4444' }} />
+                <Typography fontSize="14px" fontWeight={500} color="#EF4444">
+                  Delete Contact
+                </Typography>
+              </Box>
+            </MenuItem>
             <Box sx={{ height: '1px', background: '#F3F4F6', my: 1 }} />
           </>
         )}
@@ -2383,6 +2450,103 @@ const LazarusProtocolPage = () => {
           </MenuItem>
         ))}
       </Menu>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog
+        open={showDeleteModal}
+        onClose={() => !isDeleting && setShowDeleteModal(false)}
+        maxWidth="xs"
+        PaperProps={{
+          sx: {
+            borderRadius: '12px',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+            overflow: 'hidden',
+          },
+        }}
+      >
+        <DialogTitle sx={{ textAlign: 'center', pt: 3, pb: 2, px: 3 }}>
+          <Box
+            sx={{
+              width: 56,
+              height: 56,
+              borderRadius: '50%',
+              background: '#FEE2E2',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px',
+            }}
+          >
+            <DeleteIcon sx={{ color: '#EF4444', fontSize: 28 }} />
+          </Box>
+          <Typography fontSize="18px" fontWeight={700} color="#1A1A1A" mb={0.5}>
+            Delete Contact?
+          </Typography>
+          <Typography fontSize="13px" color="#6B7280" lineHeight={1.5}>
+            Are you sure you want to delete <strong>{contactToDelete?.name}</strong>?
+          </Typography>
+        </DialogTitle>
+
+        <DialogContent sx={{ px: 3, pb: 2, pt: 0 }}>
+          <Typography fontSize="12px" color="#9CA3AF" textAlign="center">
+            {contactToDelete?.scan_count || 0} scans • {contactToDelete?.alert_count || 0} alerts will be permanently removed
+          </Typography>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, pb: 3, gap: 2, flexDirection: 'column' }}>
+          <Button
+            onClick={handleDeleteContact}
+            disabled={isDeleting}
+            fullWidth
+            variant="contained"
+            sx={{
+              py: 1.25,
+              borderRadius: '8px',
+              textTransform: 'none',
+              fontSize: '14px',
+              fontWeight: 600,
+              background: '#EF4444',
+              boxShadow: 'none',
+              '&:hover': {
+                background: '#DC2626',
+                boxShadow: 'none',
+              },
+              '&:disabled': {
+                background: '#E5E7EB',
+                color: '#9CA3AF',
+              },
+            }}
+          >
+            {isDeleting ? (
+              <Box display="flex" alignItems="center" gap={1}>
+                <CircularProgress size={16} sx={{ color: '#fff' }} />
+                Deleting...
+              </Box>
+            ) : (
+              'Yes, Delete'
+            )}
+          </Button>
+          <Button
+            onClick={() => setShowDeleteModal(false)}
+            disabled={isDeleting}
+            fullWidth
+            variant="text"
+            sx={{
+              py: 1.25,
+              borderRadius: '8px',
+              textTransform: 'none',
+              fontSize: '14px',
+              fontWeight: 600,
+              color: '#6B7280',
+              '&:hover': {
+                background: '#F9FAFB',
+              },
+            }}
+          >
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
     </DashboardLayout>
   );
 };
