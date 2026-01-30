@@ -143,10 +143,17 @@ const NewSubscription = () => {
     }
 
     // Handle paid plans (Social Listening Paid, Enterprise) - show payment flow
+    let planName = planType;
+    if (planType === SubscriptionTypeEnum.SocialListeningPaid) {
+      planName = 'Social listening Paid plan';
+    } else if (planType === SubscriptionTypeEnum.Enterprise) {
+      planName = 'Enterprise Plan';
+    }
+
     const plan: SubscriptionPlan = {
       plan_code: planCode,
       plan_type: planType,
-      name: planType,
+      name: planName,
       amount: amount || 0,
       description: '',
       interval: 'monthly',
