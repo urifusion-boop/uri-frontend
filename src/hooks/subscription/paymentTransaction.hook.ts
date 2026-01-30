@@ -28,32 +28,14 @@ export const usePaymentTransaction = (
   const PaystackPop = require('@paystack/inline-js').default;
 
   const handlePayStackPayment = () => {
-    const popup = new PaystackPop();
-
-    const transaction = popup.resumeTransaction(transactionDetails?.access_code, {
-      onSuccess: (reference: PayStackReference) => {
-        // callbacks?.onSuccess?.(reference);
-        verifyTransaction.mutate(undefined, {
-          onSuccess: () => {
-            setPaymentStatus(true);
-            setOpenPaymentFeedbackModal(true);
-          },
-          onError: () => {
-            setPaymentStatus(false);
-            setOpenPaymentFeedbackModal(true);
-          },
-        });
-      },
-      onClose: () => callbacks?.onClose?.(),
-      onCancel: () => callbacks?.onClose?.(),
-      onError: () => {
-        callbacks?.onClose?.();
-        setPaymentStatus(false);
-        setOpenPaymentFeedbackModal(true);
-      },
-    });
-
-    console.log(transaction);
+    // Squad flow: redirect to authorization_url
+    if (transactionDetails?.authorization_url) {
+      window.location.href = transactionDetails.authorization_url;
+    } else {
+      console.error('No authorization URL found in transaction details');
+      setPaymentStatus(false);
+      setOpenPaymentFeedbackModal(true);
+    }
   };
 
   const verifyTransaction = useMutation({

@@ -189,6 +189,7 @@ const UserTypeCard = ({ icon, iconBg, title, subtitle, description, features, is
 interface UserJourneyCardsProps {
   onStartTrial?: () => void;
   onStartFreeSocialListening?: () => void;
+  onStartPaidSocialListening?: () => void;
   onActivatePayg?: () => void;
   trialButtonText?: string;
   isTrialDisabled?: boolean;
@@ -201,6 +202,7 @@ interface UserJourneyCardsProps {
 export const UserJourneyCards = ({
   onStartTrial,
   onStartFreeSocialListening,
+  onStartPaidSocialListening,
   onActivatePayg,
   trialButtonText = 'Start Free Trial',
   isTrialDisabled = false,
@@ -248,8 +250,8 @@ export const UserJourneyCards = ({
       description: 'For growing brands that need more comprehensive social tracking and reporting.',
       features: ['3 social accounts tracking', '4 reports per month', 'Access to Dera AI assistant', 'Enhanced tracking capabilities'],
       actionLabel: 'Activate Plan',
-      onAction: undefined,
-      comingSoon: true,
+      onAction: onStartPaidSocialListening,
+      comingSoon: false,
     },
     {
       icon: <FaBuilding size={20} />,

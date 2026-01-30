@@ -39,7 +39,7 @@ const HasActiveSubscription = ({ featureLimit }: HasActiveSubscriptionProps) => 
   const { freeSubscription } = useSubscription();
   const router = useRouter();
 
-  const handlePlanSelection = (planType: string, planCode: string) => {
+  const handlePlanSelection = (planType: string, planCode: string, amount?: number) => {
     // Handle Credit Bundles - redirect to credits purchase page
     if (planType === 'CREDIT_BUNDLES') {
       setShowPlansModal(false);
@@ -100,7 +100,7 @@ const HasActiveSubscription = ({ featureLimit }: HasActiveSubscriptionProps) => 
       plan_code: planCode,
       plan_type: planType,
       name: planType,
-      amount: 0, // Will be fetched/set in payment step
+      amount: amount || 0,
       description: '',
       interval: 'monthly',
       created_at: '',

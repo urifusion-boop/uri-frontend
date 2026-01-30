@@ -124,7 +124,7 @@ const HasActiveTrial = ({ onUpgrade }: HasActiveTrialProps) => {
               You're currently enjoying full access to all premium features.{' '}
               <Typography
                 component="span"
-                onClick={() => router.push('/pricing')}
+                onClick={onUpgrade || (() => router.push('/pricing'))}
                 sx={{
                   color: '#CD1B78',
                   fontWeight: 600,
@@ -213,7 +213,7 @@ const HasActiveTrial = ({ onUpgrade }: HasActiveTrialProps) => {
             >
               <Button
                 variant="contained"
-                onClick={() => router.push('/pricing')}
+                onClick={onUpgrade || (() => router.push('/pricing'))}
                 sx={{
                   px: 4,
                   py: 1.5,

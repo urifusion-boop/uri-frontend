@@ -95,7 +95,7 @@ const NewSubscription = () => {
     }
   };
 
-  const handlePlanSelection = (planType: string, planCode: string) => {
+  const handlePlanSelection = (planType: string, planCode: string, amount?: number) => {
     // Handle Credit Bundles - redirect to credits purchase page
     if (planType === 'CREDIT_BUNDLES') {
       setShowPlansModal(false);
@@ -147,7 +147,7 @@ const NewSubscription = () => {
       plan_code: planCode,
       plan_type: planType,
       name: planType,
-      amount: 0,
+      amount: amount || 0,
       description: '',
       interval: 'monthly',
       created_at: '',
@@ -205,6 +205,13 @@ const NewSubscription = () => {
                     triggerToast('error', err?.message ?? 'Failed to activate free plan');
                   },
                 });
+              }}
+              onStartPaidSocialListening={() => {
+                if (!userDetails) {
+                  router.push('/auth/login?redirect=/settings?tab=subscription');
+                  return;
+                }
+                handlePlanSelection(SubscriptionTypeEnum.SocialListeningPaid, 'SOCIAL_LISTENING_PAID_MONTHLY', 1000000);
               }}
               onActivatePayg={() => {
                 if (!userDetails) {

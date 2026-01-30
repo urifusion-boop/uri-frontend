@@ -4,13 +4,13 @@ import SubscriptionPlansList from '@/components/subscription/general/Subscriptio
 
 interface ChoosePaymentProps {
   setStep?: () => void;
-  onSelectPlan: (planType: string, planCode: string) => void;
+  onSelectPlan: (planType: string, planCode: string, amount?: number) => void;
   currentPlanType?: string;
 }
 
 const ChoosePayment = ({ setStep, onSelectPlan, currentPlanType }: ChoosePaymentProps) => {
-  const handleSelectPlan = (planType: string, planCode: string) => {
-    onSelectPlan(planType, planCode);
+  const handleSelectPlan = (planType: string, planCode: string, amount?: number) => {
+    onSelectPlan(planType, planCode, amount);
     setStep?.();
   };
 
