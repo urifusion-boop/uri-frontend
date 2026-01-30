@@ -1,4 +1,6 @@
 import { TrialService } from '@/api/TrialService';
+import useFeatureLimit from '@/hooks/subscription/featureLimit.hooks';
+import { SubscriptionTypeEnum } from '@/models/enum-models/SubscriptionStatusEnum';
 import { useAuth } from '@/providers/AuthProvider';
 import CheckIcon from '@mui/icons-material/Check';
 import { Box, Button, CircularProgress, List, ListItem, ListItemIcon, ListItemText, Modal, Typography } from '@mui/material';
@@ -12,14 +14,25 @@ const SubscriptionModal: React.FC = () => {
   const router = useRouter();
   const { userDetails } = useAuth();
   const queryClient = useQueryClient();
+  const { data: featureLimit } = useFeatureLimit(userDetails?.userId ?? '');
 
   const [isTrialEligible, setIsTrialEligible] = useState(false);
   const [checkingEligibility, setCheckingEligibility] = useState(true);
   const [activatingTrial, setActivatingTrial] = useState(false);
 
+  // Check if user has an active subscription (including free plans)
+  const hasActiveSubscription = !!featureLimit?.subscriptionPlan && featureLimit.subscriptionPlan !== SubscriptionTypeEnum.FreeTrial && featureLimit.subscriptionStatus === 'ACTIVE';
+
   useEffect(() => {
     const checkTrialEligibility = async () => {
       if (!userDetails?.userId) {
+        setCheckingEligibility(false);
+        return;
+      }
+
+      // If user has active subscription, close modal immediately
+      if (hasActiveSubscription) {
+        setOpen(false);
         setCheckingEligibility(false);
         return;
       }
@@ -45,7 +58,7 @@ const SubscriptionModal: React.FC = () => {
     };
 
     checkTrialEligibility();
-  }, [userDetails]);
+  }, [userDetails, hasActiveSubscription]);
 
   const handleGoBack = () => {
     setOpen(false);
@@ -91,14 +104,19 @@ const SubscriptionModal: React.FC = () => {
 
   const handleViewPaidPlans = () => {
     setOpen(false);
-    router.push('/pricing');
+    router.push('/settings?tab=subscription');
   };
 
   // Trial features
-  const trialFeatures = ['100 Lead Credits', '150 Intent Signals', '1 Account Tracker', '1 Hashtag Tracker', '1 Keyword Tracker', 'Unlimited Reports'];
+  const trialFeatures = ['100 Lead Credits', '150 Intent Signals', '1 Account Tracker', '1 Hashtag Tracker', '1 Keyword Tracker', '5 AI-Powered Reports'];
 
   // Paid subscription features
   const paidFeatures = ['Monitor Keyword Trends', 'Setup Alerts', 'Track Sentiment', 'Generate Leads'];
+
+  // Don't render modal if user has active subscription
+  if (hasActiveSubscription || !open) {
+    return null;
+  }
 
   if (checkingEligibility) {
     return (

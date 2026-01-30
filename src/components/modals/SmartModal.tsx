@@ -21,6 +21,11 @@ interface SmartModalProps {
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl';
   fullWidth?: boolean;
   showCloseButton?: boolean;
+  // New props for action/cancel pattern
+  handleAction?: () => void;
+  actionText?: string;
+  handleCancel?: () => void;
+  cancelText?: string;
 }
 
 const SmartModal: React.FC<SmartModalProps> = ({
@@ -40,6 +45,10 @@ const SmartModal: React.FC<SmartModalProps> = ({
   maxWidth = 'sm',
   fullWidth = false,
   showCloseButton = false,
+  handleAction,
+  actionText,
+  handleCancel,
+  cancelText,
 }) => {
   return (
     <Box sx={sx}>
@@ -88,7 +97,57 @@ const SmartModal: React.FC<SmartModalProps> = ({
             {children}
           </Box>
         </DialogContent>
-        {onClick && (
+        {/* New action/cancel pattern */}
+        {(handleAction || handleCancel) && (
+          <DialogActions sx={{ justifyContent: 'center', gap: 1 }}>
+            {handleCancel && (
+              <Button
+                variant="outlined"
+                onClick={handleCancel}
+                sx={{
+                  boxShadow: 'none',
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  borderColor: '#d1d5db',
+                  color: '#6b7280',
+                  '&:hover': {
+                    borderColor: '#9ca3af',
+                    backgroundColor: '#f9fafb',
+                  },
+                }}
+              >
+                {cancelText || 'Cancel'}
+              </Button>
+            )}
+            {handleAction && (
+              <Button
+                variant="contained"
+                onClick={handleAction}
+                sx={{
+                  boxShadow: 'none',
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  backgroundColor: '#CD1B78',
+                  '&:hover': {
+                    backgroundColor: '#b31665',
+                  },
+                }}
+              >
+                {actionText || 'Confirm'}
+              </Button>
+            )}
+          </DialogActions>
+        )}
+        {/* Legacy onClick pattern */}
+        {onClick && !handleAction && !handleCancel && (
           <DialogActions sx={{ justifyContent: 'center' }}>
             {onOutlineButtonClick && (
               <Button variant="outlined" color="primary" onClick={onOutlineButtonClick} sx={{ boxShadow: 'none', px: 3 }} disabled={outlineBtnLoading}>

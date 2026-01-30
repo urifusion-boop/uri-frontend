@@ -1,9 +1,9 @@
 import ChartLine from '@/utils/icon/ChartLine';
 import HeartRateSearch from '@/utils/icon/HeartRateSearch';
-import { HiHashtag } from 'react-icons/hi';
-import { MdRecordVoiceOver, MdAssessment } from 'react-icons/md';
 import { BsGraphUp } from 'react-icons/bs';
-import { FaUser, FaBuilding, FaComments } from 'react-icons/fa';
+import { FaBuilding, FaComments, FaHeartbeat, FaUser } from 'react-icons/fa';
+import { HiHashtag } from 'react-icons/hi';
+import { MdAssessment, MdAutorenew, MdRecordVoiceOver } from 'react-icons/md';
 
 export interface WorkflowModule {
   id: string;
@@ -83,20 +83,28 @@ export const WORKFLOWS: Record<string, Workflow> = {
       },
       {
         id: 'conversational-leads',
-        name: 'Conversational Leads',
-        description: 'Track leads from conversations',
+        name: 'Sales Signals',
+        description: 'Public online conversations indicating buying intent, pain, or opportunity',
         route: '/leads-tracking/forms/leads?type=conversational',
         icon: FaComments,
       },
     ],
   },
-  'crm': {
+  crm: {
     id: 'crm',
     name: 'CRM',
-    description: 'Manage leads & sales pipeline',
-    icon: BsGraphUp,
-    comingSoon: true,
-    modules: [],
+    description: 'Monitor dead leads & resurrect opportunities',
+    icon: MdAutorenew,
+    comingSoon: false,
+    modules: [
+      {
+        id: 'lazarus-protocol',
+        name: 'Lazarus Protocol',
+        description: 'Track focus contacts & companies for resurrection signals',
+        route: '/lazarus',
+        icon: FaHeartbeat,
+      },
+    ],
   },
 };
 
@@ -112,6 +120,7 @@ export const getModuleRoute = (moduleId: string): string => {
     'individual-leads': '/leads-tracking/forms/leads?type=individual',
     'organization-leads': '/leads-tracking/forms/leads?type=organization',
     'conversational-leads': '/leads-tracking/forms/leads?type=conversational',
+    'lazarus-protocol': '/lazarus',
   };
   return routes[moduleId] || '/dashboard';
 };
@@ -120,5 +129,5 @@ export const getModuleRoute = (moduleId: string): string => {
 export const getWorkflowModules = (workflowId: string): string[] => {
   const workflow = WORKFLOWS[workflowId];
   if (!workflow) return [];
-  return workflow.modules.map(m => m.id);
+  return workflow.modules.map((m) => m.id);
 };

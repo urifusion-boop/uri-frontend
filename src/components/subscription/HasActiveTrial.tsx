@@ -9,7 +9,11 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { BsFillPatchCheckFill } from 'react-icons/bs';
 
-const HasActiveTrial = () => {
+interface HasActiveTrialProps {
+  onUpgrade?: () => void;
+}
+
+const HasActiveTrial = ({ onUpgrade }: HasActiveTrialProps) => {
   const router = useRouter();
   const { userDetails } = useAuth();
   const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null);
@@ -120,7 +124,7 @@ const HasActiveTrial = () => {
               You're currently enjoying full access to all premium features.{' '}
               <Typography
                 component="span"
-                onClick={() => router.push('/pricing')}
+                onClick={onUpgrade || (() => router.push('/pricing'))}
                 sx={{
                   color: '#CD1B78',
                   fontWeight: 600,
@@ -209,7 +213,7 @@ const HasActiveTrial = () => {
             >
               <Button
                 variant="contained"
-                onClick={() => router.push('/pricing')}
+                onClick={onUpgrade || (() => router.push('/pricing'))}
                 sx={{
                   px: 4,
                   py: 1.5,
@@ -421,7 +425,7 @@ const HasActiveTrial = () => {
           >
             <Button
               variant="contained"
-              onClick={() => router.push('/pricing')}
+              onClick={onUpgrade || (() => router.push('/pricing'))}
               sx={{
                 borderRadius: '12px',
                 px: 5,

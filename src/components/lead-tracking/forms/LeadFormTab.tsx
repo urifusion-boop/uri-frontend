@@ -4,7 +4,7 @@ const tabOptions = [
   { label: 'Individual Form', value: 'individual', desc: 'Capture people interested in your product or service.' },
   { label: 'Organization Form', value: 'organization', desc: 'Find businesses or organizations interested in your product or service.' },
   { label: 'Business Form', value: 'business', desc: 'Find businesses or organizations interested in your product or service.' },
-  { label: 'Conversation Form', value: 'conversational', desc: 'Capture social media conversations that may indicate interest in your products or services.' },
+  { label: 'Sales Signals Form', value: 'conversational', desc: 'Public online conversations indicating buying intent, pain, or opportunity.' },
 ];
 
 export default function LeadFormTab({ value, onChange }: { value: string; onChange: (val: any) => void }) {

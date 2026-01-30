@@ -1,20 +1,20 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, Grid, Divider, LinearProgress } from '@mui/material';
-import { useRouter } from 'next/router';
-import { Controller, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { toast } from 'react-hot-toast';
+import { OnboardingService } from '@/api/OnboardingService';
 import CustomButton from '@/components/atoms/CustomButton';
 import InputField from '@/components/atoms/Input';
 import SelectField from '@/components/atoms/SelectField';
 import SeoHead from '@/components/atoms/SeoHead';
 import useCustomTheme from '@/hooks/theme.hook';
-import { useAuth } from '@/providers/AuthProvider';
-import { OnboardingService } from '@/api/OnboardingService';
-import { ISelectData } from '@/types';
-import { FaArrowLeft, FaCheckCircle } from 'react-icons/fa';
 import useDebounce from '@/hooks/useDebounce';
+import { useAuth } from '@/providers/AuthProvider';
+import { ISelectData } from '@/types';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Box, Divider, Grid, LinearProgress, Typography } from '@mui/material';
+import { useRouter } from 'next/router';
+import { useCallback, useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { toast } from 'react-hot-toast';
+import { FaArrowLeft, FaCheckCircle } from 'react-icons/fa';
+import { z } from 'zod';
 
 // Industry options matching the PRD
 const INDUSTRY_OPTIONS: ISelectData[] = [
@@ -40,7 +40,7 @@ const LEAD_TYPE_OPTIONS: ISelectData[] = [
   { label: 'Individual Leads', value: 'individual-leads' },
   { label: 'Business Leads', value: 'business-leads' },
   { label: 'Organizational Leads', value: 'organizational-leads' },
-  { label: 'Conversational Leads', value: 'conversational-leads' },
+  { label: 'Sales Signals', value: 'conversational-leads' },
 ];
 
 // Goal options
@@ -103,9 +103,7 @@ const BusinessDetailsPage = () => {
     mode: 'onBlur',
     resolver: zodResolver(BusinessDetailsSchema),
     defaultValues: {
-      yourName: userDetails?.firstName && userDetails?.lastName
-        ? `${userDetails.firstName} ${userDetails.lastName}`
-        : '',
+      yourName: userDetails?.firstName && userDetails?.lastName ? `${userDetails.firstName} ${userDetails.lastName}` : '',
       email: userDetails?.email || '',
       phoneNumber: userDetails?.phoneNumber || '',
       leadTypes: [],
@@ -133,7 +131,7 @@ const BusinessDetailsPage = () => {
   // Calculate form completion progress
   const calculateProgress = useCallback(() => {
     const requiredFields = ['yourName', 'email', 'phoneNumber', 'businessName', 'industry', 'businessLocation', 'whatYouSell', 'customerType', 'leadTypes', 'biggestGoals'];
-    const filledFields = requiredFields.filter(field => {
+    const filledFields = requiredFields.filter((field) => {
       const value = formValues[field as keyof BusinessDetailsValues];
       if (Array.isArray(value)) return value.length > 0;
       return value && String(value).trim().length > 0;
@@ -292,9 +290,7 @@ const BusinessDetailsPage = () => {
             }}
           >
             <FaArrowLeft size={16} />
-            <Typography sx={{ fontSize: 14, fontWeight: 600 }}>
-              Back
-            </Typography>
+            <Typography sx={{ fontSize: 14, fontWeight: 600 }}>Back</Typography>
           </Box>
 
           {/* Header */}
@@ -323,15 +319,11 @@ const BusinessDetailsPage = () => {
             {/* Progress Bar */}
             <Box sx={{ maxWidth: 400, mx: 'auto', mt: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                <Typography sx={{ fontSize: 12, fontWeight: 600, color: themeColors.primary }}>
-                  {Math.round(progress)}% Complete
-                </Typography>
+                <Typography sx={{ fontSize: 12, fontWeight: 600, color: themeColors.primary }}>{Math.round(progress)}% Complete</Typography>
                 {lastSaved && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <FaCheckCircle size={12} color="#10B981" />
-                    <Typography sx={{ fontSize: 11, color: '#10B981' }}>
-                      {autoSaving ? 'Saving...' : 'Saved'}
-                    </Typography>
+                    <Typography sx={{ fontSize: 11, color: '#10B981' }}>{autoSaving ? 'Saving...' : 'Saved'}</Typography>
                   </Box>
                 )}
               </Box>
@@ -362,16 +354,10 @@ const BusinessDetailsPage = () => {
                 borderRadius: '8px',
               }}
             >
-              <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#DC2626', mb: 1 }}>
-                ⚠️ Please fix the following errors before continuing:
-              </Typography>
+              <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#DC2626', mb: 1 }}>⚠️ Please fix the following errors before continuing:</Typography>
               <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
                 {Object.entries(errors).map(([field, error]) => (
-                  <Typography
-                    key={field}
-                    component="li"
-                    sx={{ fontSize: 13, color: '#DC2626', mb: 0.5 }}
-                  >
+                  <Typography key={field} component="li" sx={{ fontSize: 13, color: '#DC2626', mb: 0.5 }}>
                     {error?.message || `Invalid ${field}`}
                   </Typography>
                 ))}
@@ -384,9 +370,7 @@ const BusinessDetailsPage = () => {
             <Grid container spacing={3}>
               {/* Section 1: Personal Information */}
               <Grid item xs={12}>
-                <Typography sx={{ fontSize: 16, fontWeight: 600, color: '#374151', mb: 1 }}>
-                  👤 Personal Information
-                </Typography>
+                <Typography sx={{ fontSize: 16, fontWeight: 600, color: '#374151', mb: 1 }}>👤 Personal Information</Typography>
                 <Divider sx={{ mb: 2 }} />
               </Grid>
 
@@ -416,16 +400,7 @@ const BusinessDetailsPage = () => {
                   control={control}
                   name="email"
                   render={({ field: { onChange, value, onBlur } }) => (
-                    <InputField
-                      label="Email Address*"
-                      type="email"
-                      value={value}
-                      onChange={onChange}
-                      onBlur={onBlur}
-                      errorText={errors?.email?.message}
-                      placeholder="you@company.com"
-                      radius={2.5}
-                    />
+                    <InputField label="Email Address*" type="email" value={value} onChange={onChange} onBlur={onBlur} errorText={errors?.email?.message} placeholder="you@company.com" radius={2.5} />
                   )}
                 />
               </Grid>
@@ -452,9 +427,7 @@ const BusinessDetailsPage = () => {
 
               {/* Section 2: Business Details */}
               <Grid item xs={12} sx={{ mt: 2 }}>
-                <Typography sx={{ fontSize: 16, fontWeight: 600, color: '#374151', mb: 1 }}>
-                  🏢 Business Details
-                </Typography>
+                <Typography sx={{ fontSize: 16, fontWeight: 600, color: '#374151', mb: 1 }}>🏢 Business Details</Typography>
                 <Divider sx={{ mb: 2 }} />
               </Grid>
 
@@ -597,7 +570,7 @@ const BusinessDetailsPage = () => {
                       options={LEAD_TYPE_OPTIONS}
                       value={leadTypesSelect}
                       onChange={(e) => {
-                        const values = Array.isArray(e) ? e : (e ? [e] : []);
+                        const values = Array.isArray(e) ? e : e ? [e] : [];
                         setLeadTypesSelect(values);
                         onChange(values.map((v) => v.value));
                       }}
@@ -612,9 +585,7 @@ const BusinessDetailsPage = () => {
 
               {/* Section 3: Your Goals */}
               <Grid item xs={12} sx={{ mt: 2 }}>
-                <Typography sx={{ fontSize: 16, fontWeight: 600, color: '#374151', mb: 1 }}>
-                  🎯 Your Goals & Challenges
-                </Typography>
+                <Typography sx={{ fontSize: 16, fontWeight: 600, color: '#374151', mb: 1 }}>🎯 Your Goals & Challenges</Typography>
                 <Divider sx={{ mb: 2 }} />
               </Grid>
 
@@ -629,7 +600,7 @@ const BusinessDetailsPage = () => {
                       options={GOAL_OPTIONS}
                       value={goalsSelect}
                       onChange={(e) => {
-                        const values = Array.isArray(e) ? e : (e ? [e] : []);
+                        const values = Array.isArray(e) ? e : e ? [e] : [];
                         setGoalsSelect(values);
                         onChange(values.map((v) => v.value));
                       }}

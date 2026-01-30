@@ -4,6 +4,7 @@ export enum BrowsercloudPlatformEnum {
   FACEBOOK = 'FACEBOOK',
   THREADS = 'THREADS',
   TIKTOK = 'TIKTOK',
+  JOB_BOARDS = 'JOB_BOARDS',
 }
 
 export const PlatformDisplayNames: Record<BrowsercloudPlatformEnum, string> = {
@@ -12,4 +13,5 @@ export const PlatformDisplayNames: Record<BrowsercloudPlatformEnum, string> = {
   [BrowsercloudPlatformEnum.FACEBOOK]: 'Facebook',
   [BrowsercloudPlatformEnum.THREADS]: 'Threads',
   [BrowsercloudPlatformEnum.TIKTOK]: 'TikTok',
+  [BrowsercloudPlatformEnum.JOB_BOARDS]: 'Job Boards',
 };

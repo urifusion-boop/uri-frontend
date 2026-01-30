@@ -4,7 +4,7 @@ import { BiLogOutCircle, BiMenuAltRight } from 'react-icons/bi';
 
 import { TextHelper } from '@/helpers/TextHelper';
 import useCustomTheme from '@/hooks/theme.hook';
-import { SubscriptionStatusEnum } from '@/models/enum-models/SubscriptionStatusEnum';
+import { SubscriptionTypeEnum } from '@/models/enum-models/SubscriptionStatusEnum';
 import styles from '@/styles/Dashboard.module.css';
 import Link from 'next/link';
 import { FiHelpCircle } from 'react-icons/fi';
@@ -22,7 +22,7 @@ interface IProps {
 
 const PageHeader: React.FC<IProps> = ({ toggleSideNav }) => {
   const { themeColors } = useCustomTheme();
-  const { userDetails, userProfile, logoutUser } = useAuth();
+  const { userDetails, userProfile, logoutUser, subscriptionPlanType } = useAuth();
   const [totalUnreadMessageCount, setTotalUnreadMessageCount] = useState<number>(0);
   const [profileRoute, setProfileRoute] = useState('');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -85,7 +85,7 @@ const PageHeader: React.FC<IProps> = ({ toggleSideNav }) => {
           </Box>
           <Box className="d-flex justify-end">
             <Box className="d-flex items-center justify-end">
-              <CustomSubscriptionHeader subscribed={userDetails?.subscriptionStatus === SubscriptionStatusEnum.ACTIVE} />
+              <CustomSubscriptionHeader subscribed={!!subscriptionPlanType && subscriptionPlanType !== SubscriptionTypeEnum.FreeTrial} />
               <MessageIcon count={totalUnreadMessageCount} />
               <NotificationDropDown />
               <button className="d-flex items-center pointer" onClick={handleClick}>

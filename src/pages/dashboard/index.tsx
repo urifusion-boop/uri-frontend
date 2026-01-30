@@ -1,10 +1,10 @@
 import PremiumPromptModal from '@/components/modals/PremiumPromptModal';
-import { SubscriptionStatusEnum } from '@/models/enum-models/SubscriptionStatusEnum';
+import { SubscriptionTypeEnum } from '@/models/enum-models/SubscriptionStatusEnum';
 import ClientsDashboard from '@/pages/clients/dashboard';
 import { useAuth } from '@/providers/AuthProvider';
 
 const HomePage = () => {
-  const { userDetails } = useAuth();
+  const { subscriptionPlanType } = useAuth();
 
   // const renderBasedOnUserType = () => {
   //   if (userDetails?.userType === UserTypeEnum.BUSINESS) {
@@ -18,7 +18,7 @@ const HomePage = () => {
   return (
     <>
       <ClientsDashboard />
-      {userDetails?.subscriptionStatus !== SubscriptionStatusEnum.ACTIVE && <PremiumPromptModal />}
+      {(!subscriptionPlanType || subscriptionPlanType === SubscriptionTypeEnum.FreeTrial) && <PremiumPromptModal />}
     </>
   );
 };

@@ -1,30 +1,21 @@
 import { Box, Typography } from '@mui/material';
-import { useCallback } from 'react';
 
 import SubscriptionPlansList from '@/components/subscription/general/SubscriptionPlansList';
-import { TextHelper } from '@/helpers/TextHelper';
-import { SubscriptionPlan as SubscriptionPlanDto } from '@/models/dtos/SubscriptionDto';
 
 interface ChoosePaymentProps {
   setStep?: () => void;
-  onSelectPlan: (plan: SubscriptionPlanDto) => void;
-  selectedPlan?: string;
+  onSelectPlan: (planType: string, planCode: string, amount?: number) => void;
+  currentPlanType?: string;
 }
 
-const ChoosePayment = ({ setStep, onSelectPlan, selectedPlan }: ChoosePaymentProps) => {
-  const handleSelectPlan = useCallback(
-    (plan: SubscriptionPlanDto) => {
-      onSelectPlan({
-        ...plan,
-        amount: Number(TextHelper.shortAmountWithDiscount(Number(plan.amount))),
-      });
-      setStep?.();
-    },
-    [onSelectPlan, setStep]
-  );
+const ChoosePayment = ({ setStep, onSelectPlan, currentPlanType }: ChoosePaymentProps) => {
+  const handleSelectPlan = (planType: string, planCode: string, amount?: number) => {
+    onSelectPlan(planType, planCode, amount);
+    setStep?.();
+  };
 
   return (
-    <Box sx={{ px: 1 }}>
+    <Box sx={{ px: 1, width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
       <Typography
         sx={{
           color: '#000000',
@@ -50,8 +41,8 @@ const ChoosePayment = ({ setStep, onSelectPlan, selectedPlan }: ChoosePaymentPro
         Upgrade to a plan that fits your business needs
       </Typography>
 
-      {/* Plan List - Trial modal shows automatically in NewSubscription */}
-      <SubscriptionPlansList selectedPlan={selectedPlan} onSelectPlan={handleSelectPlan} />
+      {/* Plan List */}
+      <SubscriptionPlansList currentPlanType={currentPlanType} onSelectPlan={handleSelectPlan} />
     </Box>
   );
 };

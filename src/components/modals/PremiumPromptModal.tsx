@@ -80,8 +80,9 @@ function PremiumPromptModal() {
 					mode='primary'
 					onClick={() => {
 						setOpen(false);
-						router.push("/dashboard");
-					}}>
+						router.push('/settings?tab=subscription&upgrade=true');
+					}}
+				>
 					Upgrade Plan
 				</CustomButton>
 			</Grid>

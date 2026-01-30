@@ -32,9 +32,9 @@ const useFeatureLimit = (userId: string) => {
     },
     enabled: !!userId,
     retry: false, // Don't retry on 404
-    refetchInterval: 30000, // Auto-refresh every 30 seconds
+    refetchInterval: 60000, // Auto-refresh every 60 seconds
     refetchIntervalInBackground: false, // Only refetch when tab is active
-    refetchOnWindowFocus: true, // Refetch when user returns to tab
+    refetchOnWindowFocus: false, // Don't refetch on window focus to reduce noise
   });
 
   useEffect(() => {

@@ -75,7 +75,13 @@ class UriHttpClient {
         case 403:
           // Check if this is a feature limit error or auth error
           const responseData = error.response.data as any;
-          if (responseData?.limit_exceeded) {
+
+          // Check if this is a trial expiration error (from task-manager)
+          if (responseData?.responseMessage?.includes('Trial period has come to an end')) {
+            // Trial expired - show subscription modal
+            window.dispatchEvent(new CustomEvent('payment-required'));
+            return await Promise.reject(error.response);
+          } else if (responseData?.limit_exceeded) {
             // Feature limit exceeded - do NOT log out user
             return await Promise.reject(error);
           } else {
@@ -84,6 +90,15 @@ class UriHttpClient {
             window.dispatchEvent(new CustomEvent('unauthorized'));
             return await Promise.reject(error.response);
           }
+        case 404:
+          // Check if this is a missing feature limit (user has no subscription/trial)
+          const url = error.config?.url || '';
+          if (url.includes('feature-limit/getByUserId')) {
+            // User has no feature limit - show subscription modal
+            window.dispatchEvent(new CustomEvent('payment-required'));
+            return await Promise.reject(error.response);
+          }
+          return await Promise.resolve(error.response);
         default:
           return await Promise.resolve(error.response);
       }

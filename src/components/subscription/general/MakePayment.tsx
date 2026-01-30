@@ -13,9 +13,10 @@ interface MakePaymentProps {
   selectedPlan: SubscriptionPlan | null;
   setTransactionDetails: Dispatch<SetStateAction<SubscriptionResponseDto | null>>;
   onSubscriptionSuccessful?: () => void;
+  onBack?: () => void;
 }
 
-const MakePayment = ({ setStep, selectedPlan, setTransactionDetails }: MakePaymentProps) => {
+const MakePayment = ({ setStep, selectedPlan, setTransactionDetails, onBack }: MakePaymentProps) => {
   const { initializeSubscription, getUserDetails, applyDiscount } = useSubscription();
 
   const [discountCode, setDiscountCode] = useState('');
@@ -137,7 +138,7 @@ const MakePayment = ({ setStep, selectedPlan, setTransactionDetails }: MakePayme
                 px: 0.1,
               }}
             >
-              PREMIUM
+              {selectedPlan?.name || 'PREMIUM'}
             </Typography>
             <Typography sx={{ color: '#141416', fontSize: '17px', fontWeight: 600 }}>Plan</Typography>
           </Box>
@@ -231,7 +232,18 @@ const MakePayment = ({ setStep, selectedPlan, setTransactionDetails }: MakePayme
         </Box>
 
         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: '30px', flexWrap: 'wrap' }}>
-          <Button variant="outlined" onClick={() => window.history.back()} sx={{ maxWidth: '200px', width: '100%', py: '12px' }} disabled={initializeSubscription.isLoading}>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              if (onBack) {
+                onBack();
+              } else {
+                window.history.back();
+              }
+            }}
+            sx={{ maxWidth: '200px', width: '100%', py: '12px' }}
+            disabled={initializeSubscription.isLoading}
+          >
             Go Back
           </Button>
           <Button disabled={initializeSubscription.isLoading} onClick={handleProceed} variant="contained" sx={{ maxWidth: '200px', width: '100%', py: '12px' }}>

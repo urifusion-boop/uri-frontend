@@ -21,7 +21,7 @@ export const useSubscriptionPlans = () => {
         return [];
       }
     },
-    // enabled: !!userDetails?.userId,
+    enabled: !!userDetails?.userId,
   });
 
   return {

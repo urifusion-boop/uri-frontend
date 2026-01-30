@@ -28,11 +28,11 @@ export const useLeadQueries = (
   const userId = userDetails?.userId ?? '';
 
   // Get filters from store
-  const { leadStatus, interestLevel, dateFilter, leadsDateFilter, leadSource, leadStarred, setLeadsData } = useLeadTrackingStore((state) => state);
+  const { leadStatus, interestLevel, dateFilter, leadsDateFilter, leadSource, leadStarred, leadFormSnapshotId, setLeadsData } = useLeadTrackingStore((state) => state);
 
   // Query to fetch leads by filters or search
   const leadsQuery = useQuery({
-    queryKey: ['leads-data', userId, searchValue, page, pageSize, leadStatus, interestLevel, leadSource, leadStarred, leadsDateFilter, leadType],
+    queryKey: ['leads-data', userId, searchValue, page, pageSize, leadStatus, interestLevel, leadSource, leadStarred, leadsDateFilter, leadFormSnapshotId, leadType],
     queryFn: async () => {
       if (searchValue) {
         const result = await LeadsService.search({
@@ -53,15 +53,16 @@ export const useLeadQueries = (
         ...(leadSource && { lead_source: leadSource }),
         ...(leadStarred === 'star' && { starred: leadStarred === 'star' }),
         ...(leadsDateFilter && { date_filter: leadsDateFilter }),
+        ...(leadFormSnapshotId && { lead_form_snapshot_id: leadFormSnapshotId }),
       });
 
       setLeadsData(result.responseData?.data ?? []);
 
       return result.responseData;
     },
-    refetchInterval: 30000, // Auto-refresh every 30 seconds
+    refetchInterval: 60000, // Auto-refresh every 60 seconds
     refetchIntervalInBackground: false, // Only refetch when tab is active
-    refetchOnWindowFocus: true, // Refetch when user returns to tab
+    refetchOnWindowFocus: false, // Don't refetch on window focus to reduce noise
     keepPreviousData: true, // Keep showing old data while fetching new data
   });
 
@@ -73,9 +74,9 @@ export const useLeadQueries = (
       return response.responseData;
     },
     enabled: true, // Always enabled since analytics data is needed on the leads tab
-    refetchOnWindowFocus: true, // Refetch when user returns to tab
+    refetchOnWindowFocus: false, // Don't refetch on window focus to reduce noise
     refetchOnMount: true,
-    refetchInterval: 30000, // Auto-refetch every 30 seconds to update stats
+    refetchInterval: 60000, // Auto-refetch every 60 seconds to update stats
     refetchIntervalInBackground: false, // Only refetch when tab is active
     staleTime: 30000, // Consider data stale after 30 seconds
     keepPreviousData: true, // Keep showing old data while fetching new data

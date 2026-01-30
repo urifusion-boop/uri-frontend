@@ -1,9 +1,8 @@
 import { BiBook } from 'react-icons/bi';
-import { FaFolder } from 'react-icons/fa';
+import { FaHeartbeat, FaWallet } from 'react-icons/fa';
 import { FaMagnifyingGlassChart, FaUserTie } from 'react-icons/fa6';
 import { GrAction, GrNotification } from 'react-icons/gr';
 
-import AlertOnFilled from '@/utils/icon/AlertOnFilled';
 import ChartLine from '@/utils/icon/ChartLine';
 import HeartRateSearch from '@/utils/icon/HeartRateSearch';
 import { BiBot } from 'react-icons/bi';
@@ -16,7 +15,7 @@ import { HiMiniUserGroup } from 'react-icons/hi2';
 import { IoMdPricetags } from 'react-icons/io';
 import { IoSettingsOutline } from 'react-icons/io5';
 import { IconType } from 'react-icons/lib';
-import { MdRecordVoiceOver } from 'react-icons/md';
+import { MdAutorenew, MdRecordVoiceOver, MdSettings } from 'react-icons/md';
 import { RxDashboard } from 'react-icons/rx';
 
 interface ILink {
@@ -84,6 +83,30 @@ export const dashboardLinks: ILink[] = [
         icon: FaList,
       },
     ],
+  },
+  {
+    label: 'CRM',
+    icon: MdAutorenew,
+    route: '/lazarus',
+    tourKey: 'tour-crm-btn',
+    subLinkers: [
+      {
+        label: 'Lazarus Protocol',
+        route: '/lazarus',
+        icon: FaHeartbeat,
+      },
+      {
+        label: 'Auto-Detection Settings',
+        route: '/lazarus/settings',
+        icon: MdSettings,
+      },
+    ],
+  },
+  {
+    label: 'Wallet',
+    route: '/wallet',
+    icon: FaWallet,
+    tourKey: 'tour-wallet-btn',
   },
   {
     label: 'Insight Assistant',

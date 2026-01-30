@@ -13,12 +13,11 @@ import 'react-responsive-modal/styles.css';
 import 'swiper/css';
 
 import { AuthProvider, useAuth } from '@/providers/AuthProvider';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import ErrorFallback from '@/components/atoms/ErrorFallback';
 import { LoadingProvider } from '@/components/atoms/LoadingContext';
 import Toaster from '@/components/atoms/Toaster';
-import SubscriptionModal from '@/components/modals/SubscriptionModal';
 import { UriHttpClient } from '@/configs/http.config';
 import { theme } from '@/configs/muitheme.config';
 import { queryClient } from '@/configs/query-client.config';
@@ -62,6 +61,11 @@ const publicRoutes = [
   '/nonprofits',
   '/dummy-dashboard',
   '/features',
+  '/features/social-media-tracking',
+  '/features/lead-generation',
+  '/features/crm-enrichment',
+  '/features/alerts-notifications',
+  '/features/reporting-exports',
   '/signals',
   '/integrations',
 ];
@@ -96,7 +100,6 @@ const ProtectedRoutes = () => {
 };
 
 export default function App({ Component, pageProps }: AppProps) {
-  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
   const router = useRouter();
   const { logoutUser, isPending } = useAuth();
 
@@ -111,12 +114,7 @@ export default function App({ Component, pageProps }: AppProps) {
       }
     };
 
-    const handlePaymentRequired = () => {
-      setShowSubscriptionModal(true);
-    };
-
     window.addEventListener('unauthorized', handleUnauthorizedAccess);
-    window.addEventListener('payment-required', handlePaymentRequired);
 
     NProgress.configure({ showSpinner: false });
     router.events.on('routeChangeStart', () => NProgress.start());
@@ -125,7 +123,6 @@ export default function App({ Component, pageProps }: AppProps) {
 
     return () => {
       window.removeEventListener('unauthorized', handleUnauthorizedAccess);
-      window.removeEventListener('payment-required', handlePaymentRequired);
       router.events.off('routeChangeStart', NProgress.start);
       router.events.off('routeChangeComplete', NProgress.done);
       router.events.off('routeChangeError', NProgress.done);
@@ -151,7 +148,6 @@ export default function App({ Component, pageProps }: AppProps) {
                 <WorkflowFilterProvider>
                   <CustomThemeProvider>
                     <ThemeProvider theme={theme}>
-                      {showSubscriptionModal && <SubscriptionModal />}
                       {/* <FeedbackModal /> */}
                       <Component {...pageProps} />
                     </ThemeProvider>

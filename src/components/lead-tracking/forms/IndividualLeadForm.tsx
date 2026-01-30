@@ -16,11 +16,12 @@ import { PersonSenioritiesEnum } from '@/models/enum-models/PersonSenioritiesEnu
 import { useAuth } from '@/providers/AuthProvider';
 import { useFeatureLimitStore } from '@/store/useFeatureLimitStore';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
-import { Box, Button, IconButton, LinearProgress, Tooltip, Typography } from '@mui/material';
+import { Box, Button, IconButton, LinearProgress, TextField, Tooltip, Typography } from '@mui/material';
 import Image from 'next/image';
 import router from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { HiPencil } from 'react-icons/hi';
 
 //autopopulate should not send the form to the backend, it should just autopopulate the form with the data from the backend
@@ -44,26 +45,56 @@ const IndividualLeadForm = () => {
   const [existingFormId, setExistingFormId] = useState<string | null>(null);
   const [openSuccessModal, setOpenSuccessModal] = useState(false);
   const [showLimitExceededModal, setShowLimitExceededModal] = useState(false);
+  const [showLeadGoalModal, setShowLeadGoalModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [savingProgress, setSavingProgress] = useState(0);
   const [savingStatus, setSavingStatus] = useState('');
   const [currentTip, setCurrentTip] = useState('');
+  const leadGoalRef = useRef<HTMLDivElement>(null);
 
   const { userDetails, subscriptionPlanType } = useAuth();
   const userId = userDetails?.userId;
   const featureLimit = useFeatureLimitStore((state) => state.featureLimit);
 
-  const { createIndividualLeadForm, updateIndividualLeadForm, autoPopulateLeadForm, useGetExistingFormType, isAutoPopulating } = useLeadFormHooks();
+  const { createIndividualLeadForm, updateIndividualLeadForm, autoPopulateLeadForm, useGetExistingFormType, useGetLeadFormById, useGetFormsByUserAndType, isAutoPopulating } = useLeadFormHooks();
   const [autoPopulateData, setAutoPopulateData] = useState<string>('');
   const [isEditingAIInput, setIsEditingAIInput] = useState(false);
 
   const { mutate: triggerAutoPopulate, data: autoPopulatedResponse, isSuccess: autoPopulateSuccess } = autoPopulateLeadForm;
 
-  const { data: existingForm, isSuccess } = useGetExistingFormType(userId || '', FormTypeEnum.PERSON);
+  // Check if we're in create mode (creating a new form) or edit mode (editing existing)
+  const isCreateMode = router.query.mode === 'create';
+  const formIdFromUrl = router.query.form_id as string;
+
+  // Fetch form by ID if form_id is provided, otherwise fetch by type (gets first/default)
+  const { data: formById, isSuccess: isSuccessById } = useGetLeadFormById(formIdFromUrl);
+  const { data: formByType, isSuccess: isSuccessByType } = useGetExistingFormType(userId || '', FormTypeEnum.PERSON);
+
+  // Fetch all forms of this type for the selector dropdown
+  const { data: allFormsOfType = [] } = useGetFormsByUserAndType(userId || '', FormTypeEnum.PERSON);
+
+  // Priority: form_id > form_type (specific form takes precedence)
+  const existingForm = formIdFromUrl ? formById : formByType;
+  const isSuccess = formIdFromUrl ? isSuccessById : isSuccessByType;
+
+  const hasMultipleForms = allFormsOfType.length > 1;
+
+  const handleFormSelect = (formId: string) => {
+    router.push(
+      {
+        pathname: router.pathname,
+        query: { ...router.query, form_id: formId },
+      },
+      undefined,
+      { shallow: true }
+    );
+  };
 
   useEffect(() => {
     console.log('existingForm', existingForm);
-    if (existingForm && isSuccess && userId) {
+    console.log('formIdFromUrl', formIdFromUrl);
+    // Only load existing form data if NOT in create mode
+    if (existingForm && isSuccess && userId && !isCreateMode) {
       const {
         form_title,
         contact_email_status,
@@ -78,6 +109,7 @@ const IndividualLeadForm = () => {
         add_to_history,
         auto_generate,
         per_page,
+        lead_generation_goal,
       } = existingForm;
 
       setForm({
@@ -94,11 +126,31 @@ const IndividualLeadForm = () => {
         add_to_history,
         auto_generate,
         per_page,
+        lead_generation_goal,
       });
 
       setExistingFormId(lead_form_id);
+    } else if (isCreateMode) {
+      // In create mode, reset form to blank state and ensure existingFormId is null
+      setForm({
+        user_id: userId || '',
+        form_title: 'Individual Lead Form',
+        contact_email_status: [],
+        include_similar_titles: false,
+        organization_locations: [],
+        person_locations: [],
+        person_seniorities: [],
+        person_titles: [],
+        q_keywords: '',
+        q_organization_domains_list: [],
+        add_to_history: false,
+        auto_generate: false,
+        per_page: 10,
+        lead_generation_goal: '',
+      });
+      setExistingFormId(null);
     }
-  }, [existingForm, isSuccess, userId]);
+  }, [existingForm, isSuccess, userId, isCreateMode, formIdFromUrl]);
 
   useEffect(() => {
     if (autoPopulateSuccess && autoPopulatedResponse?.responseData) {
@@ -138,6 +190,16 @@ const IndividualLeadForm = () => {
       return;
     }
 
+    // Check if lead_generation_goal is empty
+    if (!form.lead_generation_goal || form.lead_generation_goal.trim() === '') {
+      setShowLeadGoalModal(true);
+      return;
+    }
+
+    proceedWithSave();
+  };
+
+  const proceedWithSave = () => {
     const leadLimit = featureLimit?.lead?.noOfLeads?.limit ?? 0;
     const leadCount = featureLimit?.lead?.noOfLeads?.count ?? 0;
     const isUnlimited = leadLimit === -1;
@@ -212,6 +274,7 @@ const IndividualLeadForm = () => {
         add_to_history: payload.add_to_history || false,
         auto_generate: payload.auto_generate || false,
         per_page: payload.per_page || 10,
+        lead_generation_goal: payload.lead_generation_goal || '',
       };
 
       updateIndividualLeadForm.mutate(
@@ -470,15 +533,34 @@ const IndividualLeadForm = () => {
                 tooltip="Check this if you want to add the form to your history. This will add the form to your history so you can easily find it later."
               />
             </Box>
+          </Box>
 
-            <Box mt={6} sx={{ display: 'flex', alignItems: 'center' }}>
-              <CustomCheckbox
-                label="Auto-generate"
-                checked={form.auto_generate || false}
-                onChange={(val) => handleChange('auto_generate', val)}
-                tooltip="Check this if you want to auto-generate the form. This will auto-generate the form with the data from the backend."
-              />
-            </Box>
+          {/* Lead Generation Goal - Positioned before progress indicator */}
+          <Box ref={leadGoalRef} sx={{ mt: 4, mb: 3 }}>
+            <Typography variant="body2" sx={{ color: '#374151', mb: 1, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+              What's your goal with these leads? (Optional)
+              <Tooltip
+                title="Tell us your business objective. AI will use this to generate personalized next steps for each lead. Example: 'I want to sell productivity tools to startup founders'"
+                arrow
+              >
+                <InfoOutlinedIcon fontSize="small" sx={{ ml: 0.5, color: '#9ca3af' }} />
+              </Tooltip>
+            </Typography>
+            <TextField
+              fullWidth
+              multiline
+              rows={1}
+              placeholder="e.g., I want to sell gadgets to programmers"
+              value={form.lead_generation_goal || ''}
+              onChange={(e) => handleChange('lead_generation_goal', e.target.value)}
+              variant="outlined"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '8px',
+                  backgroundColor: '#FAFBFC',
+                },
+              }}
+            />
           </Box>
         </Box>
 
@@ -569,7 +651,9 @@ const IndividualLeadForm = () => {
         open={openSuccessModal}
         image={<Image src="/assets/images/success.png" alt="Success" width={64} height={64} />}
         mainText="Success! 🎉"
-        subText={'Your form was successfully saved. Your form is now setup and ready to generate leads. ' + "We'll email you each time new leads (individuals) come in."}
+        subText={
+          'Your individual lead form has been successfully saved. Please wait approximately 5 minutes for your first set of leads to be generated and check your email for updates. Going forward, you will automatically receive email notifications each time new contacts matching your criteria are discovered.'
+        }
         buttonText="View Leads"
         onClick={() => {
           setOpenSuccessModal(false);
@@ -587,6 +671,41 @@ const IndividualLeadForm = () => {
         currentUsage={featureLimit?.lead?.noOfLeads?.count ?? 0}
         limit={featureLimit?.lead?.noOfLeads?.limit ?? 0}
         planName={subscriptionPlanType ?? 'your current plan'}
+      />
+
+      {/* Lead Goal Reminder Modal */}
+      <SmartModal
+        open={showLeadGoalModal}
+        onClose={() => {
+          setShowLeadGoalModal(false);
+          proceedWithSave();
+        }}
+        image={<Box sx={{ fontSize: 48 }}>🎯</Box>}
+        mainText="Add Your Lead Goal?"
+        subText="Providing your lead generation goal helps our AI generate personalized, actionable next steps for each lead—making your outreach more effective."
+        handleAction={() => {
+          setShowLeadGoalModal(false);
+          // Scroll to and highlight the lead goal field
+          leadGoalRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => {
+            const textField = leadGoalRef.current?.querySelector('textarea');
+            if (textField) {
+              textField.focus();
+              textField.style.border = '2px solid #CD1B78';
+              textField.style.boxShadow = '0 0 0 3px rgba(205, 27, 120, 0.1)';
+              setTimeout(() => {
+                textField.style.border = '';
+                textField.style.boxShadow = '';
+              }, 3000);
+            }
+          }, 500);
+        }}
+        actionText="Add Lead Goal"
+        handleCancel={() => {
+          setShowLeadGoalModal(false);
+          proceedWithSave();
+        }}
+        cancelText="Continue Without Goal"
       />
     </Box>
   );

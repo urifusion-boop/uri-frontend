@@ -154,6 +154,11 @@ const Footer = () => {
                       Help Center
                     </Link>
                   </li>
+                  <li>
+                    <a href="https://academy.uricreative.com/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+                      Uri Academy
+                    </a>
+                  </li>
                 </ul>
               </div>
 

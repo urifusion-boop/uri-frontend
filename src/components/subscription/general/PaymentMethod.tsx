@@ -60,7 +60,18 @@ const PaymentMethod = ({ setStep, transactionDetails }: PaymentMethodProps) => {
             mb: '60px',
           }}
         >
-          <img src="/assets/images/paystack.png" alt="Paystack" width={101} height={50} />
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+            }}
+          >
+            {/* <img src="/assets/images/paystack.png" alt="Paystack" width={101} height={50} /> */}
+            <Typography fontWeight={700} fontSize={18}>
+              Squad
+            </Typography>
+          </Box>
           <Radio checked />
         </Box>
 
@@ -75,7 +86,7 @@ const PaymentMethod = ({ setStep, transactionDetails }: PaymentMethodProps) => {
             }}
           >
             <Button variant="contained" color="primary" onClick={() => handlePayStackPayment()}>
-              Pay with Paystack
+              Pay with Squad
             </Button>
           </Box>
         )}

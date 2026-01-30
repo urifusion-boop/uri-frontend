@@ -10,11 +10,11 @@ export const useTrialStatus = (userId?: string, enabled: boolean = true) => {
       return response.status && response.responseData ? response.responseData : null;
     },
     enabled: !!userId && enabled,
-    refetchInterval: 30000, // Auto-refresh every 30 seconds
-    refetchIntervalInBackground: false, // Only refetch when tab is active
-    refetchOnWindowFocus: true, // Refetch when user returns to tab
-    staleTime: 30000, // Consider data stale after 30 seconds
-    keepPreviousData: true, // Keep showing old data while fetching new data
-    retry: false, // Don't retry on error (trial may not exist yet)
+    refetchInterval: 60000, // Auto-refresh every 60 seconds
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: false, // Don't refetch on window focus to reduce noise
+    staleTime: 60000, // Data is fresh for 60 seconds
+    keepPreviousData: true,
+    retry: false,
   });
 };

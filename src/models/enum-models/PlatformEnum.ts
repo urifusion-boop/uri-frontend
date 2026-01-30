@@ -12,4 +12,8 @@ export enum CampaignPlatformEnum {
   DISCORD = 'DISCORD',
   NAIRALAND = 'NAIRALAND',
   WEBSITE = 'WEBSITE',
+  // Job Boards
+  JOBBERMAN = 'JOBBERMAN',
+  LINKEDIN_JOBS = 'LINKEDIN_JOBS',
+  INDEED = 'INDEED',
 }

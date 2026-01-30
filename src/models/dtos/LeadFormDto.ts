@@ -100,6 +100,7 @@ export interface LeadFormDto {
   apollo_id: any;
   is_pre_stored: boolean;
   id: string;
+  lead_generation_goal?: string; // AI Next Steps - User's business goal
 }
 export class IndividualLeadFormDto {
   user_id?: string;
@@ -115,6 +116,7 @@ export class IndividualLeadFormDto {
   add_to_history?: boolean;
   auto_generate?: boolean;
   per_page?: number;
+  lead_generation_goal?: string; // AI Next Steps - User's business goal
 }
 
 export class OrganizationLeadFormDto {
@@ -131,6 +133,7 @@ export class OrganizationLeadFormDto {
   add_to_history?: boolean;
   auto_generate?: boolean;
   per_page?: number;
+  lead_generation_goal?: string; // AI Next Steps - User's business goal
 }
 
 export interface LeadFormResponseDto {
@@ -187,6 +190,7 @@ export interface BusinessSearchFormDto {
   ai_response_guide: string;
   keywords: string[];
   competitors: string[];
+  lead_generation_goal?: string; // AI Next Steps - User's business goal
 }
 export interface ScoringThresholdsDto {
   intent_score_min: number;
@@ -212,10 +216,16 @@ export interface ConversationalSearchFormDto {
   enable_realtime?: boolean;
   monitoring_platforms?: string[];
   platform_configs?: PlatformConfigFormDto[];
+  monitoring_interval_hours?: number; // How often to check for new leads (1, 3, 6, 12, 24 hours)
   // CLG Upgrade fields - Intent Analysis
   category_context?: string; // Industry/category context (e.g., "skincare", "fintech")
   implied_keywords?: string[]; // Indirect signals (e.g., "harmattan", "dry skin", "winter")
   scoring_thresholds?: ScoringThresholdsDto; // Custom qualification thresholds
+  // Job Boards fields (PRD Section 5)
+  solution_context?: string; // What problem does your product/service solve? (for job board analysis)
+  job_keywords?: string[]; // AI-generated job role keywords for job board scanning
+  // AI Next Steps
+  lead_generation_goal?: string; // User's business goal/reason for generating leads
 }
 
 export interface PlatformConfigFormDto {

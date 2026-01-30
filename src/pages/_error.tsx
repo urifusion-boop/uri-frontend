@@ -5,7 +5,6 @@ import CustomButton from '@/components/atoms/CustomButton';
 import Text from '@/components/atoms/CustomText';
 import DashboardLayout from '@/components/atoms/DashboardLayout';
 import SeoHead from '@/components/atoms/SeoHead';
-import SubscriptionModal from '@/components/modals/SubscriptionModal';
 import { useRouter } from 'next/router';
 
 interface Props {
@@ -27,30 +26,23 @@ const Error: NextPage<Props> = ({ statusCode }) => {
     return (
       <>
         <SeoHead title="Page Not Found" />
-        <Box height={'80svh'}>
-          <Box display="flex" flexDirection="column" alignItems="center" height={'100%'} justifyContent={'center'}>
-            <Text size={matches ? 80 : 120} weight={800}>
-              404
-            </Text>
-            <Text size={16} weight={500}>
-              This page you were looking for was either removed or doesn{"'"}t exist
-            </Text>
-            <Box width={'300px'} mt={2}>
-              <CustomButton mode="primary" onClick={handleReturn}>
-                Return
-              </CustomButton>
+        <DashboardLayout>
+          <Box height={'80svh'}>
+            <Box display="flex" flexDirection="column" alignItems="center" height={'100%'} justifyContent={'center'}>
+              <Text size={matches ? 80 : 120} weight={800}>
+                404
+              </Text>
+              <Text size={16} weight={500}>
+                This page you were looking for was either removed or doesn{'"'}t exist
+              </Text>
+              <Box width={'300px'} mt={2}>
+                <CustomButton mode="primary" onClick={handleReturn}>
+                  Return
+                </CustomButton>
+              </Box>
             </Box>
           </Box>
-        </Box>
-      </>
-    );
-  }
-
-  if (statusCode === 402) {
-    return (
-      <>
-        <SeoHead title="Payment Required" />
-        <SubscriptionModal />
+        </DashboardLayout>
       </>
     );
   }

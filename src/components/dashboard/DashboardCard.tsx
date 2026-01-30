@@ -3,8 +3,9 @@ import React, { useEffect, useState } from 'react';
 
 import BeaconBubble from '@/components/guide-tour/bubble';
 import { DateHelper } from '@/helpers/DateHelper';
-import { SubscriptionStatusEnum } from '@/models/enum-models/SubscriptionStatusEnum';
-import { useAuth } from '@/providers/AuthProvider';
+import { TextHelper } from '@/helpers/TextHelper';
+import { SubscriptionStatusEnum, SubscriptionTypeEnum } from '@/models/enum-models/SubscriptionStatusEnum';
+import { useFeatureLimitStore } from '@/store/useFeatureLimitStore';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/navigation';
@@ -55,7 +56,7 @@ interface DashboardCardProps {
 
 const DashboardCard: React.FC<DashboardCardProps> = React.memo(({ username, startTour }) => {
   const [currentDateTime, setCurrentDateTime] = useState(dayjs());
-  const { userDetails } = useAuth();
+  const featureLimit = useFeatureLimitStore((state) => state.featureLimit);
   const router = useRouter();
 
   useEffect(() => {
@@ -65,6 +66,13 @@ const DashboardCard: React.FC<DashboardCardProps> = React.memo(({ username, star
 
     return () => clearInterval(timer);
   }, []);
+
+  const subscriptionPlan = (featureLimit as any)?.subscriptionPlan as string | undefined;
+  const subscriptionStatus = (featureLimit as any)?.subscriptionStatus as string | undefined;
+
+  const hasActiveSubscription = subscriptionStatus === SubscriptionStatusEnum.ACTIVE && !!subscriptionPlan && subscriptionPlan !== SubscriptionTypeEnum.FreeTrial;
+
+  const isSocialListeningFree = subscriptionStatus === SubscriptionStatusEnum.ACTIVE && subscriptionPlan === SubscriptionTypeEnum.SocialListeningFree;
 
   return (
     <Container>
@@ -92,9 +100,45 @@ const DashboardCard: React.FC<DashboardCardProps> = React.memo(({ username, star
             Supercharge Your Business with Lead Generation, AI-Powered Social and Campaign Insights.
           </Typography>
 
-          {userDetails?.subscriptionStatus !== SubscriptionStatusEnum.ACTIVE && (
-            <CustomButton mode="primary" textStyles="font-semibold" className="bg-white mt-4 max-w-fit font-semibold" textColor="#CD1B78" onClick={() => router.push('/dashboard')}>
-              `Unlock Premium`
+          {hasActiveSubscription && (
+            <Box
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                mt: 2,
+                px: 2,
+                py: 0.5,
+                borderRadius: '999px',
+                backgroundColor: 'rgba(34,197,94,0.15)',
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: '#BBF7D0',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                  mr: 1,
+                }}
+              >
+                {isSocialListeningFree ? 'Social Listening Free' : TextHelper.removeChar(subscriptionPlan ?? 'Active Plan', '_')}
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  color: '#DCFCE7',
+                }}
+              >
+                Active
+              </Typography>
+            </Box>
+          )}
+
+          {!hasActiveSubscription && (
+            <CustomButton mode="primary" textStyles="font-semibold" className="mt-4 max-w-fit font-semibold shadow-lg hover:shadow-xl" textColor="#FFFFFF" onClick={() => router.push('/pricing')}>
+              Unlock Premium
             </CustomButton>
           )}
         </Box>
