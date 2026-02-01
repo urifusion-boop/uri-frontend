@@ -11,7 +11,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { useFeatureLimitStore } from '@/store/useFeatureLimitStore';
 import { Box, Dialog, DialogContent, DialogTitle, IconButton, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FaTimes } from 'react-icons/fa';
 import TrialActivationModal from '../trial/TrialActivationModal';
 import ExploreUri from './general/ExploreUri';
@@ -164,6 +164,21 @@ const NewSubscription = () => {
     setShowPlansModal(false);
     setActiveStep(2);
   };
+
+  const hasAutoSelectedRef = useRef(false);
+
+  useEffect(() => {
+    if (!router.isReady || hasAutoSelectedRef.current) return;
+
+    const { plan } = router.query;
+    if (plan === 'social_listening_paid') {
+      hasAutoSelectedRef.current = true;
+      handlePlanSelection(SubscriptionTypeEnum.SocialListeningPaid, 'SOCIAL_LISTENING_PAID_MONTHLY', 1000000);
+    } else if (plan === 'start_trial') {
+      hasAutoSelectedRef.current = true;
+      setShowTrialModal(true);
+    }
+  }, [router.isReady, router.query]);
 
   return (
     <>

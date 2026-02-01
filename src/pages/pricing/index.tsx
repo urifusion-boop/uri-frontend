@@ -51,6 +51,14 @@ function PricingPage() {
 
         {/* User Journey Cards - Shows the 4 user types */}
         <UserJourneyCards
+          onStartTrial={() => {
+            const redirectUrl = '/settings?tab=subscription&plan=start_trial';
+            if (!userDetails) {
+              router.push(`/auth/login?redirect=${encodeURIComponent(redirectUrl)}`);
+            } else {
+              router.push(redirectUrl);
+            }
+          }}
           onStartFreeSocialListening={() => {
             if (!userDetails) {
               router.push('/auth/login?redirect=/pricing');
@@ -72,6 +80,14 @@ function PricingPage() {
                 triggerToast('error', err?.message ?? 'Failed to activate free plan');
               },
             });
+          }}
+          onStartPaidSocialListening={() => {
+            const redirectUrl = '/settings?tab=subscription&plan=social_listening_paid';
+            if (!userDetails) {
+              router.push(`/auth/login?redirect=${encodeURIComponent(redirectUrl)}`);
+            } else {
+              router.push(redirectUrl);
+            }
           }}
           onActivatePayg={() => {
             if (!userDetails) {
