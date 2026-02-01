@@ -15,7 +15,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { useFeatureLimitStore } from '@/store/useFeatureLimitStore';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { Box, IconButton, LinearProgress, TextField, Tooltip, Typography } from '@mui/material';
+import { Box, Button, IconButton, LinearProgress, TextField, Tooltip, Typography } from '@mui/material';
 import Image from 'next/image';
 import router from 'next/router';
 import { useEffect, useRef, useState } from 'react';
@@ -612,13 +612,38 @@ const OrganizationLeadForm = () => {
         )}
 
         <Box sx={{ textAlign: 'center', pt: 3, borderTop: '1px solid #e5e7eb' }}>
-          <LoadingButton
-            className="tour-generate-btn"
-            onClick={handleSubmit}
-            loading={createOrganizationLeadForm.isLoading || updateOrganizationSearchLeadForm.isLoading || isSaving}
-            text={existingFormId ? 'Update Form' : 'Generate Leads'}
-            loadingText={isSaving ? savingStatus : 'Saving...'}
-          />
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
+            <LoadingButton
+              className="tour-generate-btn"
+              onClick={handleSubmit}
+              loading={createOrganizationLeadForm.isLoading || updateOrganizationSearchLeadForm.isLoading || isSaving}
+              text={existingFormId ? 'Update Form' : 'Generate Leads'}
+              loadingText={isSaving ? savingStatus : 'Saving...'}
+            />
+
+            <Button
+              variant="outlined"
+              onClick={() => router.push('/leads-tracking/forms/leads?type=organization')}
+              sx={{
+                borderColor: '#CD1B78',
+                color: '#CD1B78',
+                '&:hover': {
+                  borderColor: '#b31665',
+                  backgroundColor: 'rgba(205, 27, 120, 0.04)',
+                },
+                px: 8,
+                py: 2,
+                borderRadius: 3,
+                fontSize: '16px',
+                fontWeight: 600,
+                textTransform: 'none',
+                height: 50,
+                minWidth: 245,
+              }}
+            >
+              View Leads
+            </Button>
+          </Box>
 
           <Typography variant="caption" sx={{ color: '#6b7280', mt: 2, display: 'block' }}>
             {existingFormId ? 'Update your saved form details' : 'Click to start searching for companies that match your filters'}
