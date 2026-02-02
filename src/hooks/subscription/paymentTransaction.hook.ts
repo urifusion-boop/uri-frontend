@@ -25,7 +25,7 @@ export const usePaymentTransaction = (
   setOpenPaymentFeedbackModal: (open: boolean) => void,
   callbacks?: PaymentCallbacks
 ) => {
-  const PaystackPop = require('@paystack/inline-js').default;
+  // const PaystackPop = require('@paystack/inline-js').default;
 
   const handlePayStackPayment = () => {
     // Squad flow: redirect to authorization_url
