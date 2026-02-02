@@ -23,6 +23,7 @@ export const useSubscription = () => {
           plan: data.plan,
           reference: TextHelper.generateReferenceForUser(userDetails.userId ?? ''),
           channels: ['card'],
+          callback_url: `${window.location.origin}/subscription/verify`,
         },
         userDetails.paystackId
       );

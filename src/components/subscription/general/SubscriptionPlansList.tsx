@@ -191,17 +191,18 @@ const PlanCard = ({ icon, iconBg, title, subtitle, description, features, isHigh
 };
 
 interface SubscriptionPlansListProps {
-  onSelectPlan: (planType: string, planCode: string) => void;
+  onSelectPlan: (planType: string, planCode: string, amount?: number) => void;
   currentPlanType?: string;
   isLoading?: boolean;
   loadingPlanType?: string;
 }
 
 const SubscriptionPlansList = ({ onSelectPlan, currentPlanType, isLoading, loadingPlanType }: SubscriptionPlansListProps) => {
-  const plans: (PlanCardProps & { planType: string; planCode: string })[] = [
+  const plans: (PlanCardProps & { planType: string; planCode: string; amount?: number })[] = [
     {
       planType: SubscriptionTypeEnum.FreeTrial,
       planCode: 'FREE_TRIAL',
+      amount: 0,
       icon: <MdTimer size={20} />,
       iconBg: 'linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)',
       title: 'Trial User',
@@ -223,13 +224,14 @@ const SubscriptionPlansList = ({ onSelectPlan, currentPlanType, isLoading, loadi
     {
       planType: SubscriptionTypeEnum.SocialListeningPaid,
       planCode: 'SOCIAL_LISTENING_PAID_MONTHLY',
+      amount: 1000000,
       icon: <FaHandshake size={18} />,
       iconBg: 'linear-gradient(135deg, #e67e22 0%, #d35400 100%)',
       title: 'Social Listening (Paid)',
       subtitle: 'Pro monitoring',
       description: 'For growing brands that need more comprehensive social tracking and reporting.',
       features: ['3 social accounts tracking', '4 reports per month', 'Access to Dera AI assistant', 'Enhanced tracking capabilities'],
-      comingSoon: true,
+      comingSoon: false,
     },
     {
       planType: SubscriptionTypeEnum.Enterprise,
@@ -305,7 +307,7 @@ const SubscriptionPlansList = ({ onSelectPlan, currentPlanType, isLoading, loadi
                 isHighlighted={plan.isHighlighted}
                 badge={plan.badge}
                 actionLabel={plan.planType === 'CREDIT_BUNDLES' ? 'Buy Credits' : 'Choose Plan'}
-                onAction={() => onSelectPlan(plan.planType, plan.planCode)}
+                onAction={() => onSelectPlan(plan.planType, plan.planCode, plan.amount)}
                 isActive={isPlanActive}
                 isLoading={isPlanLoading}
                 comingSoon={plan.comingSoon}

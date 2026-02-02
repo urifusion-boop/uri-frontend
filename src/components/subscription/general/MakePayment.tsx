@@ -138,7 +138,7 @@ const MakePayment = ({ setStep, selectedPlan, setTransactionDetails, onBack }: M
                 px: 0.1,
               }}
             >
-              PREMIUM
+              {selectedPlan?.name || 'PREMIUM'}
             </Typography>
             <Typography sx={{ color: '#141416', fontSize: '17px', fontWeight: 600 }}>Plan</Typography>
           </Box>

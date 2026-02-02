@@ -11,7 +11,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { useFeatureLimitStore } from '@/store/useFeatureLimitStore';
 import { Box, Dialog, DialogContent, DialogTitle, IconButton, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FaTimes } from 'react-icons/fa';
 import TrialActivationModal from '../trial/TrialActivationModal';
 import ExploreUri from './general/ExploreUri';
@@ -95,7 +95,7 @@ const NewSubscription = () => {
     }
   };
 
-  const handlePlanSelection = (planType: string, planCode: string) => {
+  const handlePlanSelection = (planType: string, planCode: string, amount?: number) => {
     // Handle Credit Bundles - redirect to credits purchase page
     if (planType === 'CREDIT_BUNDLES') {
       setShowPlansModal(false);
@@ -143,11 +143,18 @@ const NewSubscription = () => {
     }
 
     // Handle paid plans (Social Listening Paid, Enterprise) - show payment flow
+    let planName = planType;
+    if (planType === SubscriptionTypeEnum.SocialListeningPaid) {
+      planName = 'Social listening Paid plan';
+    } else if (planType === SubscriptionTypeEnum.Enterprise) {
+      planName = 'Enterprise Plan';
+    }
+
     const plan: SubscriptionPlan = {
       plan_code: planCode,
       plan_type: planType,
-      name: planType,
-      amount: 0,
+      name: planName,
+      amount: amount || 0,
       description: '',
       interval: 'monthly',
       created_at: '',
@@ -157,6 +164,21 @@ const NewSubscription = () => {
     setShowPlansModal(false);
     setActiveStep(2);
   };
+
+  const hasAutoSelectedRef = useRef(false);
+
+  useEffect(() => {
+    if (!router.isReady || hasAutoSelectedRef.current) return;
+
+    const { plan } = router.query;
+    if (plan === 'social_listening_paid') {
+      hasAutoSelectedRef.current = true;
+      handlePlanSelection(SubscriptionTypeEnum.SocialListeningPaid, 'SOCIAL_LISTENING_PAID_MONTHLY', 1000000);
+    } else if (plan === 'start_trial') {
+      hasAutoSelectedRef.current = true;
+      setShowTrialModal(true);
+    }
+  }, [router.isReady, router.query]);
 
   return (
     <>
@@ -205,6 +227,13 @@ const NewSubscription = () => {
                     triggerToast('error', err?.message ?? 'Failed to activate free plan');
                   },
                 });
+              }}
+              onStartPaidSocialListening={() => {
+                if (!userDetails) {
+                  router.push('/auth/login?redirect=/settings?tab=subscription');
+                  return;
+                }
+                handlePlanSelection(SubscriptionTypeEnum.SocialListeningPaid, 'SOCIAL_LISTENING_PAID_MONTHLY', 1000000);
               }}
               onActivatePayg={() => {
                 if (!userDetails) {
