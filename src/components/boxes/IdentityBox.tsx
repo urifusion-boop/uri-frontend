@@ -19,8 +19,8 @@ const IdentityBox = ({ name, lead, jobTitle = 'Unknown', imageUrl, onClick }: Id
       </Avatar>
       <Box>
         <Tooltip title={name} arrow>
-          <Typography fontWeight={600} fontSize="14px" color="text.primary" noWrap>
-            {TextHelper.truncateText(name, 33, '...')}
+          <Typography fontWeight={600} fontSize="14px" color="text.primary">
+            {name || 'Unknown'}
           </Typography>
         </Tooltip>
         <Tooltip title={jobTitle} arrow>
