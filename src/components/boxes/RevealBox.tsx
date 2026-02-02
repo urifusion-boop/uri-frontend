@@ -44,7 +44,7 @@ const RevealBox = ({ type, value, leadIds }: { type: 'email' | 'phone'; value?: 
     >
       {type === 'email' ? <EmailIcon fontSize="small" /> : <PhoneIcon fontSize="small" />}
 
-      <Typography fontWeight={400}>{revealed ? value || 'N/A' : `Access ${type === 'email' ? 'email' : 'mobile'}`}</Typography>
+      <Typography fontWeight={400}>{revealed ? value || 'UNAVAILABLE' : `Access ${type === 'email' ? 'email' : 'mobile'}`}</Typography>
 
       {revealed && value && <VerifiedIcon fontSize="small" color="success" />}
     </Box>
