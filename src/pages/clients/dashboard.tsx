@@ -11,6 +11,7 @@ import { DASHBOARD_TOUR_STEPS } from '@/components/guide-tour/tour-steps/dashboa
 import useGuideTour from '@/components/guide-tour/useGuideTour';
 import CustomModal from '@/components/modals/CustomModal';
 import SubscriptionStatusBanner from '@/components/subscription/SubscriptionStatusBanner';
+import TrialActivationModal from '@/components/trial/TrialActivationModal';
 import TrialCountdownBanner from '@/components/trial/TrialCountdownBanner';
 import TrialExpiredModal from '@/components/trial/TrialExpiredModal';
 import { useClientsDashHook } from '@/hooks/clients/dashboard.hook';
@@ -22,6 +23,7 @@ import SeoHead from '../../components/atoms/SeoHead';
 const ClientsDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showExpiredModal, setShowExpiredModal] = useState(false);
+  const [showActivationModal, setShowActivationModal] = useState(false);
 
   const { userDetails, tabButtons } = useClientsDashHook();
   const { userDetails: authUser } = useAuth();
@@ -41,6 +43,13 @@ const ClientsDashboard = () => {
       setShowExpiredModal(true);
     }
   }, [trialStatus?.status]);
+
+  // Show activation modal if trial not started (fallback for users who missed it during onboarding)
+  useEffect(() => {
+    if (trialStatus?.status === 'not_started' && !trialStatus?.hasUsedFreeTrial) {
+      setShowActivationModal(true);
+    }
+  }, [trialStatus?.status, trialStatus?.hasUsedFreeTrial]);
 
   useEffect(() => {
     const showWelcome = localStorage.getItem('URI_WELCOME');
@@ -139,6 +148,19 @@ const ClientsDashboard = () => {
 
         {/* Trial Expired Modal */}
         {trialStatus && <TrialExpiredModal open={showExpiredModal} onClose={() => setShowExpiredModal(false)} trialStatus={trialStatus} />}
+
+        {/* Trial Activation Modal (fallback for users who missed it during onboarding) */}
+        {authUser?.userId && (
+          <TrialActivationModal
+            open={showActivationModal}
+            onClose={() => setShowActivationModal(false)}
+            onSuccess={() => {
+              setShowActivationModal(false);
+              window.location.reload(); // Reload to fetch updated trial status
+            }}
+            userId={authUser.userId}
+          />
+        )}
       </Box>
     </DashboardLayout>
   );
