@@ -18,7 +18,7 @@ import { useFeatureLimitStore } from '@/store/useFeatureLimitStore';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
-import { Box, Button, IconButton, LinearProgress, TextField, Tooltip, Typography } from '@mui/material';
+import { Box, Button, FormControl, IconButton, LinearProgress, MenuItem, Select, TextField, Tooltip, Typography } from '@mui/material';
 import Image from 'next/image';
 import router from 'next/router';
 import { useEffect, useRef, useState } from 'react';
@@ -40,6 +40,7 @@ const IndividualLeadForm = () => {
     add_to_history: false,
     auto_generate: false,
     per_page: 10,
+    monitoring_interval_hours: 0,
   });
 
   const [existingFormId, setExistingFormId] = useState<string | null>(null);
@@ -110,6 +111,7 @@ const IndividualLeadForm = () => {
         auto_generate,
         per_page,
         lead_generation_goal,
+        monitoring_interval_hours,
       } = existingForm;
 
       setForm({
@@ -127,6 +129,7 @@ const IndividualLeadForm = () => {
         auto_generate,
         per_page,
         lead_generation_goal,
+        monitoring_interval_hours: monitoring_interval_hours || 0,
       });
 
       setExistingFormId(lead_form_id);
@@ -147,6 +150,7 @@ const IndividualLeadForm = () => {
         auto_generate: false,
         per_page: 10,
         lead_generation_goal: '',
+        monitoring_interval_hours: 0,
       });
       setExistingFormId(null);
     }
@@ -404,8 +408,85 @@ const IndividualLeadForm = () => {
               onChange={setAutoPopulateData}
               onSend={handleAutoPopulate}
               loading={isAutoPopulating}
-              placeholder="Describe the kind of individuals you’re looking for..."
+              placeholder="Describe the kind of individuals you're looking for..."
             />
+          </Box>
+
+          {/* Frequency Control Section */}
+          <Box sx={{ mb: 4, pb: 3, borderBottom: '1px solid #e5e7eb' }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+              How often should we search for new leads?
+              <Tooltip title="Choose how frequently Apollo should check for new contacts matching your criteria. Select 'One-time only' for a single search, or set a recurring interval for continuous monitoring.">
+                <InfoOutlinedIcon sx={{ fontSize: 16, color: '#9ca3af', cursor: 'help' }} />
+              </Tooltip>
+            </Typography>
+
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+              <FormControl sx={{ flex: '1 1 65%', maxWidth: '400px' }}>
+                <Select
+                  id="monitoring-interval"
+                  value={form.monitoring_interval_hours || 0}
+                  onChange={(e) => handleChange('monitoring_interval_hours', Number(e.target.value))}
+                  displayEmpty
+                  sx={{
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#E5E7EB',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#D1D5DB',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#CD1B78',
+                    },
+                  }}
+                >
+                  <MenuItem value={0}>One-time only (No recurring monitoring)</MenuItem>
+                  <MenuItem value={1}>Every Hour (Fastest)</MenuItem>
+                  <MenuItem value={2}>Every 2 Hours</MenuItem>
+                  <MenuItem value={3}>Every 3 Hours</MenuItem>
+                  <MenuItem value={6}>Every 6 Hours</MenuItem>
+                  <MenuItem value={12}>Every 12 Hours</MenuItem>
+                  <MenuItem value={24}>Once Daily</MenuItem>
+                  <MenuItem value={48}>Every 2 Days</MenuItem>
+                  <MenuItem value={72}>Every 3 Days</MenuItem>
+                  <MenuItem value={120}>Every 5 Days</MenuItem>
+                  <MenuItem value={168}>Once Weekly</MenuItem>
+                  <MenuItem value={-1}>Custom Interval →</MenuItem>
+                </Select>
+              </FormControl>
+
+              {/* Custom Interval Input - Only show if "Custom" is selected */}
+              {form.monitoring_interval_hours === -1 && (
+                <Box sx={{ flex: '0 0 180px' }}>
+                  <SingleFieldInput
+                    label=""
+                    placeholder="Enter hours (e.g., 28)"
+                    value={form.monitoring_interval_hours === -1 ? '' : String(form.monitoring_interval_hours)}
+                    setValue={(val) => {
+                      const numVal = parseInt(val) || 1;
+                      handleChange('monitoring_interval_hours', numVal > 0 ? numVal : 1);
+                    }}
+                    required={false}
+                  />
+                </Box>
+              )}
+            </Box>
+
+            {/* Helper text based on selection */}
+            <Typography variant="caption" sx={{ color: '#6b7280', mt: 1, display: 'block' }}>
+              {form.monitoring_interval_hours === 0 && '✨ Lead generation will run once and stop. Perfect for one-time searches.'}
+              {form.monitoring_interval_hours === 1 && '⚡ Recommended for time-sensitive leads. Checks every hour.'}
+              {form.monitoring_interval_hours !== undefined &&
+                form.monitoring_interval_hours > 1 &&
+                form.monitoring_interval_hours < 24 &&
+                `🔄 Checks every ${form.monitoring_interval_hours} hours for new leads.`}
+              {form.monitoring_interval_hours !== undefined &&
+                form.monitoring_interval_hours >= 24 &&
+                form.monitoring_interval_hours < 168 &&
+                `📅 Checks every ${Math.round(form.monitoring_interval_hours / 24)} day(s) for new leads.`}
+              {form.monitoring_interval_hours !== undefined && form.monitoring_interval_hours >= 168 && `📆 Checks every ${Math.round(form.monitoring_interval_hours / 168)} week(s) for new leads.`}
+              {form.monitoring_interval_hours === -1 && '⚙️ Enter your custom interval in hours.'}
+            </Typography>
           </Box>
 
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>

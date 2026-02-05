@@ -101,6 +101,7 @@ export interface LeadFormDto {
   is_pre_stored: boolean;
   id: string;
   lead_generation_goal?: string; // AI Next Steps - User's business goal
+  monitoring_interval_hours?: number; // How often to check for new leads (0 = one-time, >0 = recurring)
 }
 export class IndividualLeadFormDto {
   user_id?: string;
@@ -117,6 +118,7 @@ export class IndividualLeadFormDto {
   auto_generate?: boolean;
   per_page?: number;
   lead_generation_goal?: string; // AI Next Steps - User's business goal
+  monitoring_interval_hours?: number; // How often to check for new leads (0 = one-time, >0 = recurring)
 }
 
 export class OrganizationLeadFormDto {
@@ -134,6 +136,7 @@ export class OrganizationLeadFormDto {
   auto_generate?: boolean;
   per_page?: number;
   lead_generation_goal?: string; // AI Next Steps - User's business goal
+  monitoring_interval_hours?: number; // How often to check for new leads (0 = one-time, >0 = recurring)
 }
 
 export interface LeadFormResponseDto {
