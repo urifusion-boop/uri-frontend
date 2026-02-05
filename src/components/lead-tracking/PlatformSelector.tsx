@@ -34,7 +34,7 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({ platformConfigs, se
   const [expandedPlatform, setExpandedPlatform] = useState<string | null>(null);
 
   // Temporarily disable specific platforms in the form UI
-  const disabledPlatforms = new Set<BrowsercloudPlatformEnum>([BrowsercloudPlatformEnum.THREADS, BrowsercloudPlatformEnum.LINKEDIN]);
+  const disabledPlatforms = new Set<BrowsercloudPlatformEnum>([BrowsercloudPlatformEnum.THREADS, BrowsercloudPlatformEnum.LINKEDIN, BrowsercloudPlatformEnum.JOB_BOARDS]);
 
   const togglePlatform = (platform: BrowsercloudPlatformEnum) => {
     console.log('🎯 Platform toggle clicked:', platform);
