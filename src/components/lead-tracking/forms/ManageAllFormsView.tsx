@@ -38,6 +38,52 @@ const ManageAllFormsView = () => {
   const filteredForms = useMemo(() => {
     let filtered = allForms;
 
+    console.log('📊 [ManageAllForms] Raw forms from backend:', filtered.length);
+    console.log(
+      '📊 [ManageAllForms] All forms data:',
+      filtered.map((f: any) => ({
+        id: f.lead_form_id,
+        title: f.form_title,
+        type: f.form_type,
+        updated: f.last_updated,
+      }))
+    );
+
+    // Deduplicate by lead_form_id (keep the most recently updated one)
+    const uniqueFormsMap = new Map();
+    const duplicatesFound: any[] = [];
+
+    filtered.forEach((form: any) => {
+      const existingForm = uniqueFormsMap.get(form.lead_form_id);
+      if (existingForm) {
+        duplicatesFound.push({
+          lead_form_id: form.lead_form_id,
+          title: form.form_title,
+          existing_updated: existingForm.last_updated,
+          duplicate_updated: form.last_updated,
+        });
+        console.warn('⚠️ [ManageAllForms] DUPLICATE DETECTED:', {
+          lead_form_id: form.lead_form_id,
+          title: form.form_title,
+          existing: existingForm.last_updated,
+          duplicate: form.last_updated,
+          keeping: new Date(form.last_updated || 0) > new Date(existingForm.last_updated || 0) ? 'new' : 'existing',
+        });
+      }
+
+      if (!existingForm || new Date(form.last_updated || 0) > new Date(existingForm.last_updated || 0)) {
+        uniqueFormsMap.set(form.lead_form_id, form);
+      }
+    });
+
+    if (duplicatesFound.length > 0) {
+      console.error('🚨 [ManageAllForms] Total duplicates found:', duplicatesFound.length);
+      console.error('🚨 [ManageAllForms] Duplicate details:', duplicatesFound);
+    }
+
+    filtered = Array.from(uniqueFormsMap.values());
+    console.log('✅ [ManageAllForms] After deduplication:', filtered.length);
+
     if (filterType !== 'all') {
       filtered = filtered.filter((form: any) => form.form_type === filterType);
     }
