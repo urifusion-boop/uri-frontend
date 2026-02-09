@@ -500,21 +500,30 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
 
             {/* HubSpot Card */}
             <Card
-              onClick={() => !loading && handleConnect('hubspot')}
               sx={{
                 p: 3,
                 mb: 2,
-                cursor: loading ? 'not-allowed' : 'pointer',
+                cursor: 'not-allowed',
                 border: `2px solid ${LightThemeColors.borderColor}`,
                 borderRadius: '12px',
                 transition: 'all 0.3s ease',
-                opacity: loading && selectedCRM !== 'hubspot' ? 0.5 : 1,
-                '&:hover': {
-                  borderColor: loading ? LightThemeColors.borderColor : LightThemeColors.primary,
-                  boxShadow: loading ? 'none' : `0 4px 12px ${LightThemeColors.primary}33`,
-                },
+                opacity: 0.6,
+                position: 'relative',
               }}
             >
+              <Chip
+                label="Coming Soon"
+                size="small"
+                sx={{
+                  position: 'absolute',
+                  top: 16,
+                  right: 16,
+                  bgcolor: '#F59E0B',
+                  color: '#fff',
+                  fontWeight: 600,
+                  fontSize: '11px',
+                }}
+              />
               <Box display="flex" alignItems="center" gap={2}>
                 <Box
                   sx={{
@@ -534,10 +543,9 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
                     HubSpot
                   </Typography>
                   <Typography variant="body2" color={LightThemeColors.secondary} fontSize="13px">
-                    {authMethod === 'oauth' ? 'Connect via OAuth popup' : 'Use Private App token'}
+                    Integration coming soon
                   </Typography>
                 </Box>
-                {loading && selectedCRM === 'hubspot' && <CircularProgress size={24} sx={{ color: LightThemeColors.primary }} />}
               </Box>
 
               <List dense sx={{ mt: 2 }}>
@@ -564,20 +572,29 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
 
             {/* Salesforce Card */}
             <Card
-              onClick={() => !loading && authMethod === 'oauth' && handleConnect('salesforce')}
               sx={{
                 p: 3,
-                cursor: loading || authMethod === 'private' ? 'not-allowed' : 'pointer',
+                cursor: 'not-allowed',
                 border: `2px solid ${LightThemeColors.borderColor}`,
                 borderRadius: '12px',
                 transition: 'all 0.3s ease',
-                opacity: (loading && selectedCRM !== 'salesforce') || authMethod === 'private' ? 0.5 : 1,
-                '&:hover': {
-                  borderColor: loading || authMethod === 'private' ? LightThemeColors.borderColor : LightThemeColors.primary,
-                  boxShadow: loading || authMethod === 'private' ? 'none' : `0 4px 12px ${LightThemeColors.primary}33`,
-                },
+                opacity: 0.6,
+                position: 'relative',
               }}
             >
+              <Chip
+                label="Coming Soon"
+                size="small"
+                sx={{
+                  position: 'absolute',
+                  top: 16,
+                  right: 16,
+                  bgcolor: '#F59E0B',
+                  color: '#fff',
+                  fontWeight: 600,
+                  fontSize: '11px',
+                }}
+              />
               <Box display="flex" alignItems="center" gap={2}>
                 <Box
                   sx={{
@@ -597,10 +614,9 @@ const ConnectCRMModal: React.FC<ConnectCRMModalProps> = ({ open, onClose, userId
                     Salesforce
                   </Typography>
                   <Typography variant="body2" color={LightThemeColors.secondary} fontSize="13px">
-                    {authMethod === 'oauth' ? 'Connect via OAuth popup' : 'OAuth only (Private App not supported)'}
+                    Integration coming soon
                   </Typography>
                 </Box>
-                {loading && selectedCRM === 'salesforce' && <CircularProgress size={24} sx={{ color: LightThemeColors.primary }} />}
               </Box>
 
               <List dense sx={{ mt: 2 }}>
