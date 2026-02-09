@@ -1,5 +1,4 @@
-import { BiBook } from 'react-icons/bi';
-import { FaHeartbeat, FaWallet } from 'react-icons/fa';
+import { FaBuilding, FaComments, FaHeartbeat, FaUser, FaWallet } from 'react-icons/fa';
 import { FaMagnifyingGlassChart, FaUserTie } from 'react-icons/fa6';
 import { GrAction, GrNotification } from 'react-icons/gr';
 
@@ -73,9 +72,19 @@ export const dashboardLinks: ILink[] = [
     tourKey: 'tour-lead-overview-btn',
     subLinkers: [
       {
-        label: 'Forms',
-        route: '/leads-tracking/forms',
-        icon: BiBook,
+        label: 'Individual Leads',
+        route: '/leads-tracking/forms/manage?type=individual',
+        icon: FaUser,
+      },
+      {
+        label: 'Organization Leads',
+        route: '/leads-tracking/forms/manage?type=organization',
+        icon: FaBuilding,
+      },
+      {
+        label: 'Sales Signals',
+        route: '/leads-tracking/forms/manage?type=conversational',
+        icon: FaComments,
       },
       {
         label: 'History',
