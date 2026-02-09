@@ -68,7 +68,7 @@ const ManageAllFormsView = () => {
       if (form.form_type) {
         stats[form.form_type as FormTypeEnum]++;
       }
-      stats.totalLeads += form.metadata?.total_leads || 0;
+      stats.totalLeads += form.total_leads || 0;
     });
 
     return stats;
@@ -289,7 +289,7 @@ const ManageAllFormsView = () => {
               Total Leads
             </Typography>
             <Typography fontSize="22px" fontWeight={700} color="#374151" lineHeight={1} letterSpacing="-0.02em">
-              {form.metadata?.total_leads || 0}
+              {form.total_leads || 0}
             </Typography>
           </Box>
           <Box
@@ -304,7 +304,7 @@ const ManageAllFormsView = () => {
               New Today
             </Typography>
             <Typography fontSize="22px" fontWeight={700} color="#10B981" lineHeight={1} letterSpacing="-0.02em">
-              {form.metadata?.new_leads || 0}
+              {form.total_new_leads || 0}
             </Typography>
           </Box>
         </Box>

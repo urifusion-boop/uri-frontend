@@ -14,7 +14,7 @@ import { HiMiniUserGroup } from 'react-icons/hi2';
 import { IoMdPricetags } from 'react-icons/io';
 import { IoSettingsOutline } from 'react-icons/io5';
 import { IconType } from 'react-icons/lib';
-import { MdAutorenew, MdRecordVoiceOver, MdSettings } from 'react-icons/md';
+import { MdAutorenew, MdRecordVoiceOver, MdSettings, MdViewModule } from 'react-icons/md';
 import { RxDashboard } from 'react-icons/rx';
 
 interface ILink {
@@ -71,6 +71,11 @@ export const dashboardLinks: ILink[] = [
     route: '/leads-tracking',
     tourKey: 'tour-lead-overview-btn',
     subLinkers: [
+      {
+        label: 'Overview',
+        route: '/leads-tracking/forms',
+        icon: MdViewModule,
+      },
       {
         label: 'Individual Leads',
         route: '/leads-tracking/forms/manage?type=individual',
