@@ -1,22 +1,203 @@
+import { LightThemeColors } from '@/configs/colors.config';
 import { NumberHelper } from '@/helpers/NumberHelper';
 import { useCreditBundle } from '@/hooks/credits/useCreditBundle';
 import { CreditBundleTierEnum } from '@/models/dtos/CreditBundleDto';
-import { Alert, Box, Card, CardContent, Chip, Divider, Grid, Skeleton, Stack, Typography, alpha } from '@mui/material';
-import { FaCoins } from 'react-icons/fa';
+import { Alert, Box, Button, Card, CardContent, Chip, CircularProgress, Divider, Grid, InputAdornment, Skeleton, Stack, TextField, Typography, alpha } from '@mui/material';
+import { useState } from 'react';
+import { FaCoins, FaTimes } from 'react-icons/fa';
 import { CreditBundleCard } from './CreditBundleCard';
+
+const CREDIT_RATE = 140; // ₦140 per credit
+const MIN_AMOUNT = 5000;
 
 export const CreditBundleSection = () => {
   const { bundles, isLoadingBundles, isBundlesError, creditsAvailable, totalCredits, isLoadingBalance, purchaseBundle, isPurchasing } = useCreditBundle();
+  const [customAmount, setCustomAmount] = useState<string>('');
+  const [isProcessingCustom, setIsProcessingCustom] = useState(false);
+
+  const calculateCredits = (amount: number): number => {
+    return Math.floor(amount / CREDIT_RATE);
+  };
+
+  const customCredits = customAmount && !isNaN(parseFloat(customAmount)) ? calculateCredits(parseFloat(customAmount)) : 0;
+  const isValidCustomAmount = customAmount && !isNaN(parseFloat(customAmount)) && parseFloat(customAmount) >= MIN_AMOUNT;
+  const isInvalidAmount = customAmount && !isNaN(parseFloat(customAmount)) && parseFloat(customAmount) > 0 && parseFloat(customAmount) < MIN_AMOUNT;
+
+  const handleCustomPurchase = async () => {
+    if (!isValidCustomAmount) return;
+    setIsProcessingCustom(true);
+    // Custom purchase logic would go here
+    // For now, using the smallest bundle tier as placeholder
+    await purchaseBundle(CreditBundleTierEnum.SMALL);
+    setIsProcessingCustom(false);
+    setCustomAmount('');
+  };
+
+  const clearCustomAmount = () => {
+    setCustomAmount('');
+  };
 
   return (
     <Box mt={4}>
+      {/* Custom Credit Plan */}
+      <Box mb={4}>
+        <Typography variant="h5" fontWeight={800} sx={{ color: '#141414', mb: 1 }}>
+          Custom Credit Plan
+        </Typography>
+        <Typography variant="body2" sx={{ color: '#6B6B6B', mb: 3 }}>
+          Enter any amount to see equivalent credits (₦{CREDIT_RATE.toLocaleString()} per credit, min ₦{MIN_AMOUNT.toLocaleString()})
+        </Typography>
+
+        <Card
+          sx={{
+            borderRadius: 4,
+            border: `2px solid ${alpha(LightThemeColors.uriColor, 0.2)}`,
+            background: `linear-gradient(135deg, ${alpha(LightThemeColors.uriColor, 0.03)} 0%, ${alpha(LightThemeColors.uriColor, 0.01)} 100%)`,
+          }}
+        >
+          <CardContent sx={{ p: 3 }}>
+            <Grid container spacing={3} alignItems="center">
+              <Grid item xs={12} md={4}>
+                <TextField
+                  fullWidth
+                  label="Enter Amount"
+                  type="number"
+                  value={customAmount}
+                  onChange={(e) => setCustomAmount(e.target.value)}
+                  placeholder="5000"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Typography fontWeight={700} sx={{ color: '#141414' }}>
+                          ₦
+                        </Typography>
+                      </InputAdornment>
+                    ),
+                    endAdornment: customAmount && (
+                      <InputAdornment position="end">
+                        <Button
+                          size="small"
+                          onClick={clearCustomAmount}
+                          sx={{
+                            minWidth: 'auto',
+                            p: 0.5,
+                            color: '#6B6B6B',
+                            '&:hover': {
+                              color: LightThemeColors.uriColor,
+                              background: 'transparent',
+                            },
+                          }}
+                        >
+                          <FaTimes size={16} />
+                        </Button>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 3,
+                      fontWeight: 700,
+                      '& input': {
+                        fontSize: '1.1rem',
+                      },
+                    },
+                  }}
+                  helperText={isInvalidAmount ? `Minimum amount is ₦${MIN_AMOUNT.toLocaleString()}` : ' '}
+                  error={!!isInvalidAmount}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <Box
+                  sx={{
+                    p: 3,
+                    borderRadius: 3,
+                    background: `linear-gradient(135deg, ${alpha(LightThemeColors.uriColor, 0.12)} 0%, ${alpha(LightThemeColors.uriColor, 0.06)} 100%)`,
+                    textAlign: 'center',
+                    border: `1px solid ${alpha(LightThemeColors.uriColor, 0.2)}`,
+                  }}
+                >
+                  <Typography variant="caption" sx={{ color: '#6B6B6B', fontWeight: 700 }}>
+                    Equivalent Credits
+                  </Typography>
+                  <Stack direction="row" alignItems="center" justifyContent="center" spacing={1} sx={{ mt: 1 }}>
+                    <FaCoins size={24} style={{ color: LightThemeColors.uriColor }} />
+                    <Typography variant="h4" fontWeight={900} color={LightThemeColors.uriColor}>
+                      {customCredits.toLocaleString()}
+                    </Typography>
+                  </Stack>
+                  <Typography variant="caption" sx={{ color: '#6B6B6B', mt: 1, display: 'block' }}>
+                    {customAmount && isValidCustomAmount ? `₦${parseFloat(customAmount).toLocaleString()} ÷ ${CREDIT_RATE}` : 'Enter amount above'}
+                  </Typography>
+                </Box>
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <Stack direction="row" spacing={2}>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    onClick={clearCustomAmount}
+                    disabled={!customAmount || isProcessingCustom}
+                    sx={{
+                      py: 1.5,
+                      borderRadius: 3,
+                      fontWeight: 700,
+                      borderWidth: 2,
+                      borderColor: alpha('#000', 0.2),
+                      color: '#141414',
+                      '&:hover': {
+                        borderWidth: 2,
+                        borderColor: alpha('#000', 0.4),
+                        background: alpha('#000', 0.02),
+                      },
+                      '&:disabled': {
+                        borderWidth: 2,
+                        borderColor: alpha('#000', 0.1),
+                        color: '#BDBDBD',
+                      },
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    onClick={handleCustomPurchase}
+                    disabled={!isValidCustomAmount || isProcessingCustom}
+                    sx={{
+                      py: 1.5,
+                      borderRadius: 3,
+                      fontWeight: 800,
+                      background: `linear-gradient(135deg, ${LightThemeColors.uriColor} 0%, ${alpha(LightThemeColors.uriColor, 0.85)} 100%)`,
+                      boxShadow: '0 8px 25px rgba(205, 27, 120, 0.2)',
+                      '&:hover': {
+                        background: `linear-gradient(135deg, ${alpha(LightThemeColors.uriColor, 0.92)} 0%, ${alpha(LightThemeColors.uriColor, 0.78)} 100%)`,
+                        boxShadow: '0 10px 30px rgba(205, 27, 120, 0.25)',
+                      },
+                      '&:disabled': {
+                        background: alpha('#000', 0.1),
+                        color: '#BDBDBD',
+                        boxShadow: 'none',
+                      },
+                    }}
+                  >
+                    {isProcessingCustom ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'Buy Now'}
+                  </Button>
+                </Stack>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+      </Box>
+
       <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', sm: 'center' }} gap={2} mb={3}>
         <Box>
           <Typography variant="h5" fontWeight={800} sx={{ color: '#141414' }}>
             Credit Bundles
           </Typography>
           <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-            Purchase credits for lead enrichment. 1 credit = 1 email reveal, 7 credits = 1 phone reveal.
+            Purchase pre-configured credit bundles with better value
           </Typography>
         </Box>
       </Stack>

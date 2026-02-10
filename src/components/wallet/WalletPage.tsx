@@ -1,6 +1,7 @@
 import Spinner from '@/components/loaders/Spinner';
 import { LightThemeColors } from '@/configs/colors.config';
 import { NumberHelper } from '@/helpers/NumberHelper';
+import { useCreditBundle } from '@/hooks/credits/useCreditBundle';
 import { useWallet } from '@/hooks/wallet/useWallet';
 import {
   Alert,
@@ -32,7 +33,7 @@ import {
 } from '@mui/material';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { FaPlus, FaTimes, FaWallet } from 'react-icons/fa';
+import { FaCoins, FaTimes } from 'react-icons/fa';
 import { CreditBundleSection } from './CreditBundleSection';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -51,6 +52,7 @@ const MIN_FUNDING_AMOUNT = 5000;
 
 export const WalletPage = () => {
   const { balance, currency, transactions, isLoadingWallet, isWalletError, fundWallet, isFunding } = useWallet();
+  const { creditsAvailable, creditsUsed, totalCredits, isLoadingBalance, purchaseHistory, isLoadingHistory } = useCreditBundle();
   const [openFundModal, setOpenFundModal] = useState(false);
   const [amount, setAmount] = useState('');
 
@@ -100,32 +102,12 @@ export const WalletPage = () => {
       <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', sm: 'center' }} gap={2} mb={3}>
         <Box>
           <Typography variant="h4" fontWeight={800} sx={{ color: '#141414' }}>
-            Wallet
+            Credit Balance
           </Typography>
           <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-            Fund your wallet and track payments for Lead Gen & scanning.
+            Manage your credits and purchase history
           </Typography>
         </Box>
-        <Button
-          onClick={() => setOpenFundModal(true)}
-          startIcon={<FaPlus />}
-          variant="contained"
-          sx={{
-            borderRadius: 999,
-            px: 2.5,
-            py: 1.2,
-            fontWeight: 800,
-            backgroundColor: LightThemeColors.uriColor,
-            boxShadow: '0 10px 30px rgba(0,0,0,0.10)',
-            '&:hover': {
-              backgroundColor: '#B8186A',
-              boxShadow: '0 12px 35px rgba(0,0,0,0.12)',
-            },
-          }}
-          disabled={isFunding}
-        >
-          Fund wallet
-        </Button>
       </Stack>
 
       {isWalletError && (
@@ -141,37 +123,49 @@ export const WalletPage = () => {
               borderRadius: 4,
               overflow: 'hidden',
               color: 'white',
-              backgroundColor: LightThemeColors.uriColor,
+              background: `linear-gradient(135deg, ${LightThemeColors.uriColor} 0%, ${alpha(LightThemeColors.uriColor, 0.85)} 100%)`,
               boxShadow: '0 16px 45px rgba(0,0,0,0.12)',
+              position: 'relative',
             }}
           >
-            <CardContent sx={{ p: 3 }}>
+            <Box
+              sx={{
+                position: 'absolute',
+                top: -50,
+                right: -50,
+                width: 200,
+                height: 200,
+                borderRadius: '50%',
+                background: alpha('#fff', 0.08),
+              }}
+            />
+            <CardContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
               <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
                 <Box>
                   <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 700 }}>
-                    Wallet balance
+                    Available Credits
                   </Typography>
                   <Typography variant="caption" sx={{ opacity: 0.85 }}>
-                    Available for Lead Gen & scanning
+                    For lead enrichment & insights
                   </Typography>
                 </Box>
                 <Box
                   sx={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: 999,
+                    width: 48,
+                    height: 48,
+                    borderRadius: 3,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    backgroundColor: 'rgba(255,255,255,0.16)',
-                    border: '1px solid rgba(255,255,255,0.22)',
+                    backgroundColor: 'rgba(255,255,255,0.18)',
+                    border: '1px solid rgba(255,255,255,0.25)',
                   }}
                 >
-                  <FaWallet size={18} style={{ opacity: 0.95 }} />
+                  <FaCoins size={22} style={{ opacity: 0.95 }} />
                 </Box>
               </Stack>
 
-              {isLoadingWallet ? (
+              {isLoadingBalance ? (
                 <Box>
                   <Skeleton variant="text" width="75%" height={58} sx={{ bgcolor: 'rgba(255,255,255,0.25)' }} />
                   <Skeleton variant="text" width="40%" height={22} sx={{ bgcolor: 'rgba(255,255,255,0.18)' }} />
@@ -179,10 +173,10 @@ export const WalletPage = () => {
               ) : (
                 <Box>
                   <Typography variant="h3" fontWeight={900} sx={{ lineHeight: 1.1 }}>
-                    {currency} {NumberHelper.formatNumber(balance)}
+                    {NumberHelper.formatNumber(creditsAvailable)}
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.9, mt: 1 }}>
-                    Min funding: ₦{NumberHelper.formatNumber(MIN_FUNDING_AMOUNT)}
+                    credits available
                   </Typography>
                 </Box>
               )}
@@ -200,10 +194,10 @@ export const WalletPage = () => {
                     }}
                   >
                     <Typography variant="caption" sx={{ opacity: 0.85, fontWeight: 700 }}>
-                      Credits
+                      Credits Used
                     </Typography>
                     <Typography variant="h6" fontWeight={900}>
-                      {isLoadingWallet ? <Skeleton width={30} sx={{ bgcolor: 'rgba(255,255,255,0.25)' }} /> : creditCount}
+                      {isLoadingBalance ? <Skeleton width={30} sx={{ bgcolor: 'rgba(255,255,255,0.25)' }} /> : NumberHelper.formatNumber(creditsUsed)}
                     </Typography>
                   </Box>
                 </Grid>
@@ -217,10 +211,10 @@ export const WalletPage = () => {
                     }}
                   >
                     <Typography variant="caption" sx={{ opacity: 0.85, fontWeight: 700 }}>
-                      Debits
+                      Total Credits
                     </Typography>
                     <Typography variant="h6" fontWeight={900}>
-                      {isLoadingWallet ? <Skeleton width={30} sx={{ bgcolor: 'rgba(255,255,255,0.25)' }} /> : debitCount}
+                      {isLoadingBalance ? <Skeleton width={30} sx={{ bgcolor: 'rgba(255,255,255,0.25)' }} /> : NumberHelper.formatNumber(totalCredits)}
                     </Typography>
                   </Box>
                 </Grid>
@@ -237,10 +231,10 @@ export const WalletPage = () => {
                     }}
                   >
                     <Typography variant="caption" sx={{ opacity: 0.85, fontWeight: 700 }}>
-                      Last activity
+                      1 credit = ₦140
                     </Typography>
                     <Typography variant="caption" sx={{ opacity: 0.95, fontWeight: 800 }}>
-                      {isLoadingWallet ? <Skeleton width={110} sx={{ bgcolor: 'rgba(255,255,255,0.25)' }} /> : lastActivity ? dayjs(lastActivity).format('MMM D, YYYY') : '—'}
+                      Purchase below
                     </Typography>
                   </Box>
                 </Grid>
@@ -250,20 +244,90 @@ export const WalletPage = () => {
         </Grid>
 
         <Grid item xs={12} md={8}>
-          <Card sx={{ borderRadius: 4, boxShadow: '0 12px 40px rgba(0,0,0,0.06)' }}>
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <Card sx={{ borderRadius: 4, border: `2px solid ${alpha(LightThemeColors.uriColor, 0.15)}`, boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
+                <CardContent sx={{ p: 2.5 }}>
+                  <Stack spacing={1}>
+                    <Typography variant="body2" sx={{ color: '#6B6B6B', fontWeight: 600 }}>
+                      Wallet Balance
+                    </Typography>
+                    {isLoadingWallet ? (
+                      <Skeleton width={100} height={36} />
+                    ) : (
+                      <Typography variant="h5" fontWeight={900} color={LightThemeColors.uriColor}>
+                        {currency} {NumberHelper.formatNumber(balance)}
+                      </Typography>
+                    )}
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={6}>
+              <Card sx={{ borderRadius: 4, border: `2px solid ${alpha(LightThemeColors.uriColor, 0.15)}`, boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
+                <CardContent sx={{ p: 2.5 }}>
+                  <Stack spacing={1}>
+                    <Typography variant="body2" sx={{ color: '#6B6B6B', fontWeight: 600 }}>
+                      Purchases
+                    </Typography>
+                    {isLoadingHistory ? (
+                      <Skeleton width={40} height={36} />
+                    ) : (
+                      <Typography variant="h5" fontWeight={900} color={LightThemeColors.uriColor}>
+                        {purchaseHistory.length}
+                      </Typography>
+                    )}
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12}>
+              <Card sx={{ borderRadius: 4, background: alpha('#27ae60', 0.04), border: `1px solid ${alpha('#27ae60', 0.15)}` }}>
+                <CardContent sx={{ p: 2.5 }}>
+                  <Stack direction="row" alignItems="center" spacing={2}>
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 3,
+                        background: alpha('#27ae60', 0.12),
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#27ae60',
+                      }}
+                    >
+                      <FaCoins size={22} />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body2" sx={{ color: '#6B6B6B', fontWeight: 600 }}>
+                        Need more credits?
+                      </Typography>
+                      <Typography variant="body1" sx={{ color: '#141414', fontWeight: 800, mt: 0.3 }}>
+                        Purchase bundles or create a custom plan below
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+
+          {/* Purchase History Table */}
+          <Card sx={{ borderRadius: 4, boxShadow: '0 12px 40px rgba(0,0,0,0.06)', mt: 2 }}>
             <CardContent sx={{ p: 0 }}>
               <Box sx={{ px: 3, py: 2.25 }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} gap={1}>
                   <Box>
                     <Typography variant="h6" fontWeight={900} sx={{ color: '#141414' }}>
-                      Transaction history
+                      Purchase History
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-                      Latest credits and debits from your wallet.
+                      Your credit purchase transactions
                     </Typography>
                   </Box>
                   <Chip
-                    label={`${transactions.length} total`}
+                    label={`${purchaseHistory.length} purchases`}
                     variant="outlined"
                     sx={{
                       borderRadius: 999,
@@ -281,91 +345,64 @@ export const WalletPage = () => {
                   <TableHead>
                     <TableRow>
                       <StyledTableCell>Date</StyledTableCell>
-                      <StyledTableCell>Description</StyledTableCell>
-                      <StyledTableCell>Type</StyledTableCell>
+                      <StyledTableCell>Bundle</StyledTableCell>
+                      <StyledTableCell>Credits</StyledTableCell>
                       <StyledTableCell align="right">Amount</StyledTableCell>
                       <StyledTableCell>Status</StyledTableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {isLoadingWallet ? (
-                      Array.from({ length: 6 }).map((_, idx) => (
+                    {isLoadingHistory ? (
+                      Array.from({ length: 4 }).map((_, idx) => (
                         <TableRow key={idx}>
                           <TableCell colSpan={5}>
                             <Skeleton height={28} />
                           </TableCell>
                         </TableRow>
                       ))
-                    ) : sortedTransactions.length === 0 ? (
+                    ) : purchaseHistory.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
+                          <FaCoins size={48} style={{ color: alpha('#000', 0.15), marginBottom: 16 }} />
                           <Typography fontWeight={800} sx={{ color: '#141414' }}>
-                            No transactions yet
+                            No credit purchases yet
                           </Typography>
                           <Typography variant="body2" sx={{ color: '#6B6B6B', mt: 0.5 }}>
-                            Fund your wallet to see payments appear here.
+                            Purchase a credit bundle below to get started
                           </Typography>
-                          <Box mt={2}>
-                            <Button
-                              onClick={() => setOpenFundModal(true)}
-                              variant="contained"
-                              sx={{
-                                borderRadius: 999,
-                                px: 2.5,
-                                fontWeight: 900,
-                                backgroundColor: LightThemeColors.uriColor,
-                                boxShadow: '0 10px 30px rgba(0,0,0,0.10)',
-                                '&:hover': { backgroundColor: '#B8186A', boxShadow: '0 12px 35px rgba(0,0,0,0.12)' },
-                              }}
-                            >
-                              Fund wallet
-                            </Button>
-                          </Box>
                         </TableCell>
                       </TableRow>
                     ) : (
-                      sortedTransactions.map((tx) => (
-                        <HoverRow key={tx.id}>
+                      purchaseHistory.map((purchase: any) => (
+                        <HoverRow key={purchase._id || purchase.reference}>
                           <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                            {dayjs(tx.date).format('MMM D, YYYY')}
+                            {dayjs(purchase.purchaseDate).format('MMM D, YYYY')}
                             <Typography variant="caption" sx={{ color: '#8A8A8A', display: 'block' }}>
-                              {dayjs(tx.date).format('h:mm A')}
+                              {dayjs(purchase.purchaseDate).format('h:mm A')}
                             </Typography>
                           </TableCell>
-                          <TableCell sx={{ maxWidth: 340 }}>
-                            <Typography fontWeight={800} sx={{ color: '#141414' }} noWrap>
-                              {tx.description}
+                          <TableCell>
+                            <Typography fontWeight={800} sx={{ color: '#141414', textTransform: 'capitalize' }}>
+                              {purchase.bundleTier} Bundle
                             </Typography>
-                            <Typography variant="caption" sx={{ color: '#8A8A8A' }} noWrap>
-                              {tx.reference}
+                            <Typography variant="caption" sx={{ color: '#8A8A8A' }}>
+                              {purchase.reference}
                             </Typography>
                           </TableCell>
-                          <TableCell sx={{ textTransform: 'capitalize' }}>
-                            <Chip
-                              size="small"
-                              label={tx.type}
-                              variant="outlined"
-                              sx={{
-                                borderRadius: 999,
-                                fontWeight: 800,
-                                borderColor: tx.type === 'credit' ? alpha('#1e7e34', 0.35) : alpha('#d93025', 0.35),
-                                color: tx.type === 'credit' ? '#1e7e34' : '#d93025',
-                                backgroundColor: tx.type === 'credit' ? alpha('#1e7e34', 0.06) : alpha('#d93025', 0.06),
-                              }}
-                            />
+                          <TableCell>
+                            <Stack direction="row" alignItems="center" spacing={0.5}>
+                              <FaCoins size={14} style={{ color: LightThemeColors.uriColor }} />
+                              <Typography fontWeight={800} sx={{ color: '#141414' }}>
+                                {NumberHelper.formatNumber(purchase.credits)}
+                              </Typography>
+                            </Stack>
                           </TableCell>
                           <TableCell align="right">
-                            <Typography
-                              fontWeight={900}
-                              sx={{
-                                color: tx.type === 'credit' ? '#1e7e34' : '#d93025',
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              {tx.type === 'credit' ? '+' : '-'} {tx.currency} {NumberHelper.formatNumber(tx.amount)}
+                            <Typography fontWeight={900} sx={{ color: '#141414', whiteSpace: 'nowrap' }}>
+                              {purchase.currency} {NumberHelper.formatNumber(purchase.amount)}
                             </Typography>
                           </TableCell>
-                          <TableCell>{renderStatus(tx.status)}</TableCell>
+                          <TableCell>{renderStatus(purchase.status)}</TableCell>
                         </HoverRow>
                       ))
                     )}
