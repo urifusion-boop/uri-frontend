@@ -115,7 +115,7 @@ export const CreditBundleSection = () => {
         ) : (
           bundles.map((bundle) => (
             <Grid item xs={12} sm={6} md={3} key={bundle.tier}>
-              <CreditBundleCard bundle={bundle} onPurchase={purchaseBundle} isPurchasing={isPurchasing} isPopular={bundle.tier === CreditBundleTierEnum.MEDIUM} />
+              <CreditBundleCard bundle={bundle} onPurchase={purchaseBundle} isPurchasing={isPurchasing(bundle.tier)} isPopular={bundle.tier === CreditBundleTierEnum.MEDIUM} />
             </Grid>
           ))
         )}

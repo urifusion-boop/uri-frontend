@@ -2,12 +2,14 @@ import { CreditBundleService } from '@/api/CreditBundleService';
 import { CreditBundleTierEnum, PurchaseCreditBundleRequestDto } from '@/models/dtos/CreditBundleDto';
 import { useAuth } from '@/providers/AuthProvider';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 export const useCreditBundle = () => {
   const queryClient = useQueryClient();
   const { userDetails } = useAuth();
   const userId = userDetails?.userId ?? '';
+  const [purchasingTier, setPurchasingTier] = useState<CreditBundleTierEnum | null>(null);
 
   // Get available bundles
   const {
@@ -43,6 +45,7 @@ export const useCreditBundle = () => {
   // Verify purchase mutation
   const verifyPurchaseMutation = useMutation((reference: string) => CreditBundleService.verifyPurchase(reference), {
     onSuccess: (response) => {
+      setPurchasingTier(null);
       if (response.status) {
         toast.success(`${response.responseData?.credits || 0} credits added to your account!`);
         queryClient.invalidateQueries(['credit-balance', userId]);
@@ -53,6 +56,7 @@ export const useCreditBundle = () => {
       }
     },
     onError: (error: any) => {
+      setPurchasingTier(null);
       toast.error(error?.response?.data?.responseMessage || 'Failed to verify purchase');
     },
   });
@@ -63,10 +67,12 @@ export const useCreditBundle = () => {
       if (response.status && response.responseData?.access_code && response.responseData?.reference) {
         handlePaystackPayment(response.responseData.access_code, response.responseData.reference);
       } else {
+        setPurchasingTier(null);
         toast.error(response.responseMessage || 'Failed to initiate purchase');
       }
     },
     onError: (error: any) => {
+      setPurchasingTier(null);
       toast.error(error?.response?.data?.responseMessage || 'Failed to initiate purchase');
     },
   });
@@ -81,12 +87,15 @@ export const useCreditBundle = () => {
         verifyPurchaseMutation.mutate(reference);
       },
       onClose: () => {
+        setPurchasingTier(null);
         toast('Payment window closed');
       },
       onCancel: () => {
+        setPurchasingTier(null);
         toast('Payment cancelled');
       },
       onError: () => {
+        setPurchasingTier(null);
         toast.error('Payment failed');
       },
     });
@@ -103,6 +112,8 @@ export const useCreditBundle = () => {
       toast.error('Missing account email');
       return;
     }
+
+    setPurchasingTier(bundleTier);
 
     const callbackUrl = typeof window !== 'undefined' ? `${window.location.origin}/wallet` : undefined;
 
@@ -135,6 +146,6 @@ export const useCreditBundle = () => {
 
     // Actions
     purchaseBundle,
-    isPurchasing: initiatePurchaseMutation.isLoading || verifyPurchaseMutation.isLoading,
+    isPurchasing: (tier: CreditBundleTierEnum) => purchasingTier === tier,
   };
 };
