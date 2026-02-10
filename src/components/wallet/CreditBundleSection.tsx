@@ -48,7 +48,7 @@ export const CreditBundleSection = () => {
             Credit Bundles
           </Typography>
           <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-            Purchase pre-configured credit bundles with better value
+            Purchase credits for lead enrichment. 1 credit = 1 email reveal, 7 credits = 1 phone reveal.
           </Typography>
         </Box>
       </Stack>
