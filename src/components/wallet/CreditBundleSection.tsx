@@ -16,7 +16,7 @@ export const CreditBundleSection = () => {
             Credit Bundles
           </Typography>
           <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-            Purchase credits for lead enrichment. 1 credit = 1 email reveal, 10 credits = 1 phone reveal.
+            Purchase credits for lead enrichment. 1 credit = 1 email reveal, 7 credits = 1 phone reveal.
           </Typography>
         </Box>
       </Stack>
@@ -171,14 +171,95 @@ export const CreditBundleSection = () => {
                     fontWeight: 900,
                   }}
                 >
-                  10
+                  7
                 </Box>
                 <Box>
                   <Typography fontWeight={700} sx={{ color: '#141414' }}>
                     Phone Reveal
                   </Typography>
                   <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-                    10 credits per phone number
+                    7 credits per phone number
+                  </Typography>
+                </Box>
+              </Stack>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Stack direction="row" alignItems="center" gap={2}>
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: alpha('#9b59b6', 0.1),
+                    color: '#9b59b6',
+                    fontWeight: 900,
+                  }}
+                >
+                  7
+                </Box>
+                <Box>
+                  <Typography fontWeight={700} sx={{ color: '#141414' }}>
+                    Sales Signal Scan
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
+                    7 credits per scan
+                  </Typography>
+                </Box>
+              </Stack>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Stack direction="row" alignItems="center" gap={2}>
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: alpha('#2ecc71', 0.1),
+                    color: '#2ecc71',
+                    fontWeight: 900,
+                  }}
+                >
+                  1
+                </Box>
+                <Box>
+                  <Typography fontWeight={700} sx={{ color: '#141414' }}>
+                    Qualified Lead
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
+                    1 credit per verified sales signal
+                  </Typography>
+                </Box>
+              </Stack>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Stack direction="row" alignItems="center" gap={2}>
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: alpha('#e67e22', 0.1),
+                    color: '#e67e22',
+                    fontWeight: 900,
+                  }}
+                >
+                  10
+                </Box>
+                <Box>
+                  <Typography fontWeight={700} sx={{ color: '#141414' }}>
+                    Lazarus Scan
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
+                    10 credits per CRM contact scan
                   </Typography>
                 </Box>
               </Stack>

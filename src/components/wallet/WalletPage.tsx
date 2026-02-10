@@ -47,7 +47,7 @@ const HoverRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-const MIN_FUNDING_AMOUNT = 500;
+const MIN_FUNDING_AMOUNT = 5000;
 
 export const WalletPage = () => {
   const { balance, currency, transactions, isLoadingWallet, isWalletError, fundWallet, isFunding } = useWallet();
