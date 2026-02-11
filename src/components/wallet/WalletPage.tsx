@@ -13,7 +13,6 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  Divider,
   Grid,
   IconButton,
   InputAdornment,
@@ -110,44 +109,38 @@ export const WalletPage = () => {
         </Alert>
       )}
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={4}>
-          <Card
-            sx={{
-              borderRadius: 4,
-              overflow: 'hidden',
-              color: 'white',
-              background: `linear-gradient(135deg, ${LightThemeColors.uriColor} 0%, ${alpha(LightThemeColors.uriColor, 0.85)} 100%)`,
-              boxShadow: '0 16px 45px rgba(0,0,0,0.12)',
-              position: 'relative',
-            }}
-          >
-            <Box
-              sx={{
-                position: 'absolute',
-                top: -50,
-                right: -50,
-                width: 200,
-                height: 200,
-                borderRadius: '50%',
-                background: alpha('#fff', 0.08),
-              }}
-            />
-            <CardContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-                <Box>
-                  <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 700 }}>
-                    Available Credits
-                  </Typography>
-                  <Typography variant="caption" sx={{ opacity: 0.85 }}>
-                    For lead enrichment & insights
-                  </Typography>
-                </Box>
+      {/* Compact Full-Width Credit Balance Card */}
+      <Card
+        sx={{
+          borderRadius: 4,
+          overflow: 'hidden',
+          color: 'white',
+          background: `linear-gradient(135deg, ${LightThemeColors.uriColor} 0%, ${alpha(LightThemeColors.uriColor, 0.85)} 100%)`,
+          boxShadow: '0 12px 35px rgba(205, 27, 120, 0.15)',
+          position: 'relative',
+          mb: 3,
+        }}
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: -30,
+            right: -30,
+            width: 150,
+            height: 150,
+            borderRadius: '50%',
+            background: alpha('#fff', 0.06),
+          }}
+        />
+        <CardContent sx={{ p: 2.5, position: 'relative', zIndex: 1 }}>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={6} md={3}>
+              <Stack direction="row" alignItems="center" spacing={1.5}>
                 <Box
                   sx={{
                     width: 48,
                     height: 48,
-                    borderRadius: 3,
+                    borderRadius: 2.5,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -155,119 +148,94 @@ export const WalletPage = () => {
                     border: '1px solid rgba(255,255,255,0.25)',
                   }}
                 >
-                  <FaCoins size={22} style={{ opacity: 0.95 }} />
-                </Box>
-              </Stack>
-
-              {isLoadingBalance ? (
-                <Box>
-                  <Skeleton variant="text" width="75%" height={58} sx={{ bgcolor: 'rgba(255,255,255,0.25)' }} />
-                  <Skeleton variant="text" width="40%" height={22} sx={{ bgcolor: 'rgba(255,255,255,0.18)' }} />
-                </Box>
-              ) : (
-                <Box>
-                  <Typography variant="h3" fontWeight={900} sx={{ lineHeight: 1.1 }}>
-                    {NumberHelper.formatNumber(creditsAvailable)}
-                  </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9, mt: 1 }}>
-                    credits available
-                  </Typography>
-                </Box>
-              )}
-
-              <Divider sx={{ my: 2.25, borderColor: 'rgba(255,255,255,0.18)' }} />
-
-              <Grid container spacing={1.5}>
-                <Grid item xs={6}>
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 3,
-                      backgroundColor: 'rgba(255,255,255,0.12)',
-                      border: '1px solid rgba(255,255,255,0.18)',
-                    }}
-                  >
-                    <Typography variant="caption" sx={{ opacity: 0.85, fontWeight: 700 }}>
-                      Credits Used
-                    </Typography>
-                    <Typography variant="h6" fontWeight={900}>
-                      {isLoadingBalance ? <Skeleton width={30} sx={{ bgcolor: 'rgba(255,255,255,0.25)' }} /> : NumberHelper.formatNumber(creditsUsed)}
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={6}>
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 3,
-                      backgroundColor: 'rgba(255,255,255,0.12)',
-                      border: '1px solid rgba(255,255,255,0.18)',
-                    }}
-                  >
-                    <Typography variant="caption" sx={{ opacity: 0.85, fontWeight: 700 }}>
-                      Total Credits
-                    </Typography>
-                    <Typography variant="h6" fontWeight={900}>
-                      {isLoadingBalance ? <Skeleton width={30} sx={{ bgcolor: 'rgba(255,255,255,0.25)' }} /> : NumberHelper.formatNumber(totalCredits)}
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12}>
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 3,
-                      backgroundColor: 'rgba(255,255,255,0.12)',
-                      border: '1px solid rgba(255,255,255,0.18)',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Typography variant="caption" sx={{ opacity: 0.85, fontWeight: 700 }}>
-                      1 credit = ₦140
-                    </Typography>
-                    <Typography variant="caption" sx={{ opacity: 0.95, fontWeight: 800 }}>
-                      Purchase below
-                    </Typography>
-                  </Box>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={8}>
-          <Card sx={{ borderRadius: 4, background: alpha('#27ae60', 0.04), border: `1px solid ${alpha('#27ae60', 0.15)}` }}>
-            <CardContent sx={{ p: 2.5 }}>
-              <Stack direction="row" alignItems="center" spacing={2}>
-                <Box
-                  sx={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 3,
-                    background: alpha('#27ae60', 0.12),
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#27ae60',
-                  }}
-                >
                   <FaCoins size={22} />
                 </Box>
-                <Box sx={{ flex: 1 }}>
-                  <Typography variant="body2" sx={{ color: '#6B6B6B', fontWeight: 600 }}>
-                    Need more credits?
+                <Box>
+                  <Typography variant="caption" sx={{ opacity: 0.85, fontWeight: 600, fontSize: '0.7rem' }}>
+                    AVAILABLE CREDITS
                   </Typography>
-                  <Typography variant="body1" sx={{ color: '#141414', fontWeight: 800, mt: 0.3 }}>
-                    Purchase bundles or create a custom plan below
-                  </Typography>
+                  {isLoadingBalance ? (
+                    <Skeleton variant="text" width={60} height={36} sx={{ bgcolor: 'rgba(255,255,255,0.25)' }} />
+                  ) : (
+                    <Typography variant="h4" fontWeight={900} sx={{ lineHeight: 1.1 }}>
+                      {NumberHelper.formatNumber(creditsAvailable)}
+                    </Typography>
+                  )}
                 </Box>
               </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+            </Grid>
+
+            <Grid item xs={6} sm={3} md={2}>
+              <Box
+                sx={{
+                  p: 1.5,
+                  borderRadius: 2.5,
+                  backgroundColor: 'rgba(255,255,255,0.12)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  textAlign: 'center',
+                }}
+              >
+                <Typography variant="caption" sx={{ opacity: 0.85, fontWeight: 600, fontSize: '0.7rem' }}>
+                  USED
+                </Typography>
+                <Typography variant="h6" fontWeight={900}>
+                  {isLoadingBalance ? <Skeleton width={30} sx={{ bgcolor: 'rgba(255,255,255,0.25)', mx: 'auto' }} /> : NumberHelper.formatNumber(creditsUsed)}
+                </Typography>
+              </Box>
+            </Grid>
+
+            <Grid item xs={6} sm={3} md={2}>
+              <Box
+                sx={{
+                  p: 1.5,
+                  borderRadius: 2.5,
+                  backgroundColor: 'rgba(255,255,255,0.12)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  textAlign: 'center',
+                }}
+              >
+                <Typography variant="caption" sx={{ opacity: 0.85, fontWeight: 600, fontSize: '0.7rem' }}>
+                  TOTAL
+                </Typography>
+                <Typography variant="h6" fontWeight={900}>
+                  {isLoadingBalance ? <Skeleton width={30} sx={{ bgcolor: 'rgba(255,255,255,0.25)', mx: 'auto' }} /> : NumberHelper.formatNumber(totalCredits)}
+                </Typography>
+              </Box>
+            </Grid>
+
+            <Grid item xs={12} sm={12} md={5}>
+              <Card sx={{ borderRadius: 2.5, background: alpha('#27ae60', 0.15), border: `1px solid ${alpha('#27ae60', 0.3)}` }}>
+                <CardContent sx={{ p: 1.75 }}>
+                  <Stack direction="row" alignItems="center" spacing={1.5}>
+                    <Box
+                      sx={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 2,
+                        background: alpha('#27ae60', 0.3),
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                      }}
+                    >
+                      <FaCoins size={18} />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="caption" sx={{ color: 'white', fontWeight: 600, opacity: 0.95, fontSize: '0.7rem' }}>
+                        Need more credits?
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'white', fontWeight: 800, mt: 0.2, fontSize: '0.875rem' }}>
+                        Purchase bundles or custom plan below
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
 
       <Dialog
         open={openFundModal}
