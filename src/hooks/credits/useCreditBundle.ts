@@ -101,7 +101,7 @@ export const useCreditBundle = () => {
     });
   };
 
-  const purchaseBundle = async (bundleTier: CreditBundleTierEnum) => {
+  const purchaseBundle = async (bundleTier?: CreditBundleTierEnum, customAmount?: number, customCredits?: number) => {
     if (!userId) {
       toast.error('Please sign in to purchase credits');
       return;
@@ -113,7 +113,9 @@ export const useCreditBundle = () => {
       return;
     }
 
-    setPurchasingTier(bundleTier);
+    if (bundleTier) {
+      setPurchasingTier(bundleTier);
+    }
 
     const callbackUrl = typeof window !== 'undefined' ? `${window.location.origin}/wallet` : undefined;
 
@@ -122,6 +124,8 @@ export const useCreditBundle = () => {
       bundleTier,
       email,
       callbackUrl,
+      customAmount,
+      customCredits,
     });
   };
 

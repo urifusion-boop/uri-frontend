@@ -3,6 +3,7 @@ export enum CreditBundleTierEnum {
   MEDIUM = 'MEDIUM',
   LARGE = 'LARGE',
   ENTERPRISE = 'ENTERPRISE',
+  CUSTOM = 'CUSTOM',
 }
 
 export interface CreditBundleDto {
@@ -17,9 +18,11 @@ export interface CreditBundleDto {
 
 export interface PurchaseCreditBundleRequestDto {
   userId: string;
-  bundleTier: CreditBundleTierEnum;
+  bundleTier?: CreditBundleTierEnum;
   email: string;
   callbackUrl?: string;
+  customAmount?: number;
+  customCredits?: number;
 }
 
 export interface PurchaseCreditBundleResponseDto {

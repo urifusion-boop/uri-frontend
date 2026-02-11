@@ -121,6 +121,18 @@ export const dashboardLinks: ILink[] = [
     route: '/wallet',
     icon: FaWallet,
     tourKey: 'tour-wallet-btn',
+    subLinkers: [
+      {
+        label: 'Overview',
+        route: '/wallet',
+        icon: FaWallet,
+      },
+      {
+        label: 'History',
+        route: '/wallet/history',
+        icon: FaList,
+      },
+    ],
   },
   {
     label: 'Insight Assistant',

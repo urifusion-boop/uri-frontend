@@ -26,11 +26,14 @@ export const CreditBundleSection = () => {
   const handleCustomPurchase = async () => {
     if (!isValidCustomAmount) return;
     setIsProcessingCustom(true);
-    // Custom purchase logic would go here
-    // For now, using the smallest bundle tier as placeholder
-    await purchaseBundle(CreditBundleTierEnum.SMALL);
-    setIsProcessingCustom(false);
-    setCustomAmount('');
+    try {
+      await purchaseBundle(undefined, parseFloat(customAmount), customCredits);
+      setCustomAmount('');
+    } catch (error) {
+      console.error('Custom purchase failed:', error);
+    } finally {
+      setIsProcessingCustom(false);
+    }
   };
 
   const clearCustomAmount = () => {
@@ -44,8 +47,8 @@ export const CreditBundleSection = () => {
         <Typography variant="h5" fontWeight={800} sx={{ color: '#141414', mb: 1 }}>
           Custom Credit Plan
         </Typography>
-        <Typography variant="body2" sx={{ color: '#6B6B6B', mb: 3 }}>
-          Enter any amount to see equivalent credits (₦{CREDIT_RATE.toLocaleString()} per credit, min ₦{MIN_AMOUNT.toLocaleString()})
+        <Typography variant="body2" sx={{ color: '#6B6B6B', mb: 2 }}>
+          ₦{CREDIT_RATE.toLocaleString()} per credit • Min ₦{MIN_AMOUNT.toLocaleString()}
         </Typography>
 
         <Card
@@ -55,11 +58,12 @@ export const CreditBundleSection = () => {
             background: `linear-gradient(135deg, ${alpha(LightThemeColors.uriColor, 0.03)} 0%, ${alpha(LightThemeColors.uriColor, 0.01)} 100%)`,
           }}
         >
-          <CardContent sx={{ p: 3 }}>
-            <Grid container spacing={3} alignItems="center">
-              <Grid item xs={12} md={4}>
+          <CardContent sx={{ p: 2.5 }}>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={12} sm={5}>
                 <TextField
                   fullWidth
+                  size="small"
                   label="Enter Amount"
                   type="number"
                   value={customAmount}

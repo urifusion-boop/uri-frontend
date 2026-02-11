@@ -16,6 +16,7 @@ const tierIcons: Record<CreditBundleTierEnum, React.ReactNode> = {
   [CreditBundleTierEnum.MEDIUM]: <FaStar size={18} />,
   [CreditBundleTierEnum.LARGE]: <FaCrown size={18} />,
   [CreditBundleTierEnum.ENTERPRISE]: <FaRocket size={18} />,
+  [CreditBundleTierEnum.CUSTOM]: <FaBolt size={18} />,
 };
 
 const tierColors: Record<CreditBundleTierEnum, string> = {
@@ -23,6 +24,7 @@ const tierColors: Record<CreditBundleTierEnum, string> = {
   [CreditBundleTierEnum.MEDIUM]: '#9b59b6',
   [CreditBundleTierEnum.LARGE]: '#f39c12',
   [CreditBundleTierEnum.ENTERPRISE]: '#e74c3c',
+  [CreditBundleTierEnum.CUSTOM]: '#27ae60',
 };
 
 const StyledCard = styled(Card)<{ isPopular?: boolean }>(({ theme, isPopular }) => ({
