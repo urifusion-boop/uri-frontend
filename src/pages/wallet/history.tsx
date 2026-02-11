@@ -1,3 +1,5 @@
+import DashboardLayout from '@/components/atoms/DashboardLayout';
+import SeoHead from '@/components/atoms/SeoHead';
 import { LightThemeColors } from '@/configs/colors.config';
 import { NumberHelper } from '@/helpers/NumberHelper';
 import { useCreditBundle } from '@/hooks/credits/useCreditBundle';
@@ -17,8 +19,11 @@ const HoverRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-export default function WalletHistoryPage() {
+function WalletHistoryPageContent() {
   const { purchaseHistory, isLoadingHistory } = useCreditBundle();
+
+  // Filter to show only successful purchases
+  const successfulPurchases = purchaseHistory.filter((purchase: any) => purchase.status?.toLowerCase() === 'success');
 
   const renderStatus = (status: string) => {
     const normalized = status?.toLowerCase?.() ?? '';
@@ -70,7 +75,7 @@ export default function WalletHistoryPage() {
                 </Typography>
               </Box>
               <Chip
-                label={`${purchaseHistory.length} purchases`}
+                label={`${successfulPurchases.length} purchases`}
                 variant="outlined"
                 sx={{
                   borderRadius: 999,
@@ -103,12 +108,12 @@ export default function WalletHistoryPage() {
                       </TableCell>
                     </TableRow>
                   ))
-                ) : purchaseHistory.length === 0 ? (
+                ) : successfulPurchases.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
                       <FaCoins size={48} style={{ color: alpha('#000', 0.15), marginBottom: 16 }} />
                       <Typography fontWeight={800} sx={{ color: '#141414' }}>
-                        No credit purchases yet
+                        No successful purchases yet
                       </Typography>
                       <Typography variant="body2" sx={{ color: '#6B6B6B', mt: 0.5 }}>
                         Purchase a credit bundle to get started
@@ -116,40 +121,38 @@ export default function WalletHistoryPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  purchaseHistory
-                    .filter((purchase: any) => purchase.status?.toLowerCase() === 'success')
-                    .map((purchase: any) => (
-                      <HoverRow key={purchase._id || purchase.reference}>
-                        <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                          {dayjs(purchase.purchaseDate).format('MMM D, YYYY')}
-                          <Typography variant="caption" sx={{ color: '#8A8A8A', display: 'block' }}>
-                            {dayjs(purchase.purchaseDate).format('h:mm A')}
+                  successfulPurchases.map((purchase: any) => (
+                    <HoverRow key={purchase._id || purchase.reference}>
+                      <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                        {dayjs(purchase.purchaseDate).format('MMM D, YYYY')}
+                        <Typography variant="caption" sx={{ color: '#8A8A8A', display: 'block' }}>
+                          {dayjs(purchase.purchaseDate).format('h:mm A')}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography fontWeight={800} sx={{ color: '#141414', textTransform: 'capitalize' }}>
+                          {purchase.bundleTier} Bundle
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#8A8A8A' }}>
+                          {purchase.reference}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Stack direction="row" alignItems="center" spacing={0.5}>
+                          <FaCoins size={14} style={{ color: LightThemeColors.uriColor }} />
+                          <Typography fontWeight={800} sx={{ color: '#141414' }}>
+                            {NumberHelper.formatNumber(purchase.credits)}
                           </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography fontWeight={800} sx={{ color: '#141414', textTransform: 'capitalize' }}>
-                            {purchase.bundleTier} Bundle
-                          </Typography>
-                          <Typography variant="caption" sx={{ color: '#8A8A8A' }}>
-                            {purchase.reference}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Stack direction="row" alignItems="center" spacing={0.5}>
-                            <FaCoins size={14} style={{ color: LightThemeColors.uriColor }} />
-                            <Typography fontWeight={800} sx={{ color: '#141414' }}>
-                              {NumberHelper.formatNumber(purchase.credits)}
-                            </Typography>
-                          </Stack>
-                        </TableCell>
-                        <TableCell align="right">
-                          <Typography fontWeight={900} sx={{ color: '#141414', whiteSpace: 'nowrap' }}>
-                            {purchase.currency} {NumberHelper.formatNumber(purchase.amount)}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>{renderStatus(purchase.status)}</TableCell>
-                      </HoverRow>
-                    ))
+                        </Stack>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography fontWeight={900} sx={{ color: '#141414', whiteSpace: 'nowrap' }}>
+                          {purchase.currency} {NumberHelper.formatNumber(purchase.amount)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>{renderStatus(purchase.status)}</TableCell>
+                    </HoverRow>
+                  ))
                 )}
               </TableBody>
             </Table>
@@ -157,5 +160,14 @@ export default function WalletHistoryPage() {
         </CardContent>
       </Card>
     </Box>
+  );
+}
+
+export default function WalletHistoryPage() {
+  return (
+    <DashboardLayout>
+      <SeoHead title="Purchase History" />
+      <WalletHistoryPageContent />
+    </DashboardLayout>
   );
 }

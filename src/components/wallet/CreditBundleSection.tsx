@@ -2,7 +2,7 @@ import { LightThemeColors } from '@/configs/colors.config';
 import { NumberHelper } from '@/helpers/NumberHelper';
 import { useCreditBundle } from '@/hooks/credits/useCreditBundle';
 import { CreditBundleTierEnum } from '@/models/dtos/CreditBundleDto';
-import { Alert, Box, Button, Card, CardContent, Chip, CircularProgress, Divider, Grid, InputAdornment, Skeleton, Stack, TextField, Typography, alpha } from '@mui/material';
+import { Alert, Box, Button, Card, CardContent, Chip, CircularProgress, Divider, Grid, IconButton, InputAdornment, Skeleton, Stack, TextField, Typography, alpha } from '@mui/material';
 import { useState } from 'react';
 import { FaCoins, FaTimes } from 'react-icons/fa';
 import { CreditBundleCard } from './CreditBundleCard';
@@ -42,155 +42,160 @@ export const CreditBundleSection = () => {
 
   return (
     <Box mt={4}>
-      {/* Custom Credit Plan */}
-      <Box mb={4}>
-        <Typography variant="h5" fontWeight={800} sx={{ color: '#141414', mb: 1 }}>
-          Custom Credit Plan
-        </Typography>
-        <Typography variant="body2" sx={{ color: '#6B6B6B', mb: 2 }}>
-          ₦{CREDIT_RATE.toLocaleString()} per credit • Min ₦{MIN_AMOUNT.toLocaleString()}
-        </Typography>
-
+      {/* Custom Credit Plan - Compact & Elegant */}
+      <Box mb={3}>
         <Card
           sx={{
             borderRadius: 4,
-            border: `2px solid ${alpha(LightThemeColors.uriColor, 0.2)}`,
-            background: `linear-gradient(135deg, ${alpha(LightThemeColors.uriColor, 0.03)} 0%, ${alpha(LightThemeColors.uriColor, 0.01)} 100%)`,
+            border: `1.5px solid ${alpha(LightThemeColors.uriColor, 0.25)}`,
+            background: alpha('#fff', 0.6),
+            boxShadow: `0 8px 32px ${alpha(LightThemeColors.uriColor, 0.08)}`,
+            overflow: 'hidden',
           }}
         >
-          <CardContent sx={{ p: 2.5 }}>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} sm={5}>
+          <CardContent sx={{ p: 2 }}>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">
+              {/* Title Section */}
+              <Box sx={{ minWidth: { md: 180 } }}>
+                <Typography variant="body1" fontWeight={800} sx={{ color: '#141414' }}>
+                  Custom Amount
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#6B6B6B' }}>
+                  ₦{CREDIT_RATE} per credit
+                </Typography>
+              </Box>
+
+              {/* Input Section */}
+              <Box sx={{ flex: 1, minWidth: { xs: '100%', md: 180 } }}>
                 <TextField
                   fullWidth
                   size="small"
-                  label="Enter Amount"
                   type="number"
                   value={customAmount}
                   onChange={(e) => setCustomAmount(e.target.value)}
-                  placeholder="5000"
+                  placeholder="5,000"
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Typography fontWeight={700} sx={{ color: '#141414' }}>
+                        <Typography fontWeight={800} sx={{ color: '#141414' }}>
                           ₦
                         </Typography>
                       </InputAdornment>
                     ),
                     endAdornment: customAmount && (
                       <InputAdornment position="end">
-                        <Button
+                        <IconButton
                           size="small"
                           onClick={clearCustomAmount}
                           sx={{
-                            minWidth: 'auto',
-                            p: 0.5,
-                            color: '#6B6B6B',
-                            '&:hover': {
-                              color: LightThemeColors.uriColor,
-                              background: 'transparent',
-                            },
+                            width: 20,
+                            height: 20,
+                            color: '#999',
+                            '&:hover': { color: LightThemeColors.uriColor, background: 'transparent' },
                           }}
                         >
-                          <FaTimes size={16} />
-                        </Button>
+                          <FaTimes size={12} />
+                        </IconButton>
                       </InputAdornment>
                     ),
                   }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      borderRadius: 3,
+                      borderRadius: 2.5,
                       fontWeight: 700,
-                      '& input': {
-                        fontSize: '1.1rem',
-                      },
+                      '& input': { fontSize: '0.95rem' },
+                      '& fieldset': { borderColor: alpha('#000', 0.15) },
+                      '&:hover fieldset': { borderColor: alpha(LightThemeColors.uriColor, 0.4) },
+                      '&.Mui-focused fieldset': { borderColor: LightThemeColors.uriColor, borderWidth: 1.5 },
                     },
                   }}
-                  helperText={isInvalidAmount ? `Minimum amount is ₦${MIN_AMOUNT.toLocaleString()}` : ' '}
                   error={!!isInvalidAmount}
                 />
-              </Grid>
+                {isInvalidAmount && (
+                  <Typography variant="caption" sx={{ color: '#d32f2f', mt: 0.5, display: 'block' }}>
+                    Min ₦{MIN_AMOUNT.toLocaleString()}
+                  </Typography>
+                )}
+              </Box>
 
-              <Grid item xs={12} md={4}>
-                <Box
+              {/* Credits Display */}
+              <Box
+                sx={{
+                  minWidth: { xs: '100%', md: 140 },
+                  px: 2,
+                  py: 1.25,
+                  borderRadius: 2.5,
+                  background: `linear-gradient(135deg, ${alpha(LightThemeColors.uriColor, 0.08)} 0%, ${alpha(LightThemeColors.uriColor, 0.03)} 100%)`,
+                  border: `1px solid ${alpha(LightThemeColors.uriColor, 0.15)}`,
+                  textAlign: 'center',
+                }}
+              >
+                <Typography variant="caption" sx={{ color: '#6B6B6B', fontWeight: 600, fontSize: '0.7rem' }}>
+                  YOU GET
+                </Typography>
+                <Stack direction="row" alignItems="center" justifyContent="center" spacing={0.75} sx={{ mt: 0.25 }}>
+                  <FaCoins size={16} style={{ color: LightThemeColors.uriColor }} />
+                  <Typography variant="h6" fontWeight={900} color={LightThemeColors.uriColor}>
+                    {customCredits > 0 ? customCredits.toLocaleString() : '0'}
+                  </Typography>
+                </Stack>
+              </Box>
+
+              {/* Action Buttons */}
+              <Stack direction="row" spacing={1.5} sx={{ minWidth: { xs: '100%', md: 'auto' } }}>
+                <Button
+                  variant="outlined"
+                  onClick={clearCustomAmount}
+                  disabled={!customAmount || isProcessingCustom}
                   sx={{
-                    p: 3,
-                    borderRadius: 3,
-                    background: `linear-gradient(135deg, ${alpha(LightThemeColors.uriColor, 0.12)} 0%, ${alpha(LightThemeColors.uriColor, 0.06)} 100%)`,
-                    textAlign: 'center',
-                    border: `1px solid ${alpha(LightThemeColors.uriColor, 0.2)}`,
+                    px: 2.5,
+                    py: 1,
+                    borderRadius: 2.5,
+                    fontWeight: 700,
+                    fontSize: '0.875rem',
+                    borderWidth: 1.5,
+                    borderColor: alpha('#000', 0.2),
+                    color: '#141414',
+                    '&:hover': {
+                      borderWidth: 1.5,
+                      borderColor: alpha('#000', 0.35),
+                      background: alpha('#000', 0.02),
+                    },
+                    '&:disabled': {
+                      borderWidth: 1.5,
+                      opacity: 0.4,
+                    },
                   }}
                 >
-                  <Typography variant="caption" sx={{ color: '#6B6B6B', fontWeight: 700 }}>
-                    Equivalent Credits
-                  </Typography>
-                  <Stack direction="row" alignItems="center" justifyContent="center" spacing={1} sx={{ mt: 1 }}>
-                    <FaCoins size={24} style={{ color: LightThemeColors.uriColor }} />
-                    <Typography variant="h4" fontWeight={900} color={LightThemeColors.uriColor}>
-                      {customCredits.toLocaleString()}
-                    </Typography>
-                  </Stack>
-                  <Typography variant="caption" sx={{ color: '#6B6B6B', mt: 1, display: 'block' }}>
-                    {customAmount && isValidCustomAmount ? `₦${parseFloat(customAmount).toLocaleString()} ÷ ${CREDIT_RATE}` : 'Enter amount above'}
-                  </Typography>
-                </Box>
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <Stack direction="row" spacing={2}>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    onClick={clearCustomAmount}
-                    disabled={!customAmount || isProcessingCustom}
-                    sx={{
-                      py: 1.5,
-                      borderRadius: 3,
-                      fontWeight: 700,
-                      borderWidth: 2,
-                      borderColor: alpha('#000', 0.2),
-                      color: '#141414',
-                      '&:hover': {
-                        borderWidth: 2,
-                        borderColor: alpha('#000', 0.4),
-                        background: alpha('#000', 0.02),
-                      },
-                      '&:disabled': {
-                        borderWidth: 2,
-                        borderColor: alpha('#000', 0.1),
-                        color: '#BDBDBD',
-                      },
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    onClick={handleCustomPurchase}
-                    disabled={!isValidCustomAmount || isProcessingCustom}
-                    sx={{
-                      py: 1.5,
-                      borderRadius: 3,
-                      fontWeight: 800,
-                      background: `linear-gradient(135deg, ${LightThemeColors.uriColor} 0%, ${alpha(LightThemeColors.uriColor, 0.85)} 100%)`,
-                      boxShadow: '0 8px 25px rgba(205, 27, 120, 0.2)',
-                      '&:hover': {
-                        background: `linear-gradient(135deg, ${alpha(LightThemeColors.uriColor, 0.92)} 0%, ${alpha(LightThemeColors.uriColor, 0.78)} 100%)`,
-                        boxShadow: '0 10px 30px rgba(205, 27, 120, 0.25)',
-                      },
-                      '&:disabled': {
-                        background: alpha('#000', 0.1),
-                        color: '#BDBDBD',
-                        boxShadow: 'none',
-                      },
-                    }}
-                  >
-                    {isProcessingCustom ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'Buy Now'}
-                  </Button>
-                </Stack>
-              </Grid>
-            </Grid>
+                  Clear
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleCustomPurchase}
+                  disabled={!isValidCustomAmount || isProcessingCustom}
+                  sx={{
+                    px: 3,
+                    py: 1,
+                    borderRadius: 2.5,
+                    fontWeight: 800,
+                    fontSize: '0.875rem',
+                    background: `linear-gradient(135deg, ${LightThemeColors.uriColor} 0%, ${alpha(LightThemeColors.uriColor, 0.88)} 100%)`,
+                    boxShadow: `0 4px 16px ${alpha(LightThemeColors.uriColor, 0.25)}`,
+                    '&:hover': {
+                      background: `linear-gradient(135deg, ${alpha(LightThemeColors.uriColor, 0.92)} 0%, ${alpha(LightThemeColors.uriColor, 0.8)} 100%)`,
+                      boxShadow: `0 6px 20px ${alpha(LightThemeColors.uriColor, 0.3)}`,
+                    },
+                    '&:disabled': {
+                      background: alpha('#000', 0.08),
+                      color: '#BDBDBD',
+                      boxShadow: 'none',
+                    },
+                  }}
+                >
+                  {isProcessingCustom ? <CircularProgress size={20} sx={{ color: 'white' }} /> : 'Purchase'}
+                </Button>
+              </Stack>
+            </Stack>
           </CardContent>
         </Card>
       </Box>
