@@ -244,9 +244,6 @@ export const CreditBundleSection = () => {
                           Min ₦{MIN_AMOUNT.toLocaleString()}
                         </Typography>
                       )}
-                      <Typography variant="caption" sx={{ color: '#8A8A8A', display: 'block', mt: 0.75, textAlign: 'center' }}>
-                        ~₦{CREDIT_RATE} per credit
-                      </Typography>
                     </Box>
 
                     <Button
