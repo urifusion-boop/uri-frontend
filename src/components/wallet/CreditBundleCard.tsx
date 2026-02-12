@@ -41,7 +41,6 @@ const StyledCard = styled(Card)<{ isPopular?: boolean }>(({ theme, isPopular }) 
 
 export const CreditBundleCard = ({ bundle, onPurchase, isPurchasing, isPopular }: CreditBundleCardProps) => {
   const tierColor = tierColors[bundle.tier];
-  const pricePerCredit = bundle.price / bundle.credits;
 
   return (
     <StyledCard isPopular={isPopular}>
@@ -105,18 +104,14 @@ export const CreditBundleCard = ({ bundle, onPurchase, isPurchasing, isPopular }
               borderRadius: 3,
               backgroundColor: alpha(tierColor, 0.06),
               border: `1px solid ${alpha(tierColor, 0.15)}`,
+              textAlign: 'center',
             }}
           >
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Typography variant="body2" sx={{ color: '#6B6B6B', fontWeight: 600 }}>
-                Price
-              </Typography>
-              <Typography variant="h5" fontWeight={900} sx={{ color: '#141414' }}>
-                {bundle.currency} {NumberHelper.formatNumber(bundle.price)}
-              </Typography>
-            </Stack>
-            <Typography variant="caption" sx={{ color: '#8A8A8A', display: 'block', mt: 0.5 }}>
-              ~₦{NumberHelper.formatNumber(Math.round(pricePerCredit))} per credit
+            <Typography variant="body2" sx={{ color: '#6B6B6B', fontWeight: 600, mb: 0.5 }}>
+              Price
+            </Typography>
+            <Typography variant="h5" fontWeight={900} sx={{ color: '#141414' }}>
+              {bundle.currency} {NumberHelper.formatNumber(bundle.price)}
             </Typography>
           </Box>
 

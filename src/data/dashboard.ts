@@ -19,7 +19,7 @@ import { RxDashboard } from 'react-icons/rx';
 
 interface ILink {
   label: string;
-  route: string;
+  route?: string;
   icon: IconType;
   tourKey?: string;
   subLinkers?: {
@@ -118,7 +118,6 @@ export const dashboardLinks: ILink[] = [
   },
   {
     label: 'Wallet',
-    route: '/wallet',
     icon: FaWallet,
     tourKey: 'tour-wallet-btn',
     subLinkers: [

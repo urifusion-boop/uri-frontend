@@ -299,8 +299,8 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
                           sx={{
                             mx: 4,
                             padding: `6px 10px`,
-                            backgroundColor: activeLink(item.route, subLink.route) ? `${themeColors.primary} !important` : null,
-                            borderColor: activeLink(item.route, subLink.route) ? `${themeColors.primary} !important` : null,
+                            backgroundColor: activeLink(item.route || '', subLink.route) ? `${themeColors.primary} !important` : null,
+                            borderColor: activeLink(item.route || '', subLink.route) ? `${themeColors.primary} !important` : null,
                             mb: 1,
                           }}
                         >
@@ -309,11 +309,11 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
                               style={{
                                 width: '18px',
                                 height: '18px',
-                                color: activeLink(item.route, subLink.route) ? 'white' : themeColors.secondary,
+                                color: activeLink(item.route || '', subLink.route) ? 'white' : themeColors.secondary,
                               }}
                             />
                             {open && (
-                              <Text size={13} weight={400} sx={{ ml: 2, whiteSpace: 'nowrap' }} color={activeLink(item.route, subLink.route) ? 'white' : themeColors.secondary}>
+                              <Text size={13} weight={400} sx={{ ml: 2, whiteSpace: 'nowrap' }} color={activeLink(item.route || '', subLink.route) ? 'white' : themeColors.secondary}>
                                 {subLink.label}
                               </Text>
                             )}
@@ -322,8 +322,8 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
                       </Link>
                     ))}
                 </Fragment>
-              ) : (
-                <Link key={index} href={item?.route === '/profile' ? profileRoute : item?.route} onMouseEnter={() => setOpen(true)}>
+              ) : item.route ? (
+                <Link key={index} href={item.route === '/profile' ? profileRoute : item.route} onMouseEnter={() => setOpen(true)}>
                   <Box className={item.tourKey} sx={{ padding: `0px ${open ? '20px' : '10px'}`, mb: 1 }}>
                     <Box
                       className={styles.sidebarButton}
@@ -351,15 +351,15 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
                     </Box>
                   </Box>
                 </Link>
-              );
+              ) : null;
             })}
           </Box>
 
           {/* Bottom links */}
           <Box sx={{ mt: { xs: 3, md: 5 }, mb: 5 }}>
             {dashboardBottomLinks.map((item, index) => {
-              return (
-                <Link key={index} href={item?.route} onMouseEnter={() => setOpen(true)}>
+              return item.route ? (
+                <Link key={index} href={item.route} onMouseEnter={() => setOpen(true)}>
                   <Box className={item.label === 'Settings' ? 'tour-settings-btn' : ''} sx={{ padding: `0px ${open ? '20px' : '10px'}`, mb: 1 }}>
                     <Box
                       className={styles.sidebarButton}
@@ -392,7 +392,7 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
                     </Box>
                   </Box>
                 </Link>
-              );
+              ) : null;
             })}
           </Box>
         </Box>
@@ -499,14 +499,14 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
                         sx={{
                           mx: 4,
                           padding: `10px 16px`,
-                          backgroundColor: activeLink(item.route, subLink.route) ? `${themeColors.primary} !important` : null,
-                          borderColor: activeLink(item.route, subLink.route) ? `${themeColors.primary} !important` : null,
+                          backgroundColor: activeLink(item.route || '', subLink.route) ? `${themeColors.primary} !important` : null,
+                          borderColor: activeLink(item.route || '', subLink.route) ? `${themeColors.primary} !important` : null,
                           mb: 1,
                         }}
                       >
                         <Box className="d-flex pointer">
                           {open && (
-                            <Text size={16} weight={500} sx={{ ml: 2 }} color={activeLink(item.route, subLink.route) ? 'white' : themeColors.secondary}>
+                            <Text size={16} weight={500} sx={{ ml: 2 }} color={activeLink(item.route || '', subLink.route) ? 'white' : themeColors.secondary}>
                               {subLink.label}
                             </Text>
                           )}
@@ -515,8 +515,8 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
                     </Link>
                   ))}
               </Fragment>
-            ) : (
-              <Link key={index} href={item?.route === '/profile' ? profileRoute : item?.route} onMouseEnter={() => setOpen(true)}>
+            ) : item.route ? (
+              <Link key={index} href={item.route === '/profile' ? profileRoute : item.route} onMouseEnter={() => setOpen(true)}>
                 <Box sx={{ padding: `0px 20px`, mb: 1 }}>
                   <Box
                     className={styles.sidebarButton}
@@ -543,13 +543,13 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
                   </Box>
                 </Box>
               </Link>
-            );
+            ) : null;
           })}
         </Box>
         <Box sx={{ mt: { xs: 3, md: 5 }, mb: 5 }}>
           {dashboardBottomLinks.map((item, index) => {
-            return (
-              <Link key={index} href={item?.route} onMouseEnter={() => setOpen(true)}>
+            return item.route ? (
+              <Link key={index} href={item.route} onMouseEnter={() => setOpen(true)}>
                 <Box sx={{ padding: `0px ${open ? '20px' : '10px'}`, mb: 1 }}>
                   <Box
                     className={styles.sidebarButton}
@@ -576,7 +576,7 @@ const DashSideNav: React.FC<IProps> = memo(({ open, setOpen, bgColor }) => {
                   </Box>
                 </Box>
               </Link>
-            );
+            ) : null;
           })}
         </Box>
       </Box>
