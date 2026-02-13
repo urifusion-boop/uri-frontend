@@ -261,6 +261,11 @@ export class LazarusService {
     return response.data;
   }
 
+  static async getRejectedPosts(userId: string, skip: number = 0, limit: number = 50): Promise<UriResponse<any>> {
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().get(`${BASE_PATH}/rejected-posts?user_id=${userId}&skip=${skip}&limit=${limit}`);
+    return response.data;
+  }
+
   // ============ CRM INTEGRATION ============
   static async initiateCRMConnection(userId: string, crmType: 'hubspot' | 'salesforce'): Promise<UriResponse<{ authorization_url: string }>> {
     const response: AxiosResponse<UriResponse<{ authorization_url: string }>> = await UriHttpClient.getClient().post(`${BASE_PATH}/crm/connect/initiate?user_id=${userId}&crm_type=${crmType}`);

@@ -9,6 +9,7 @@ import EmailComposerModal from '@/components/lazarus/EmailComposerModal';
 import LazarusOnboarding from '@/components/lazarus/LazarusOnboarding';
 import PasteAndGoModal from '@/components/lazarus/PasteAndGoModal';
 import PostViewerModal from '@/components/lazarus/PostViewerModal';
+import RejectedPostsTab from '@/components/lazarus/RejectedPostsTab';
 import ScanLogViewerModal from '@/components/lazarus/ScanLogViewerModal';
 import ScannedContentTab from '@/components/lazarus/ScannedContentTab';
 import { useAuth } from '@/providers/AuthProvider';
@@ -1013,6 +1014,7 @@ const LazarusProtocolPage = () => {
             <Tab label={`Focus Contacts (${focusContacts.length})`} />
             <Tab label={`Company Monitors (${companyMonitors.length})`} />
             <Tab label="Scanned Content" />
+            <Tab label="Rejected Posts" />
             <Tab label="Analytics" />
           </Tabs>
 
@@ -1962,8 +1964,13 @@ const LazarusProtocolPage = () => {
             <ScannedContentTab userId={userId || ''} />
           </TabPanel>
 
-          {/* Analytics Tab */}
+          {/* Rejected Posts Tab */}
           <TabPanel value={tabValue} index={4}>
+            {userId && <RejectedPostsTab userId={userId} />}
+          </TabPanel>
+
+          {/* Analytics Tab */}
+          <TabPanel value={tabValue} index={5}>
             {!analyticsData ? (
               <Box sx={{ textAlign: 'center', py: 8 }}>
                 <Typography variant="body1" color="text.secondary" mb={2}>
