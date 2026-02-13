@@ -1542,18 +1542,48 @@ const LazarusProtocolPage = () => {
                     >
                       <Box display="flex" alignItems="flex-start" justifyContent="space-between" mb={2.5}>
                         <Box display="flex" alignItems="center" gap={2} flex={1}>
+                          {/* Profile Photo - Use enriched photo or fallback to icon */}
                           <Box
                             sx={{
-                              width: 48,
-                              height: 48,
-                              borderRadius: '12px',
-                              background: '#F9F9F9',
+                              width: 56,
+                              height: 56,
+                              borderRadius: '14px',
+                              background: contact.profile_photo ? `url(${contact.profile_photo})` : 'linear-gradient(135deg, #F9F9F9 0%, #F0F0F0 100%)',
+                              backgroundSize: 'cover',
+                              backgroundPosition: 'center',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
+                              border: '2px solid #fff',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                              position: 'relative',
                             }}
                           >
-                            <PersonIcon sx={{ color: '#C91A79', fontSize: 22 }} />
+                            {!contact.profile_photo && <PersonIcon sx={{ color: '#C91A79', fontSize: 24 }} />}
+                            {/* Platform badge */}
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                bottom: -4,
+                                right: -4,
+                                width: 20,
+                                height: 20,
+                                borderRadius: '6px',
+                                background: '#fff',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                              }}
+                            >
+                              {contact.linkedin_url ? (
+                                <LinkedInIcon sx={{ fontSize: 12, color: '#0A66C2' }} />
+                              ) : contact.twitter_url ? (
+                                <TwitterIcon sx={{ fontSize: 12, color: '#1DA1F2' }} />
+                              ) : (
+                                <PersonIcon sx={{ fontSize: 12, color: '#9CA3AF' }} />
+                              )}
+                            </Box>
                           </Box>
                           <Box flex={1}>
                             <Box display="flex" alignItems="center" gap={1} mb={0.5}>
@@ -1576,6 +1606,22 @@ const LazarusProtocolPage = () => {
                                 />
                               )}
                             </Box>
+                            {/* Headline from Bright Data */}
+                            {contact.headline && (
+                              <Typography fontSize="12px" color="#4B5563" fontWeight={500} mb={0.5} sx={{ lineHeight: 1.4 }}>
+                                {contact.headline}
+                              </Typography>
+                            )}
+                            {/* Current Company */}
+                            {contact.current_company && (
+                              <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
+                                <BusinessIcon sx={{ fontSize: 12, color: '#6366F1' }} />
+                                <Typography fontSize="11px" color="#6366F1" fontWeight={500}>
+                                  {contact.current_company}
+                                </Typography>
+                              </Box>
+                            )}
+                            {/* Email */}
                             {contact.email && (
                               <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
                                 <EmailIcon sx={{ fontSize: 12, color: '#7C3AED' }} />
@@ -1584,11 +1630,19 @@ const LazarusProtocolPage = () => {
                                 </Typography>
                               </Box>
                             )}
-                            {contact.social_handle && (
-                              <Typography fontSize="12px" color="#9CA3AF" fontWeight={500}>
-                                {contact.social_handle}
-                              </Typography>
-                            )}
+                            {/* Location & Connections */}
+                            <Box display="flex" alignItems="center" gap={1.5} flexWrap="wrap">
+                              {contact.location && (
+                                <Typography fontSize="11px" color="#9CA3AF" fontWeight={500}>
+                                  📍 {contact.location}
+                                </Typography>
+                              )}
+                              {contact.connections_count && contact.connections_count > 0 && (
+                                <Typography fontSize="11px" color="#9CA3AF" fontWeight={500}>
+                                  🔗 {contact.connections_count.toLocaleString()} connections
+                                </Typography>
+                              )}
+                            </Box>
                           </Box>
                         </Box>
                         <Box display="flex" gap={0.5}>
@@ -1655,6 +1709,22 @@ const LazarusProtocolPage = () => {
                               }}
                             />
                           )}
+                        </Box>
+                      )}
+                      {/* Bio/About from Bright Data enrichment */}
+                      {contact.about && (
+                        <Box
+                          sx={{
+                            mb: 2,
+                            p: 1.5,
+                            borderRadius: '8px',
+                            background: '#FAFAFA',
+                            border: '1px solid #F0F0F0',
+                          }}
+                        >
+                          <Typography fontSize="11px" color="#6B7280" fontWeight={500} sx={{ lineHeight: 1.5 }}>
+                            {contact.about.length > 150 ? `${contact.about.substring(0, 150)}...` : contact.about}
+                          </Typography>
                         </Box>
                       )}
                       <Box
