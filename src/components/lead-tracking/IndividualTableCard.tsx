@@ -405,6 +405,7 @@ const IndividualTableCard = ({ data, total, page, pageSize, search, setPage, set
           setSelectedLeadForAction(null);
         }}
         userId={userId}
+        sourceLeadId={selectedLeadForAction?.lead_id} // Pass lead_id to copy already-revealed email/phone
         initialData={{
           name: `${selectedLeadForAction?.first_name || ''} ${selectedLeadForAction?.last_name || ''}`.trim() || selectedLeadForAction?.username || '',
           socialHandle: selectedLeadForAction?.linkedin_url || selectedLeadForAction?.twitter_url || '',
@@ -412,7 +413,7 @@ const IndividualTableCard = ({ data, total, page, pageSize, search, setPage, set
           role: selectedLeadForAction?.job_title || '',
         }}
         onSuccess={() => {
-          toast.success('Lead added to Lazarus monitoring!', {
+          toast.success('✅ Lead added to Lazarus! Email/Phone copied if already revealed.', {
             duration: 4000,
           });
           setAddToLazarusModalOpen(false);

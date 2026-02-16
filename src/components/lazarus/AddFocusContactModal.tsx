@@ -25,9 +25,10 @@ interface AddFocusContactModalProps {
     last_bio_text?: string;
     industry_keywords: string[];
   };
+  sourceLeadId?: string; // Lead ID to copy email/phone from
 }
 
-const AddFocusContactModal = ({ open, onClose, userId, onSuccess, initialData, editMode = false, contactId, existingContact }: AddFocusContactModalProps) => {
+const AddFocusContactModal = ({ open, onClose, userId, onSuccess, initialData, editMode = false, contactId, existingContact, sourceLeadId }: AddFocusContactModalProps) => {
   const [name, setName] = useState(initialData?.name || '');
   const [socialHandle, setSocialHandle] = useState(initialData?.socialHandle || '');
   const [bioText, setBioText] = useState('');
@@ -95,8 +96,8 @@ const AddFocusContactModal = ({ open, onClose, userId, onSuccess, initialData, e
         // Update existing contact
         response = await LazarusService.updateFocusContact(userId, contactId, contactData);
       } else {
-        // Add new contact
-        response = await LazarusService.addFocusContact(userId, contactData);
+        // Add new contact - pass sourceLeadId to copy already-revealed email/phone
+        response = await LazarusService.addFocusContact(userId, contactData, sourceLeadId);
       }
 
       if (response.status) {
