@@ -1709,109 +1709,110 @@ const LazarusProtocolPage = () => {
                             </Box>
                             {/* Headline from Bright Data */}
                             {contact.headline && (
-                              <Typography fontSize="12px" color="#4B5563" fontWeight={500} mb={0.5} sx={{ lineHeight: 1.4 }}>
+                              <Typography fontSize="12px" color="#4B5563" fontWeight={500} mb={1} sx={{ lineHeight: 1.4 }}>
                                 {contact.headline}
                               </Typography>
                             )}
                             {/* Current Company */}
                             {contact.current_company && (
-                              <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
+                              <Box display="flex" alignItems="center" gap={0.5} mb={1}>
                                 <BusinessIcon sx={{ fontSize: 12, color: '#6366F1' }} />
                                 <Typography fontSize="11px" color="#6366F1" fontWeight={500}>
                                   {contact.current_company}
                                 </Typography>
                               </Box>
                             )}
-                            {/* Email - Reveal or Show */}
-                            {contact.email && contact.email !== 'PROCESSING' && contact.email !== 'UNAVAILABLE' ? (
-                              <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
-                                <EmailIcon sx={{ fontSize: 12, color: '#7C3AED' }} />
-                                <Typography fontSize="11px" color="#7C3AED" fontWeight={500}>
-                                  {contact.email}
-                                </Typography>
-                              </Box>
-                            ) : contact.email === 'PROCESSING' ? (
-                              <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
-                                <EmailIcon sx={{ fontSize: 12, color: '#FFA500' }} />
-                                <Typography fontSize="11px" color="#FFA500" fontWeight={500}>
-                                  Processing...
-                                </Typography>
-                              </Box>
-                            ) : contact.email === 'UNAVAILABLE' ? (
-                              <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
-                                <EmailIcon sx={{ fontSize: 12, color: '#EF4444' }} />
-                                <Typography fontSize="11px" color="#EF4444" fontWeight={500}>
-                                  Email unavailable
-                                </Typography>
-                              </Box>
-                            ) : (
-                              <Button
-                                size="small"
-                                variant="outlined"
-                                startIcon={revealingEmailId === contact.focus_id ? <CircularProgress size={12} /> : <EmailIcon sx={{ fontSize: 12 }} />}
-                                disabled={revealingEmailId === contact.focus_id}
-                                onClick={() => handleRevealEmail(contact.focus_id)}
-                                sx={{
-                                  fontSize: '10px',
-                                  padding: '2px 8px',
-                                  borderColor: '#7C3AED',
-                                  color: '#7C3AED',
-                                  textTransform: 'none',
-                                  mb: 0.5,
-                                  '&:hover': {
-                                    borderColor: '#6D28D9',
-                                    backgroundColor: '#F3F4F6',
-                                  },
-                                }}
-                              >
-                                Reveal Email (1 credit)
-                              </Button>
-                            )}
-                            {/* Phone - Reveal or Show */}
-                            {contact.phone && contact.phone !== 'PROCESSING' && contact.phone !== 'UNAVAILABLE' ? (
-                              <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
-                                <PhoneIcon sx={{ fontSize: 12, color: '#10B981' }} />
-                                <Typography fontSize="11px" color="#10B981" fontWeight={500}>
-                                  {contact.phone}
-                                </Typography>
-                              </Box>
-                            ) : contact.phone === 'PROCESSING' ? (
-                              <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
-                                <PhoneIcon sx={{ fontSize: 12, color: '#FFA500' }} />
-                                <Typography fontSize="11px" color="#FFA500" fontWeight={500}>
-                                  Processing...
-                                </Typography>
-                              </Box>
-                            ) : contact.phone === 'UNAVAILABLE' ? (
-                              <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
-                                <PhoneIcon sx={{ fontSize: 12, color: '#EF4444' }} />
-                                <Typography fontSize="11px" color="#EF4444" fontWeight={500}>
-                                  Phone unavailable
-                                </Typography>
-                              </Box>
-                            ) : (
-                              <Button
-                                size="small"
-                                variant="outlined"
-                                startIcon={revealingPhoneId === contact.focus_id ? <CircularProgress size={12} /> : <PhoneIcon sx={{ fontSize: 12 }} />}
-                                disabled={revealingPhoneId === contact.focus_id}
-                                onClick={() => handleRevealPhone(contact.focus_id)}
-                                sx={{
-                                  fontSize: '10px',
-                                  padding: '2px 8px',
-                                  borderColor: '#10B981',
-                                  color: '#10B981',
-                                  textTransform: 'none',
-                                  mb: 0.5,
-                                  '&:hover': {
-                                    borderColor: '#059669',
-                                    backgroundColor: '#F3F4F6',
-                                  },
-                                }}
-                              >
-                                Reveal Phone (7 credits)
-                              </Button>
-                            )}
+                            {/* Contact Actions - Email & Phone Reveal Buttons */}
+                            <Box display="flex" gap={1} mt={1} mb={1} flexWrap="wrap">
+                              {/* Email - Reveal or Show */}
+                              {contact.email && contact.email !== 'PROCESSING' && contact.email !== 'UNAVAILABLE' ? (
+                                <Box display="flex" alignItems="center" gap={0.5}>
+                                  <EmailIcon sx={{ fontSize: 12, color: '#7C3AED' }} />
+                                  <Typography fontSize="11px" color="#7C3AED" fontWeight={500}>
+                                    {contact.email}
+                                  </Typography>
+                                </Box>
+                              ) : contact.email === 'PROCESSING' ? (
+                                <Box display="flex" alignItems="center" gap={0.5}>
+                                  <EmailIcon sx={{ fontSize: 12, color: '#FFA500' }} />
+                                  <Typography fontSize="11px" color="#FFA500" fontWeight={500}>
+                                    Processing...
+                                  </Typography>
+                                </Box>
+                              ) : contact.email === 'UNAVAILABLE' ? (
+                                <Box display="flex" alignItems="center" gap={0.5}>
+                                  <EmailIcon sx={{ fontSize: 12, color: '#EF4444' }} />
+                                  <Typography fontSize="11px" color="#EF4444" fontWeight={500}>
+                                    Email unavailable
+                                  </Typography>
+                                </Box>
+                              ) : (
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  startIcon={revealingEmailId === contact.focus_id ? <CircularProgress size={12} /> : <EmailIcon sx={{ fontSize: 12 }} />}
+                                  disabled={revealingEmailId === contact.focus_id}
+                                  onClick={() => handleRevealEmail(contact.focus_id)}
+                                  sx={{
+                                    fontSize: '10px',
+                                    padding: '4px 12px',
+                                    borderColor: '#7C3AED',
+                                    color: '#7C3AED',
+                                    textTransform: 'none',
+                                    '&:hover': {
+                                      borderColor: '#6D28D9',
+                                      backgroundColor: '#F3F4F6',
+                                    },
+                                  }}
+                                >
+                                  Reveal Email (1 credit)
+                                </Button>
+                              )}
+                              {/* Phone - Reveal or Show */}
+                              {contact.phone && contact.phone !== 'PROCESSING' && contact.phone !== 'UNAVAILABLE' ? (
+                                <Box display="flex" alignItems="center" gap={0.5}>
+                                  <PhoneIcon sx={{ fontSize: 12, color: '#10B981' }} />
+                                  <Typography fontSize="11px" color="#10B981" fontWeight={500}>
+                                    {contact.phone}
+                                  </Typography>
+                                </Box>
+                              ) : contact.phone === 'PROCESSING' ? (
+                                <Box display="flex" alignItems="center" gap={0.5}>
+                                  <PhoneIcon sx={{ fontSize: 12, color: '#FFA500' }} />
+                                  <Typography fontSize="11px" color="#FFA500" fontWeight={500}>
+                                    Processing...
+                                  </Typography>
+                                </Box>
+                              ) : contact.phone === 'UNAVAILABLE' ? (
+                                <Box display="flex" alignItems="center" gap={0.5}>
+                                  <PhoneIcon sx={{ fontSize: 12, color: '#EF4444' }} />
+                                  <Typography fontSize="11px" color="#EF4444" fontWeight={500}>
+                                    Phone unavailable
+                                  </Typography>
+                                </Box>
+                              ) : (
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  startIcon={revealingPhoneId === contact.focus_id ? <CircularProgress size={12} /> : <PhoneIcon sx={{ fontSize: 12 }} />}
+                                  disabled={revealingPhoneId === contact.focus_id}
+                                  onClick={() => handleRevealPhone(contact.focus_id)}
+                                  sx={{
+                                    fontSize: '10px',
+                                    padding: '4px 12px',
+                                    borderColor: '#10B981',
+                                    color: '#10B981',
+                                    textTransform: 'none',
+                                    '&:hover': {
+                                      borderColor: '#059669',
+                                      backgroundColor: '#F3F4F6',
+                                    },
+                                  }}
+                                >
+                                  Reveal Phone (7 credits)
+                                </Button>
+                              )}
+                            </Box>
                             {/* Location & Connections */}
                             <Box display="flex" alignItems="center" gap={1.5} flexWrap="wrap">
                               {contact.location && (
