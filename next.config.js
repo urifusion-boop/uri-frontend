@@ -42,7 +42,7 @@ const nextConfig = withPWA({
     return [
       {
         source: '/uri-insights/:path*',
-        destination: 'http://localhost:8001/:path*',
+        destination: 'http://localhost:8445/:path*',
       },
       {
         source: '/uri-transactions/:path*',

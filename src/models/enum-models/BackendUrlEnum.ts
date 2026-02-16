@@ -1,6 +1,6 @@
 // NOTE:: This communicate directly to local
 // export const BackendUrlEnum = {
-//   INSIGHTS: '/api/v1',
+//   INSIGHTS: '/uri-insights',
 //   BACKEND: '/api/v1',
 //   TRANSACTIONS: process.env.NEXT_PUBLIC_TRANSACTIONS_URL || '/api/v1',
 //   TASK_MANAGER: process.env.NEXT_PUBLIC_TASK_MANAGER_URL || '/api/v1',
