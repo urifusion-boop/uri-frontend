@@ -91,10 +91,10 @@ const TrialExpiredModal: React.FC<TrialExpiredModalProps> = ({ open, onClose, tr
           }}
         >
           {[
-            { label: 'Leads Generated', value: trialStatus.usage.leadsGenerated, icon: '🎯' },
-            { label: 'Signals Monitored', value: trialStatus.usage.signalsUsed, icon: '📊' },
-            { label: 'Trackers Used', value: trialStatus.usage.accountsTracked + trialStatus.usage.hashtagsTracked + trialStatus.usage.keywordsTracked, icon: '📍' },
-            { label: 'Reports Created', value: trialStatus.usage.reportsGenerated, icon: '📈' },
+            { label: 'Leads Generated', value: trialStatus.usage.leadsGenerated || 0, icon: '🎯' },
+            { label: 'Signals Monitored', value: trialStatus.usage.signalsUsed || 0, icon: '📊' },
+            { label: 'Trackers Used', value: (trialStatus.usage.accountsTracked || 0) + (trialStatus.usage.hashtagsTracked || 0) + (trialStatus.usage.keywordsTracked || 0), icon: '📍' },
+            { label: 'Reports Created', value: trialStatus.usage.reportsGenerated || 0, icon: '📈' },
           ].map((item, i) => (
             <Box
               key={i}

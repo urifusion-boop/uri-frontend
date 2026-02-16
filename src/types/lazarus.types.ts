@@ -118,6 +118,7 @@ export interface CompanyMonitor {
   user_id: string;
   company_name: string;
   website_url: string;
+  linkedin_url?: string;
   location?: string;
   country_code?: string;
   last_homepage_hash?: string;
@@ -132,6 +133,22 @@ export interface CompanyMonitor {
   alert_count: number;
   created_date: string;
   last_updated: string;
+  // Enrichment fields
+  enrichment_status?: 'pending' | 'completed' | 'failed' | null;
+  enriched_at?: string;
+  about?: string;
+  slogan?: string;
+  description?: string;
+  specialties?: string[];
+  organization_type?: string;
+  company_size?: string;
+  industries?: string[];
+  founded?: number;
+  headquarters?: string;
+  followers?: number;
+  employees?: number;
+  logo?: string;
+  company_image?: string;
 }
 
 export interface CompanyMonitorCreate {

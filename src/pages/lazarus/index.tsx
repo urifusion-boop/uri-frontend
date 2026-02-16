@@ -25,6 +25,7 @@ import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import PersonIcon from '@mui/icons-material/Person';
+import PhoneIcon from '@mui/icons-material/Phone';
 import RadarIcon from '@mui/icons-material/Radar';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ScheduleIcon from '@mui/icons-material/Schedule';
@@ -105,6 +106,10 @@ const LazarusProtocolPage = () => {
   const [selectedMonitor, setSelectedMonitor] = useState<CompanyMonitor | null>(null);
   const [scanningContactId, setScanningContactId] = useState<string | null>(null);
   const [scanningMonitorId, setScanningMonitorId] = useState<string | null>(null);
+  const [enrichingContactId, setEnrichingContactId] = useState<string | null>(null);
+  const [enrichingMonitorId, setEnrichingMonitorId] = useState<string | null>(null);
+  const [revealingEmailId, setRevealingEmailId] = useState<string | null>(null);
+  const [revealingPhoneId, setRevealingPhoneId] = useState<string | null>(null);
   const [showScanLogViewer, setShowScanLogViewer] = useState(false);
   const [scanLogType, setScanLogType] = useState<'contact' | 'company'>('contact');
   const [scanSamplePosts, setScanSamplePosts] = useState<SocialMediaPost[]>([]);
@@ -531,6 +536,100 @@ const LazarusProtocolPage = () => {
       setTimeout(() => {
         setScanningMonitorId(null);
       }, 1000);
+    }
+  };
+
+  const handleEnrichContact = async (focusId: string) => {
+    setEnrichingContactId(focusId);
+    try {
+      console.log(`[ENRICH] Starting enrichment for contact: ${focusId}`);
+      const response = await LazarusService.enrichFocusContact(userId!, focusId);
+      console.log('[ENRICH] Enrichment response:', response);
+
+      if (response.status) {
+        toast.success('✨ Contact enriched successfully!', {
+          duration: 4000,
+        });
+        // Reload contacts to show updated enrichment data
+        await loadDashboardContent();
+      } else {
+        toast.error(`❌ Enrichment failed: ${response.responseMessage || 'Unknown error'}`, {
+          duration: 5000,
+        });
+      }
+    } catch (error: any) {
+      console.error('[ENRICH ERROR] Failed to enrich contact:', error);
+      toast.error(`❌ Enrichment failed: ${error.message || 'Unknown error'}`, {
+        duration: 5000,
+      });
+    } finally {
+      setTimeout(() => {
+        setEnrichingContactId(null);
+      }, 1000);
+    }
+  };
+
+  const handleEnrichMonitor = async (monitorId: string) => {
+    setEnrichingMonitorId(monitorId);
+    try {
+      console.log(`[ENRICH] Starting enrichment for company: ${monitorId}`);
+      const response = await LazarusService.enrichCompanyMonitor(userId!, monitorId);
+      console.log('[ENRICH] Enrichment response:', response);
+
+      if (response.status) {
+        toast.success('✨ Company enriched successfully!', {
+          duration: 4000,
+        });
+        // Reload monitors to show updated enrichment data
+        await loadDashboardContent();
+      } else {
+        toast.error(`❌ Enrichment failed: ${response.responseMessage || 'Unknown error'}`, {
+          duration: 5000,
+        });
+      }
+    } catch (error: any) {
+      console.error('[ENRICH ERROR] Failed to enrich company:', error);
+      toast.error(`❌ Enrichment failed: ${error.message || 'Unknown error'}`, {
+        duration: 5000,
+      });
+    } finally {
+      setTimeout(() => {
+        setEnrichingMonitorId(null);
+      }, 1000);
+    }
+  };
+
+  const handleRevealEmail = async (focusId: string) => {
+    setRevealingEmailId(focusId);
+    try {
+      const response = await LazarusService.revealFocusContactEmail(userId!, focusId);
+      if (response.status) {
+        toast.success(`✅ Email revealed! 1 credit deducted.`);
+        await loadDashboardContent();
+      } else {
+        toast.error(`❌ Failed to reveal email`);
+      }
+    } catch (error: any) {
+      toast.error(`❌ ${error.message || 'Unknown error'}`);
+    } finally {
+      setRevealingEmailId(null);
+    }
+  };
+
+  const handleRevealPhone = async (focusId: string) => {
+    setRevealingPhoneId(focusId);
+    try {
+      const response = await LazarusService.revealFocusContactPhone(userId!, focusId);
+      if (response.status) {
+        toast.success(`✅ Phone reveal initiated! 7 credits deducted. Processing...`);
+        await loadDashboardContent();
+      } else {
+        toast.error(`❌ Failed to reveal phone`);
+      }
+    } catch (error: any) {
+      toast.error(`❌ ${error.message || 'Unknown error'}`);
+    } finally {
+      setRevealingPhoneId(null);
     }
   };
 
@@ -1623,14 +1722,95 @@ const LazarusProtocolPage = () => {
                                 </Typography>
                               </Box>
                             )}
-                            {/* Email */}
-                            {contact.email && (
+                            {/* Email - Reveal or Show */}
+                            {contact.email && contact.email !== 'PROCESSING' && contact.email !== 'UNAVAILABLE' ? (
                               <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
                                 <EmailIcon sx={{ fontSize: 12, color: '#7C3AED' }} />
                                 <Typography fontSize="11px" color="#7C3AED" fontWeight={500}>
                                   {contact.email}
                                 </Typography>
                               </Box>
+                            ) : contact.email === 'PROCESSING' ? (
+                              <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
+                                <EmailIcon sx={{ fontSize: 12, color: '#FFA500' }} />
+                                <Typography fontSize="11px" color="#FFA500" fontWeight={500}>
+                                  Processing...
+                                </Typography>
+                              </Box>
+                            ) : contact.email === 'UNAVAILABLE' ? (
+                              <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
+                                <EmailIcon sx={{ fontSize: 12, color: '#EF4444' }} />
+                                <Typography fontSize="11px" color="#EF4444" fontWeight={500}>
+                                  Email unavailable
+                                </Typography>
+                              </Box>
+                            ) : (
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                startIcon={revealingEmailId === contact.focus_id ? <CircularProgress size={12} /> : <EmailIcon sx={{ fontSize: 12 }} />}
+                                disabled={revealingEmailId === contact.focus_id}
+                                onClick={() => handleRevealEmail(contact.focus_id)}
+                                sx={{
+                                  fontSize: '10px',
+                                  padding: '2px 8px',
+                                  borderColor: '#7C3AED',
+                                  color: '#7C3AED',
+                                  textTransform: 'none',
+                                  mb: 0.5,
+                                  '&:hover': {
+                                    borderColor: '#6D28D9',
+                                    backgroundColor: '#F3F4F6',
+                                  },
+                                }}
+                              >
+                                Reveal Email (1 credit)
+                              </Button>
+                            )}
+                            {/* Phone - Reveal or Show */}
+                            {contact.phone && contact.phone !== 'PROCESSING' && contact.phone !== 'UNAVAILABLE' ? (
+                              <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
+                                <PhoneIcon sx={{ fontSize: 12, color: '#10B981' }} />
+                                <Typography fontSize="11px" color="#10B981" fontWeight={500}>
+                                  {contact.phone}
+                                </Typography>
+                              </Box>
+                            ) : contact.phone === 'PROCESSING' ? (
+                              <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
+                                <PhoneIcon sx={{ fontSize: 12, color: '#FFA500' }} />
+                                <Typography fontSize="11px" color="#FFA500" fontWeight={500}>
+                                  Processing...
+                                </Typography>
+                              </Box>
+                            ) : contact.phone === 'UNAVAILABLE' ? (
+                              <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
+                                <PhoneIcon sx={{ fontSize: 12, color: '#EF4444' }} />
+                                <Typography fontSize="11px" color="#EF4444" fontWeight={500}>
+                                  Phone unavailable
+                                </Typography>
+                              </Box>
+                            ) : (
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                startIcon={revealingPhoneId === contact.focus_id ? <CircularProgress size={12} /> : <PhoneIcon sx={{ fontSize: 12 }} />}
+                                disabled={revealingPhoneId === contact.focus_id}
+                                onClick={() => handleRevealPhone(contact.focus_id)}
+                                sx={{
+                                  fontSize: '10px',
+                                  padding: '2px 8px',
+                                  borderColor: '#10B981',
+                                  color: '#10B981',
+                                  textTransform: 'none',
+                                  mb: 0.5,
+                                  '&:hover': {
+                                    borderColor: '#059669',
+                                    backgroundColor: '#F3F4F6',
+                                  },
+                                }}
+                              >
+                                Reveal Phone (7 credits)
+                              </Button>
                             )}
                             {/* Location & Connections */}
                             <Box display="flex" alignItems="center" gap={1.5} flexWrap="wrap">
@@ -1648,6 +1828,36 @@ const LazarusProtocolPage = () => {
                           </Box>
                         </Box>
                         <Box display="flex" gap={0.5}>
+                          {/* Enrichment Button - Show if not enriched or failed, and has LinkedIn URL */}
+                          {contact.linkedin_url && (!contact.enrichment_status || contact.enrichment_status === 'failed') && (
+                            <IconButton
+                              size="small"
+                              sx={{
+                                color: '#10B981',
+                                '&:hover': { color: '#059669', backgroundColor: '#10B98110' },
+                              }}
+                              onClick={() => handleEnrichContact(contact.focus_id)}
+                              disabled={enrichingContactId === contact.focus_id}
+                              title="Enrich Profile (Email, Phone, Bio)"
+                            >
+                              <AutoAwesomeIcon
+                                fontSize="small"
+                                sx={{
+                                  animation: enrichingContactId === contact.focus_id ? 'pulse 1.5s ease-in-out infinite' : 'none',
+                                  '@keyframes pulse': {
+                                    '0%, 100%': { opacity: 1 },
+                                    '50%': { opacity: 0.5 },
+                                  },
+                                }}
+                              />
+                            </IconButton>
+                          )}
+                          {/* Enrichment Pending Indicator */}
+                          {contact.enrichment_status === 'pending' && (
+                            <IconButton size="small" sx={{ color: '#F59E0B' }} disabled title="Enrichment in progress...">
+                              <CircularProgress size={16} sx={{ color: '#F59E0B' }} />
+                            </IconButton>
+                          )}
                           <IconButton
                             size="small"
                             sx={{
@@ -1885,6 +2095,55 @@ const LazarusProtocolPage = () => {
                           </Box>
                         </Box>
                         <Box display="flex" gap={0.5}>
+                          {/* Enrichment Button - Show if not enriched or failed, and has LinkedIn URL */}
+                          {monitor.linkedin_url && (!monitor.enrichment_status || monitor.enrichment_status === 'failed') && (
+                            <IconButton
+                              size="small"
+                              sx={{
+                                color: '#10B981',
+                                '&:hover': { color: '#059669', backgroundColor: '#10B98110' },
+                              }}
+                              onClick={() => handleEnrichMonitor(monitor.monitor_id)}
+                              disabled={enrichingMonitorId === monitor.monitor_id}
+                              title="Enrich Company (About, Employees, Funding)"
+                            >
+                              <AutoAwesomeIcon
+                                fontSize="small"
+                                sx={{
+                                  animation: enrichingMonitorId === monitor.monitor_id ? 'pulse 1.5s ease-in-out infinite' : 'none',
+                                  '@keyframes pulse': {
+                                    '0%, 100%': { opacity: 1 },
+                                    '50%': { opacity: 0.5 },
+                                  },
+                                }}
+                              />
+                            </IconButton>
+                          )}
+                          {/* Enrichment Pending Indicator */}
+                          {monitor.enrichment_status === 'pending' && (
+                            <IconButton size="small" sx={{ color: '#F59E0B' }} disabled title="Enrichment in progress...">
+                              <CircularProgress size={16} sx={{ color: '#F59E0B' }} />
+                            </IconButton>
+                          )}
+                          {/* Enriched Badge */}
+                          {monitor.enrichment_status === 'completed' && (
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 0.5,
+                                px: 1,
+                                py: 0.5,
+                                borderRadius: '6px',
+                                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                              }}
+                            >
+                              <CheckCircleIcon sx={{ fontSize: 12, color: '#fff' }} />
+                              <Typography fontSize="10px" fontWeight={600} color="#fff">
+                                Enriched
+                              </Typography>
+                            </Box>
+                          )}
                           <IconButton
                             size="small"
                             sx={{

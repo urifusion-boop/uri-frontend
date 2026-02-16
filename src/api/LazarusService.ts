@@ -223,6 +223,21 @@ export class LazarusService {
     return response.data;
   }
 
+  static async enrichCompanyMonitor(userId: string, monitorId: string): Promise<UriResponse<any>> {
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().post(`${BASE_PATH}/company-monitors/${monitorId}/enrich?user_id=${userId}`);
+    return response.data;
+  }
+
+  static async revealFocusContactEmail(userId: string, focusId: string): Promise<UriResponse<any>> {
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().post(`${BASE_PATH}/focus-contacts/${focusId}/reveal-email?user_id=${userId}`);
+    return response.data;
+  }
+
+  static async revealFocusContactPhone(userId: string, focusId: string): Promise<UriResponse<any>> {
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().post(`${BASE_PATH}/focus-contacts/${focusId}/reveal-phone?user_id=${userId}`);
+    return response.data;
+  }
+
   static async scanCompanyMonitors(batchSize: number = 100): Promise<UriResponse<ScanResponse>> {
     const response: AxiosResponse<UriResponse<ScanResponse>> = await UriHttpClient.getClient().post(`${BASE_PATH}/scan/company-monitors?batch_size=${batchSize}`);
     return response.data;
