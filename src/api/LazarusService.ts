@@ -83,6 +83,13 @@ export class LazarusService {
     return response.data;
   }
 
+  static async enrichTwitterProfile(userId: string, focusId: string): Promise<UriResponse<{ twitter_handle?: string; twitter_data?: any }>> {
+    const response: AxiosResponse<UriResponse<{ twitter_handle?: string; twitter_data?: any }>> = await UriHttpClient.getClient().post(
+      `${BASE_PATH}/focus-contacts/${focusId}/enrich-twitter?user_id=${userId}`
+    );
+    return response.data;
+  }
+
   // ============ COMPANY MONITORS ============
   static async addCompanyMonitor(userId: string, monitor: CompanyMonitorCreate, sourceLeadId?: string): Promise<UriResponse<AddCompanyMonitorResponse>> {
     const url = sourceLeadId ? `${BASE_PATH}/company-monitors/add?user_id=${userId}&source_lead_id=${sourceLeadId}` : `${BASE_PATH}/company-monitors/add?user_id=${userId}`;
@@ -235,6 +242,11 @@ export class LazarusService {
 
   static async revealFocusContactPhone(userId: string, focusId: string): Promise<UriResponse<any>> {
     const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().post(`${BASE_PATH}/focus-contacts/${focusId}/reveal-phone?user_id=${userId}`);
+    return response.data;
+  }
+
+  static async scanTwitterActivity(userId: string): Promise<UriResponse<ScanResponse>> {
+    const response: AxiosResponse<UriResponse<ScanResponse>> = await UriHttpClient.getClient().post(`${BASE_PATH}/scan/twitter-activity?user_id=${userId}`);
     return response.data;
   }
 
