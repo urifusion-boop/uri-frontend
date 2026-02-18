@@ -36,6 +36,19 @@ export interface InfluencerDto {
   token?: string | TokenType;
   profile_pic?: string;
   user_id?: string;
+  // Instagram/Meta specific tokens
+  meta_access_token?: string;
+  instagram_access_token?: string;
+  facebook_access_token?: string;
+  // LinkedIn specific tokens
+  linkedin_access_token?: string;
+  // Twitter/X specific tokens
+  twitter_access_token?: string;
+  x_access_token?: string;
+  // TikTok specific tokens
+  tiktok_access_token?: string;
+  // Generic social media token (fallback)
+  social_access_token?: string;
 }
 
 export interface InfluencerFilterDto {
