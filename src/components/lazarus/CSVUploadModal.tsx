@@ -171,10 +171,12 @@ const CSVUploadModal = ({ open, onClose, userId, onSuccess }: CSVUploadModalProp
 
   const downloadTemplate = () => {
     const template =
-      'Company,Website,Contact Name,Social Handle,Keywords\n' +
-      'Kobo360,https://kobo360.com,Emeka Okonkwo,@emeka_tech,"logistics,supply chain,Africa"\n' +
-      'Moniepoint,,Chinedu Echeruo,@chinedu,"fintech,payments,banking"\n' +
-      ',https://example.com,Jane Doe,@janedoe,"SaaS,marketing,automation"';
+      'Company,Website,Contact Name,Social Handle,Keywords,Scan Frequency Days,Location\n' +
+      'Kobo360,https://kobo360.com,Emeka Okonkwo,https://linkedin.com/in/emeka-okonkwo,"logistics,supply chain,Africa",7,Lagos\n' +
+      'Moniepoint,,Chinedu Echeruo,https://x.com/chinedu,"fintech,payments,banking",7,Nigeria\n' +
+      ',https://example.com,Jane Doe,@janedoe,"SaaS,marketing,automation",14,United States\n' +
+      'Flutterwave,https://flutterwave.com,Olugbenga Agboola,linkedin.com/in/gbenga-agboola,"payments,fintech,cross-border",7,San Francisco\n' +
+      ',,Sarah Johnson,https://twitter.com/sarahj,"developer tools,tech stack,DevOps",7,London';
 
     const blob = new Blob([template], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -309,10 +311,16 @@ const CSVUploadModal = ({ open, onClose, userId, onSuccess }: CSVUploadModalProp
               CSV FORMAT
             </Typography>
             <Typography fontSize="11px" color={LightThemeColors.secondary} lineHeight={1.6} mb={1}>
-              Columns: <strong>Company</strong>, <strong>Website</strong>, <strong>Contact Name</strong>, <strong>Social Handle</strong>, <strong>Keywords</strong> (comma-separated)
+              <strong>Required:</strong> Company OR Contact Name, Social Handle
+            </Typography>
+            <Typography fontSize="11px" color={LightThemeColors.secondary} lineHeight={1.6} mb={1}>
+              <strong>Optional:</strong> Website, Keywords (comma-separated), Scan Frequency Days (1-30), Location
             </Typography>
             <Typography fontSize="10px" color={LightThemeColors.secondary} lineHeight={1.4} mb={1} fontStyle="italic">
-              Keywords column is optional but recommended for better monitoring
+              💡 Social Handle accepts: Full LinkedIn URLs, Twitter/X URLs (https://x.com/username), handles (@username), or just usernames
+            </Typography>
+            <Typography fontSize="10px" color={LightThemeColors.secondary} lineHeight={1.4} mb={1} fontStyle="italic">
+              🚀 LinkedIn profiles will be auto-enriched with email, phone, and profile data
             </Typography>
             <Link
               onClick={downloadTemplate}
