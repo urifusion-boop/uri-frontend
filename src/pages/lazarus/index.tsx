@@ -1703,6 +1703,19 @@ const LazarusProtocolPage = () => {
                             <Box display="flex" alignItems="center" gap={1} mb={0.5}>
                               <Typography fontSize="16px" fontWeight={600} color="#1A1A1A">
                                 {contact.name}
+                                {/* Debug logging */}
+                                {contact.twitter_handle &&
+                                  (() => {
+                                    console.log('[CARD DEBUG]', contact.name, {
+                                      twitter_handle: contact.twitter_handle,
+                                      twitter_url: contact.twitter_url,
+                                      twitter_data: contact.twitter_data,
+                                      followers: contact.twitter_data?.followers,
+                                      verified: contact.twitter_data?.verified,
+                                      posts_count: contact.twitter_data?.posts_count,
+                                    });
+                                    return null;
+                                  })()}
                               </Typography>
                               {contact.enrichment_status === 'completed' && (
                                 <Chip
