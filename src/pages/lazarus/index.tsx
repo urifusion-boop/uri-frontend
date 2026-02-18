@@ -2702,8 +2702,14 @@ const LazarusProtocolPage = () => {
           setEditingContact(null);
         }}
         userId={userId || ''}
-        onSuccess={() => {
-          loadDashboardContent();
+        onSuccess={(newContact) => {
+          if (newContact) {
+            // Immediately add the enriched contact to state without refetching
+            setFocusContacts((prev) => [newContact, ...prev]);
+          } else {
+            // Fallback to refetching if contact not returned
+            loadDashboardContent();
+          }
           setEditingContact(null);
         }}
         editMode={editingContact !== null}

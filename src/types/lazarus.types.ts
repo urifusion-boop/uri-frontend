@@ -289,6 +289,7 @@ export interface AddFocusContactResponse {
   focus_id?: string;
   slots_used?: number;
   slots_available?: number;
+  contact?: FocusContact;
 }
 
 export interface AddCompanyMonitorResponse {

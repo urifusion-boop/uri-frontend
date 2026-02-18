@@ -1,5 +1,5 @@
 import { LazarusService } from '@/api/LazarusService';
-import { FocusContactCreate } from '@/types/lazarus.types';
+import { AddFocusContactResponse, FocusContact, FocusContactCreate } from '@/types/lazarus.types';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import PersonIcon from '@mui/icons-material/Person';
@@ -10,7 +10,7 @@ interface AddFocusContactModalProps {
   open: boolean;
   onClose: () => void;
   userId: string;
-  onSuccess: () => void;
+  onSuccess: (contact?: FocusContact) => void;
   initialData?: {
     name?: string;
     socialHandle?: string;
@@ -101,7 +101,9 @@ const AddFocusContactModal = ({ open, onClose, userId, onSuccess, initialData, e
       }
 
       if (response.status) {
-        onSuccess();
+        // Pass the enriched contact back to parent so it can update state immediately
+        const enrichedContact = editMode ? (response.responseData as FocusContact) : (response.responseData as AddFocusContactResponse)?.contact;
+        onSuccess(enrichedContact);
         handleClose();
       } else {
         setError(response.responseMessage || `Failed to ${editMode ? 'update' : 'add'} focus contact`);
