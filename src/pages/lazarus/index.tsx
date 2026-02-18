@@ -542,12 +542,25 @@ const LazarusProtocolPage = () => {
   const handleEnrichContact = async (focusId: string) => {
     setEnrichingContactId(focusId);
     try {
+      // Find contact to determine which platform to enrich
+      const contact = focusContacts.find((c) => c.focus_id === focusId);
+
       console.log(`[ENRICH] Starting enrichment for contact: ${focusId}`);
-      const response = await LazarusService.enrichFocusContact(userId!, focusId);
+      console.log(`[ENRICH] Platform: ${contact?.linkedin_url ? 'LinkedIn' : contact?.twitter_url ? 'Twitter' : 'Unknown'}`);
+
+      let response;
+
+      // Call appropriate enrichment service based on platform
+      if (contact?.twitter_url) {
+        response = await LazarusService.enrichTwitterProfile(userId!, focusId);
+      } else {
+        response = await LazarusService.enrichFocusContact(userId!, focusId);
+      }
+
       console.log('[ENRICH] Enrichment response:', response);
 
       if (response.status) {
-        toast.success('✨ Contact enriched successfully!', {
+        toast.success(`✨ ${contact?.twitter_url ? 'Twitter' : 'LinkedIn'} profile enriched successfully!`, {
           duration: 4000,
         });
         // Reload contacts to show updated enrichment data
@@ -1707,10 +1720,28 @@ const LazarusProtocolPage = () => {
                                 />
                               )}
                             </Box>
-                            {/* Headline from Bright Data */}
+                            {/* Twitter Handle */}
+                            {contact.twitter_url && contact.twitter_handle && (
+                              <Typography fontSize="12px" color="#1DA1F2" fontWeight={600} mb={0.5}>
+                                @{contact.twitter_handle.replace('@', '')}
+                              </Typography>
+                            )}
+                            {/* Headline from Bright Data (LinkedIn) */}
                             {contact.headline && (
                               <Typography fontSize="12px" color="#4B5563" fontWeight={500} mb={1} sx={{ lineHeight: 1.4 }}>
                                 {contact.headline}
+                              </Typography>
+                            )}
+                            {/* Bio from Twitter (stored in about field) */}
+                            {contact.twitter_url && !contact.headline && contact.about && (
+                              <Typography
+                                fontSize="12px"
+                                color="#4B5563"
+                                fontWeight={500}
+                                mb={1}
+                                sx={{ lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                              >
+                                {contact.about}
                               </Typography>
                             )}
                             {/* Current Company */}
@@ -1813,33 +1844,65 @@ const LazarusProtocolPage = () => {
                                 </Button>
                               )}
                             </Box>
-                            {/* Location & Connections */}
+                            {/* Location & Connections/Followers */}
                             <Box display="flex" alignItems="center" gap={1.5} flexWrap="wrap">
                               {contact.location && (
                                 <Typography fontSize="11px" color="#9CA3AF" fontWeight={500}>
                                   📍 {contact.location}
                                 </Typography>
                               )}
-                              {contact.connections_count && contact.connections_count > 0 && (
+                              {/* LinkedIn Connections */}
+                              {contact.linkedin_url && contact.connections_count && contact.connections_count > 0 && (
                                 <Typography fontSize="11px" color="#9CA3AF" fontWeight={500}>
                                   🔗 {contact.connections_count.toLocaleString()} connections
+                                </Typography>
+                              )}
+                              {/* Twitter Followers */}
+                              {(contact.twitter_url || contact.twitter_handle) && contact.twitter_data != null && (
+                                <Typography fontSize="11px" color="#1DA1F2" fontWeight={500}>
+                                  👥 {(contact.twitter_data.followers ?? 0).toLocaleString()} followers
+                                </Typography>
+                              )}
+                              {/* Twitter Verified Badge */}
+                              {(contact.twitter_url || contact.twitter_handle) && contact.twitter_data?.verified && (
+                                <Chip
+                                  icon={<CheckCircleIcon sx={{ fontSize: 12 }} />}
+                                  label="Verified"
+                                  size="small"
+                                  sx={{
+                                    height: '18px',
+                                    fontSize: '10px',
+                                    fontWeight: 600,
+                                    background: '#1DA1F2',
+                                    color: '#fff',
+                                    '& .MuiChip-icon': { color: '#fff' },
+                                  }}
+                                />
+                              )}
+                              {/* Twitter Posts Count */}
+                              {(contact.twitter_url || contact.twitter_handle) && contact.twitter_data != null && contact.twitter_data.posts_count != null && (
+                                <Typography fontSize="11px" color="#9CA3AF" fontWeight={500}>
+                                  📝 {(contact.twitter_data.posts_count ?? 0).toLocaleString()} posts
                                 </Typography>
                               )}
                             </Box>
                           </Box>
                         </Box>
                         <Box display="flex" gap={0.5}>
-                          {/* Enrichment Button - Show if not enriched or failed, and has LinkedIn URL */}
-                          {contact.linkedin_url && (!contact.enrichment_status || contact.enrichment_status === 'failed') && (
+                          {/* Enrichment Button - Show if not enriched or failed, and has LinkedIn or Twitter URL */}
+                          {(contact.linkedin_url || contact.twitter_url) && (!contact.enrichment_status || contact.enrichment_status === 'failed') && (
                             <IconButton
                               size="small"
                               sx={{
-                                color: '#10B981',
-                                '&:hover': { color: '#059669', backgroundColor: '#10B98110' },
+                                color: contact.linkedin_url ? '#10B981' : '#1DA1F2',
+                                '&:hover': {
+                                  color: contact.linkedin_url ? '#059669' : '#1A91DA',
+                                  backgroundColor: contact.linkedin_url ? '#10B98110' : '#1DA1F210',
+                                },
                               }}
                               onClick={() => handleEnrichContact(contact.focus_id)}
                               disabled={enrichingContactId === contact.focus_id}
-                              title="Enrich Profile (Email, Phone, Bio)"
+                              title={contact.linkedin_url ? 'Enrich LinkedIn Profile' : 'Enrich Twitter Profile'}
                             >
                               <AutoAwesomeIcon
                                 fontSize="small"

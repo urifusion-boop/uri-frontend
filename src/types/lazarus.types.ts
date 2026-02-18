@@ -103,6 +103,27 @@ export interface FocusContact {
   certifications?: any[];
   enriched_at?: string;
   enrichment_status?: 'pending' | 'completed' | 'failed';
+
+  // Twitter-specific fields
+  twitter_handle?: string;
+  twitter_id?: string;
+  twitter_data?: {
+    followers?: number;
+    following?: number;
+    verified?: boolean;
+    posts_count?: number;
+    joined_date?: string;
+    banner_image?: string;
+    website?: string;
+    enrichment_snapshot?: {
+      last_post_id?: string;
+      posts?: any[];
+      enriched_at?: string;
+    };
+    last_scanned?: string;
+    last_activity_detected?: string;
+    new_posts_since_last_scan?: number;
+  };
 }
 
 export interface FocusContactCreate {
