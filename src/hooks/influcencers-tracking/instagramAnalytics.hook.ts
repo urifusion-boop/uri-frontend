@@ -41,12 +41,12 @@ export const useInstagramAnalytics = ({ username }: UseInstagramAnalyticsProps) 
   });
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['instagramAnalytics', username, influencerData?.token], // Unique key for this query
+    queryKey: ['instagramAnalytics', username, influencerData?.meta_access_token], // Unique key for this query
     queryFn: async () => {
       if (username) {
         const response = await InstagramService.instagramBusinessDiscovery({
           username: username,
-          meta_access_token: (influencerData?.token ?? '') as string,
+          meta_access_token: (influencerData?.meta_access_token ?? '') as string,
         });
 
         if (!response.status) {
@@ -141,7 +141,7 @@ export const useInstagramAnalytics = ({ username }: UseInstagramAnalyticsProps) 
             period: 'lifetime',
             ...DateHelper.generateUnixTimestampRange(new Date(), 700),
           },
-          (influencerData?.token ?? '') as string
+          (influencerData?.meta_access_token ?? '') as string
         );
         const responseData = response.responseData;
 
@@ -159,7 +159,7 @@ export const useInstagramAnalytics = ({ username }: UseInstagramAnalyticsProps) 
   const { mutate: fetchPosts, isLoading: fetchPostsLoading } = useMutation({
     mutationFn: async () => {
       if (!data) return null;
-      const result = await InstagramService.fetchBusinessMedia(data.id, (influencerData?.token ?? '') as string, data.media.paging.next);
+      const result = await InstagramService.fetchBusinessMedia(data.id, (influencerData?.meta_access_token ?? '') as string, data.media.paging.next);
 
       if (result.status) {
         queryClient.setQueryData(['instagramAnalytics', username, influencerData?.token], (oldData: any) => {

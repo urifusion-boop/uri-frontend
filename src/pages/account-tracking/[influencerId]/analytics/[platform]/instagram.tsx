@@ -76,13 +76,13 @@ const InfluencerAnalytics = () => {
   const igUserId = data?.id;
 
   const { tagsMedia, tagsAfterPagination, fetchTags, fetchTagsLoading } = useInstagramTags({
-    facebookToken: (influencerData?.token ?? '') as string,
+    facebookToken: (influencerData?.meta_access_token ?? '') as string,
     data,
   });
 
   const { stories, selectedStory, setSelectedStory, storySentimentData, storySentimentLoading, storiesLoading } = useInstagramStories({
     igUserId: igUserId ?? '',
-    facebookToken: (influencerData?.token ?? '') as string,
+    facebookToken: (influencerData?.meta_access_token ?? '') as string,
   });
 
   const { instagramUserInteractionMetrics, userInteractionMetricsLoading } = useInstagramUserInteractionMetrics(
@@ -90,11 +90,11 @@ const InfluencerAnalytics = () => {
       ig_user_id: data?.id,
       ...DateHelper.generateUnixTimestampRange(new Date(), 28),
     } as GetInstagramUserInteractionMetricsDto,
-    (influencerData?.token ?? '') as string
+    (influencerData?.meta_access_token ?? '') as string
   );
 
   const { userDemographicData, userDemographicLoading } = useGetInstagramDemographics({
-    access_token: (influencerData?.token ?? '') as string,
+    access_token: (influencerData?.meta_access_token ?? '') as string,
     instagramData: {
       ig_user_id: igUserId ?? '',
       period: 'lifetime',
@@ -108,7 +108,7 @@ const InfluencerAnalytics = () => {
   });
 
   const { mediaPostData, mediaPostLoading } = useGetMediaPostInsights({
-    access_token: (influencerData?.token ?? '') as string,
+    access_token: (influencerData?.meta_access_token ?? '') as string,
     data: {
       media_id: postId!,
       metrics: MetricsHelper.getMediaMetrics(mediaType, activeTab ?? ''),
