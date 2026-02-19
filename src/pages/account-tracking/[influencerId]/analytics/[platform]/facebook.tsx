@@ -79,13 +79,24 @@ const FacebookAccountTracking = () => {
   } = useFacebookInfluencerAnalysis();
 
   if (errorState) {
+    const errorMessage = (errorState as AxiosError).message || '';
+    const isPersonalAccount = errorMessage.includes('followers_count') || errorMessage.includes('nonexisting field');
+
     return (
       <DashboardLayout excludeHeader={true}>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
           <LockedContent
-            title={`No result(s) found for this facebook account: ${username}`}
-            description={(errorState as AxiosError).message || 'We could not find any matching results for this username'}
-            disclaimer="Ensure you have provided a correct username for the selected platform"
+            title={isPersonalAccount ? 'Business Page Required' : `No results found for: ${username}`}
+            description={
+              isPersonalAccount
+                ? `"${username}" is a personal Facebook profile. Analytics are only available for Facebook Business Pages or Creator accounts.`
+                : errorMessage || 'We could not find any matching results for this account.'
+            }
+            disclaimer={
+              isPersonalAccount
+                ? 'To use this feature, connect a Facebook account that manages a Business Page. Visit Facebook Settings → Pages to create or link one.'
+                : 'Ensure you have connected the correct Facebook account.'
+            }
           />
         </Box>
       </DashboardLayout>
