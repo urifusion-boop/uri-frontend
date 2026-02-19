@@ -156,11 +156,12 @@ export const useInfluencersTrackingOverview = () => {
       const influencerAccountCreationResponse = await InstagramService.saveInstagramFacebookInfluencerAccount(userDetails?.userId ?? '', facebookAccessToken?.token ?? '');
 
       if (!influencerAccountCreationResponse.status) {
-        triggerToast('error', influencerAccountCreationResponse.responseMessage);
-        router.push('/account-tracking');
+        // Instagram not found is non-fatal — Facebook may still be connected
+        // Show info message but continue to success
+        triggerToast('success', 'Facebook connected. No linked Instagram Business account was found.');
+      } else {
+        triggerToast('success', 'Facebook and Instagram accounts connected successfully');
       }
-
-      triggerToast('success', 'Facebook account connected successfully');
       queryClient.invalidateQueries({
         queryKey: ['influencers'],
       });
