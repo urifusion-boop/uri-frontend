@@ -153,14 +153,19 @@ export const useInfluencersTrackingOverview = () => {
 
       const facebookAccessToken = AppTokenHelper.getProviderByTokenUsage(updateAppTokenResponse.responseData?.appTokens ?? [], TokenUsageTypeEnum.FACEBOOK_ACCESS_TOKEN);
 
-      const influencerAccountCreationResponse = await InstagramService.saveInstagramFacebookInfluencerAccount(userDetails?.userId ?? '', facebookAccessToken?.token ?? '');
+      let instagramConnected = false;
+      try {
+        const influencerAccountCreationResponse = await InstagramService.saveInstagramFacebookInfluencerAccount(userDetails?.userId ?? '', facebookAccessToken?.token ?? '');
+        instagramConnected = influencerAccountCreationResponse.status;
+      } catch {
+        // No Instagram Business account linked — non-fatal
+        instagramConnected = false;
+      }
 
-      if (!influencerAccountCreationResponse.status) {
-        // Instagram not found is non-fatal — Facebook may still be connected
-        // Show info message but continue to success
-        triggerToast('success', 'Facebook connected. No linked Instagram Business account was found.');
-      } else {
+      if (instagramConnected) {
         triggerToast('success', 'Facebook and Instagram accounts connected successfully');
+      } else {
+        triggerToast('success', 'Facebook connected. No linked Instagram Business account was found.');
       }
       queryClient.invalidateQueries({
         queryKey: ['influencers'],
