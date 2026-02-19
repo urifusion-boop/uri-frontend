@@ -6,8 +6,9 @@ import { UriResponse } from '@/models/responses/UriResponse';
 import { AxiosResponse } from 'axios';
 
 export class FacebookService {
-  static async getAuthUrl(redirectUri: string, scope: string = ApiScopeEnum.FacebookScope): Promise<UriResponse<{ url: string }>> {
-    const response: Awaited<AxiosResponse<UriResponse<{ url: string }>>> = await UriHttpClient.getClient().get(`${facebookApiRoutes.getAuthUrl}/${scope}?redirectUri=${redirectUri}`);
+  static async getAuthUrl(redirectUri: string, scope: string = ApiScopeEnum.FacebookScope, userId?: string): Promise<UriResponse<{ url: string; state?: string }>> {
+    const url = userId ? `${facebookApiRoutes.getAuthUrl}/${scope}?redirectUri=${redirectUri}&userId=${userId}` : `${facebookApiRoutes.getAuthUrl}/${scope}?redirectUri=${redirectUri}`;
+    const response: Awaited<AxiosResponse<UriResponse<{ url: string; state?: string }>>> = await UriHttpClient.getClient().get(url);
     return response.data;
   }
 
@@ -21,8 +22,9 @@ export class FacebookService {
     return response.data;
   }
 
-  static async connectFacebook(userId: string, token?: string, code?: string): Promise<UriResponse<string>> {
-    const response: Awaited<AxiosResponse<UriResponse<string>>> = await UriHttpClient.getClient().get(`${facebookApiRoutes.connect}/${userId}?code=${code}&token=${token}`);
+  static async connectFacebook(userId: string, token?: string, code?: string, state?: string): Promise<UriResponse<string>> {
+    const url = state ? `${facebookApiRoutes.connect}/${userId}?code=${code}&token=${token}&state=${state}` : `${facebookApiRoutes.connect}/${userId}?code=${code}&token=${token}`;
+    const response: Awaited<AxiosResponse<UriResponse<string>>> = await UriHttpClient.getClient().get(url);
     return response.data;
   }
 
@@ -32,9 +34,7 @@ export class FacebookService {
   }
 
   static async fetchPosts(keyword: string, maxPosts: number = 2): Promise<any> {
-    const response: Awaited<AxiosResponse<any>> = await UriHttpClient.getClient().get(
-      `${facebookInsightsRoutes.getFacebookPosts}?keyword=${encodeURIComponent(keyword)}&max_posts=${maxPosts}`
-    );
+    const response: Awaited<AxiosResponse<any>> = await UriHttpClient.getClient().get(`${facebookInsightsRoutes.getFacebookPosts}?keyword=${encodeURIComponent(keyword)}&max_posts=${maxPosts}`);
     return response.data;
   }
 }

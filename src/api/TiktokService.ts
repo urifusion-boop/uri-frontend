@@ -7,16 +7,16 @@ import { AxiosResponse } from 'axios';
 export class TiktokService {
   static async getAuthUrl(
     redirectUri: string = process.env.NEXT_PUBLIC_INFLUENCER_TRACKING_REDIRECT_URL || '',
-    scope: string = 'user.info.basic,user.info.profile,user.info.stats,video.list,video.publish,video.upload'
-  ): Promise<UriResponse<string>> {
-    const response: Awaited<AxiosResponse<UriResponse<string>>> = await UriHttpClient.getClient().get(`${tiktokApiRoutes.getAuthUrl}/${scope}?redirectUri=${redirectUri}`);
+    scope: string = 'user.info.basic,user.info.profile,user.info.stats,video.list,video.publish,video.upload',
+    userId?: string
+  ): Promise<UriResponse<{ auth: string; state?: string }>> {
+    const url = userId ? `${tiktokApiRoutes.getAuthUrl}/${scope}?redirectUri=${redirectUri}&userId=${userId}` : `${tiktokApiRoutes.getAuthUrl}/${scope}?redirectUri=${redirectUri}`;
+    const response: Awaited<AxiosResponse<UriResponse<{ auth: string; state?: string }>>> = await UriHttpClient.getClient().get(url);
     return response.data;
   }
 
   static async fetchPosts(keyword: string, maxPosts: number = 2): Promise<any> {
-    const response: Awaited<AxiosResponse<any>> = await UriHttpClient.getClient().get(
-      `${tiktokInsightsApiRoutes.getTiktokPosts}?keyword=${encodeURIComponent(keyword)}&max_posts=${maxPosts}`
-    );
+    const response: Awaited<AxiosResponse<any>> = await UriHttpClient.getClient().get(`${tiktokInsightsApiRoutes.getTiktokPosts}?keyword=${encodeURIComponent(keyword)}&max_posts=${maxPosts}`);
     return response.data;
   }
 
@@ -30,8 +30,9 @@ export class TiktokService {
     return response.data;
   }
 
-  static async connectTiktok(userId: string, code?: string, redirectUri: string = process.env.NEXT_PUBLIC_INFLUENCER_TRACKING_REDIRECT_URL ?? ''): Promise<UriResponse<string>> {
-    const response: Awaited<AxiosResponse<UriResponse<string>>> = await UriHttpClient.getClient().get(`${tiktokApiRoutes.connect}/${userId}?code=${code}&redirectUri=${redirectUri}`);
+  static async connectTiktok(userId: string, code?: string, redirectUri: string = process.env.NEXT_PUBLIC_INFLUENCER_TRACKING_REDIRECT_URL ?? '', state?: string): Promise<UriResponse<string>> {
+    const url = state ? `${tiktokApiRoutes.connect}/${userId}?code=${code}&redirectUri=${redirectUri}&state=${state}` : `${tiktokApiRoutes.connect}/${userId}?code=${code}&redirectUri=${redirectUri}`;
+    const response: Awaited<AxiosResponse<UriResponse<string>>> = await UriHttpClient.getClient().get(url);
     return response.data;
   }
 

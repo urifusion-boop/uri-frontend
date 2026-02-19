@@ -16,8 +16,6 @@ import { STORE_KEYS } from '@/configs/store.config';
 import { AppTokenHelper } from '@/helpers/AppTokenHelper';
 import { InfluencerDto } from '@/models/dtos/InfluencerDto';
 import { ApiScopeEnum } from '@/models/enum-models/ApiScopeEnum';
-import { SocialMediaEnum } from '@/models/enum-models/SocialMediaEnum';
-import { TokenScopeEnum } from '@/models/enum-models/TokenScopeEnum';
 import { useAuth } from '@/providers/AuthProvider';
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
@@ -36,7 +34,7 @@ export const useInfluencersTrackingOverview = () => {
   const [hasConnectedFacebook, setHasConnectedFacebook] = useState(false);
   const [hasConnectedTiktok, setHasConnectedTiktok] = useState(false);
   const [hasConnectedTwitter, setHasConnectedTwitter] = useState(false);
-  
+
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
   const code = router?.query?.code as string;
@@ -45,11 +43,15 @@ export const useInfluencersTrackingOverview = () => {
   // Facebook Authentication
   const { mutate: getFacebookUrl, isLoading: gettingFacebookUrl } = useMutation({
     mutationFn: async () => {
-      const response = await FacebookService.getAuthUrl(process.env.NEXT_PUBLIC_INFLUENCER_TRACKING_REDIRECT_URL ?? '');
+      const response = await FacebookService.getAuthUrl(process.env.NEXT_PUBLIC_INFLUENCER_TRACKING_REDIRECT_URL ?? '', undefined, userDetails?.userId);
 
       setLocalStorageItem(STORE_KEYS.TEMP_CONNECT_ACCOUNT_NAME, 'facebook');
 
       if (response.status) {
+        // Store state token in session storage
+        if (response.responseData?.state) {
+          sessionStorage.setItem('oauth_state_facebook', response.responseData.state);
+        }
         router.push(response.responseData?.url ?? '');
       } else {
         toast.error(response.responseMessage);
@@ -60,13 +62,21 @@ export const useInfluencersTrackingOverview = () => {
   // Tiktok Authentication
   const { mutate: getTiktokUrl, isLoading: gettingTiktokUrl } = useMutation({
     mutationFn: async ({ influencerId, influencerName }: tiktokInfluencer) => {
-      const response = await TiktokService.getAuthUrl();
+      const response = await TiktokService.getAuthUrl(
+        process.env.NEXT_PUBLIC_INFLUENCER_TRACKING_REDIRECT_URL || '',
+        'user.info.basic,user.info.profile,user.info.stats,video.list,video.publish,video.upload',
+        userDetails?.userId
+      );
       if (response.status) {
         setLocalStorageItem(STORE_KEYS.TEMP_INFLUENCER_ID, influencerId);
         setLocalStorageItem(STORE_KEYS.TEMP_INFLUENCER_NAME, influencerName);
         setLocalStorageItem(STORE_KEYS.TEMP_CONNECT_ACCOUNT_NAME, 'tiktok');
 
-        router.push(response.responseData ?? '');
+        // Store state token in session storage
+        if (response.responseData?.state) {
+          sessionStorage.setItem('oauth_state_tiktok', response.responseData.state);
+        }
+        router.push(response.responseData?.auth ?? '');
       } else {
         toast.error(response.responseMessage);
       }
@@ -76,18 +86,20 @@ export const useInfluencersTrackingOverview = () => {
   // Twitter Authentication
   const { mutate: getTwitterUrl, isLoading: gettingTwitterUrl } = useMutation({
     mutationFn: async () => {
-      const response = await TwitterService.getAuthUrl();
+      const response = await TwitterService.getAuthUrl(process.env.NEXT_PUBLIC_INFLUENCER_TRACKING_REDIRECT_URL ?? '', ApiScopeEnum.TwitterScope, 'code', userDetails?.userId);
       setLocalStorageItem(STORE_KEYS.TEMP_CONNECT_ACCOUNT_NAME, 'twitter');
 
       if (response.status) {
-        router.push(response.responseData ?? '');
+        // Store state token in session storage
+        if (response.responseData?.state) {
+          sessionStorage.setItem('oauth_state_twitter', response.responseData.state);
+        }
+        router.push(response.responseData?.auth ?? '');
       } else {
         toast.error(response.responseMessage);
       }
     },
   });
-
-  
 
   // Query to connect the facebook account
   const { isLoading: facebookConnecting } = useQuery({
@@ -107,7 +119,15 @@ export const useInfluencersTrackingOverview = () => {
 
       setHasConnectedFacebook(true);
 
-      const response = await FacebookService.connectFacebook(userDetails?.userId ?? '', accessToken ?? '');
+      // Retrieve state token from session storage
+      const stateToken = sessionStorage.getItem('oauth_state_facebook') ?? undefined;
+
+      const response = await FacebookService.connectFacebook(userDetails?.userId ?? '', accessToken ?? '', undefined, stateToken);
+
+      // Clear state token after use
+      if (stateToken) {
+        sessionStorage.removeItem('oauth_state_facebook');
+      }
 
       if (!response.status) {
         triggerToast('error', response.responseMessage);
@@ -171,8 +191,16 @@ export const useInfluencersTrackingOverview = () => {
       const influencerId = getLocalStorageItem(STORE_KEYS.TEMP_INFLUENCER_ID);
       const influencerName = getLocalStorageItem(STORE_KEYS.TEMP_INFLUENCER_NAME);
 
+      // Retrieve state token from session storage
+      const stateToken = sessionStorage.getItem('oauth_state_tiktok') ?? undefined;
+
       // Call the connect function to connect the account first
-      const response = await TiktokService.connectTiktok(userDetails?.userId ?? '', code ?? '');
+      const response = await TiktokService.connectTiktok(userDetails?.userId ?? '', code ?? '', undefined, stateToken);
+
+      // Clear state token after use
+      if (stateToken) {
+        sessionStorage.removeItem('oauth_state_tiktok');
+      }
 
       if (!response.status) {
         triggerToast('error', response.responseMessage);
@@ -251,7 +279,15 @@ export const useInfluencersTrackingOverview = () => {
 
       setHasConnectedTwitter(true);
 
-      const response = await TwitterService.connectTwitter(userDetails?.userId ?? '', code ?? '');
+      // Retrieve state token from session storage
+      const stateToken = sessionStorage.getItem('oauth_state_twitter') ?? undefined;
+
+      const response = await TwitterService.connectTwitter(userDetails?.userId ?? '', code ?? '', undefined, undefined, stateToken);
+
+      // Clear state token after use
+      if (stateToken) {
+        sessionStorage.removeItem('oauth_state_twitter');
+      }
 
       if (!response.status) {
         triggerToast('error', response.responseMessage, 'top-right');
@@ -288,8 +324,6 @@ export const useInfluencersTrackingOverview = () => {
       return router.push('/account-tracking');
     },
   });
-
-  
 
   // Mutation to unbind the account
   const { mutate: unbindAccount, isLoading: unbindingAccount } = useMutation({
@@ -345,7 +379,7 @@ export const useInfluencersTrackingOverview = () => {
     unbindAccount,
     unbindingAccount,
     getTwitterUrl,
-    
+
     connectingAccount: facebookConnecting || tiktokConnecting || twitterConnecting,
   };
 };
