@@ -762,10 +762,10 @@ const LazarusProtocolPage = () => {
               </Box>
               <Box>
                 <Typography variant="h4" fontWeight={700} color="#111827" letterSpacing="-0.02em">
-                  Lazarus Protocol
+                  The Prospect Pulse
                 </Typography>
                 <Typography variant="body2" color="#6B7280" fontSize="13px" fontWeight={500}>
-                  Automated CRM Resurrection Engine
+                  Active Signals for High-Ticket Leads
                 </Typography>
               </Box>
             </Box>
@@ -1541,7 +1541,7 @@ const LazarusProtocolPage = () => {
                                   },
                                 }}
                               >
-                                Resurrect Lead
+                                Contact Lead
                               </Button>
                               <Button
                                 variant="outlined"
