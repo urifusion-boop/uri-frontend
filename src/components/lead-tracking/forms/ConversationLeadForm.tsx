@@ -1115,7 +1115,7 @@ const ConversationLeadFormV2 = () => {
 
     // Warn if job boards selected but no solution_context provided
     if (hasJobBoards && !form.solution_context?.trim()) {
-      triggerToast('error', 'Job boards require "What you sell" to be filled for better lead matching. Please add your solution context.');
+      triggerToast('error', 'Please describe what you sell/offer to search job boards effectively.');
       return;
     }
 
@@ -1452,7 +1452,7 @@ const ConversationLeadFormV2 = () => {
 
   const handleManualRegenerateKeywords = async () => {
     if (!userId || !form.solution_context) {
-      triggerToast('error', 'Please enter a solution context first');
+      triggerToast('error', 'Please describe what you sell first');
       return;
     }
 
@@ -1662,10 +1662,10 @@ const ConversationLeadFormV2 = () => {
           {/* Solution Context (Job Boards) - Show only if Job Boards is selected */}
           {form.platform_configs?.some((config) => config.platform === 'JOB_BOARDS' && config.enabled) && (
             <>
-              <Box sx={{ mb: 3 }}>
+              <Box sx={{ mb: 2 }}>
                 <SingleFieldInput
-                  label="Solution Context"
-                  tooltip="Describe your product/service. Job keywords will auto-generate as you type."
+                  label="💼 What You Sell / What You Offer"
+                  tooltip="Describe your product or service. We'll use this to find job posts from companies looking for similar solutions."
                   placeholder="e.g., 'We provide cloud infrastructure that reduces DevOps costs'"
                   value={form.solution_context || ''}
                   setValue={(val) => handleChange('solution_context', val)}
@@ -1683,6 +1683,30 @@ const ConversationLeadFormV2 = () => {
                 )}
               </Box>
 
+              {/* Visual connection indicator */}
+              <Box sx={{ display: 'flex', justifyContent: 'center', my: 1 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    opacity: 0.6,
+                  }}
+                >
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '11px', mb: 0.5 }}>
+                    Auto-generates ↓
+                  </Typography>
+                  <Box
+                    sx={{
+                      width: 2,
+                      height: 20,
+                      bgcolor: '#CD1B78',
+                      borderRadius: 1,
+                    }}
+                  />
+                </Box>
+              </Box>
+
               {/* Job Keywords - Auto-generated from solution context */}
               <Box
                 sx={{
@@ -1697,7 +1721,7 @@ const ConversationLeadFormV2 = () => {
                 {/* Relationship indicator and controls */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                   <Typography variant="body2" color="text.secondary" fontSize="13px">
-                    🤖 Auto-generated from solution context above
+                    🤖 Auto-generated from what you sell
                   </Typography>
 
                   <Box sx={{ ml: 'auto', display: 'flex', gap: 0.5 }}>
@@ -1717,7 +1741,7 @@ const ConversationLeadFormV2 = () => {
                     </Tooltip>
 
                     {/* Manual regenerate button */}
-                    <Tooltip title="Manually regenerate from current solution context">
+                    <Tooltip title="Manually regenerate from what you sell">
                       <IconButton
                         size="small"
                         onClick={handleManualRegenerateKeywords}
@@ -1737,7 +1761,7 @@ const ConversationLeadFormV2 = () => {
 
                 <ListValuesInput
                   label="Job Role Keywords"
-                  tooltip="These keywords are automatically generated from your solution context. You can edit or lock them."
+                  tooltip="These keywords are automatically generated from what you sell. Edit the field above to change them, or lock to prevent auto-updates."
                   placeholder="e.g. 'DevOps Engineer', 'Cloud Architect', 'Platform Engineer'"
                   keywords={form.job_keywords || []}
                   setKeywords={(val) => handleChange('job_keywords', val)}
