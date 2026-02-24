@@ -124,7 +124,7 @@ const workflowData = [
     modules: [
       {
         id: 'lazarus-protocol',
-        title: 'Lazarus Protocol',
+        title: 'The Prospect Pulse',
         description: 'Who do you want us to monitor for buying signals? Connect your CRM or upload contacts manually.',
         icon: <FaHeartbeat size={40} color={LightThemeColors.uriColor} />,
         href: '/lazarus',
