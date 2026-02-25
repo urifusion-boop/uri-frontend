@@ -118,7 +118,7 @@ const workflowData = [
   {
     id: 'crm',
     name: 'CRM',
-    description: 'Monitor dead leads & resurrect opportunities',
+    description: 'The Prospect Pulse. Active Signals for High-Ticket Leads',
     icon: <MdAutorenew size={40} color={LightThemeColors.uriColor} />,
     comingSoon: false,
     modules: [
