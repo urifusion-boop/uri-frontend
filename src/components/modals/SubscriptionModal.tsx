@@ -76,7 +76,7 @@ const SubscriptionModal: React.FC = () => {
       const response = await TrialService.activateTrial(userDetails.userId);
 
       if (response.status) {
-        toast.success('🎉 Your 7-day free trial has started!');
+        toast.success('🎉 Your 30-day free trial has started!');
 
         // Save new JWT token with updated trialStatus claim
         if (response.responseData?.accessToken) {
@@ -278,7 +278,7 @@ const SubscriptionModal: React.FC = () => {
                     textAlign: 'center',
                   }}
                 >
-                  ⏰ Trial expires in 7 days • No credit card required
+                  ⏰ Trial expires in 30 days • No credit card required
                 </Typography>
               </Box>
 

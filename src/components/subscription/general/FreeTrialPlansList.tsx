@@ -25,9 +25,9 @@ const FreeTrialPlansList = ({ onSelectPlan, selectedPlan }: Props) => {
   const freeTrialPlan: SubscriptionPlanDto = {
     name: SubscriptionTypeEnum.FreeTrial,
     plan_code: 'TRIAL_7_DAY_FREE',
-    interval: 'seven_days',
+    interval: 'thirty_days',
     amount: 0,
-    description: 'URI 7-day free trial',
+    description: 'URI 30-day free trial',
     created_at: '',
     updated_at: '',
     plan_type: SubscriptionTypeEnum.FreeTrial,
@@ -72,15 +72,15 @@ const FreeTrialPlansList = ({ onSelectPlan, selectedPlan }: Props) => {
     >
       <SubscriptionPlan
         key={freeTrialPlan.plan_code}
-        duration="/7 days"
+        duration="/30 days"
         planType={SubscriptionTypeEnum.FreeTrial}
         planFeatures={planFeatures[SubscriptionTypeEnum.FreeTrial]}
         onSelect={handleTrialStart}
         price={freeTrialPlan.amount}
         selected={selectedPlan === freeTrialPlan.name}
         icon={FaRegStar}
-        subTitle="valid for 7 days"
-        description="Start your 7-day free trial"
+        subTitle="valid for 30 days"
+        description="Start your 30-day free trial"
         buttonText={getUserDetails.isLoading ? 'Activating...' : 'Start Free Trial Now'}
       />
     </Box>

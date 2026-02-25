@@ -26,7 +26,7 @@ const TrialActivationModal: React.FC<TrialActivationModalProps> = ({ open, onClo
       const response = await TrialService.activateTrial(userId);
 
       if (response.status && response.responseData) {
-        toast.success('🎉 Your 7-day free trial has started!');
+        toast.success('🎉 Your 30-day free trial has started!');
 
         // Save new JWT tokens using AuthProvider (correct storage)
         if (response.responseData.accessToken && response.responseData.refreshToken) {
@@ -145,7 +145,7 @@ const TrialActivationModal: React.FC<TrialActivationModalProps> = ({ open, onClo
             textAlign: 'center',
           }}
         >
-          ⏰ Trial expires in 7 days • No credit card required
+          ⏰ Trial expires in 30 days • No credit card required
         </Typography>
       </Box>
     </SmartModal>
