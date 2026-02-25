@@ -262,7 +262,7 @@ const SubscriptionPlansList = ({ onSelectPlan, currentPlanType, isLoading, loadi
       title: 'Credit Bundles',
       subtitle: 'Best value',
       description: 'Buy credit bundles upfront for the best per-action pricing. Ideal for power users.',
-      features: ['Up to 10% savings vs PAYG', 'Bundles from 10-150 credits', 'Credits never expire', 'Discounted enrichment costs'],
+      features: ['Up to 10% savings vs PAYG', 'Bundles from 10-200 credits', 'Credits never expire', 'Discounted enrichment costs'],
       isHighlighted: true,
       comingSoon: true,
     },
