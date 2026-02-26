@@ -4,64 +4,62 @@ import LoadingButton from '@/components/buttons/LoadingButton';
 import AnimatedSendInput from '@/components/input/AnimatedSendInput';
 import CustomCheckbox from '@/components/input/CustomCheckbox';
 import ListValuesInput from '@/components/input/ListValuesInput';
-import MultiSelectDropdown, { MultiSelectOption } from '@/components/input/MultiSelectDropdown';
 import SingleFieldInput from '@/components/input/SingleFieldInput';
 import { LimitExceededModal } from '@/components/modals/LimitExceededModal';
 import SmartModal from '@/components/modals/SmartModal';
 import TrialActivationModal from '@/components/trial/TrialActivationModal';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
-import { OrganizationLeadFormDto } from '@/models/dtos/LeadFormDto';
+import { GoogleMapsLeadFormDto } from '@/models/dtos/LeadFormDto';
 import { FormTypeEnum } from '@/models/enum-models/FormTypeEnum';
-import { LocationEnum } from '@/models/enum-models/LocationEnum';
 import { useAuth } from '@/providers/AuthProvider';
 import { useFeatureLimitStore } from '@/store/useFeatureLimitStore';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import { Box, Button, FormControl, IconButton, LinearProgress, MenuItem, Select, TextField, Tooltip, Typography } from '@mui/material';
 import Image from 'next/image';
 import router from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 import { HiPencil } from 'react-icons/hi';
 
-const OrganizationLeadForm = () => {
-  const [form, setForm] = useState<OrganizationLeadFormDto>({
-    form_title: 'Organization Lead Form',
-    technology_uids: [],
-    organization_locations: [],
-    organization_not_locations: [],
-    organization_num_employees_ranges: [],
-    q_organization_keyword_tags: [],
-    q_organization_name: '',
-    revenue_range_max: 0,
-    revenue_range_min: 0,
-    per_page: 10,
+const GoogleMapsLeadForm = () => {
+  const [form, setForm] = useState<GoogleMapsLeadFormDto>({
+    user_id: '',
+    form_title: 'Google Maps Lead Form',
+    maps_search_mode: 'auto',
+    maps_search_query: '',
+    maps_location: '',
+    maps_latitude: undefined,
+    maps_longitude: undefined,
+    maps_radius_km: 5.0,
+    maps_business_types: [],
+    maps_min_rating: undefined,
+    maps_exclude_closed: true,
+    maps_max_results: 20,
+    add_to_history: false,
     monitoring_interval_hours: 0,
   });
 
   const [existingFormId, setExistingFormId] = useState<string | null>(null);
+  const [openSuccessModal, setOpenSuccessModal] = useState(false);
+  const [showLimitExceededModal, setShowLimitExceededModal] = useState(false);
+  const [showTrialActivationModal, setShowTrialActivationModal] = useState(false);
+  const [showLeadGoalModal, setShowLeadGoalModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [savingProgress, setSavingProgress] = useState(0);
   const [savingStatus, setSavingStatus] = useState('');
   const [currentTip, setCurrentTip] = useState('');
-  const [showLeadGoalModal, setShowLeadGoalModal] = useState(false);
   const leadGoalRef = useRef<HTMLDivElement>(null);
-
-  const { autoPopulateLeadForm, isAutoPopulating } = useLeadFormHooks();
-  const [autoPopulateData, setAutoPopulateData] = useState('');
-  const [isEditingAIInput, setIsEditingAIInput] = useState(false);
-
-  const { mutate: triggerAutoPopulate, data: autoPopulatedResponse, isSuccess: autoPopulateSuccess } = autoPopulateLeadForm;
 
   const { userDetails, subscriptionPlanType } = useAuth();
   const userId = userDetails?.userId;
-  const [openSuccessModal, setOpenSuccessModal] = useState(false);
-  const [showLimitExceededModal, setShowLimitExceededModal] = useState(false);
-  const [showTrialActivationModal, setShowTrialActivationModal] = useState(false);
-
-  // Get feature limits from store
   const featureLimit = useFeatureLimitStore((state) => state.featureLimit);
 
-  const { createOrganizationLeadForm, updateOrganizationSearchLeadForm, useGetExistingFormType, useGetLeadFormById, useGetFormsByUserAndType } = useLeadFormHooks();
+  const { createGoogleMapsLeadForm, updateGoogleMapsLeadForm, autoPopulateLeadForm, useGetExistingFormType, useGetLeadFormById, useGetFormsByUserAndType, isAutoPopulating } = useLeadFormHooks();
+  const [autoPopulateData, setAutoPopulateData] = useState<string>('');
+  const [isEditingAIInput, setIsEditingAIInput] = useState(false);
+
+  const { mutate: triggerAutoPopulate, data: autoPopulatedResponse, isSuccess: autoPopulateSuccess } = autoPopulateLeadForm;
 
   // Check if we're in create mode (creating a new form) or edit mode (editing existing)
   const isCreateMode = router.query.mode === 'create';
@@ -69,10 +67,10 @@ const OrganizationLeadForm = () => {
 
   // Fetch form by ID if form_id is provided, otherwise fetch by type (gets first/default)
   const { data: formById, isSuccess: isSuccessById } = useGetLeadFormById(formIdFromUrl);
-  const { data: formByType, isSuccess: isSuccessByType } = useGetExistingFormType(userId || '', FormTypeEnum.ORGANIZATION);
+  const { data: formByType, isSuccess: isSuccessByType } = useGetExistingFormType(userId || '', FormTypeEnum.GOOGLE_MAPS);
 
   // Fetch all forms of this type for the selector dropdown
-  const { data: allFormsOfType = [] } = useGetFormsByUserAndType(userId || '', FormTypeEnum.ORGANIZATION);
+  const { data: allFormsOfType = [] } = useGetFormsByUserAndType(userId || '', FormTypeEnum.GOOGLE_MAPS);
 
   // Priority: form_id > form_type (specific form takes precedence)
   const existingForm = formIdFromUrl ? formById : formByType;
@@ -92,21 +90,24 @@ const OrganizationLeadForm = () => {
   };
 
   useEffect(() => {
+    console.log('existingForm', existingForm);
+    console.log('formIdFromUrl', formIdFromUrl);
     // Only load existing form data if NOT in create mode
     if (existingForm && isSuccess && userId && !isCreateMode) {
       const {
         form_title,
-        organization_locations,
-        organization_not_locations,
-        organization_num_employees_ranges,
-        q_organization_keyword_tags,
-        q_organization_name,
-        revenue_range_min,
-        revenue_range_max,
+        maps_search_mode,
+        maps_search_query,
+        maps_location,
+        maps_latitude,
+        maps_longitude,
+        maps_radius_km,
+        maps_business_types,
+        maps_min_rating,
+        maps_exclude_closed,
+        maps_max_results,
         lead_form_id,
         add_to_history,
-        auto_generate,
-        per_page,
         lead_generation_goal,
         monitoring_interval_hours,
       } = existingForm;
@@ -114,16 +115,17 @@ const OrganizationLeadForm = () => {
       setForm({
         user_id: userId,
         form_title,
-        organization_locations,
-        organization_not_locations,
-        organization_num_employees_ranges,
-        q_organization_keyword_tags,
-        q_organization_name,
-        revenue_range_min,
-        revenue_range_max,
+        maps_search_mode: maps_search_mode || 'auto',
+        maps_search_query: maps_search_query || '',
+        maps_location: maps_location || '',
+        maps_latitude,
+        maps_longitude,
+        maps_radius_km: maps_radius_km || 5.0,
+        maps_business_types: maps_business_types || [],
+        maps_min_rating,
+        maps_exclude_closed: maps_exclude_closed ?? true,
+        maps_max_results: maps_max_results || 20,
         add_to_history,
-        auto_generate,
-        per_page,
         lead_generation_goal,
         monitoring_interval_hours: monitoring_interval_hours || 0,
       });
@@ -133,18 +135,18 @@ const OrganizationLeadForm = () => {
       // In create mode, reset form to blank state and ensure existingFormId is null
       setForm({
         user_id: userId || '',
-        form_title: 'Organization Lead Form',
-        technology_uids: [],
-        organization_locations: [],
-        organization_not_locations: [],
-        organization_num_employees_ranges: [],
-        q_organization_keyword_tags: [],
-        q_organization_name: '',
-        revenue_range_max: 0,
-        revenue_range_min: 0,
+        form_title: 'Google Maps Lead Form',
+        maps_search_mode: 'auto',
+        maps_search_query: '',
+        maps_location: '',
+        maps_latitude: undefined,
+        maps_longitude: undefined,
+        maps_radius_km: 5.0,
+        maps_business_types: [],
+        maps_min_rating: undefined,
+        maps_exclude_closed: true,
+        maps_max_results: 20,
         add_to_history: false,
-        auto_generate: false,
-        per_page: 10,
         lead_generation_goal: '',
         monitoring_interval_hours: 0,
       });
@@ -155,40 +157,23 @@ const OrganizationLeadForm = () => {
   useEffect(() => {
     if (autoPopulateSuccess && autoPopulatedResponse?.responseData) {
       const data = autoPopulatedResponse.responseData;
-      setForm((prev: any) => ({
+
+      setForm((prev) => ({
         ...prev,
         form_title: data.form_title || prev.form_title,
-        organization_locations: data.organization_locations || [],
-        organization_not_locations: data.organization_not_locations || [],
-        organization_num_employees_ranges: data.organization_num_employees_ranges || [],
-        q_organization_keyword_tags: data.q_organization_keyword_tags || [],
-        q_organization_name: data.q_organization_name || '',
-        revenue_range_min: data.revenue_range_min || 0,
-        revenue_range_max: data.revenue_range_max || 0,
-        technology_uids: data.technology_uids || [],
-        add_to_history: data.add_to_history || prev.add_to_history,
-        auto_generate: data.auto_generate || prev.auto_generate,
-        per_page: data.per_page || prev.per_page,
+        maps_search_query: data.maps_search_query || prev.maps_search_query,
+        maps_location: data.maps_location || prev.maps_location,
+        maps_business_types: data.maps_business_types || prev.maps_business_types,
+        maps_min_rating: data.maps_min_rating || prev.maps_min_rating,
+        maps_radius_km: data.maps_radius_km || prev.maps_radius_km,
+        maps_max_results: data.maps_max_results || prev.maps_max_results,
       }));
+
       triggerToast('success', 'Fields updated using AI-generated suggestions');
     }
-  }, [autoPopulateSuccess, autoPopulatedResponse, setForm]);
+  }, [autoPopulateSuccess, autoPopulatedResponse]);
 
-  const handleAutoPopulate = () => {
-    if (!userId) return;
-    triggerAutoPopulate({
-      user_id: userId,
-      lead_form_type: FormTypeEnum.ORGANIZATION,
-      data: autoPopulateData,
-    });
-  };
-
-  const locationOptions: MultiSelectOption[] = Object.values(LocationEnum).map((location) => ({
-    value: location,
-    label: location,
-  }));
-
-  const handleChange = (field: keyof OrganizationLeadFormDto, value: any) => {
+  const handleChange = (field: keyof GoogleMapsLeadFormDto, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -226,16 +211,16 @@ const OrganizationLeadForm = () => {
 
     // Tips to show during saving
     const tips = [
-      '💡 Tip: Target specific industries for more qualified organization leads',
-      '🎯 Did you know? Revenue filters help find companies within your budget',
-      '⚡ Pro tip: Employee range filters narrow down company size effectively',
-      '🔍 Quality organization leads come from precise location targeting',
+      '💡 Tip: Specific location names yield better Google Maps results',
+      '🎯 Did you know? Rating filters help find high-quality businesses',
+      '⚡ Pro tip: Business types narrow down your search effectively',
+      '🔍 Quality leads come from precise search criteria',
     ];
 
     // Status progression
     const statusMessages = [
-      { msg: '📋 Validating organization criteria...', progress: 20 },
-      { msg: '🏢 Setting up company filters...', progress: 40 },
+      { msg: '📋 Validating form data...', progress: 20 },
+      { msg: '🗺️ Setting up Google Maps search...', progress: 40 },
       { msg: '💾 Saving form to database...', progress: 60 },
       { msg: '✨ Configuring search parameters...', progress: 80 },
       { msg: '🎯 Finalizing setup...', progress: 95 },
@@ -263,29 +248,29 @@ const OrganizationLeadForm = () => {
     setCurrentTip(tips[0]);
     setSavingStatus(statusMessages[0].msg);
 
-    const payload: OrganizationLeadFormDto = {
+    const payload: GoogleMapsLeadFormDto = {
       ...form,
       user_id: userId,
     };
 
     if (existingFormId) {
-      const updatePayload: OrganizationLeadFormDto = {
+      const updatePayload: GoogleMapsLeadFormDto = {
         form_title: payload.form_title || '',
-        organization_locations: payload.organization_locations || [],
-        organization_num_employees_ranges: payload.organization_num_employees_ranges || [],
-        q_organization_keyword_tags: payload.q_organization_keyword_tags || [],
-        q_organization_name: payload.q_organization_name || '',
-        organization_not_locations: payload.organization_not_locations || [],
-        revenue_range_min: payload.revenue_range_min || 0,
-        revenue_range_max: payload.revenue_range_max || 0,
-        technology_uids: payload.technology_uids || [],
+        maps_search_mode: payload.maps_search_mode || 'auto',
+        maps_search_query: payload.maps_search_query || '',
+        maps_location: payload.maps_location || '',
+        maps_latitude: payload.maps_latitude,
+        maps_longitude: payload.maps_longitude,
+        maps_radius_km: payload.maps_radius_km || 5.0,
+        maps_business_types: payload.maps_business_types || [],
+        maps_min_rating: payload.maps_min_rating,
+        maps_exclude_closed: payload.maps_exclude_closed ?? true,
+        maps_max_results: payload.maps_max_results || 20,
         add_to_history: payload.add_to_history || false,
-        auto_generate: payload.auto_generate || false,
-        per_page: payload.per_page || 10,
         lead_generation_goal: payload.lead_generation_goal || '',
       };
 
-      updateOrganizationSearchLeadForm.mutate(
+      updateGoogleMapsLeadForm.mutate(
         { lead_form_id: existingFormId, data: updatePayload },
         {
           onSuccess: () => {
@@ -334,7 +319,7 @@ const OrganizationLeadForm = () => {
         }
       );
     } else {
-      createOrganizationLeadForm.mutate(payload, {
+      createGoogleMapsLeadForm.mutate(payload, {
         onSuccess: () => {
           clearInterval(tipInterval);
           clearInterval(statusInterval);
@@ -382,6 +367,14 @@ const OrganizationLeadForm = () => {
     }
   };
 
+  const handleAutoPopulate = () => {
+    triggerAutoPopulate({
+      user_id: userId || '',
+      lead_form_type: FormTypeEnum.GOOGLE_MAPS,
+      data: autoPopulateData,
+    });
+  };
+
   return (
     <Box sx={{ maxWidth: '950px', mx: 'auto', mt: 4 }}>
       <Box
@@ -394,35 +387,21 @@ const OrganizationLeadForm = () => {
         }}
       >
         <Typography variant="h6" sx={{ textAlign: 'center', fontWeight: 600, mb: 1, color: '#1f2937' }}>
-          Organization Lead Form
+          Google Maps Lead Form
         </Typography>
         <Typography variant="body2" sx={{ textAlign: 'center', color: '#6b7280', mb: 4 }}>
-          {existingFormId ? 'Edit your existing form' : 'What kind of companies are you looking for?'}
-          <EditOutlinedIcon
-            sx={{
-              fontSize: 16,
-              ml: 1,
-              verticalAlign: 'middle',
-              color: '#9ca3af',
-            }}
-          />
+          {existingFormId ? 'Edit your existing form' : 'Discover local businesses using Google Maps'}
+          <EditOutlinedIcon sx={{ fontSize: 16, ml: 1, verticalAlign: 'middle', color: '#9ca3af' }} />
         </Typography>
 
         <Box className="tour-form-fields">
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: 'repeat(1, 1fr)' },
-              gap: 3,
-              mb: 3,
-            }}
-          >
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
             <SingleFieldInput
               label="Form Title"
               tooltip="Give your form a name to help you identify it later. This will be displayed in the lead generation dashboard."
               placeholder="Form Title"
               value={form.form_title || ''}
-              setValue={(value) => handleChange('form_title', value)}
+              setValue={(val) => handleChange('form_title', val)}
               required
             />
           </Box>
@@ -433,11 +412,11 @@ const OrganizationLeadForm = () => {
               <Typography variant="body2" sx={{ fontWeight: 500, color: '#4b5563' }}>
                 Want help completing this form?
               </Typography>
-              <HiPencil size={18} />
+              <SmartToyOutlinedIcon sx={{ fontSize: 20, color: '#6b7280' }} />
             </Box>
 
             <Typography variant="caption" sx={{ color: '#6b7280', mb: 1, display: 'block' }}>
-              Type what you’re trying to achieve and let AI auto-fill the form. Example: “Find companies in San Francisco working in fintech.”
+              Type what you're trying to achieve and let AI auto-fill the form. Example: "Find coffee shops in Lagos, Nigeria."
             </Typography>
 
             {!isEditingAIInput && (
@@ -464,7 +443,7 @@ const OrganizationLeadForm = () => {
               onChange={setAutoPopulateData}
               onSend={handleAutoPopulate}
               loading={isAutoPopulating}
-              placeholder="Describe the kind of companies you're looking for..."
+              placeholder="Describe the kind of businesses you're looking for..."
             />
           </Box>
 
@@ -472,7 +451,7 @@ const OrganizationLeadForm = () => {
           <Box sx={{ mb: 4, pb: 3, borderBottom: '1px solid #e5e7eb' }}>
             <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
               How often should we search for new leads?
-              <Tooltip title="Choose how frequently Apollo should check for new organizations matching your criteria. Select 'One-time only' for a single search, or set a recurring interval for continuous monitoring.">
+              <Tooltip title="Choose how frequently we should check Google Maps for new businesses matching your criteria. Select 'One-time only' for a single search, or set a recurring interval for continuous monitoring.">
                 <InfoOutlinedIcon sx={{ fontSize: 16, color: '#9ca3af', cursor: 'help' }} />
               </Tooltip>
             </Typography>
@@ -497,16 +476,12 @@ const OrganizationLeadForm = () => {
                   }}
                 >
                   <MenuItem value={0}>One-time only (No recurring monitoring)</MenuItem>
-                  <MenuItem value={1}>Every Hour (Fastest)</MenuItem>
-                  <MenuItem value={2}>Every 2 Hours</MenuItem>
-                  <MenuItem value={3}>Every 3 Hours</MenuItem>
-                  <MenuItem value={6}>Every 6 Hours</MenuItem>
-                  <MenuItem value={12}>Every 12 Hours</MenuItem>
                   <MenuItem value={24}>Once Daily</MenuItem>
                   <MenuItem value={48}>Every 2 Days</MenuItem>
                   <MenuItem value={72}>Every 3 Days</MenuItem>
-                  <MenuItem value={120}>Every 5 Days</MenuItem>
                   <MenuItem value={168}>Once Weekly</MenuItem>
+                  <MenuItem value={336}>Every 2 Weeks</MenuItem>
+                  <MenuItem value={720}>Once Monthly</MenuItem>
                   <MenuItem value={-1}>Custom Interval →</MenuItem>
                 </Select>
               </FormControl>
@@ -531,135 +506,157 @@ const OrganizationLeadForm = () => {
             {/* Helper text based on selection */}
             <Typography variant="caption" sx={{ color: '#6b7280', mt: 1, display: 'block' }}>
               {form.monitoring_interval_hours === 0 && '✨ Lead generation will run once and stop. Perfect for one-time searches.'}
-              {form.monitoring_interval_hours === 1 && '⚡ Recommended for time-sensitive leads. Checks every hour.'}
               {form.monitoring_interval_hours !== undefined &&
-                form.monitoring_interval_hours > 1 &&
+                form.monitoring_interval_hours > 0 &&
                 form.monitoring_interval_hours < 24 &&
-                `🔄 Checks every ${form.monitoring_interval_hours} hours for new leads.`}
+                `🔄 Checks every ${form.monitoring_interval_hours} hours for new businesses.`}
               {form.monitoring_interval_hours !== undefined &&
                 form.monitoring_interval_hours >= 24 &&
                 form.monitoring_interval_hours < 168 &&
-                `📅 Checks every ${Math.round(form.monitoring_interval_hours / 24)} day(s) for new leads.`}
-              {form.monitoring_interval_hours !== undefined && form.monitoring_interval_hours >= 168 && `📆 Checks every ${Math.round(form.monitoring_interval_hours / 168)} week(s) for new leads.`}
+                `📅 Checks every ${Math.round(form.monitoring_interval_hours / 24)} day(s) for new businesses.`}
+              {form.monitoring_interval_hours !== undefined &&
+                form.monitoring_interval_hours >= 168 &&
+                `📆 Checks every ${Math.round(form.monitoring_interval_hours / 168)} week(s) for new businesses.`}
               {form.monitoring_interval_hours === -1 && '⚙️ Enter your custom interval in hours.'}
             </Typography>
           </Box>
 
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' },
-              gap: 3,
-              mb: 3,
-            }}
-          >
-            <SingleFieldInput
-              label="Minimum Revenue (Optional)"
-              tooltip="Specify the minimum yearly revenue the target company should be making. Leave blank if you don’t want to limit by revenue."
-              placeholder="e.g. 100000"
-              value={form.revenue_range_min?.toString() || ''}
-              setValue={(value) => handleChange('revenue_range_min', parseInt(value) || 0)}
-              required={false}
-            />
+          {/* Search Mode Selection */}
+          <Box sx={{ mb: 4, pb: 3, borderBottom: '1px solid #e5e7eb' }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+              Search Mode
+              <Tooltip title="Auto: Automatically picks the best search method. Text Search: Use natural language queries. Nearby Search: Use precise coordinates and radius.">
+                <InfoOutlinedIcon sx={{ fontSize: 16, color: '#9ca3af', cursor: 'help' }} />
+              </Tooltip>
+            </Typography>
+
+            <FormControl fullWidth>
+              <Select
+                value={form.maps_search_mode || 'auto'}
+                onChange={(e) => handleChange('maps_search_mode', e.target.value)}
+                sx={{
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#E5E7EB',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#D1D5DB',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#CD1B78',
+                  },
+                }}
+              >
+                <MenuItem value="auto">Auto (Recommended)</MenuItem>
+                <MenuItem value="text">Text Search (Natural Language)</MenuItem>
+                <MenuItem value="nearby">Nearby Search (Coordinates + Radius)</MenuItem>
+              </Select>
+            </FormControl>
+
+            <Typography variant="caption" sx={{ color: '#6b7280', mt: 1, display: 'block' }}>
+              {form.maps_search_mode === 'auto' && '✨ Automatically selects the best search method based on your inputs'}
+              {form.maps_search_mode === 'text' && '🔍 Natural language queries like "small businesses in Ogba"'}
+              {form.maps_search_mode === 'nearby' && '📍 Precise location-based search using coordinates and radius'}
+            </Typography>
+          </Box>
+
+          {/* Text Search Fields */}
+          {(form.maps_search_mode === 'auto' || form.maps_search_mode === 'text') && (
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
+              <SingleFieldInput
+                label="Search Query"
+                tooltip='Natural language search query. Example: "coffee shops", "restaurants", "small businesses in tech". This works like a Google Maps search.'
+                placeholder="e.g. coffee shops"
+                value={form.maps_search_query || ''}
+                setValue={(val) => handleChange('maps_search_query', val)}
+                required={false}
+              />
+
+              <SingleFieldInput
+                label="Location"
+                tooltip="Location name for the search. Example: 'Lagos, Nigeria', 'Ogba', 'Victoria Island'. This helps narrow down the geographic area."
+                placeholder="e.g. Lagos, Nigeria"
+                value={form.maps_location || ''}
+                setValue={(val) => handleChange('maps_location', val)}
+                required={false}
+              />
+            </Box>
+          )}
+
+          {/* Nearby Search Fields */}
+          {(form.maps_search_mode === 'auto' || form.maps_search_mode === 'nearby') && (
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3, mb: 3 }}>
+              <SingleFieldInput
+                label="Latitude"
+                tooltip="Latitude coordinate for precise location-based search. Example: 6.5244 for Lagos"
+                placeholder="e.g. 6.5244"
+                value={form.maps_latitude?.toString() || ''}
+                setValue={(val) => handleChange('maps_latitude', parseFloat(val) || undefined)}
+                required={false}
+              />
+
+              <SingleFieldInput
+                label="Longitude"
+                tooltip="Longitude coordinate for precise location-based search. Example: 3.3792 for Lagos"
+                placeholder="e.g. 3.3792"
+                value={form.maps_longitude?.toString() || ''}
+                setValue={(val) => handleChange('maps_longitude', parseFloat(val) || undefined)}
+                required={false}
+              />
+
+              <SingleFieldInput
+                label="Radius (km)"
+                tooltip="Search radius in kilometers from the coordinates. Larger radius = more results but less precise."
+                placeholder="e.g. 5.0"
+                value={form.maps_radius_km?.toString() || ''}
+                setValue={(val) => handleChange('maps_radius_km', parseFloat(val) || 5.0)}
+                required={false}
+              />
+            </Box>
+          )}
+
+          {/* Common Filters */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
+            <Box>
+              <ListValuesInput
+                label="Business Types"
+                tooltip="Filter by specific business types. Examples: 'restaurant', 'cafe', 'bank', 'hospital', 'gym', etc. Add multiple if needed."
+                keywords={form.maps_business_types || []}
+                setKeywords={(val) => handleChange('maps_business_types', val)}
+                placeholder="e.g. restaurant"
+              />
+            </Box>
 
             <SingleFieldInput
-              label="Maximum Revenue (Optional)"
-              tooltip="Specify the maximum yearly revenue the company should not exceed. Leave blank if you don’t want to set a limit."
-              placeholder="Maximum Revenue"
-              value={form.revenue_range_max?.toString() || ''}
-              setValue={(value) => handleChange('revenue_range_max', parseInt(value) || 0)}
-              required={false}
-            />
-
-            <SingleFieldInput
-              label="Leads Per Generation"
-              tooltip="Set the number of leads to generate per generation. This helps control the number of leads generated per generation. for example if you want to generate 10 leads per generation, set it to 10. if you want to generate 20 leads per generation, set it to 20. if you want to generate 30 leads per generation, set it to 30. if you want to generate 40 leads per generation, set it to 40. if you want to generate 50 leads per generation, set it to 50."
-              placeholder="e.g. 10"
-              value={form.per_page?.toString() || ''}
-              setValue={(val) => handleChange('per_page', val)}
+              label="Minimum Rating"
+              tooltip="Filter businesses by minimum Google rating (0-5 stars). Example: 4.0 for highly-rated businesses only."
+              placeholder="e.g. 4.0"
+              value={form.maps_min_rating?.toString() || ''}
+              setValue={(val) => handleChange('maps_min_rating', parseFloat(val) || undefined)}
               required={false}
             />
           </Box>
 
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-              gap: 3,
-              mb: 3,
-            }}
-          >
-            <ListValuesInput
-              label="Technologies Used"
-              tooltip="Add the names of specific technologies the ideal company should be using. For example: Salesforce, HubSpot, SAP."
-              keywords={form.technology_uids || []}
-              setKeywords={(values) => handleChange('technology_uids', values)}
-              placeholder="e.g. salesforce"
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
+            <SingleFieldInput
+              label="Maximum Results"
+              tooltip="Maximum number of businesses to return per search. Default is 20. Higher numbers may take longer."
+              placeholder="e.g. 20"
+              value={form.maps_max_results?.toString() || ''}
+              setValue={(val) => handleChange('maps_max_results', parseInt(val) || 20)}
+              required={false}
             />
-            <ListValuesInput
-              label="Keywords"
-              tooltip="Add keywords to describe the kind of company you're looking for. E.g., ‘fintech’, ‘blockchain’, ‘B2B’, etc."
-              keywords={form.q_organization_keyword_tags || []}
-              setKeywords={(values) => handleChange('q_organization_keyword_tags', values)}
-              placeholder="e.g. fintech, blockchain"
-            />
-            <ListValuesInput
-              label="Number of Employees"
-              tooltip="Indicate how big the company should be in terms of staff. E.g., 1-10, 50-200. This helps filter by size."
-              keywords={form.organization_num_employees_ranges || []}
-              setKeywords={(values) => handleChange('organization_num_employees_ranges', values)}
-              placeholder="e.g. 50,200"
-            />
+
+            <Box mt={6} sx={{ display: 'flex', alignItems: 'center' }}>
+              <CustomCheckbox
+                label="Exclude closed businesses"
+                checked={form.maps_exclude_closed ?? true}
+                onChange={(val) => handleChange('maps_exclude_closed', val)}
+                tooltip="Check this to exclude businesses that are permanently or temporarily closed from the results."
+              />
+            </Box>
           </Box>
 
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-              gap: 3,
-              mb: 3,
-            }}
-          >
-            <MultiSelectDropdown
-              label="Organization Locations"
-              tooltip="Select the countries or regions where you want to find companies. This helps narrow down the search to specific areas. If you don’t care about location, leave it blank."
-              options={locationOptions}
-              selectedValues={
-                form.organization_locations?.map((v) => ({
-                  value: v,
-                  label: v,
-                })) || []
-              }
-              onChange={(values) =>
-                handleChange(
-                  'organization_locations',
-                  values.map((v) => v.value)
-                )
-              }
-              placeholder="e.g. San Francisco"
-            />
-
-            <MultiSelectDropdown
-              label="Exclude Locations"
-              tooltip="If you want to avoid companies from specific regions or cities, list them here. This helps exclude specific areas from your results."
-              options={locationOptions}
-              selectedValues={
-                form.organization_not_locations?.map((v) => ({
-                  value: v,
-                  label: v,
-                })) || []
-              }
-              onChange={(values) =>
-                handleChange(
-                  'organization_not_locations',
-                  values.map((v) => v.value)
-                )
-              }
-              placeholder="e.g. Ireland"
-            />
-          </Box>
-
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr ' }, gap: 3, mb: 3 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
             <Box mt={6} sx={{ display: 'flex', alignItems: 'center' }}>
               <CustomCheckbox
                 label="Add to history"
@@ -674,10 +671,7 @@ const OrganizationLeadForm = () => {
           <Box ref={leadGoalRef} sx={{ mt: 4, mb: 3 }}>
             <Typography variant="body2" sx={{ color: '#374151', mb: 1, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
               What's your goal with these leads? (Optional)
-              <Tooltip
-                title="Tell us your business objective. AI will use this to generate personalized next steps for each lead. Example: 'I want to sell productivity tools to startup founders'"
-                arrow
-              >
+              <Tooltip title="Tell us your business objective. AI will use this to generate personalized next steps for each lead. Example: 'I want to sell POS systems to restaurants'" arrow>
                 <InfoOutlinedIcon fontSize="small" sx={{ ml: 0.5, color: '#9ca3af' }} />
               </Tooltip>
             </Typography>
@@ -685,7 +679,7 @@ const OrganizationLeadForm = () => {
               fullWidth
               multiline
               rows={1}
-              placeholder="e.g., I want to sell enterprise software to Fortune 500 companies"
+              placeholder="e.g., I want to sell POS systems to restaurants"
               value={form.lead_generation_goal || ''}
               onChange={(e) => handleChange('lead_generation_goal', e.target.value)}
               variant="outlined"
@@ -746,14 +740,14 @@ const OrganizationLeadForm = () => {
             <LoadingButton
               className="tour-generate-btn"
               onClick={handleSubmit}
-              loading={createOrganizationLeadForm.isLoading || updateOrganizationSearchLeadForm.isLoading || isSaving}
+              loading={createGoogleMapsLeadForm.isLoading || updateGoogleMapsLeadForm.isLoading || isSaving}
               text={existingFormId ? 'Update Form' : 'Generate Leads'}
               loadingText={isSaving ? savingStatus : 'Saving...'}
             />
 
             <Button
               variant="outlined"
-              onClick={() => router.push('/leads-tracking/forms/leads?type=organization')}
+              onClick={() => router.push('/leads-tracking/forms/leads?type=google-maps')}
               sx={{
                 borderColor: '#CD1B78',
                 color: '#CD1B78',
@@ -776,7 +770,7 @@ const OrganizationLeadForm = () => {
           </Box>
 
           <Typography variant="caption" sx={{ color: '#6b7280', mt: 2, display: 'block' }}>
-            {existingFormId ? 'Update your saved form details' : 'Click to start searching for companies that match your filters'}
+            {existingFormId ? 'Update your saved form details' : 'Click to start searching for local businesses matching your criteria'}
           </Typography>
         </Box>
       </Box>
@@ -787,12 +781,12 @@ const OrganizationLeadForm = () => {
         image={<Image src="/assets/images/success.png" alt="Success" width={64} height={64} />}
         mainText="Success! 🎉"
         subText={
-          'Your organization lead form has been successfully saved. Please wait approximately 5 minutes for your first set of leads to be generated and check your email for updates. Going forward, you will automatically receive email notifications each time new organizations matching your criteria are discovered.'
+          'Your Google Maps lead form has been successfully saved. Please wait approximately 5 minutes for your first set of leads to be generated and check your email for updates. Going forward, you will automatically receive email notifications each time new businesses matching your criteria are discovered.'
         }
         buttonText="View Leads"
         onClick={() => {
           setOpenSuccessModal(false);
-          router.push('/leads-tracking/forms/leads?type=organization');
+          router.push('/leads-tracking/forms/leads?type=google-maps');
         }}
         onOutlineButtonClick={() => setOpenSuccessModal(false)}
         outlineButtonText="Cancel"
@@ -834,6 +828,7 @@ const OrganizationLeadForm = () => {
         subText="Providing your lead generation goal helps our AI generate personalized, actionable next steps for each lead—making your outreach more effective."
         handleAction={() => {
           setShowLeadGoalModal(false);
+          // Scroll to and highlight the lead goal field
           leadGoalRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
           setTimeout(() => {
             const textField = leadGoalRef.current?.querySelector('textarea');
@@ -859,4 +854,4 @@ const OrganizationLeadForm = () => {
   );
 };
 
-export default OrganizationLeadForm;
+export default GoogleMapsLeadForm;

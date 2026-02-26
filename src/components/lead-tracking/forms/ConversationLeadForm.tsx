@@ -1,4 +1,5 @@
 import { LeadsService as LeadFormService } from '@/api/LeadFormService';
+import { TrialService } from '@/api/TrialService';
 import { triggerToast } from '@/components/atoms/CustomToast';
 import LoadingButton from '@/components/buttons/LoadingButton';
 import AnimatedSendInput from '@/components/input/AnimatedSendInput';
@@ -8,6 +9,7 @@ import SingleFieldInput from '@/components/input/SingleFieldInput';
 import BusinessMismatchWarningModal from '@/components/modals/BusinessMismatchWarningModal';
 import { LimitExceededModal } from '@/components/modals/LimitExceededModal';
 import SmartModal from '@/components/modals/SmartModal';
+import TrialActivationModal from '@/components/trial/TrialActivationModal';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
 import useDebounce from '@/hooks/useDebounce';
 import { ConversationalSearchFormDto } from '@/models/dtos/LeadFormDto';
@@ -194,6 +196,7 @@ const ConversationLeadFormV2 = () => {
   const { mutate: triggerAutoPopulate, data: autoPopulatedResponse, isSuccess: autoPopulateSuccess } = autoPopulateLeadForm;
   const [openSuccessModal, setOpenSuccessModal] = useState(false);
   const [showLimitExceededModal, setShowLimitExceededModal] = useState(false);
+  const [showTrialActivationModal, setShowTrialActivationModal] = useState(false);
   const [showLeadGoalModal, setShowLeadGoalModal] = useState(false);
   const leadGoalRef = useRef<HTMLDivElement>(null);
 
@@ -1207,9 +1210,31 @@ const ConversationLeadFormV2 = () => {
             // Trigger sequential lead fetching after successful update
             await fetchLeadsFromPlatforms(existingFormId);
           },
-          onError: (error: any) => {
-            if (error?.response?.status === 403 || error?.response?.data?.limit_exceeded) {
-              setShowLimitExceededModal(true);
+          onError: async (error: any) => {
+            // Check if error is due to no active subscription/trial
+            if (error?.response?.status === 402 || error?.response?.status === 403) {
+              // Check trial status to determine which modal to show
+              try {
+                const trialStatusResponse = await TrialService.getTrialStatus(userId || '');
+                if (trialStatusResponse.status && trialStatusResponse.responseData) {
+                  const { status, hasUsedFreeTrial } = trialStatusResponse.responseData;
+
+                  // If trial not started and user hasn't used it, show trial activation modal
+                  if (status === 'not_started' && !hasUsedFreeTrial) {
+                    setShowTrialActivationModal(true);
+                    return;
+                  }
+                }
+              } catch (trialError) {
+                console.error('Error checking trial status:', trialError);
+              }
+
+              // Otherwise show limit exceeded modal (trial exhausted or limit reached)
+              if (error?.response?.data?.limit_exceeded) {
+                setShowLimitExceededModal(true);
+              } else {
+                triggerToast('error', error?.response?.data?.message || 'Update failed. Please try again.');
+              }
             } else {
               triggerToast('error', error?.response?.data?.message || 'Update failed. Please try again.');
             }
@@ -1226,9 +1251,31 @@ const ConversationLeadFormV2 = () => {
             await fetchLeadsFromPlatforms(newFormId);
           }
         },
-        onError: (error: any) => {
-          if (error?.response?.status === 403 || error?.response?.data?.limit_exceeded) {
-            setShowLimitExceededModal(true);
+        onError: async (error: any) => {
+          // Check if error is due to no active subscription/trial
+          if (error?.response?.status === 402 || error?.response?.status === 403) {
+            // Check trial status to determine which modal to show
+            try {
+              const trialStatusResponse = await TrialService.getTrialStatus(userId || '');
+              if (trialStatusResponse.status && trialStatusResponse.responseData) {
+                const { status, hasUsedFreeTrial } = trialStatusResponse.responseData;
+
+                // If trial not started and user hasn't used it, show trial activation modal
+                if (status === 'not_started' && !hasUsedFreeTrial) {
+                  setShowTrialActivationModal(true);
+                  return;
+                }
+              }
+            } catch (trialError) {
+              console.error('Error checking trial status:', trialError);
+            }
+
+            // Otherwise show limit exceeded modal (trial exhausted or limit reached)
+            if (error?.response?.data?.limit_exceeded) {
+              setShowLimitExceededModal(true);
+            } else {
+              triggerToast('error', error?.response?.data?.message || 'Creation failed. Please try again.');
+            }
           } else {
             triggerToast('error', error?.response?.data?.message || 'Creation failed. Please try again.');
           }
@@ -2377,6 +2424,20 @@ const ConversationLeadFormV2 = () => {
         limit={featureLimit?.lead?.noOfLeads?.limit ?? 0}
         planName={subscriptionPlanType ?? 'your current plan'}
       />
+
+      {/* Trial Activation Modal - Shows when user tries to generate leads without active trial */}
+      {userId && (
+        <TrialActivationModal
+          open={showTrialActivationModal}
+          onClose={() => setShowTrialActivationModal(false)}
+          onSuccess={() => {
+            setShowTrialActivationModal(false);
+            triggerToast('success', '🎉 Trial activated! You can now generate leads.');
+            window.location.reload(); // Reload to fetch updated trial status
+          }}
+          userId={userId}
+        />
+      )}
 
       {/* Business Mismatch Warning Modal */}
       {mismatchData && (

@@ -18,7 +18,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { Box, Button, Card, CardContent, Chip, Container, Grid, IconButton, InputAdornment, Menu, MenuItem, Skeleton, TextField, Tooltip, Typography, useMediaQuery } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
-import { FaBriefcase, FaBuilding, FaComments, FaUser } from 'react-icons/fa';
+import { FaBriefcase, FaBuilding, FaComments, FaMapMarkerAlt, FaUser } from 'react-icons/fa';
 
 const ManageAllFormsView = () => {
   const router = useRouter();
@@ -108,6 +108,7 @@ const ManageAllFormsView = () => {
       [FormTypeEnum.ORGANIZATION]: 0,
       [FormTypeEnum.BUSINESS]: 0,
       [FormTypeEnum.CONVERSATIONAL]: 0,
+      [FormTypeEnum.GOOGLE_MAPS]: 0,
     };
 
     allForms.forEach((form: any) => {
@@ -174,6 +175,7 @@ const ManageAllFormsView = () => {
       [FormTypeEnum.ORGANIZATION]: 'Organization',
       [FormTypeEnum.BUSINESS]: 'Business',
       [FormTypeEnum.CONVERSATIONAL]: 'Sales Signals',
+      [FormTypeEnum.GOOGLE_MAPS]: 'Google Maps',
     };
     return labels[type] || type;
   };
@@ -184,6 +186,7 @@ const ManageAllFormsView = () => {
       [FormTypeEnum.ORGANIZATION]: '#8B5CF6',
       [FormTypeEnum.BUSINESS]: '#10B981',
       [FormTypeEnum.CONVERSATIONAL]: '#F59E0B',
+      [FormTypeEnum.GOOGLE_MAPS]: '#EF4444',
     };
     return colors[type] || '#6B7280';
   };
@@ -194,6 +197,7 @@ const ManageAllFormsView = () => {
       [FormTypeEnum.ORGANIZATION]: <FaBuilding size={20} />,
       [FormTypeEnum.BUSINESS]: <FaBriefcase size={20} />,
       [FormTypeEnum.CONVERSATIONAL]: <FaComments size={20} />,
+      [FormTypeEnum.GOOGLE_MAPS]: <FaMapMarkerAlt size={20} />,
     };
     return icons[type] || <FaUser size={20} />;
   };

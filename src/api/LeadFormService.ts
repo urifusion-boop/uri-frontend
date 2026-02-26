@@ -6,6 +6,7 @@ import {
   AutoPopulateDto,
   BusinessSearchFormDto,
   ConversationalSearchFormDto,
+  GoogleMapsLeadFormDto,
   IndividualLeadFormDto,
   LeadFormDto,
   LeadFormGetByFiltersDto,
@@ -84,6 +85,18 @@ export class LeadsService {
       `${leadFormApiRoutes.conversationalSearchUpdate}?lead_form_id=${lead_form_id}`,
       data
     );
+
+    return response.data;
+  }
+
+  static async createGoogleMapsLeadForm(data: GoogleMapsLeadFormDto): Promise<UriResponse<LeadFormResponseDto>> {
+    const response: Awaited<AxiosResponse<UriResponse<LeadFormResponseDto>>> = await UriHttpClient.getClient().post(leadFormApiRoutes.googleMapsSearchCreate, data);
+
+    return response.data;
+  }
+
+  static async updateGoogleMapsLeadForm(lead_form_id: string, data: GoogleMapsLeadFormDto): Promise<UriResponse<LeadFormResponseDto>> {
+    const response: Awaited<AxiosResponse<UriResponse<LeadFormResponseDto>>> = await UriHttpClient.getClient().put(`${leadFormApiRoutes.googleMapsSearchUpdate}?lead_form_id=${lead_form_id}`, data);
 
     return response.data;
   }

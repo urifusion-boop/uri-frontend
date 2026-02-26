@@ -57,7 +57,7 @@ const TrialActivationModal: React.FC<TrialActivationModalProps> = ({ open, onClo
     }
   };
 
-  const trialFeatures = ['100 Lead Credits', '200 Intent Signals', '1 Account Tracker', '1 Hashtag Tracker', '1 Keyword Tracker', '5 AI-Powered Reports'];
+  const trialFeatures = ['500 Lead Credits', '1500 Intent Signals', '1 Account Tracker', '1 Hashtag Tracker', '1 Keyword Tracker', '5 AI-Powered Reports'];
 
   return (
     <SmartModal open={open} onClick={handleActivate} onClose={onClose} maxWidth="sm" showCloseButton={true} buttonText="Start Your Free Trial" loading={isActivating}>
@@ -88,7 +88,7 @@ const TrialActivationModal: React.FC<TrialActivationModalProps> = ({ open, onClo
             fontSize: '22px',
           }}
         >
-          Start Your 7-Day Free Trial
+          Start Your 30-Day Free Trial
         </Typography>
 
         <Typography
