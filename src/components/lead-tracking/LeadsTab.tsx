@@ -59,6 +59,7 @@ const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, 
     [LeadTypeEnum.ORGANIZATION]: FormTypeEnum.ORGANIZATION,
     [LeadTypeEnum.CONVERSATIONAL]: FormTypeEnum.CONVERSATIONAL,
     [LeadTypeEnum.BUSINESS]: FormTypeEnum.BUSINESS,
+    [LeadTypeEnum.GOOGLE_MAPS]: FormTypeEnum.GOOGLE_MAPS,
   };
 
   const formType = leadType ? formTypeMap[leadType] : undefined;

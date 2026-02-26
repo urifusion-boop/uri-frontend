@@ -13,6 +13,8 @@ export class LeadHelper {
         return 'business';
       case LeadTypeEnum.CONVERSATIONAL:
         return 'conversational';
+      case LeadTypeEnum.GOOGLE_MAPS:
+        return 'googlemaps';
       default:
         return '';
     }
@@ -28,6 +30,8 @@ export class LeadHelper {
         return FormTypeEnum.BUSINESS;
       case LeadTypeEnum.CONVERSATIONAL:
         return FormTypeEnum.CONVERSATIONAL;
+      case LeadTypeEnum.GOOGLE_MAPS:
+        return FormTypeEnum.GOOGLE_MAPS;
       default:
         return FormTypeEnum.PERSON;
     }
@@ -43,6 +47,8 @@ export class LeadHelper {
         return FormTypeEnum.BUSINESS;
       case 'conversational':
         return FormTypeEnum.CONVERSATIONAL;
+      case 'googlemaps':
+        return FormTypeEnum.GOOGLE_MAPS;
       default:
         return FormTypeEnum.PERSON;
     }

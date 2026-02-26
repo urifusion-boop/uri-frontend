@@ -12,6 +12,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import BusinessLeadForm from './BusinessLeadForm';
 import ConversationLeadForm from './ConversationLeadForm';
+import GoogleMapsLeadForm from './GoogleMapsLeadForm';
 
 const GenerateLeadForm = () => {
   const router = useRouter();
@@ -104,6 +105,8 @@ const GenerateLeadForm = () => {
         return <BusinessLeadForm key="business" />;
       case 'conversational':
         return <ConversationLeadForm key="conversational" />;
+      case 'googlemaps':
+        return <GoogleMapsLeadForm key="googlemaps" />;
       default:
         return <IndividualLeadForm key="individual-default" />;
     }

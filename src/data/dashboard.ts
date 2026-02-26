@@ -1,4 +1,4 @@
-import { FaBuilding, FaComments, FaHeartbeat, FaUser, FaWallet } from 'react-icons/fa';
+import { FaBuilding, FaComments, FaHeartbeat, FaMapMarkerAlt, FaUser, FaWallet } from 'react-icons/fa';
 import { FaMagnifyingGlassChart, FaUserTie } from 'react-icons/fa6';
 import { GrAction, GrNotification } from 'react-icons/gr';
 
@@ -90,6 +90,11 @@ export const dashboardLinks: ILink[] = [
         label: 'Sales Signals',
         route: '/leads-tracking/forms/manage?type=conversational',
         icon: FaComments,
+      },
+      {
+        label: 'Google Maps',
+        route: '/leads-tracking/forms/manage?type=googlemaps',
+        icon: FaMapMarkerAlt,
       },
       {
         label: 'History',

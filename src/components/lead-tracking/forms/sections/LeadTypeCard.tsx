@@ -8,6 +8,7 @@ import BusinessIcon from '@mui/icons-material/Business';
 import ChatBubbleIcon from '@mui/icons-material/ChatBubble';
 import HouseIcon from '@mui/icons-material/House';
 import PersonIcon from '@mui/icons-material/Person';
+import PlaceIcon from '@mui/icons-material/Place';
 import { Box, Button, Grid, IconButton, Skeleton, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
 
@@ -26,6 +27,7 @@ const LeadTypeCard = ({ colorMap }: LeadTypeCardProps) => {
     organization: <HouseIcon fontSize="small" />,
     business: <BusinessIcon fontSize="small" />,
     conversational: <ChatBubbleIcon fontSize="small" />,
+    googlemaps: <PlaceIcon fontSize="small" />,
   };
 
   // Map backend values to display type keys
@@ -34,10 +36,12 @@ const LeadTypeCard = ({ colorMap }: LeadTypeCardProps) => {
     ORGANIZATION: 'organization',
     BUSINESS: 'business',
     CONVERSATIONAL: 'conversational',
+    GOOGLE_MAPS: 'googlemaps',
     '0': 'individual',
     '1': 'organization',
     '2': 'business',
     '3': 'conversational',
+    '4': 'googlemaps',
   };
 
   const existingMap: Record<string, LeadFormDto> = {};
@@ -78,6 +82,14 @@ const LeadTypeCard = ({ colorMap }: LeadTypeCardProps) => {
       form_type: 'Sales Signals',
       typeKey: 'conversational',
       description: 'Public online conversations indicating buying intent, pain, or opportunity.',
+      created_date: '',
+      total_leads: 0,
+      total_new_leads: 0,
+    },
+    {
+      form_type: 'Google Maps',
+      typeKey: 'googlemaps',
+      description: 'Local businesses discovered through Google Maps based on location and criteria.',
       created_date: '',
       total_leads: 0,
       total_new_leads: 0,

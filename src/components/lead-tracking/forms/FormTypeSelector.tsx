@@ -1,4 +1,4 @@
-import { Description, Handshake } from '@mui/icons-material';
+import { Description, Handshake, Place } from '@mui/icons-material';
 import { Box, Paper, Typography } from '@mui/material';
 
 interface FormType {
@@ -33,6 +33,12 @@ const formTypes: FormType[] = [
     title: 'Sales Signals Form',
     description: 'Public online conversations indicating buying intent, pain, or opportunity.',
     icon: Description,
+  },
+  {
+    id: 'googlemaps',
+    title: 'Google Maps Form',
+    description: 'Discover local businesses through Google Maps based on location, business type, and other criteria.',
+    icon: Place,
   },
 ];
 
