@@ -3,6 +3,7 @@ import { triggerToast } from '@/components/atoms/CustomToast';
 import LoadingButton from '@/components/buttons/LoadingButton';
 import AnimatedSendInput from '@/components/input/AnimatedSendInput';
 import CustomCheckbox from '@/components/input/CustomCheckbox';
+import GooglePlacesAutocomplete from '@/components/input/GooglePlacesAutocomplete';
 import ListValuesInput from '@/components/input/ListValuesInput';
 import SingleFieldInput from '@/components/input/SingleFieldInput';
 import { LimitExceededModal } from '@/components/modals/LimitExceededModal';
@@ -19,6 +20,7 @@ import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import { Box, Button, FormControl, IconButton, LinearProgress, MenuItem, Select, TextField, Tooltip, Typography } from '@mui/material';
 import Image from 'next/image';
 import router from 'next/router';
+import Script from 'next/script';
 import { useEffect, useRef, useState } from 'react';
 import { HiPencil } from 'react-icons/hi';
 
@@ -50,6 +52,8 @@ const GoogleMapsLeadForm = () => {
   const [savingStatus, setSavingStatus] = useState('');
   const [currentTip, setCurrentTip] = useState('');
   const leadGoalRef = useRef<HTMLDivElement>(null);
+  const [selectedPlace, setSelectedPlace] = useState<{ formatted_address: string; latitude: number; longitude: number; place_id: string; name: string } | null>(null);
+  const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
 
   const { userDetails, subscriptionPlanType } = useAuth();
   const userId = userDetails?.userId;
@@ -130,6 +134,17 @@ const GoogleMapsLeadForm = () => {
         monitoring_interval_hours: monitoring_interval_hours || 0,
       });
 
+      // If we have lat/lng and location, restore the selectedPlace state
+      if (maps_latitude && maps_longitude && maps_location) {
+        setSelectedPlace({
+          formatted_address: maps_location,
+          latitude: maps_latitude,
+          longitude: maps_longitude,
+          place_id: '',
+          name: maps_location,
+        });
+      }
+
       setExistingFormId(lead_form_id);
     } else if (isCreateMode) {
       // In create mode, reset form to blank state and ensure existingFormId is null
@@ -150,6 +165,7 @@ const GoogleMapsLeadForm = () => {
         lead_generation_goal: '',
         monitoring_interval_hours: 0,
       });
+      setSelectedPlace(null);
       setExistingFormId(null);
     }
   }, [existingForm, isSuccess, userId, isCreateMode, formIdFromUrl]);
@@ -175,6 +191,25 @@ const GoogleMapsLeadForm = () => {
 
   const handleChange = (field: keyof GoogleMapsLeadFormDto, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handlePlaceSelect = (place: { formatted_address: string; latitude: number; longitude: number; place_id: string; name: string } | null) => {
+    setSelectedPlace(place);
+    if (place) {
+      setForm((prev) => ({
+        ...prev,
+        maps_location: place.formatted_address,
+        maps_latitude: place.latitude,
+        maps_longitude: place.longitude,
+      }));
+    } else {
+      setForm((prev) => ({
+        ...prev,
+        maps_location: '',
+        maps_latitude: undefined,
+        maps_longitude: undefined,
+      }));
+    }
   };
 
   const handleSubmit = () => {
@@ -376,93 +411,168 @@ const GoogleMapsLeadForm = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: '950px', mx: 'auto', mt: 4 }}>
-      <Box
-        sx={{
-          backgroundColor: '#fff',
-          borderRadius: '16px',
-          border: '1px solid #e5e7eb',
-          p: { xs: 3, md: 5 },
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-        }}
-      >
-        <Typography variant="h6" sx={{ textAlign: 'center', fontWeight: 600, mb: 1, color: '#1f2937' }}>
-          Google Maps Lead Form
-        </Typography>
-        <Typography variant="body2" sx={{ textAlign: 'center', color: '#6b7280', mb: 4 }}>
-          {existingFormId ? 'Edit your existing form' : 'Discover local businesses using Google Maps'}
-          <EditOutlinedIcon sx={{ fontSize: 16, ml: 1, verticalAlign: 'middle', color: '#9ca3af' }} />
-        </Typography>
+    <>
+      {/* Load Google Maps JavaScript API with Places library */}
+      <Script src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`} onLoad={() => setGoogleMapsLoaded(true)} strategy="lazyOnload" />
 
-        <Box className="tour-form-fields">
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
-            <SingleFieldInput
-              label="Form Title"
-              tooltip="Give your form a name to help you identify it later. This will be displayed in the lead generation dashboard."
-              placeholder="Form Title"
-              value={form.form_title || ''}
-              setValue={(val) => handleChange('form_title', val)}
-              required
-            />
-          </Box>
+      <Box sx={{ maxWidth: '950px', mx: 'auto', mt: 4 }}>
+        <Box
+          sx={{
+            backgroundColor: '#fff',
+            borderRadius: '16px',
+            border: '1px solid #e5e7eb',
+            p: { xs: 3, md: 5 },
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+          }}
+        >
+          <Typography variant="h6" sx={{ textAlign: 'center', fontWeight: 600, mb: 1, color: '#1f2937' }}>
+            Google Maps Lead Form
+          </Typography>
+          <Typography variant="body2" sx={{ textAlign: 'center', color: '#6b7280', mb: 4 }}>
+            {existingFormId ? 'Edit your existing form' : 'Discover local businesses using Google Maps'}
+            <EditOutlinedIcon sx={{ fontSize: 16, ml: 1, verticalAlign: 'middle', color: '#9ca3af' }} />
+          </Typography>
 
-          {/* AI Form Completion Section */}
-          <Box my={6}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 500, color: '#4b5563' }}>
-                Want help completing this form?
-              </Typography>
-              <SmartToyOutlinedIcon sx={{ fontSize: 20, color: '#6b7280' }} />
+          <Box className="tour-form-fields">
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 3, mb: 3 }}>
+              <SingleFieldInput
+                label="Form Title"
+                tooltip="Give your form a name to help you identify it later. This will be displayed in the lead generation dashboard."
+                placeholder="Form Title"
+                value={form.form_title || ''}
+                setValue={(val) => handleChange('form_title', val)}
+                required
+              />
             </Box>
 
-            <Typography variant="caption" sx={{ color: '#6b7280', mb: 1, display: 'block' }}>
-              Type what you're trying to achieve and let AI auto-fill the form. Example: "Find coffee shops in Lagos, Nigeria."
-            </Typography>
+            {/* AI Form Completion Section */}
+            <Box my={6}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 500, color: '#4b5563' }}>
+                  Want help completing this form?
+                </Typography>
+                <SmartToyOutlinedIcon sx={{ fontSize: 20, color: '#6b7280' }} />
+              </Box>
 
-            {!isEditingAIInput && (
-              <Tooltip title="Use AI to complete form">
-                <IconButton
-                  onClick={() => setIsEditingAIInput(true)}
-                  size="small"
-                  sx={{
-                    backgroundColor: '#f3f4f6',
-                    borderRadius: '8px',
-                    height: 36,
-                    mb: 1,
-                  }}
-                >
-                  <HiPencil size={18} />
-                </IconButton>
-              </Tooltip>
-            )}
+              <Typography variant="caption" sx={{ color: '#6b7280', mb: 1, display: 'block' }}>
+                Type what you're trying to achieve and let AI auto-fill the form. Example: "Find coffee shops in Lagos, Nigeria."
+              </Typography>
 
-            <AnimatedSendInput
-              isEditing={isEditingAIInput}
-              setIsEditing={setIsEditingAIInput}
-              inputValue={autoPopulateData}
-              onChange={setAutoPopulateData}
-              onSend={handleAutoPopulate}
-              loading={isAutoPopulating}
-              placeholder="Describe the kind of businesses you're looking for..."
-            />
-          </Box>
+              {!isEditingAIInput && (
+                <Tooltip title="Use AI to complete form">
+                  <IconButton
+                    onClick={() => setIsEditingAIInput(true)}
+                    size="small"
+                    sx={{
+                      backgroundColor: '#f3f4f6',
+                      borderRadius: '8px',
+                      height: 36,
+                      mb: 1,
+                    }}
+                  >
+                    <HiPencil size={18} />
+                  </IconButton>
+                </Tooltip>
+              )}
 
-          {/* Frequency Control Section */}
-          <Box sx={{ mb: 4, pb: 3, borderBottom: '1px solid #e5e7eb' }}>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-              How often should we search for new leads?
-              <Tooltip title="Choose how frequently we should check Google Maps for new businesses matching your criteria. Select 'One-time only' for a single search, or set a recurring interval for continuous monitoring.">
-                <InfoOutlinedIcon sx={{ fontSize: 16, color: '#9ca3af', cursor: 'help' }} />
-              </Tooltip>
-            </Typography>
+              <AnimatedSendInput
+                isEditing={isEditingAIInput}
+                setIsEditing={setIsEditingAIInput}
+                inputValue={autoPopulateData}
+                onChange={setAutoPopulateData}
+                onSend={handleAutoPopulate}
+                loading={isAutoPopulating}
+                placeholder="Describe the kind of businesses you're looking for..."
+              />
+            </Box>
 
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
-              <FormControl sx={{ flex: '1 1 65%', maxWidth: '400px' }}>
+            {/* Frequency Control Section */}
+            <Box sx={{ mb: 4, pb: 3, borderBottom: '1px solid #e5e7eb' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                How often should we search for new leads?
+                <Tooltip title="Choose how frequently we should check Google Maps for new businesses matching your criteria. Select 'One-time only' for a single search, or set a recurring interval for continuous monitoring.">
+                  <InfoOutlinedIcon sx={{ fontSize: 16, color: '#9ca3af', cursor: 'help' }} />
+                </Tooltip>
+              </Typography>
+
+              <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                <FormControl sx={{ flex: '1 1 65%', maxWidth: '400px' }}>
+                  <Select
+                    id="monitoring-interval"
+                    value={form.monitoring_interval_hours || 0}
+                    onChange={(e) => handleChange('monitoring_interval_hours', Number(e.target.value))}
+                    displayEmpty
+                    sx={{
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#E5E7EB',
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#D1D5DB',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#CD1B78',
+                      },
+                    }}
+                  >
+                    <MenuItem value={0}>One-time only (No recurring monitoring)</MenuItem>
+                    <MenuItem value={24}>Once Daily</MenuItem>
+                    <MenuItem value={48}>Every 2 Days</MenuItem>
+                    <MenuItem value={72}>Every 3 Days</MenuItem>
+                    <MenuItem value={168}>Once Weekly</MenuItem>
+                    <MenuItem value={336}>Every 2 Weeks</MenuItem>
+                    <MenuItem value={720}>Once Monthly</MenuItem>
+                    <MenuItem value={-1}>Custom Interval →</MenuItem>
+                  </Select>
+                </FormControl>
+
+                {/* Custom Interval Input - Only show if "Custom" is selected */}
+                {form.monitoring_interval_hours === -1 && (
+                  <Box sx={{ flex: '0 0 180px' }}>
+                    <SingleFieldInput
+                      label=""
+                      placeholder="Enter hours (e.g., 28)"
+                      value={form.monitoring_interval_hours === -1 ? '' : String(form.monitoring_interval_hours)}
+                      setValue={(val) => {
+                        const numVal = parseInt(val) || 1;
+                        handleChange('monitoring_interval_hours', numVal > 0 ? numVal : 1);
+                      }}
+                      required={false}
+                    />
+                  </Box>
+                )}
+              </Box>
+
+              {/* Helper text based on selection */}
+              <Typography variant="caption" sx={{ color: '#6b7280', mt: 1, display: 'block' }}>
+                {form.monitoring_interval_hours === 0 && '✨ Lead generation will run once and stop. Perfect for one-time searches.'}
+                {form.monitoring_interval_hours !== undefined &&
+                  form.monitoring_interval_hours > 0 &&
+                  form.monitoring_interval_hours < 24 &&
+                  `🔄 Checks every ${form.monitoring_interval_hours} hours for new businesses.`}
+                {form.monitoring_interval_hours !== undefined &&
+                  form.monitoring_interval_hours >= 24 &&
+                  form.monitoring_interval_hours < 168 &&
+                  `📅 Checks every ${Math.round(form.monitoring_interval_hours / 24)} day(s) for new businesses.`}
+                {form.monitoring_interval_hours !== undefined &&
+                  form.monitoring_interval_hours >= 168 &&
+                  `📆 Checks every ${Math.round(form.monitoring_interval_hours / 168)} week(s) for new businesses.`}
+                {form.monitoring_interval_hours === -1 && '⚙️ Enter your custom interval in hours.'}
+              </Typography>
+            </Box>
+
+            {/* Search Mode Selection */}
+            <Box sx={{ mb: 4, pb: 3, borderBottom: '1px solid #e5e7eb' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                Search Mode
+                <Tooltip title="Auto: Automatically picks the best search method. Text Search: Use natural language queries. Nearby Search: Use precise coordinates and radius.">
+                  <InfoOutlinedIcon sx={{ fontSize: 16, color: '#9ca3af', cursor: 'help' }} />
+                </Tooltip>
+              </Typography>
+
+              <FormControl fullWidth>
                 <Select
-                  id="monitoring-interval"
-                  value={form.monitoring_interval_hours || 0}
-                  onChange={(e) => handleChange('monitoring_interval_hours', Number(e.target.value))}
-                  displayEmpty
+                  value={form.maps_search_mode || 'auto'}
+                  onChange={(e) => handleChange('maps_search_mode', e.target.value)}
                   sx={{
                     '& .MuiOutlinedInput-notchedOutline': {
                       borderColor: '#E5E7EB',
@@ -475,382 +585,324 @@ const GoogleMapsLeadForm = () => {
                     },
                   }}
                 >
-                  <MenuItem value={0}>One-time only (No recurring monitoring)</MenuItem>
-                  <MenuItem value={24}>Once Daily</MenuItem>
-                  <MenuItem value={48}>Every 2 Days</MenuItem>
-                  <MenuItem value={72}>Every 3 Days</MenuItem>
-                  <MenuItem value={168}>Once Weekly</MenuItem>
-                  <MenuItem value={336}>Every 2 Weeks</MenuItem>
-                  <MenuItem value={720}>Once Monthly</MenuItem>
-                  <MenuItem value={-1}>Custom Interval →</MenuItem>
+                  <MenuItem value="auto">Auto (Recommended)</MenuItem>
+                  <MenuItem value="text">Text Search (Natural Language)</MenuItem>
+                  <MenuItem value="nearby">Nearby Search (Coordinates + Radius)</MenuItem>
                 </Select>
               </FormControl>
 
-              {/* Custom Interval Input - Only show if "Custom" is selected */}
-              {form.monitoring_interval_hours === -1 && (
-                <Box sx={{ flex: '0 0 180px' }}>
+              <Typography variant="caption" sx={{ color: '#6b7280', mt: 1, display: 'block' }}>
+                {form.maps_search_mode === 'auto' && '✨ Automatically selects the best search method based on your inputs'}
+                {form.maps_search_mode === 'text' && '🔍 Natural language queries like "small businesses in Ogba"'}
+                {form.maps_search_mode === 'nearby' && '📍 Precise location-based search using coordinates and radius'}
+              </Typography>
+            </Box>
+
+            {/* Text Search Fields */}
+            {(form.maps_search_mode === 'auto' || form.maps_search_mode === 'text') && (
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
+                <SingleFieldInput
+                  label="Search Query"
+                  tooltip='Natural language search query. Example: "coffee shops", "restaurants", "small businesses in tech". This works like a Google Maps search.'
+                  placeholder="e.g. coffee shops"
+                  value={form.maps_search_query || ''}
+                  setValue={(val) => handleChange('maps_search_query', val)}
+                  required={false}
+                />
+
+                <SingleFieldInput
+                  label="Location"
+                  tooltip="Location name for the search. Example: 'Lagos, Nigeria', 'Ogba', 'Victoria Island'. This helps narrow down the geographic area."
+                  placeholder="e.g. Lagos, Nigeria"
+                  value={form.maps_location || ''}
+                  setValue={(val) => handleChange('maps_location', val)}
+                  required={false}
+                />
+              </Box>
+            )}
+
+            {/* Nearby Search Fields - Google Places Autocomplete */}
+            {(form.maps_search_mode === 'auto' || form.maps_search_mode === 'nearby') && (
+              <Box sx={{ mb: 3 }}>
+                <GooglePlacesAutocomplete
+                  value={selectedPlace}
+                  onChange={handlePlaceSelect}
+                  label="Search Location"
+                  placeholder="Search for a city, address, or landmark..."
+                  tooltip="Search for any location using Google Places. Start typing to see suggestions. The coordinates will be filled automatically."
+                  required={false}
+                />
+
+                {/* Map Preview */}
+                {selectedPlace && googleMapsLoaded && (
+                  <Box sx={{ mt: 2, mb: 3, borderRadius: '12px', overflow: 'hidden', border: '2px solid #e5e7eb' }}>
+                    <iframe
+                      width="100%"
+                      height="300"
+                      frameBorder="0"
+                      style={{ border: 0 }}
+                      src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${selectedPlace.latitude},${selectedPlace.longitude}&zoom=14`}
+                      allowFullScreen
+                    />
+                    <Box sx={{ p: 2, backgroundColor: '#f9fafb', borderTop: '1px solid #e5e7eb' }}>
+                      <Typography sx={{ fontSize: 12, fontWeight: 600, color: '#374151', mb: 0.5 }}>📍 Selected Area</Typography>
+                      <Typography sx={{ fontSize: 12, color: '#6b7280' }}>Businesses will be searched within {form.maps_radius_km || 5} km of this location</Typography>
+                    </Box>
+                  </Box>
+                )}
+
+                {/* Radius Field */}
+                <Box sx={{ mt: 3 }}>
                   <SingleFieldInput
-                    label=""
-                    placeholder="Enter hours (e.g., 28)"
-                    value={form.monitoring_interval_hours === -1 ? '' : String(form.monitoring_interval_hours)}
-                    setValue={(val) => {
-                      const numVal = parseInt(val) || 1;
-                      handleChange('monitoring_interval_hours', numVal > 0 ? numVal : 1);
-                    }}
+                    label="Search Radius (km)"
+                    tooltip="Search radius in kilometers from the selected location. Larger radius = more results but less precise. Default: 5km"
+                    placeholder="e.g. 5.0"
+                    value={form.maps_radius_km?.toString() || ''}
+                    setValue={(val) => handleChange('maps_radius_km', parseFloat(val) || 5.0)}
                     required={false}
                   />
                 </Box>
-              )}
-            </Box>
-
-            {/* Helper text based on selection */}
-            <Typography variant="caption" sx={{ color: '#6b7280', mt: 1, display: 'block' }}>
-              {form.monitoring_interval_hours === 0 && '✨ Lead generation will run once and stop. Perfect for one-time searches.'}
-              {form.monitoring_interval_hours !== undefined &&
-                form.monitoring_interval_hours > 0 &&
-                form.monitoring_interval_hours < 24 &&
-                `🔄 Checks every ${form.monitoring_interval_hours} hours for new businesses.`}
-              {form.monitoring_interval_hours !== undefined &&
-                form.monitoring_interval_hours >= 24 &&
-                form.monitoring_interval_hours < 168 &&
-                `📅 Checks every ${Math.round(form.monitoring_interval_hours / 24)} day(s) for new businesses.`}
-              {form.monitoring_interval_hours !== undefined &&
-                form.monitoring_interval_hours >= 168 &&
-                `📆 Checks every ${Math.round(form.monitoring_interval_hours / 168)} week(s) for new businesses.`}
-              {form.monitoring_interval_hours === -1 && '⚙️ Enter your custom interval in hours.'}
-            </Typography>
-          </Box>
-
-          {/* Search Mode Selection */}
-          <Box sx={{ mb: 4, pb: 3, borderBottom: '1px solid #e5e7eb' }}>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-              Search Mode
-              <Tooltip title="Auto: Automatically picks the best search method. Text Search: Use natural language queries. Nearby Search: Use precise coordinates and radius.">
-                <InfoOutlinedIcon sx={{ fontSize: 16, color: '#9ca3af', cursor: 'help' }} />
-              </Tooltip>
-            </Typography>
-
-            <FormControl fullWidth>
-              <Select
-                value={form.maps_search_mode || 'auto'}
-                onChange={(e) => handleChange('maps_search_mode', e.target.value)}
-                sx={{
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#E5E7EB',
-                  },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#D1D5DB',
-                  },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#CD1B78',
-                  },
-                }}
-              >
-                <MenuItem value="auto">Auto (Recommended)</MenuItem>
-                <MenuItem value="text">Text Search (Natural Language)</MenuItem>
-                <MenuItem value="nearby">Nearby Search (Coordinates + Radius)</MenuItem>
-              </Select>
-            </FormControl>
-
-            <Typography variant="caption" sx={{ color: '#6b7280', mt: 1, display: 'block' }}>
-              {form.maps_search_mode === 'auto' && '✨ Automatically selects the best search method based on your inputs'}
-              {form.maps_search_mode === 'text' && '🔍 Natural language queries like "small businesses in Ogba"'}
-              {form.maps_search_mode === 'nearby' && '📍 Precise location-based search using coordinates and radius'}
-            </Typography>
-          </Box>
-
-          {/* Text Search Fields */}
-          {(form.maps_search_mode === 'auto' || form.maps_search_mode === 'text') && (
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
-              <SingleFieldInput
-                label="Search Query"
-                tooltip='Natural language search query. Example: "coffee shops", "restaurants", "small businesses in tech". This works like a Google Maps search.'
-                placeholder="e.g. coffee shops"
-                value={form.maps_search_query || ''}
-                setValue={(val) => handleChange('maps_search_query', val)}
-                required={false}
-              />
-
-              <SingleFieldInput
-                label="Location"
-                tooltip="Location name for the search. Example: 'Lagos, Nigeria', 'Ogba', 'Victoria Island'. This helps narrow down the geographic area."
-                placeholder="e.g. Lagos, Nigeria"
-                value={form.maps_location || ''}
-                setValue={(val) => handleChange('maps_location', val)}
-                required={false}
-              />
-            </Box>
-          )}
-
-          {/* Nearby Search Fields */}
-          {(form.maps_search_mode === 'auto' || form.maps_search_mode === 'nearby') && (
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3, mb: 3 }}>
-              <SingleFieldInput
-                label="Latitude"
-                tooltip="Latitude coordinate for precise location-based search. Example: 6.5244 for Lagos"
-                placeholder="e.g. 6.5244"
-                value={form.maps_latitude?.toString() || ''}
-                setValue={(val) => handleChange('maps_latitude', parseFloat(val) || undefined)}
-                required={false}
-              />
-
-              <SingleFieldInput
-                label="Longitude"
-                tooltip="Longitude coordinate for precise location-based search. Example: 3.3792 for Lagos"
-                placeholder="e.g. 3.3792"
-                value={form.maps_longitude?.toString() || ''}
-                setValue={(val) => handleChange('maps_longitude', parseFloat(val) || undefined)}
-                required={false}
-              />
-
-              <SingleFieldInput
-                label="Radius (km)"
-                tooltip="Search radius in kilometers from the coordinates. Larger radius = more results but less precise."
-                placeholder="e.g. 5.0"
-                value={form.maps_radius_km?.toString() || ''}
-                setValue={(val) => handleChange('maps_radius_km', parseFloat(val) || 5.0)}
-                required={false}
-              />
-            </Box>
-          )}
-
-          {/* Common Filters */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
-            <Box>
-              <ListValuesInput
-                label="Business Types"
-                tooltip="Filter by specific business types. Examples: 'restaurant', 'cafe', 'bank', 'hospital', 'gym', etc. Add multiple if needed."
-                keywords={form.maps_business_types || []}
-                setKeywords={(val) => handleChange('maps_business_types', val)}
-                placeholder="e.g. restaurant"
-              />
-            </Box>
-
-            <SingleFieldInput
-              label="Minimum Rating"
-              tooltip="Filter businesses by minimum Google rating (0-5 stars). Example: 4.0 for highly-rated businesses only."
-              placeholder="e.g. 4.0"
-              value={form.maps_min_rating?.toString() || ''}
-              setValue={(val) => handleChange('maps_min_rating', parseFloat(val) || undefined)}
-              required={false}
-            />
-          </Box>
-
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
-            <SingleFieldInput
-              label="Maximum Results"
-              tooltip="Maximum number of businesses to return per search. Default is 20. Higher numbers may take longer."
-              placeholder="e.g. 20"
-              value={form.maps_max_results?.toString() || ''}
-              setValue={(val) => handleChange('maps_max_results', parseInt(val) || 20)}
-              required={false}
-            />
-
-            <Box mt={6} sx={{ display: 'flex', alignItems: 'center' }}>
-              <CustomCheckbox
-                label="Exclude closed businesses"
-                checked={form.maps_exclude_closed ?? true}
-                onChange={(val) => handleChange('maps_exclude_closed', val)}
-                tooltip="Check this to exclude businesses that are permanently or temporarily closed from the results."
-              />
-            </Box>
-          </Box>
-
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
-            <Box mt={6} sx={{ display: 'flex', alignItems: 'center' }}>
-              <CustomCheckbox
-                label="Add to history"
-                checked={form.add_to_history || false}
-                onChange={(val) => handleChange('add_to_history', val)}
-                tooltip="Check this if you want to add the form to your history. This will add the form to your history so you can easily find it later."
-              />
-            </Box>
-          </Box>
-
-          {/* Lead Generation Goal - Positioned before progress indicator */}
-          <Box ref={leadGoalRef} sx={{ mt: 4, mb: 3 }}>
-            <Typography variant="body2" sx={{ color: '#374151', mb: 1, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
-              What's your goal with these leads? (Optional)
-              <Tooltip title="Tell us your business objective. AI will use this to generate personalized next steps for each lead. Example: 'I want to sell POS systems to restaurants'" arrow>
-                <InfoOutlinedIcon fontSize="small" sx={{ ml: 0.5, color: '#9ca3af' }} />
-              </Tooltip>
-            </Typography>
-            <TextField
-              fullWidth
-              multiline
-              rows={1}
-              placeholder="e.g., I want to sell POS systems to restaurants"
-              value={form.lead_generation_goal || ''}
-              onChange={(e) => handleChange('lead_generation_goal', e.target.value)}
-              variant="outlined"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '8px',
-                  backgroundColor: '#FAFBFC',
-                },
-              }}
-            />
-          </Box>
-        </Box>
-
-        {/* Progress Indicator */}
-        {isSaving && (
-          <Box sx={{ mt: 3, mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151' }}>
-                {savingStatus}
-              </Typography>
-              <Typography variant="caption" sx={{ color: '#6b7280', fontWeight: 600 }}>
-                {savingProgress}%
-              </Typography>
-            </Box>
-            <LinearProgress
-              variant="determinate"
-              value={savingProgress}
-              sx={{
-                height: 8,
-                borderRadius: 4,
-                backgroundColor: '#e5e7eb',
-                '& .MuiLinearProgress-bar': {
-                  backgroundColor: '#CD1B78',
-                  borderRadius: 4,
-                },
-              }}
-            />
-            {currentTip && (
-              <Box
-                sx={{
-                  mt: 2,
-                  p: 2,
-                  backgroundColor: '#eff6ff',
-                  borderRadius: 1.5,
-                  border: '1px solid #bfdbfe',
-                }}
-              >
-                <Typography variant="body2" sx={{ color: '#1e40af', fontSize: '0.875rem' }}>
-                  {currentTip}
-                </Typography>
               </Box>
             )}
+
+            {/* Common Filters */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
+              <Box>
+                <ListValuesInput
+                  label="Business Types"
+                  tooltip="Filter by specific business types. Examples: 'restaurant', 'cafe', 'bank', 'hospital', 'gym', etc. Add multiple if needed."
+                  keywords={form.maps_business_types || []}
+                  setKeywords={(val) => handleChange('maps_business_types', val)}
+                  placeholder="e.g. restaurant"
+                />
+              </Box>
+
+              <SingleFieldInput
+                label="Minimum Rating"
+                tooltip="Filter businesses by minimum Google rating (0-5 stars). Example: 4.0 for highly-rated businesses only."
+                placeholder="e.g. 4.0"
+                value={form.maps_min_rating?.toString() || ''}
+                setValue={(val) => handleChange('maps_min_rating', parseFloat(val) || undefined)}
+                required={false}
+              />
+            </Box>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
+              <SingleFieldInput
+                label="Maximum Results"
+                tooltip="Maximum number of businesses to return per search. Default is 20. Higher numbers may take longer."
+                placeholder="e.g. 20"
+                value={form.maps_max_results?.toString() || ''}
+                setValue={(val) => handleChange('maps_max_results', parseInt(val) || 20)}
+                required={false}
+              />
+
+              <Box mt={6} sx={{ display: 'flex', alignItems: 'center' }}>
+                <CustomCheckbox
+                  label="Exclude closed businesses"
+                  checked={form.maps_exclude_closed ?? true}
+                  onChange={(val) => handleChange('maps_exclude_closed', val)}
+                  tooltip="Check this to exclude businesses that are permanently or temporarily closed from the results."
+                />
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
+              <Box mt={6} sx={{ display: 'flex', alignItems: 'center' }}>
+                <CustomCheckbox
+                  label="Add to history"
+                  checked={form.add_to_history || false}
+                  onChange={(val) => handleChange('add_to_history', val)}
+                  tooltip="Check this if you want to add the form to your history. This will add the form to your history so you can easily find it later."
+                />
+              </Box>
+            </Box>
+
+            {/* Lead Generation Goal - Positioned before progress indicator */}
+            <Box ref={leadGoalRef} sx={{ mt: 4, mb: 3 }}>
+              <Typography variant="body2" sx={{ color: '#374151', mb: 1, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                What's your goal with these leads? (Optional)
+                <Tooltip title="Tell us your business objective. AI will use this to generate personalized next steps for each lead. Example: 'I want to sell POS systems to restaurants'" arrow>
+                  <InfoOutlinedIcon fontSize="small" sx={{ ml: 0.5, color: '#9ca3af' }} />
+                </Tooltip>
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={1}
+                placeholder="e.g., I want to sell POS systems to restaurants"
+                value={form.lead_generation_goal || ''}
+                onChange={(e) => handleChange('lead_generation_goal', e.target.value)}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '8px',
+                    backgroundColor: '#FAFBFC',
+                  },
+                }}
+              />
+            </Box>
           </Box>
+
+          {/* Progress Indicator */}
+          {isSaving && (
+            <Box sx={{ mt: 3, mb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151' }}>
+                  {savingStatus}
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#6b7280', fontWeight: 600 }}>
+                  {savingProgress}%
+                </Typography>
+              </Box>
+              <LinearProgress
+                variant="determinate"
+                value={savingProgress}
+                sx={{
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: '#e5e7eb',
+                  '& .MuiLinearProgress-bar': {
+                    backgroundColor: '#CD1B78',
+                    borderRadius: 4,
+                  },
+                }}
+              />
+              {currentTip && (
+                <Box
+                  sx={{
+                    mt: 2,
+                    p: 2,
+                    backgroundColor: '#eff6ff',
+                    borderRadius: 1.5,
+                    border: '1px solid #bfdbfe',
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: '#1e40af', fontSize: '0.875rem' }}>
+                    {currentTip}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          )}
+
+          <Box sx={{ textAlign: 'center', pt: 3, borderTop: '1px solid #e5e7eb' }}>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
+              <LoadingButton
+                className="tour-generate-btn"
+                onClick={handleSubmit}
+                loading={createGoogleMapsLeadForm.isLoading || updateGoogleMapsLeadForm.isLoading || isSaving}
+                text={existingFormId ? 'Update Form' : 'Generate Leads'}
+                loadingText={isSaving ? savingStatus : 'Saving...'}
+              />
+
+              <Button
+                variant="outlined"
+                onClick={() => router.push('/leads-tracking/forms/leads?type=google-maps')}
+                sx={{
+                  borderColor: '#CD1B78',
+                  color: '#CD1B78',
+                  '&:hover': {
+                    borderColor: '#b31665',
+                    backgroundColor: 'rgba(205, 27, 120, 0.04)',
+                  },
+                  px: 8,
+                  py: 2,
+                  borderRadius: 3,
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  height: 50,
+                  minWidth: 245,
+                }}
+              >
+                View Leads
+              </Button>
+            </Box>
+
+            <Typography variant="caption" sx={{ color: '#6b7280', mt: 2, display: 'block' }}>
+              {existingFormId ? 'Update your saved form details' : 'Click to start searching for local businesses matching your criteria'}
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Success Modal */}
+        <SmartModal
+          open={openSuccessModal}
+          image={<Image src="/assets/images/success.png" alt="Success" width={64} height={64} />}
+          mainText="Success! 🎉"
+          subText={
+            'Your Google Maps lead form has been successfully saved. Please wait approximately 5 minutes for your first set of leads to be generated and check your email for updates. Going forward, you will automatically receive email notifications each time new businesses matching your criteria are discovered.'
+          }
+          buttonText="View Leads"
+          onClick={() => {
+            setOpenSuccessModal(false);
+            router.push('/leads-tracking/forms/leads?type=google-maps');
+          }}
+          onOutlineButtonClick={() => setOpenSuccessModal(false)}
+          outlineButtonText="Cancel"
+        />
+
+        {/* Limit Exceeded Modal */}
+        <LimitExceededModal
+          isOpen={showLimitExceededModal}
+          onClose={() => setShowLimitExceededModal(false)}
+          featureType="lead"
+          currentUsage={featureLimit?.lead?.noOfLeads?.count ?? 0}
+          limit={featureLimit?.lead?.noOfLeads?.limit ?? 0}
+          planName={subscriptionPlanType ?? 'your current plan'}
+        />
+
+        {/* Trial Activation Modal - Shows when user tries to generate leads without active trial */}
+        {userId && (
+          <TrialActivationModal
+            open={showTrialActivationModal}
+            onClose={() => setShowTrialActivationModal(false)}
+            onSuccess={() => {
+              setShowTrialActivationModal(false);
+              triggerToast('success', '🎉 Trial activated! You can now generate leads.');
+              window.location.reload(); // Reload to fetch updated trial status
+            }}
+            userId={userId}
+          />
         )}
 
-        <Box sx={{ textAlign: 'center', pt: 3, borderTop: '1px solid #e5e7eb' }}>
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
-            <LoadingButton
-              className="tour-generate-btn"
-              onClick={handleSubmit}
-              loading={createGoogleMapsLeadForm.isLoading || updateGoogleMapsLeadForm.isLoading || isSaving}
-              text={existingFormId ? 'Update Form' : 'Generate Leads'}
-              loadingText={isSaving ? savingStatus : 'Saving...'}
-            />
-
-            <Button
-              variant="outlined"
-              onClick={() => router.push('/leads-tracking/forms/leads?type=google-maps')}
-              sx={{
-                borderColor: '#CD1B78',
-                color: '#CD1B78',
-                '&:hover': {
-                  borderColor: '#b31665',
-                  backgroundColor: 'rgba(205, 27, 120, 0.04)',
-                },
-                px: 8,
-                py: 2,
-                borderRadius: 3,
-                fontSize: '16px',
-                fontWeight: 600,
-                textTransform: 'none',
-                height: 50,
-                minWidth: 245,
-              }}
-            >
-              View Leads
-            </Button>
-          </Box>
-
-          <Typography variant="caption" sx={{ color: '#6b7280', mt: 2, display: 'block' }}>
-            {existingFormId ? 'Update your saved form details' : 'Click to start searching for local businesses matching your criteria'}
-          </Typography>
-        </Box>
-      </Box>
-
-      {/* Success Modal */}
-      <SmartModal
-        open={openSuccessModal}
-        image={<Image src="/assets/images/success.png" alt="Success" width={64} height={64} />}
-        mainText="Success! 🎉"
-        subText={
-          'Your Google Maps lead form has been successfully saved. Please wait approximately 5 minutes for your first set of leads to be generated and check your email for updates. Going forward, you will automatically receive email notifications each time new businesses matching your criteria are discovered.'
-        }
-        buttonText="View Leads"
-        onClick={() => {
-          setOpenSuccessModal(false);
-          router.push('/leads-tracking/forms/leads?type=google-maps');
-        }}
-        onOutlineButtonClick={() => setOpenSuccessModal(false)}
-        outlineButtonText="Cancel"
-      />
-
-      {/* Limit Exceeded Modal */}
-      <LimitExceededModal
-        isOpen={showLimitExceededModal}
-        onClose={() => setShowLimitExceededModal(false)}
-        featureType="lead"
-        currentUsage={featureLimit?.lead?.noOfLeads?.count ?? 0}
-        limit={featureLimit?.lead?.noOfLeads?.limit ?? 0}
-        planName={subscriptionPlanType ?? 'your current plan'}
-      />
-
-      {/* Trial Activation Modal - Shows when user tries to generate leads without active trial */}
-      {userId && (
-        <TrialActivationModal
-          open={showTrialActivationModal}
-          onClose={() => setShowTrialActivationModal(false)}
-          onSuccess={() => {
-            setShowTrialActivationModal(false);
-            triggerToast('success', '🎉 Trial activated! You can now generate leads.');
-            window.location.reload(); // Reload to fetch updated trial status
+        {/* Lead Goal Reminder Modal */}
+        <SmartModal
+          open={showLeadGoalModal}
+          onClose={() => {
+            setShowLeadGoalModal(false);
+            proceedWithSave();
           }}
-          userId={userId}
+          image={<Box sx={{ fontSize: 48 }}>🎯</Box>}
+          mainText="Add Your Lead Goal?"
+          subText="Providing your lead generation goal helps our AI generate personalized, actionable next steps for each lead—making your outreach more effective."
+          handleAction={() => {
+            setShowLeadGoalModal(false);
+            // Scroll to and highlight the lead goal field
+            leadGoalRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => {
+              const textField = leadGoalRef.current?.querySelector('textarea');
+              if (textField) {
+                textField.focus();
+                textField.style.border = '2px solid #CD1B78';
+                textField.style.boxShadow = '0 0 0 3px rgba(205, 27, 120, 0.1)';
+                setTimeout(() => {
+                  textField.style.border = '';
+                  textField.style.boxShadow = '';
+                }, 3000);
+              }
+            }, 500);
+          }}
+          actionText="Add Lead Goal"
+          handleCancel={() => {
+            setShowLeadGoalModal(false);
+            proceedWithSave();
+          }}
+          cancelText="Continue Without Goal"
         />
-      )}
-
-      {/* Lead Goal Reminder Modal */}
-      <SmartModal
-        open={showLeadGoalModal}
-        onClose={() => {
-          setShowLeadGoalModal(false);
-          proceedWithSave();
-        }}
-        image={<Box sx={{ fontSize: 48 }}>🎯</Box>}
-        mainText="Add Your Lead Goal?"
-        subText="Providing your lead generation goal helps our AI generate personalized, actionable next steps for each lead—making your outreach more effective."
-        handleAction={() => {
-          setShowLeadGoalModal(false);
-          // Scroll to and highlight the lead goal field
-          leadGoalRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          setTimeout(() => {
-            const textField = leadGoalRef.current?.querySelector('textarea');
-            if (textField) {
-              textField.focus();
-              textField.style.border = '2px solid #CD1B78';
-              textField.style.boxShadow = '0 0 0 3px rgba(205, 27, 120, 0.1)';
-              setTimeout(() => {
-                textField.style.border = '';
-                textField.style.boxShadow = '';
-              }, 3000);
-            }
-          }, 500);
-        }}
-        actionText="Add Lead Goal"
-        handleCancel={() => {
-          setShowLeadGoalModal(false);
-          proceedWithSave();
-        }}
-        cancelText="Continue Without Goal"
-      />
-    </Box>
+      </Box>
+    </>
   );
 };
 
