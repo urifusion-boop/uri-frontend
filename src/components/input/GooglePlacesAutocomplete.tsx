@@ -17,9 +17,18 @@ interface GooglePlacesAutocompleteProps {
   placeholder?: string;
   tooltip?: string;
   required?: boolean;
+  googleMapsLoaded?: boolean; // NEW: Wait for Google Maps to load
 }
 
-const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({ value, onChange, label = 'Location', placeholder = 'Search for a location...', tooltip, required = false }) => {
+const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({
+  value,
+  onChange,
+  label = 'Location',
+  placeholder = 'Search for a location...',
+  tooltip,
+  required = false,
+  googleMapsLoaded = true,
+}) => {
   const [inputValue, setInputValue] = useState('');
   const [options, setOptions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -28,7 +37,11 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({ val
   const sessionToken = useRef<any>(null);
 
   useEffect(() => {
-    // Initialize Google Places services
+    // Initialize Google Places services ONLY after Google Maps is loaded
+    if (!googleMapsLoaded) {
+      return; // Wait until Google Maps script is loaded
+    }
+
     if (typeof window !== 'undefined' && (window as any).google && (window as any).google.maps) {
       autocompleteService.current = new (window as any).google.maps.places.AutocompleteService();
 
@@ -39,7 +52,7 @@ const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> = ({ val
       // Create a new session token for billing optimization
       sessionToken.current = new (window as any).google.maps.places.AutocompleteSessionToken();
     }
-  }, []);
+  }, [googleMapsLoaded]); // Re-run when googleMapsLoaded changes
 
   useEffect(() => {
     if (!inputValue || inputValue.length < 3) {

@@ -631,6 +631,7 @@ const GoogleMapsLeadForm = () => {
                   placeholder="Search for a city, address, or landmark..."
                   tooltip="Search for any location using Google Places. Start typing to see suggestions. The coordinates will be filled automatically."
                   required={false}
+                  googleMapsLoaded={googleMapsLoaded}
                 />
 
                 {/* Map Preview */}
