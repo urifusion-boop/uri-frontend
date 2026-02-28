@@ -90,6 +90,18 @@ export interface LeadDto {
   is_lazarus_monitored?: boolean;
   lazarus_focus_id?: string;
   resurrection_count?: number;
+  // Google Maps specific fields
+  google_place_id?: string;
+  google_rating?: number;
+  google_reviews_count?: number;
+  business_status?: string;
+  business_category?: string;
+  business_types?: string[];
+  formatted_address?: string;
+  latitude?: number;
+  longitude?: number;
+  price_level?: number;
+  opening_hours?: any;
 }
 
 export interface GetByFiltersLeadsDtoParameters {

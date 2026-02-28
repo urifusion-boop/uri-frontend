@@ -21,6 +21,7 @@ import LeadKanban from '../features/alert/LeadKanban';
 import SingleFieldInput from '../input/SingleFieldInput';
 import BusinessTableCard from './BusinessTableCard';
 import ConversationalTableCard from './ConversationalTableCard';
+import GoogleMapsTableCard from './GoogleMapsTableCard';
 import IndividualTableCard from './IndividualTableCard';
 import OrganizationTableCard from './OrganizationTableCard';
 import RealtimeLeadsDashboard from './RealtimeLeadsDashboard';
@@ -300,7 +301,7 @@ const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, 
               twitterData={isTwitterSource ? twitterData : null}
             />
           ) : leadType === LeadTypeEnum.GOOGLE_MAPS ? (
-            <BusinessTableCard
+            <GoogleMapsTableCard
               data={leadsData?.data?.data ?? []}
               page={page}
               pageSize={pageSize}
