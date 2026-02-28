@@ -116,7 +116,7 @@ const GoogleMapsLeadForm = () => {
         monitoring_interval_hours,
       } = existingForm;
 
-      setForm({
+      const formData = {
         user_id: userId,
         form_title,
         maps_search_mode: maps_search_mode || 'auto',
@@ -132,17 +132,22 @@ const GoogleMapsLeadForm = () => {
         add_to_history,
         lead_generation_goal,
         monitoring_interval_hours: monitoring_interval_hours || 0,
-      });
+      };
+
+      console.log('🔍 Setting form with data:', formData);
+      setForm(formData);
 
       // If we have lat/lng and location, restore the selectedPlace state
       if (maps_latitude && maps_longitude && maps_location) {
-        setSelectedPlace({
+        const placeData = {
           formatted_address: maps_location,
           latitude: maps_latitude,
           longitude: maps_longitude,
           place_id: '',
           name: maps_location,
-        });
+        };
+        console.log('🗺️ Restoring selectedPlace:', placeData);
+        setSelectedPlace(placeData);
       }
 
       setExistingFormId(lead_form_id);
