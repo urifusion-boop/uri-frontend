@@ -163,8 +163,18 @@ const GoogleMapsTableCard = ({ data, total, page, pageSize, search, setPage, set
       key: 'formatted_address' as any,
       title: 'Address',
       render: (_, row) => (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, maxWidth: 250 }}>
-          <Typography sx={{ fontSize: 12, color: '#374151', lineHeight: 1.4 }}>{row.formatted_address || row.location || '-'}</Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 200 }}>
+          <Typography
+            sx={{
+              fontSize: 12,
+              color: '#374151',
+              lineHeight: 1.4,
+              wordWrap: 'break-word',
+              whiteSpace: 'normal',
+            }}
+          >
+            {row.formatted_address || row.location || '-'}
+          </Typography>
           {row.latitude && row.longitude && (
             <Tooltip title={`Lat: ${row.latitude.toFixed(6)}, Lng: ${row.longitude.toFixed(6)}`}>
               <Typography
@@ -195,7 +205,7 @@ const GoogleMapsTableCard = ({ data, total, page, pageSize, search, setPage, set
       key: 'phone' as any,
       title: 'Contact',
       render: (_, row) => (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 150 }}>
           {row.phone && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <PhoneIcon sx={{ fontSize: 14, color: '#6b7280' }} />
@@ -205,6 +215,8 @@ const GoogleMapsTableCard = ({ data, total, page, pageSize, search, setPage, set
                   color: '#374151',
                   cursor: 'pointer',
                   '&:hover': { color: '#CD1B78', textDecoration: 'underline' },
+                  wordWrap: 'break-word',
+                  whiteSpace: 'normal',
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -229,10 +241,8 @@ const GoogleMapsTableCard = ({ data, total, page, pageSize, search, setPage, set
                   color: '#2563eb',
                   textDecoration: 'none',
                   '&:hover': { textDecoration: 'underline' },
-                  maxWidth: 150,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
+                  wordWrap: 'break-word',
+                  whiteSpace: 'normal',
                 }}
               >
                 Website
