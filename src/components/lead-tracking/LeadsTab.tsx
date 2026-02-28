@@ -299,6 +299,17 @@ const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, 
               total={leadsData?.data?.total ?? 0}
               twitterData={isTwitterSource ? twitterData : null}
             />
+          ) : leadType === LeadTypeEnum.GOOGLE_MAPS ? (
+            <BusinessTableCard
+              data={leadsData?.data?.data ?? []}
+              page={page}
+              pageSize={pageSize}
+              setPage={setPage}
+              setPageSize={setPageSize}
+              search={search}
+              setSearch={setSearch}
+              total={leadsData?.data?.total ?? 0}
+            />
           ) : null}
         </Box>
       )}
