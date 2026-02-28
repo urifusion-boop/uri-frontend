@@ -53,7 +53,7 @@ const LeadsManagePage = () => {
         individual: 'individual-leads',
         organization: 'organization-leads',
         conversational: 'conversational-leads',
-        googlemaps: 'googlemaps-leads',
+        'google-maps': 'googlemaps-leads',
       };
 
       const moduleId = moduleIdMap[type as string];

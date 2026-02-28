@@ -141,9 +141,15 @@ const CompletePage = () => {
         } else {
           throw new Error('Failed to complete onboarding');
         }
-      } catch (error) {
-        console.error('Onboarding completion error:', error);
-        toast.error('Failed to complete onboarding. Please try again.');
+      } catch (error: any) {
+        console.error('❌ Onboarding completion error:', error);
+        console.error('❌ Error details:', {
+          message: error?.message,
+          response: error?.response,
+          status: error?.response?.status,
+          data: error?.response?.data,
+        });
+        toast.error(`Failed to complete onboarding: ${error?.response?.data?.responseMessage || error?.message || 'Unknown error'}`);
 
         // Redirect back to workflow selection on error
         setTimeout(() => {
