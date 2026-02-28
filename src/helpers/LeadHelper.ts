@@ -48,6 +48,7 @@ export class LeadHelper {
       case 'conversational':
         return FormTypeEnum.CONVERSATIONAL;
       case 'googlemaps':
+      case 'google-maps':
         return FormTypeEnum.GOOGLE_MAPS;
       default:
         return FormTypeEnum.PERSON;

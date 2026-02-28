@@ -35,7 +35,7 @@ const formTypes: FormType[] = [
     icon: Description,
   },
   {
-    id: 'googlemaps',
+    id: 'google-maps',
     title: 'Google Maps Form',
     description: 'Discover local businesses through Google Maps based on location, business type, and other criteria.',
     icon: Place,

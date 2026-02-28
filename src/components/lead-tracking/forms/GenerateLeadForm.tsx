@@ -106,6 +106,7 @@ const GenerateLeadForm = () => {
       case 'conversational':
         return <ConversationLeadForm key="conversational" />;
       case 'googlemaps':
+      case 'google-maps':
         return <GoogleMapsLeadForm key="googlemaps" />;
       default:
         return <IndividualLeadForm key="individual-default" />;
