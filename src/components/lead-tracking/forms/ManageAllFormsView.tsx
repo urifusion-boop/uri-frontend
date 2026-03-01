@@ -1,3 +1,4 @@
+import ConfirmDeleteModal from '@/components/modals/ConfirmDeleteModal';
 import { LightThemeColors } from '@/configs/colors.config';
 import { LeadHelper } from '@/helpers/LeadHelper';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
@@ -30,6 +31,8 @@ const ManageAllFormsView = () => {
   const [filterType, setFilterType] = useState<FormTypeEnum | 'all'>('all');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedForm, setSelectedForm] = useState<any>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [formToDelete, setFormToDelete] = useState<{ id: string; title: string } | null>(null);
 
   const { useGetLeadFormsByUserId, deleteLeadForm, setDefaultForm, togglePause, toggleAutoGenerate } = useLeadFormHooks();
   const { data: allForms = [], isLoading } = useGetLeadFormsByUserId(userId);
@@ -137,11 +140,30 @@ const ManageAllFormsView = () => {
     handleMenuClose();
   };
 
-  const handleDeleteForm = async (formId: string) => {
-    if (confirm('Are you sure you want to delete this form? This action cannot be undone.')) {
-      deleteLeadForm.mutate(formId);
-      handleMenuClose();
-    }
+  const handleDeleteForm = async (formId: string, formTitle: string) => {
+    setFormToDelete({ id: formId, title: formTitle });
+    setDeleteModalOpen(true);
+    handleMenuClose();
+  };
+
+  const confirmDelete = () => {
+    if (!formToDelete) return;
+
+    deleteLeadForm.mutate(formToDelete.id, {
+      onSuccess: () => {
+        setDeleteModalOpen(false);
+        setFormToDelete(null);
+      },
+      onError: () => {
+        setDeleteModalOpen(false);
+        setFormToDelete(null);
+      },
+    });
+  };
+
+  const cancelDelete = () => {
+    setDeleteModalOpen(false);
+    setFormToDelete(null);
   };
 
   const handleSetDefault = (form: any) => {
@@ -714,11 +736,23 @@ const ManageAllFormsView = () => {
           <AutorenewIcon fontSize="small" sx={{ color: '#3B82F6' }} />
           {selectedForm?.auto_generate ? 'Disable' : 'Enable'} Auto-Gen
         </MenuItem>
-        <MenuItem onClick={() => selectedForm && handleDeleteForm(selectedForm.lead_form_id)} sx={{ fontSize: '14px', fontWeight: 500, gap: 1.5, py: 1.2, color: '#EF4444' }}>
+        <MenuItem onClick={() => selectedForm && handleDeleteForm(selectedForm.lead_form_id, selectedForm.form_title)} sx={{ fontSize: '14px', fontWeight: 500, gap: 1.5, py: 1.2, color: '#EF4444' }}>
           <DeleteIcon fontSize="small" />
           Delete
         </MenuItem>
       </Menu>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDeleteModal
+        open={deleteModalOpen}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        spamTitle={formToDelete?.title}
+        isProcessing={deleteLeadForm.isPending}
+        title="Delete Lead Form"
+        description="Are you sure you want to permanently delete this lead form? This will also delete all associated leads and cannot be undone."
+        itemLabel="Form Name"
+      />
     </Container>
   );
 };

@@ -2,6 +2,7 @@ import SeoHead from '@/components/atoms/SeoHead';
 import FormTypeSelector from '@/components/lead-tracking/forms/FormTypeSelector';
 import { default as IndividualLeadForm } from '@/components/lead-tracking/forms/IndividualLeadForm';
 import OrganizationLeadForm from '@/components/lead-tracking/forms/OrganizationLeadForm';
+import ConfirmDeleteModal from '@/components/modals/ConfirmDeleteModal';
 import { LeadHelper } from '@/helpers/LeadHelper';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
 import { useAuth } from '@/providers/AuthProvider';
@@ -18,6 +19,8 @@ import GoogleMapsLeadForm from './GoogleMapsLeadForm';
 const GenerateLeadForm = () => {
   const router = useRouter();
   const [selectedFormType, setSelectedFormType] = useState<string>('individual');
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [formToDelete, setFormToDelete] = useState<{ id: string; title: string } | null>(null);
   const { userDetails } = useAuth();
   const userId = userDetails?.userId;
 
@@ -87,24 +90,40 @@ const GenerateLeadForm = () => {
     );
   };
 
-  const handleDeleteForm = (e: React.MouseEvent, formId: string) => {
+  const handleDeleteForm = (e: React.MouseEvent, formId: string, formTitle: string) => {
     e.stopPropagation(); // Prevent dropdown from closing
+    setFormToDelete({ id: formId, title: formTitle });
+    setDeleteModalOpen(true);
+  };
 
-    if (confirm('Are you sure you want to delete this form? This will also delete all associated leads.')) {
-      deleteLeadForm.mutate(formId, {
-        onSuccess: () => {
-          // If we deleted the currently selected form, redirect to the first remaining form or create mode
-          if (router.query.form_id === formId) {
-            const remainingForms = formsForType.filter((f: any) => f.lead_form_id !== formId);
-            if (remainingForms.length > 0) {
-              handleFormSelect(remainingForms[0].lead_form_id);
-            } else {
-              handleSwitchToCreateMode();
-            }
+  const confirmDelete = () => {
+    if (!formToDelete) return;
+
+    deleteLeadForm.mutate(formToDelete.id, {
+      onSuccess: () => {
+        setDeleteModalOpen(false);
+        setFormToDelete(null);
+
+        // If we deleted the currently selected form, redirect to the first remaining form or create mode
+        if (router.query.form_id === formToDelete.id) {
+          const remainingForms = formsForType.filter((f: any) => f.lead_form_id !== formToDelete.id);
+          if (remainingForms.length > 0) {
+            handleFormSelect(remainingForms[0].lead_form_id);
+          } else {
+            handleSwitchToCreateMode();
           }
-        },
-      });
-    }
+        }
+      },
+      onError: () => {
+        setDeleteModalOpen(false);
+        setFormToDelete(null);
+      },
+    });
+  };
+
+  const cancelDelete = () => {
+    setDeleteModalOpen(false);
+    setFormToDelete(null);
   };
 
   const isCreateMode = router.query.mode === 'create';
@@ -263,7 +282,7 @@ const GenerateLeadForm = () => {
                           </Box>
                           <IconButton
                             size="small"
-                            onClick={(e) => handleDeleteForm(e, form.lead_form_id)}
+                            onClick={(e) => handleDeleteForm(e, form.lead_form_id, form.form_title)}
                             sx={{
                               ml: 1,
                               color: '#ef4444',
@@ -331,6 +350,18 @@ const GenerateLeadForm = () => {
 
         <Box sx={{ mt: 2 }}>{renderForm()}</Box>
       </Box>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDeleteModal
+        open={deleteModalOpen}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        spamTitle={formToDelete?.title}
+        isProcessing={deleteLeadForm.isPending}
+        title="Delete Lead Form"
+        description="Are you sure you want to permanently delete this lead form? This will also delete all associated leads and cannot be undone."
+        itemLabel="Form Name"
+      />
     </>
   );
 };
