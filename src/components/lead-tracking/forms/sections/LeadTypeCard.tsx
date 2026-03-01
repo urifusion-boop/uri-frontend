@@ -109,11 +109,15 @@ const LeadTypeCard = ({ colorMap }: LeadTypeCardProps) => {
   });
 
   const handleManageClick = (typeKey: string) => {
-    router.push(`/leads-tracking/forms/manage?type=${typeKey}`);
+    // Convert googlemaps to google-maps for URL consistency
+    const urlType = typeKey === 'googlemaps' ? 'google-maps' : typeKey;
+    router.push(`/leads-tracking/forms/manage?type=${urlType}`);
   };
 
   const handleViewLeads = (typeKey: string) => {
-    router.push(`/leads-tracking/forms/leads?type=${typeKey}`);
+    // Convert googlemaps to google-maps for URL consistency
+    const urlType = typeKey === 'googlemaps' ? 'google-maps' : typeKey;
+    router.push(`/leads-tracking/forms/leads?type=${urlType}`);
   };
 
   // Multi-form handlers
