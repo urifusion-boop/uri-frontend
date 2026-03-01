@@ -6,8 +6,9 @@ import { LeadHelper } from '@/helpers/LeadHelper';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
 import { useAuth } from '@/providers/AuthProvider';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { Box, Button, FormControl, MenuItem, Select, Typography } from '@mui/material';
+import { Box, Button, FormControl, IconButton, MenuItem, Select, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import BusinessLeadForm from './BusinessLeadForm';
@@ -20,7 +21,7 @@ const GenerateLeadForm = () => {
   const { userDetails } = useAuth();
   const userId = userDetails?.userId;
 
-  const { useGetFormsByUserAndType } = useLeadFormHooks();
+  const { useGetFormsByUserAndType, deleteLeadForm } = useLeadFormHooks();
 
   // Convert selectedFormType to FormTypeEnum for API call
   const formTypeEnum = LeadHelper.getFormTypeFromUrlParam(selectedFormType);
@@ -84,6 +85,26 @@ const GenerateLeadForm = () => {
       undefined,
       { shallow: true }
     );
+  };
+
+  const handleDeleteForm = (e: React.MouseEvent, formId: string) => {
+    e.stopPropagation(); // Prevent dropdown from closing
+
+    if (confirm('Are you sure you want to delete this form? This will also delete all associated leads.')) {
+      deleteLeadForm.mutate(formId, {
+        onSuccess: () => {
+          // If we deleted the currently selected form, redirect to the first remaining form or create mode
+          if (router.query.form_id === formId) {
+            const remainingForms = formsForType.filter((f: any) => f.lead_form_id !== formId);
+            if (remainingForms.length > 0) {
+              handleFormSelect(remainingForms[0].lead_form_id);
+            } else {
+              handleSwitchToCreateMode();
+            }
+          }
+        },
+      });
+    }
   };
 
   const isCreateMode = router.query.mode === 'create';
@@ -218,26 +239,42 @@ const GenerateLeadForm = () => {
                   >
                     {formsForType.map((form: any) => (
                       <MenuItem key={form.lead_form_id} value={form.lead_form_id}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {form.form_title}
-                          </Typography>
-                          {form.is_default && (
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                backgroundColor: '#CD1B78',
-                                color: '#fff',
-                                px: 1,
-                                py: 0.25,
-                                borderRadius: '4px',
-                                fontSize: '10px',
-                                fontWeight: 600,
-                              }}
-                            >
-                              DEFAULT
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                              {form.form_title}
                             </Typography>
-                          )}
+                            {form.is_default && (
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  backgroundColor: '#CD1B78',
+                                  color: '#fff',
+                                  px: 1,
+                                  py: 0.25,
+                                  borderRadius: '4px',
+                                  fontSize: '10px',
+                                  fontWeight: 600,
+                                }}
+                              >
+                                DEFAULT
+                              </Typography>
+                            )}
+                          </Box>
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleDeleteForm(e, form.lead_form_id)}
+                            sx={{
+                              ml: 1,
+                              color: '#ef4444',
+                              '&:hover': {
+                                backgroundColor: '#fee2e2',
+                                color: '#dc2626',
+                              },
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
                         </Box>
                       </MenuItem>
                     ))}
