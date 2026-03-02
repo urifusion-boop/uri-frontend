@@ -17,7 +17,8 @@ import { useAuth } from '@/providers/AuthProvider';
 import { useFeatureLimitStore } from '@/store/useFeatureLimitStore';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { Box, Button, FormControl, IconButton, LinearProgress, MenuItem, Select, TextField, Tooltip, Typography } from '@mui/material';
+import PlaceIcon from '@mui/icons-material/Place';
+import { Box, Button, Checkbox, FormControl, FormControlLabel, IconButton, LinearProgress, MenuItem, Select, Slider, TextField, Tooltip, Typography } from '@mui/material';
 import Image from 'next/image';
 import router from 'next/router';
 import { useEffect, useRef, useState } from 'react';
@@ -36,6 +37,13 @@ const OrganizationLeadForm = () => {
     revenue_range_min: 0,
     per_page: 10,
     monitoring_interval_hours: 0,
+    // Location Intelligence fields
+    enable_location_intelligence: false,
+    location_zone_center_lat: undefined,
+    location_zone_center_lng: undefined,
+    location_zone_radius_km: 10,
+    location_zone_name: '',
+    min_trust_score: 3.0,
   });
 
   const [existingFormId, setExistingFormId] = useState<string | null>(null);
@@ -657,6 +665,192 @@ const OrganizationLeadForm = () => {
               }
               placeholder="e.g. Ireland"
             />
+          </Box>
+
+          {/* Location Intelligence Section */}
+          <Box
+            sx={{
+              mt: 4,
+              mb: 3,
+              p: 3,
+              borderRadius: 2,
+              border: '2px dashed #e5e7eb',
+              backgroundColor: '#fafbfc',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                borderColor: '#CD1B78',
+                backgroundColor: '#fff',
+              },
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #CD1B78 0%, #a31560 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                }}
+              >
+                <PlaceIcon fontSize="small" />
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="h6" sx={{ fontSize: '16px', fontWeight: 700, color: '#111827', mb: 0.5 }}>
+                  URI Location Intelligence
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#6b7280', fontSize: '13px' }}>
+                  Target companies within a specific geographic zone using precision location targeting
+                </Typography>
+              </Box>
+            </Box>
+
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={form.enable_location_intelligence || false}
+                  onChange={(e) => handleChange('enable_location_intelligence', e.target.checked)}
+                  sx={{
+                    color: '#CD1B78',
+                    '&.Mui-checked': {
+                      color: '#CD1B78',
+                    },
+                  }}
+                />
+              }
+              label={
+                <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151' }}>
+                  Enable precise geographic targeting
+                </Typography>
+              }
+              sx={{ mb: 2 }}
+            />
+
+            {form.enable_location_intelligence && (
+              <Box sx={{ mt: 3 }}>
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="body2" sx={{ color: '#374151', mb: 1, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                    Target Zone Center
+                    <Tooltip title="Enter the center point of your search area (e.g., 'Ogba, Lagos' or 'Victoria Island')" arrow>
+                      <InfoOutlinedIcon fontSize="small" sx={{ ml: 0.5, color: '#9ca3af' }} />
+                    </Tooltip>
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    placeholder="e.g., Ogba, Lagos or Victoria Island, Nigeria"
+                    value={form.location_zone_name || ''}
+                    onChange={(e) => {
+                      handleChange('location_zone_name', e.target.value);
+                      // Note: In production, you'd use Google Places Autocomplete here
+                      // For now, user enters location manually
+                    }}
+                    variant="outlined"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                        backgroundColor: '#fff',
+                      },
+                    }}
+                  />
+                  <Typography variant="caption" sx={{ color: '#6b7280', mt: 0.5, display: 'block' }}>
+                    💡 Tip: Be specific (e.g., "Ikeja, Lagos" instead of just "Lagos")
+                  </Typography>
+                </Box>
+
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="body2" sx={{ color: '#374151', mb: 1, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                    Search Radius: {form.location_zone_radius_km || 10}km
+                    <Tooltip title="How far from the center point should we search for companies?" arrow>
+                      <InfoOutlinedIcon fontSize="small" sx={{ ml: 0.5, color: '#9ca3af' }} />
+                    </Tooltip>
+                  </Typography>
+                  <Slider
+                    value={form.location_zone_radius_km || 10}
+                    onChange={(_, value) => handleChange('location_zone_radius_km', value as number)}
+                    min={1}
+                    max={50}
+                    step={1}
+                    marks={[
+                      { value: 1, label: '1km' },
+                      { value: 10, label: '10km' },
+                      { value: 25, label: '25km' },
+                      { value: 50, label: '50km' },
+                    ]}
+                    valueLabelDisplay="auto"
+                    sx={{
+                      color: '#CD1B78',
+                      '& .MuiSlider-thumb': {
+                        backgroundColor: '#CD1B78',
+                      },
+                      '& .MuiSlider-track': {
+                        backgroundColor: '#CD1B78',
+                      },
+                      '& .MuiSlider-rail': {
+                        backgroundColor: '#e5e7eb',
+                      },
+                    }}
+                  />
+                </Box>
+
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" sx={{ color: '#374151', mb: 1, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                    Minimum Trust Score: {form.min_trust_score || 3.0}/5.0
+                    <Tooltip title="Only include companies with a trust score above this threshold (based on reviews and ratings)" arrow>
+                      <InfoOutlinedIcon fontSize="small" sx={{ ml: 0.5, color: '#9ca3af' }} />
+                    </Tooltip>
+                  </Typography>
+                  <Slider
+                    value={form.min_trust_score || 3.0}
+                    onChange={(_, value) => handleChange('min_trust_score', value as number)}
+                    min={0}
+                    max={5}
+                    step={0.5}
+                    marks={[
+                      { value: 0, label: '0' },
+                      { value: 2.5, label: '2.5' },
+                      { value: 3.5, label: '3.5' },
+                      { value: 5, label: '5' },
+                    ]}
+                    valueLabelDisplay="auto"
+                    sx={{
+                      color: '#10b981',
+                      '& .MuiSlider-thumb': {
+                        backgroundColor: '#10b981',
+                      },
+                      '& .MuiSlider-track': {
+                        backgroundColor: '#10b981',
+                      },
+                      '& .MuiSlider-rail': {
+                        backgroundColor: '#e5e7eb',
+                      },
+                    }}
+                  />
+                </Box>
+
+                <Box
+                  sx={{
+                    mt: 3,
+                    p: 2,
+                    backgroundColor: '#f0f9ff',
+                    borderRadius: 1.5,
+                    border: '1px solid #bae6fd',
+                  }}
+                >
+                  <Typography variant="caption" sx={{ color: '#0369a1', fontSize: '13px', display: 'block' }}>
+                    📍{' '}
+                    <strong>
+                      URI will discover companies within {form.location_zone_radius_km}km of {form.location_zone_name || 'your target zone'}
+                    </strong>
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#0369a1', fontSize: '12px', display: 'block', mt: 0.5 }}>
+                    Companies will be enriched with firmographic data when available, giving you the best of location precision and business intelligence.
+                  </Typography>
+                </Box>
+              </Box>
+            )}
           </Box>
 
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr ' }, gap: 3, mb: 3 }}>

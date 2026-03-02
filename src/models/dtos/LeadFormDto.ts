@@ -148,6 +148,14 @@ export class OrganizationLeadFormDto {
   per_page?: number;
   lead_generation_goal?: string; // AI Next Steps - User's business goal
   monitoring_interval_hours?: number; // How often to check for new leads (0 = one-time, >0 = recurring)
+
+  // Location Intelligence fields
+  enable_location_intelligence?: boolean;
+  location_zone_center_lat?: number;
+  location_zone_center_lng?: number;
+  location_zone_radius_km?: number;
+  location_zone_name?: string;
+  min_trust_score?: number;
 }
 
 export interface LeadFormResponseDto {
