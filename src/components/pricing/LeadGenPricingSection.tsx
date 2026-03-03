@@ -11,20 +11,21 @@ const WALLET_COSTS = {
   phoneEnrichment: 750,
 };
 
-// Credit Costs
+// Credit Costs (1 credit = ₦140)
 const CREDIT_COSTS = {
-  scan: 1,
-  lead: 1,
   emailEnrichment: 1,
-  phoneEnrichment: 10,
+  verifiedSalesSignal: 1,
+  salesSignalScan: 7,
+  phoneEnrichment: 7,
+  lazarusScan: 10,
 };
 
-// Credit Bundle Pricing
+// Credit Bundle Pricing (matches backend CreditBundle.ts)
 const CREDIT_BUNDLES = [
-  { name: 'Small', credits: 10, price: 7500, pricePerCredit: 750 },
-  { name: 'Medium', credits: 30, price: 20500, pricePerCredit: 683 },
-  { name: 'Large', credits: 80, price: 55000, pricePerCredit: 687.5 },
-  { name: 'Enterprise', credits: 150, price: 112500, pricePerCredit: 750 },
+  { name: 'Small', credits: 35, price: 5000, pricePerCredit: 140 },
+  { name: 'Medium', credits: 71, price: 10000, pricePerCredit: 140 },
+  { name: 'Large', credits: 142, price: 20000, pricePerCredit: 140 },
+  { name: 'Enterprise', credits: 200, price: 30000, pricePerCredit: 150 },
 ];
 
 export const LeadGenPricingSection = () => {
@@ -246,23 +247,7 @@ export const LeadGenPricingSection = () => {
               <Stack spacing={1.5}>
                 <Stack direction="row" justifyContent="space-between">
                   <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-                    Scan (per result)
-                  </Typography>
-                  <Typography variant="body2" fontWeight={700}>
-                    {CREDIT_COSTS.scan} credit
-                  </Typography>
-                </Stack>
-                <Stack direction="row" justifyContent="space-between">
-                  <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-                    Lead save
-                  </Typography>
-                  <Typography variant="body2" fontWeight={700}>
-                    {CREDIT_COSTS.lead} credit
-                  </Typography>
-                </Stack>
-                <Stack direction="row" justifyContent="space-between">
-                  <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-                    Email enrichment
+                    Email reveal
                   </Typography>
                   <Typography variant="body2" fontWeight={700}>
                     {CREDIT_COSTS.emailEnrichment} credit
@@ -270,10 +255,34 @@ export const LeadGenPricingSection = () => {
                 </Stack>
                 <Stack direction="row" justifyContent="space-between">
                   <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-                    Phone enrichment
+                    Verified sales signal
+                  </Typography>
+                  <Typography variant="body2" fontWeight={700}>
+                    {CREDIT_COSTS.verifiedSalesSignal} credit
+                  </Typography>
+                </Stack>
+                <Stack direction="row" justifyContent="space-between">
+                  <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
+                    Phone reveal
                   </Typography>
                   <Typography variant="body2" fontWeight={700}>
                     {CREDIT_COSTS.phoneEnrichment} credits
+                  </Typography>
+                </Stack>
+                <Stack direction="row" justifyContent="space-between">
+                  <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
+                    Sales signal scan
+                  </Typography>
+                  <Typography variant="body2" fontWeight={700}>
+                    {CREDIT_COSTS.salesSignalScan} credits
+                  </Typography>
+                </Stack>
+                <Stack direction="row" justifyContent="space-between">
+                  <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
+                    Lazarus scan
+                  </Typography>
+                  <Typography variant="body2" fontWeight={700}>
+                    {CREDIT_COSTS.lazarusScan} credits
                   </Typography>
                 </Stack>
               </Stack>

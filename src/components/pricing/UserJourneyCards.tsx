@@ -281,11 +281,11 @@ export const UserJourneyCards = ({
       title: 'Credit Bundles',
       subtitle: 'Best value',
       description: 'Buy credit bundles upfront for the best per-action pricing. Ideal for power users.',
-      features: ['Up to 10% savings vs PAYG', 'Bundles from 10-200 credits', 'Credits never expire', 'Discounted enrichment costs'],
+      features: ['35-200 credit bundles', '₦5,000 - ₦30,000', 'Credits never expire', '1 credit = ₦140'],
       isHighlighted: true,
       actionLabel: 'Buy Credits',
-      onAction: undefined,
-      comingSoon: true,
+      onAction: () => router.push('/wallet'),
+      comingSoon: false,
     },
   ];
 
