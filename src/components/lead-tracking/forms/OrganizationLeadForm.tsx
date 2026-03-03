@@ -385,6 +385,11 @@ const OrganizationLeadForm = () => {
         },
       });
 
+      // 🚨 DEBUG: Show alert to confirm this code is running
+      alert(
+        `FRONTEND UPDATE: enable_location_intelligence = ${updatePayload.enable_location_intelligence}, lat = ${updatePayload.location_zone_center_lat}, lng = ${updatePayload.location_zone_center_lng}`
+      );
+
       updateOrganizationSearchLeadForm.mutate(
         { lead_form_id: existingFormId, data: updatePayload },
         {
@@ -434,6 +439,9 @@ const OrganizationLeadForm = () => {
         }
       );
     } else {
+      // 🚨 DEBUG: Show alert for CREATE
+      alert(`FRONTEND CREATE: enable_location_intelligence = ${payload.enable_location_intelligence}, lat = ${payload.location_zone_center_lat}, lng = ${payload.location_zone_center_lng}`);
+
       createOrganizationLeadForm.mutate(payload, {
         onSuccess: () => {
           clearInterval(tipInterval);
