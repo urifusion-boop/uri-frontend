@@ -228,12 +228,22 @@ const OrganizationLeadForm = () => {
   }));
 
   const handleChange = (field: keyof OrganizationLeadFormDto, value: any) => {
+    // 🔍 LOG: Track Location Intelligence checkbox changes
+    if (field === 'enable_location_intelligence') {
+      console.log('🎯 [LOCATION INTELLIGENCE] Checkbox toggled:', value);
+    }
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const handlePlaceSelect = (place: { formatted_address: string; latitude: number; longitude: number; place_id: string; name: string } | null) => {
+    console.log('📍 [LOCATION SELECT] Place selected:', place);
     setSelectedPlace(place);
     if (place) {
+      console.log('✅ [LOCATION SELECT] Updating form with coordinates:', {
+        location_zone_name: place.formatted_address,
+        location_zone_center_lat: place.latitude,
+        location_zone_center_lng: place.longitude,
+      });
       setForm((prev) => ({
         ...prev,
         location_zone_name: place.formatted_address,
@@ -241,6 +251,7 @@ const OrganizationLeadForm = () => {
         location_zone_center_lng: place.longitude,
       }));
     } else {
+      console.log('❌ [LOCATION SELECT] Clearing location data');
       setForm((prev) => ({
         ...prev,
         location_zone_name: '',
@@ -326,6 +337,17 @@ const OrganizationLeadForm = () => {
       user_id: userId,
     };
 
+    // 🔍 LOG: Full form state before save
+    console.log('📋 [FORM SAVE] Full form state:', {
+      enable_location_intelligence: form.enable_location_intelligence,
+      location_zone_center_lat: form.location_zone_center_lat,
+      location_zone_center_lng: form.location_zone_center_lng,
+      location_zone_radius_km: form.location_zone_radius_km,
+      location_zone_name: form.location_zone_name,
+      min_trust_score: form.min_trust_score,
+      selectedPlace: selectedPlace,
+    });
+
     if (existingFormId) {
       const updatePayload: OrganizationLeadFormDto = {
         form_title: payload.form_title || '',
@@ -349,6 +371,19 @@ const OrganizationLeadForm = () => {
         location_zone_name: payload.location_zone_name,
         min_trust_score: payload.min_trust_score,
       };
+
+      // 🔍 LOG: Update payload being sent
+      console.log('🚀 [FORM UPDATE] Sending update payload:', {
+        lead_form_id: existingFormId,
+        locationIntelligence: {
+          enable_location_intelligence: updatePayload.enable_location_intelligence,
+          location_zone_center_lat: updatePayload.location_zone_center_lat,
+          location_zone_center_lng: updatePayload.location_zone_center_lng,
+          location_zone_radius_km: updatePayload.location_zone_radius_km,
+          location_zone_name: updatePayload.location_zone_name,
+          min_trust_score: updatePayload.min_trust_score,
+        },
+      });
 
       updateOrganizationSearchLeadForm.mutate(
         { lead_form_id: existingFormId, data: updatePayload },
