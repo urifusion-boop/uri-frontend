@@ -94,6 +94,7 @@ export interface LeadDto {
   google_place_id?: string;
   google_rating?: number;
   google_reviews_count?: number;
+  trust_score?: number;
   business_status?: string;
   business_category?: string;
   business_types?: string[];
