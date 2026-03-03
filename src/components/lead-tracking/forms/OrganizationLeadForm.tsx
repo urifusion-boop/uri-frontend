@@ -341,6 +341,13 @@ const OrganizationLeadForm = () => {
         auto_generate: payload.auto_generate || false,
         per_page: payload.per_page || 10,
         lead_generation_goal: payload.lead_generation_goal || '',
+        // Location Intelligence fields
+        enable_location_intelligence: payload.enable_location_intelligence || false,
+        location_zone_center_lat: payload.location_zone_center_lat,
+        location_zone_center_lng: payload.location_zone_center_lng,
+        location_zone_radius_km: payload.location_zone_radius_km,
+        location_zone_name: payload.location_zone_name,
+        min_trust_score: payload.min_trust_score,
       };
 
       updateOrganizationSearchLeadForm.mutate(

@@ -156,6 +156,30 @@ const OrganizationTableCard = ({ data, total, page, pageSize, search, setPage, s
       render: (_, row) => <Typography className="text-sm text-center text-gray-600">{row.location ?? '-'}</Typography>,
     },
     {
+      key: 'google_rating',
+      title: 'Trust Score',
+      render: (_, row) => {
+        if (!row.google_rating) return <Typography className="text-sm text-center text-gray-400">-</Typography>;
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+            <Typography className="text-sm font-bold" sx={{ color: row.google_rating >= 4 ? '#16a34a' : row.google_rating >= 3 ? '#f59e0b' : '#ef4444' }}>
+              {row.google_rating.toFixed(1)}
+            </Typography>
+            <Typography className="text-xs text-gray-500">★</Typography>
+          </Box>
+        );
+      },
+    },
+    {
+      key: 'formatted_address',
+      title: 'Regional Zone',
+      render: (_, row) => (
+        <Typography className="text-sm text-gray-600" sx={{ fontWeight: 500, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {row.formatted_address || '-'}
+        </Typography>
+      ),
+    },
+    {
       key: 'social_profile_link',
       title: 'Profile Links',
       render: (_, row) => {
