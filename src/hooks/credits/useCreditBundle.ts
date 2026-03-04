@@ -49,7 +49,7 @@ export const useCreditBundle = () => {
     isError: isBatchesError,
   } = useQuery(['credit-batches', userId], () => CreditBundleService.getCreditBatches(userId), {
     enabled: !!userId,
-    select: (res) => res.responseData,
+    select: (res) => (Array.isArray(res.responseData) ? res.responseData : []),
   });
 
   // Get credit summary
@@ -59,7 +59,7 @@ export const useCreditBundle = () => {
     isError: isSummaryError,
   } = useQuery(['credit-summary', userId], () => CreditBundleService.getCreditSummary(userId), {
     enabled: !!userId,
-    select: (res) => res.responseData,
+    select: (res) => res.responseData || null,
   });
 
   // Verify purchase mutation
