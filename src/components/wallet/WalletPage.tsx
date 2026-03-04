@@ -18,13 +18,18 @@ import {
   InputAdornment,
   Skeleton,
   Stack,
+  Table,
+  TableBody,
   TableCell,
+  TableContainer,
+  TableHead,
   TableRow,
   TextField,
   Typography,
   alpha,
   styled,
 } from '@mui/material';
+import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { FaCoins, FaTimes } from 'react-icons/fa';
 import { CreditBundleSection } from './CreditBundleSection';
@@ -44,8 +49,9 @@ const HoverRow = styled(TableRow)(({ theme }) => ({
 const MIN_FUNDING_AMOUNT = 5000;
 
 export const WalletPage = () => {
+  const router = useRouter();
   const { balance, currency, transactions, isLoadingWallet, isWalletError, fundWallet, isFunding } = useWallet();
-  const { creditsAvailable, creditsUsed, totalCredits, isLoadingBalance, purchaseHistory, isLoadingHistory } = useCreditBundle();
+  const { creditsAvailable, creditsUsed, totalCredits, isLoadingBalance, purchaseHistory, isLoadingHistory, creditBatches, isLoadingBatches, creditSummary, isLoadingSummary } = useCreditBundle();
   const [openFundModal, setOpenFundModal] = useState(false);
   const [amount, setAmount] = useState('');
 
@@ -332,6 +338,99 @@ export const WalletPage = () => {
           </Box>
         </DialogContent>
       </Dialog>
+
+      {/* Expiring Soon Alert */}
+      {!isLoadingSummary && creditSummary && creditSummary.expiringIn7Days > 0 && (
+        <Alert
+          severity="warning"
+          sx={{ mb: 3, borderRadius: 3 }}
+          action={
+            <Button size="small" onClick={() => router.push('/buy-credits')} sx={{ color: 'warning.main', fontWeight: 700 }}>
+              Buy Credits
+            </Button>
+          }
+        >
+          <Typography variant="body2" fontWeight={600}>
+            ⏳ You have {creditSummary.expiringIn7Days} credits expiring in the next 7 days!
+          </Typography>
+          <Typography variant="caption">Top up now to automatically roll them over and extend their validity by 30 days.</Typography>
+        </Alert>
+      )}
+
+      {/* Credit Batches Table */}
+      <Card sx={{ mb: 3, borderRadius: 3 }}>
+        <CardContent>
+          <Typography variant="h6" fontWeight={700} gutterBottom>
+            Your Credit Batches
+          </Typography>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Credits are valid for 30 days from purchase. Top up before expiry to roll them over.
+          </Typography>
+
+          <TableContainer sx={{ mt: 2 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <StyledTableCell>Purchase Date</StyledTableCell>
+                  <StyledTableCell align="center">Credits Purchased</StyledTableCell>
+                  <StyledTableCell align="center">Remaining</StyledTableCell>
+                  <StyledTableCell align="center">Expiry Date</StyledTableCell>
+                  <StyledTableCell align="center">Status</StyledTableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {isLoadingBatches ? (
+                  <TableRow>
+                    <TableCell colSpan={5}>
+                      <Skeleton height={50} />
+                    </TableCell>
+                  </TableRow>
+                ) : creditBatches.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} align="center">
+                      <Typography variant="body2" color="text.secondary" sx={{ py: 3 }}>
+                        No credit batches found. Purchase credits to get started.
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  creditBatches.map((batch) => {
+                    const daysUntilExpiry = Math.ceil((new Date(batch.expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                    const isExpiringSoon = daysUntilExpiry <= 7 && daysUntilExpiry > 0;
+
+                    return (
+                      <HoverRow key={batch.batchId}>
+                        <TableCell>{new Date(batch.purchaseDate).toLocaleDateString()}</TableCell>
+                        <TableCell align="center">{batch.credits.toLocaleString()}</TableCell>
+                        <TableCell align="center">
+                          <Typography fontWeight={600} color={batch.remainingCredits > 0 ? 'primary' : 'text.secondary'}>
+                            {batch.remainingCredits.toLocaleString()}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="center">
+                          <Typography variant="body2" color={isExpiringSoon ? 'warning.main' : 'text.primary'} fontWeight={isExpiringSoon ? 600 : 400}>
+                            {new Date(batch.expiryDate).toLocaleDateString()}
+                            {isExpiringSoon && <Chip size="small" label={`${daysUntilExpiry}d left`} color="warning" sx={{ ml: 1, fontWeight: 700 }} />}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="center">
+                          {batch.status === 'active' ? (
+                            <Chip size="small" label="Active" color="success" sx={{ fontWeight: 700 }} />
+                          ) : batch.status === 'expired' ? (
+                            <Chip size="small" label="Expired" color="error" sx={{ fontWeight: 700 }} />
+                          ) : (
+                            <Chip size="small" label="Rolled Over" color="info" sx={{ fontWeight: 700 }} />
+                          )}
+                        </TableCell>
+                      </HoverRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </CardContent>
+      </Card>
 
       {/* Credit Bundles Section */}
       <CreditBundleSection />
