@@ -46,7 +46,7 @@ export const LeadGenPricingSection = () => {
           Credit Bundles
         </Typography>
         <Typography variant="body1" sx={{ color: '#6B6B6B', maxWidth: 600, mx: 'auto' }}>
-          Buy credit bundles for the best value on lead generation. Credits never expire and can be used for all lead actions.
+          Buy credit bundles for the best value on lead generation. Credits are valid for 30 days and roll over when you top up.
         </Typography>
       </Box>
 
@@ -117,13 +117,19 @@ export const LeadGenPricingSection = () => {
                   <Stack direction="row" alignItems="center" gap={1}>
                     <FaCheck size={12} color="#27ae60" />
                     <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-                      Predictable budgeting
+                      Credits valid for 30 days
                     </Typography>
                   </Stack>
                   <Stack direction="row" alignItems="center" gap={1}>
                     <FaCheck size={12} color="#27ae60" />
                     <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-                      Credits never expire
+                      Unused credits roll over when you top up
+                    </Typography>
+                  </Stack>
+                  <Stack direction="row" alignItems="center" gap={1}>
+                    <FaCheck size={12} color="#27ae60" />
+                    <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
+                      Get notified before expiry
                     </Typography>
                   </Stack>
                 </Stack>
@@ -204,9 +210,6 @@ export const LeadGenPricingSection = () => {
                   Price
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 700 }}>
-                  Per Credit
-                </TableCell>
-                <TableCell align="center" sx={{ fontWeight: 700 }}>
                   Savings
                 </TableCell>
               </TableRow>
@@ -239,11 +242,6 @@ export const LeadGenPricingSection = () => {
                     </TableCell>
                     <TableCell align="center">
                       <Typography fontWeight={700}>₦{NumberHelper.formatNumber(bundle.price)}</Typography>
-                    </TableCell>
-                    <TableCell align="center">
-                      <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-                        ₦{NumberHelper.formatNumber(Math.round(bundle.pricePerCredit))}
-                      </Typography>
                     </TableCell>
                     <TableCell align="center">
                       {savings > 0 ? (
