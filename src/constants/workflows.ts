@@ -1,7 +1,7 @@
 import ChartLine from '@/utils/icon/ChartLine';
 import HeartRateSearch from '@/utils/icon/HeartRateSearch';
 import { BsGraphUp } from 'react-icons/bs';
-import { FaBuilding, FaComments, FaHeartbeat, FaMapMarkerAlt, FaUser } from 'react-icons/fa';
+import { FaBuilding, FaComments, FaHeartbeat, FaUser } from 'react-icons/fa';
 import { HiHashtag } from 'react-icons/hi';
 import { MdAssessment, MdAutorenew, MdRecordVoiceOver } from 'react-icons/md';
 
@@ -88,13 +88,14 @@ export const WORKFLOWS: Record<string, Workflow> = {
         route: '/leads-tracking/forms/leads?type=conversational',
         icon: FaComments,
       },
-      {
-        id: 'googlemaps-leads',
-        name: 'Google Maps',
-        description: 'Discover local businesses through Google Maps based on location and criteria',
-        route: '/leads-tracking/forms/leads?type=google-maps',
-        icon: FaMapMarkerAlt,
-      },
+      // Hidden - Google Maps functionality merged into Organization Lead Form via Location Intelligence
+      // {
+      //   id: 'googlemaps-leads',
+      //   name: 'Google Maps',
+      //   description: 'Discover local businesses through Google Maps based on location and criteria',
+      //   route: '/leads-tracking/forms/leads?type=google-maps',
+      //   icon: FaMapMarkerAlt,
+      // },
     ],
   },
   crm: {

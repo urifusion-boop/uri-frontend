@@ -1,4 +1,4 @@
-import { Description, Handshake, Place } from '@mui/icons-material';
+import { Description, Handshake } from '@mui/icons-material';
 import { Box, Paper, Typography } from '@mui/material';
 
 interface FormType {
@@ -14,8 +14,6 @@ interface FormTypeSelectorProps {
 }
 
 const formTypes: FormType[] = [
-  // Temporarily hide the Organization Lead Form
-  // { id: 'organization', title: 'Organization Lead Form', description: 'Find businesses or companies that may be interested in your products or services, open to collaboration or partnership opportunities.', icon: Handshake },
   {
     id: 'individual',
     title: 'Individual Lead Form',
@@ -34,12 +32,13 @@ const formTypes: FormType[] = [
     description: 'Public online conversations indicating buying intent, pain, or opportunity.',
     icon: Description,
   },
-  {
-    id: 'google-maps',
-    title: 'Google Maps Form',
-    description: 'Discover local businesses through Google Maps based on location, business type, and other criteria.',
-    icon: Place,
-  },
+  // Hidden - Google Maps functionality merged into Organization Lead Form via Location Intelligence
+  // {
+  //   id: 'google-maps',
+  //   title: 'Google Maps Form',
+  //   description: 'Discover local businesses through Google Maps based on location, business type, and other criteria.',
+  //   icon: Place,
+  // },
 ];
 
 const FormTypeSelector = ({ selectedType, onTypeSelect }: FormTypeSelectorProps) => {
