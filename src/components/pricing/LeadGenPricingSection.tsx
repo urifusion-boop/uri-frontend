@@ -1,6 +1,7 @@
 import { LightThemeColors } from '@/configs/colors.config';
 import { NumberHelper } from '@/helpers/NumberHelper';
-import { alpha, Box, Chip, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import { alpha, Box, Card, CardContent, Chip, Divider, Grid, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import { FaCheck, FaCoins } from 'react-icons/fa';
 
 // PAYG Wallet Costs
 const WALLET_COSTS = {
@@ -49,98 +50,136 @@ export const LeadGenPricingSection = () => {
         </Typography>
       </Box>
 
-      {/* Credit Usage Breakdown Card */}
-      <Box
-        sx={{
-          mb: 5,
-          p: 4,
-          borderRadius: 4,
-          background: `linear-gradient(135deg, ${alpha(LightThemeColors.uriColor, 0.03)} 0%, ${alpha('#9b59b6', 0.05)} 100%)`,
-          border: '1px solid',
-          borderColor: alpha(LightThemeColors.uriColor, 0.1),
-        }}
-      >
-        <Typography variant="h6" fontWeight={800} sx={{ color: '#141414', mb: 3, textAlign: 'center' }}>
-          How Credit Usage Works
-        </Typography>
-        <Box sx={{ maxWidth: 800, mx: 'auto' }}>
-          <Typography variant="body2" fontWeight={700} sx={{ color: '#141414', mb: 2 }}>
-            Credit Usage Breakdown:
-          </Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-                Email reveal
+      {/* Credit Bundles Info Card */}
+      <Grid container spacing={4} sx={{ mb: 5, pt: 2 }}>
+        <Grid item xs={12} md={12}>
+          <Card
+            sx={{
+              borderRadius: 4,
+              height: '100%',
+              border: `2px solid ${LightThemeColors.uriColor}`,
+              position: 'relative',
+              overflow: 'visible',
+              transition: 'all 200ms ease',
+              '&:hover': {
+                boxShadow: `0 8px 32px ${alpha(LightThemeColors.uriColor, 0.2)}`,
+              },
+            }}
+          >
+            <Chip
+              label="BEST VALUE"
+              sx={{
+                position: 'absolute',
+                top: -12,
+                right: 20,
+                backgroundColor: LightThemeColors.uriColor,
+                color: 'white',
+                fontWeight: 800,
+              }}
+            />
+            <CardContent sx={{ p: 4 }}>
+              <Stack direction="row" alignItems="center" gap={2} mb={3}>
+                <Box
+                  sx={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: `linear-gradient(135deg, ${LightThemeColors.uriColor} 0%, #B8186A 100%)`,
+                    color: 'white',
+                  }}
+                >
+                  <FaCoins size={24} />
+                </Box>
+                <Box>
+                  <Typography variant="h5" fontWeight={800}>
+                    Credit Bundles
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
+                    Buy in bulk, save more
+                  </Typography>
+                </Box>
+              </Stack>
+
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="body2" fontWeight={700} sx={{ color: '#141414', mb: 1 }}>
+                  Benefits:
+                </Typography>
+                <Stack spacing={1}>
+                  <Stack direction="row" alignItems="center" gap={1}>
+                    <FaCheck size={12} color="#27ae60" />
+                    <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
+                      Best value for lead generation
+                    </Typography>
+                  </Stack>
+                  <Stack direction="row" alignItems="center" gap={1}>
+                    <FaCheck size={12} color="#27ae60" />
+                    <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
+                      Predictable budgeting
+                    </Typography>
+                  </Stack>
+                  <Stack direction="row" alignItems="center" gap={1}>
+                    <FaCheck size={12} color="#27ae60" />
+                    <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
+                      Credits never expire
+                    </Typography>
+                  </Stack>
+                </Stack>
+              </Box>
+
+              <Divider sx={{ my: 2 }} />
+
+              <Typography variant="body2" fontWeight={700} sx={{ color: '#141414', mb: 2 }}>
+                Credit Usage:
               </Typography>
-              <Chip
-                label={`${CREDIT_COSTS.emailEnrichment} credit`}
-                size="small"
-                sx={{
-                  backgroundColor: alpha(LightThemeColors.uriColor, 0.1),
-                  color: LightThemeColors.uriColor,
-                  fontWeight: 700,
-                }}
-              />
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-                Verified sales signal
-              </Typography>
-              <Chip
-                label={`${CREDIT_COSTS.verifiedSalesSignal} credit`}
-                size="small"
-                sx={{
-                  backgroundColor: alpha(LightThemeColors.uriColor, 0.1),
-                  color: LightThemeColors.uriColor,
-                  fontWeight: 700,
-                }}
-              />
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-                Phone reveal
-              </Typography>
-              <Chip
-                label={`${CREDIT_COSTS.phoneEnrichment} credits`}
-                size="small"
-                sx={{
-                  backgroundColor: alpha(LightThemeColors.uriColor, 0.1),
-                  color: LightThemeColors.uriColor,
-                  fontWeight: 700,
-                }}
-              />
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-                Sales signal scan
-              </Typography>
-              <Chip
-                label={`${CREDIT_COSTS.salesSignalScan} credits`}
-                size="small"
-                sx={{
-                  backgroundColor: alpha(LightThemeColors.uriColor, 0.1),
-                  color: LightThemeColors.uriColor,
-                  fontWeight: 700,
-                }}
-              />
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-                Lazarus scan
-              </Typography>
-              <Chip
-                label={`${CREDIT_COSTS.lazarusScan} credits`}
-                size="small"
-                sx={{
-                  backgroundColor: alpha(LightThemeColors.uriColor, 0.1),
-                  color: LightThemeColors.uriColor,
-                  fontWeight: 700,
-                }}
-              />
-            </Box>
-          </Box>
-        </Box>
-      </Box>
+              <Stack spacing={1.5}>
+                <Stack direction="row" justifyContent="space-between">
+                  <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
+                    Email reveal
+                  </Typography>
+                  <Typography variant="body2" fontWeight={700}>
+                    {CREDIT_COSTS.emailEnrichment} credit
+                  </Typography>
+                </Stack>
+                <Stack direction="row" justifyContent="space-between">
+                  <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
+                    Verified sales signal
+                  </Typography>
+                  <Typography variant="body2" fontWeight={700}>
+                    {CREDIT_COSTS.verifiedSalesSignal} credit
+                  </Typography>
+                </Stack>
+                <Stack direction="row" justifyContent="space-between">
+                  <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
+                    Phone reveal
+                  </Typography>
+                  <Typography variant="body2" fontWeight={700}>
+                    {CREDIT_COSTS.phoneEnrichment} credits
+                  </Typography>
+                </Stack>
+                <Stack direction="row" justifyContent="space-between">
+                  <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
+                    Sales signal scan
+                  </Typography>
+                  <Typography variant="body2" fontWeight={700}>
+                    {CREDIT_COSTS.salesSignalScan} credits
+                  </Typography>
+                </Stack>
+                <Stack direction="row" justifyContent="space-between">
+                  <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
+                    Lazarus scan
+                  </Typography>
+                  <Typography variant="body2" fontWeight={700}>
+                    {CREDIT_COSTS.lazarusScan} credits
+                  </Typography>
+                </Stack>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
       {/* Credit Bundles Table */}
       <Box>
