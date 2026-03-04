@@ -332,10 +332,10 @@ export const UserJourneyCards = ({
               </Box>
               <Box>
                 <Typography fontWeight={700} sx={{ color: '#141414', mb: 0.5 }}>
-                  Choose Payment Method
+                  Buy Credit Bundles
                 </Typography>
                 <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-                  Select wallet (PAYG) for flexibility or buy credit bundles for savings.
+                  Purchase credit bundles for the best value on lead generation actions.
                 </Typography>
               </Box>
             </Stack>

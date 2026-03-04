@@ -52,6 +52,9 @@ const ManageAllFormsView = () => {
       }))
     );
 
+    // Hide Google Maps forms (functionality merged into Organization forms via Location Intelligence)
+    filtered = filtered.filter((form: any) => form.form_type !== FormTypeEnum.GOOGLE_MAPS);
+
     // Deduplicate by lead_form_id (keep the most recently updated one)
     const uniqueFormsMap = new Map();
     const duplicatesFound: any[] = [];
