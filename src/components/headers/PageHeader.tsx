@@ -234,6 +234,35 @@ const PageHeader: React.FC<IProps> = ({ toggleSideNav }) => {
                     </Box>
                   </Link>
                 </MenuItem>
+                <MenuItem onClick={handleClose}>
+                  <Link href="/pricing">
+                    <Box
+                      className="d-flex pointer"
+                      sx={{
+                        padding: '10px 15px',
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: '24px',
+                          height: '24px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#CD1B78" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+                          <path d="M12 18V6" />
+                        </svg>
+                      </Box>
+                      <Text size={16} weight={500} sx={{ ml: 1 }}>
+                        Plans & Pricing
+                      </Text>
+                    </Box>
+                  </Link>
+                </MenuItem>
                 <hr style={{ margin: '10px 0px' }} />
                 <Text size={15} weight={600} color="dimgray" sx={{ padding: '0px 15px', opacity: '0.5' }}>
                   Support
