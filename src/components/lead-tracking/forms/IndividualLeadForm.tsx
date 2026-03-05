@@ -822,7 +822,6 @@ const IndividualLeadForm = () => {
         open={showLeadGoalModal}
         onClose={() => {
           setShowLeadGoalModal(false);
-          proceedWithSave();
         }}
         image={<Box sx={{ fontSize: 48 }}>🎯</Box>}
         mainText="Add Your Lead Goal?"
