@@ -71,10 +71,10 @@ export default function BuyCreditsPage() {
         <meta name="description" content="Purchase credit bundles for lead generation and enrichment. Best value for your business." />
       </Head>
 
-      <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa', py: 6 }}>
-        <Container maxWidth="lg">
+      <Box sx={{ minHeight: '100vh', backgroundColor: '#fafafa', py: { xs: 4, md: 8 } }}>
+        <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
           {/* Hero Section */}
-          <Box textAlign="center" mb={6}>
+          <Box textAlign="center" mb={{ xs: 4, md: 8 }} mt={{ xs: 2, md: 4 }}>
             <Chip
               label="LEAD GENERATION"
               sx={{
@@ -82,12 +82,14 @@ export default function BuyCreditsPage() {
                 color: LightThemeColors.uriColor,
                 fontWeight: 700,
                 mb: 2,
+                fontSize: '0.85rem',
+                px: 2,
               }}
             />
-            <Typography variant="h3" fontWeight={900} sx={{ color: '#141414', mb: 2 }}>
+            <Typography variant="h3" fontWeight={900} sx={{ color: '#141414', mb: 3, fontSize: { xs: '2rem', md: '3rem' } }}>
               Power Your Lead Generation
             </Typography>
-            <Typography variant="h6" sx={{ color: '#6B6B6B', maxWidth: 700, mx: 'auto', mb: 3 }}>
+            <Typography variant="h6" sx={{ color: '#6B6B6B', maxWidth: 800, mx: 'auto', mb: 4, fontSize: { xs: '1rem', md: '1.25rem' }, lineHeight: 1.6 }}>
               Buy credit bundles for the best value on lead generation. Credits are valid for 30 days and roll over when you top up.
             </Typography>
             {!isAuthenticated && (
@@ -116,11 +118,12 @@ export default function BuyCreditsPage() {
           {/* Credit Benefits Card */}
           <Card
             sx={{
-              borderRadius: 4,
-              mb: 5,
+              borderRadius: 5,
+              mb: { xs: 4, md: 8 },
               border: `2px solid ${LightThemeColors.uriColor}`,
               position: 'relative',
               overflow: 'visible',
+              boxShadow: '0 4px 20px rgba(205, 27, 120, 0.08)',
             }}
           >
             <Chip
@@ -128,13 +131,14 @@ export default function BuyCreditsPage() {
               sx={{
                 position: 'absolute',
                 top: -12,
-                right: 20,
+                right: { xs: 16, md: 24 },
                 backgroundColor: LightThemeColors.uriColor,
                 color: 'white',
                 fontWeight: 800,
+                fontSize: '0.75rem',
               }}
             />
-            <CardContent sx={{ p: 4 }}>
+            <CardContent sx={{ p: { xs: 3, md: 5 } }}>
               <Stack direction="row" alignItems="center" gap={2} mb={3}>
                 <Box
                   sx={{
@@ -160,9 +164,9 @@ export default function BuyCreditsPage() {
                 </Box>
               </Stack>
 
-              <Grid container spacing={3}>
+              <Grid container spacing={{ xs: 3, md: 5 }}>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="body2" fontWeight={700} sx={{ color: '#141414', mb: 1.5 }}>
+                  <Typography variant="body2" fontWeight={700} sx={{ color: '#141414', mb: 2, fontSize: '0.95rem' }}>
                     Benefits:
                   </Typography>
                   <Stack spacing={1}>
@@ -193,10 +197,10 @@ export default function BuyCreditsPage() {
                   </Stack>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="body2" fontWeight={700} sx={{ color: '#141414', mb: 1.5 }}>
+                  <Typography variant="body2" fontWeight={700} sx={{ color: '#141414', mb: 2, fontSize: '0.95rem' }}>
                     Credit Usage:
                   </Typography>
-                  <Stack spacing={1.5}>
+                  <Stack spacing={2}>
                     <Stack direction="row" justifyContent="space-between">
                       <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
                         Email reveal
@@ -244,8 +248,8 @@ export default function BuyCreditsPage() {
           </Card>
 
           {/* Bundle Cards Section */}
-          <Box mb={5}>
-            <Typography variant="h5" fontWeight={800} sx={{ color: '#141414', mb: 3, textAlign: 'center' }}>
+          <Box mb={{ xs: 4, md: 8 }}>
+            <Typography variant="h5" fontWeight={800} sx={{ color: '#141414', mb: { xs: 3, md: 5 }, textAlign: 'center', fontSize: { xs: '1.5rem', md: '2rem' } }}>
               Choose Your Bundle
             </Typography>
 
@@ -255,10 +259,10 @@ export default function BuyCreditsPage() {
               </Alert>
             )}
 
-            <Grid container spacing={3}>
+            <Grid container spacing={{ xs: 2, md: 4 }} justifyContent="center">
               {isLoadingBundles ? (
                 Array.from({ length: 5 }).map((_, idx) => (
-                  <Grid item xs={12} sm={6} md={3} key={idx}>
+                  <Grid item xs={12} sm={6} lg={2.4} key={idx}>
                     <Card sx={{ borderRadius: 4 }}>
                       <CardContent sx={{ p: 3 }}>
                         <Skeleton variant="rectangular" height={250} sx={{ borderRadius: 2 }} />
@@ -282,13 +286,13 @@ export default function BuyCreditsPage() {
               ) : (
                 <>
                   {bundles.map((bundle) => (
-                    <Grid item xs={12} sm={6} md={3} key={bundle.tier}>
+                    <Grid item xs={12} sm={6} lg={2.4} key={bundle.tier}>
                       <CreditBundleCard bundle={bundle} onPurchase={handlePurchase} isPurchasing={isPurchasing(bundle.tier)} isPopular={bundle.tier === CreditBundleTierEnum.MEDIUM} />
                     </Grid>
                   ))}
 
                   {/* Custom Credit Card */}
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item xs={12} sm={6} lg={2.4}>
                     <Card
                       sx={{
                         borderRadius: 4,
@@ -413,13 +417,13 @@ export default function BuyCreditsPage() {
           </Box>
 
           {/* FAQ Section */}
-          <Card sx={{ borderRadius: 4 }}>
-            <CardContent sx={{ p: 4 }}>
-              <Typography variant="h5" fontWeight={800} sx={{ color: '#141414', mb: 3, textAlign: 'center' }}>
+          <Card sx={{ borderRadius: 5, boxShadow: '0 2px 16px rgba(0,0,0,0.06)' }}>
+            <CardContent sx={{ p: { xs: 3, md: 5 } }}>
+              <Typography variant="h5" fontWeight={800} sx={{ color: '#141414', mb: 4, textAlign: 'center', fontSize: { xs: '1.5rem', md: '2rem' } }}>
                 Frequently Asked Questions
               </Typography>
-              <Divider sx={{ mb: 3 }} />
-              <Grid container spacing={3}>
+              <Divider sx={{ mb: 4 }} />
+              <Grid container spacing={{ xs: 3, md: 4 }}>
                 <Grid item xs={12} md={6}>
                   <Typography variant="body1" fontWeight={700} sx={{ color: '#141414', mb: 1 }}>
                     Do credits expire?
