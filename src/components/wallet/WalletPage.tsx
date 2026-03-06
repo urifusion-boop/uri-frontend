@@ -401,10 +401,10 @@ export const WalletPage = () => {
                     return (
                       <HoverRow key={batch.batchId}>
                         <TableCell>{new Date(batch.purchaseDate).toLocaleDateString()}</TableCell>
-                        <TableCell align="center">{batch.credits.toLocaleString()}</TableCell>
+                        <TableCell align="center">{(batch.credits || 0).toLocaleString()}</TableCell>
                         <TableCell align="center">
-                          <Typography fontWeight={600} color={batch.remainingCredits > 0 ? 'primary' : 'text.secondary'}>
-                            {batch.remainingCredits.toLocaleString()}
+                          <Typography fontWeight={600} color={(batch.remainingCredits || 0) > 0 ? 'primary' : 'text.secondary'}>
+                            {(batch.remainingCredits || 0).toLocaleString()}
                           </Typography>
                         </TableCell>
                         <TableCell align="center">
