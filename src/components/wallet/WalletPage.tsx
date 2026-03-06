@@ -398,9 +398,14 @@ export const WalletPage = () => {
                     const daysUntilExpiry = Math.ceil((new Date(batch.expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
                     const isExpiringSoon = daysUntilExpiry <= 7 && daysUntilExpiry > 0;
 
+                    const isTrial = batch.purchaseReference === 'TRIAL';
+
                     return (
                       <HoverRow key={batch.batchId}>
-                        <TableCell>{new Date(batch.purchaseDate).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          {new Date(batch.purchaseDate).toLocaleDateString()}
+                          {isTrial && <Chip size="small" label="Free Trial" color="info" sx={{ ml: 1, fontWeight: 700, fontSize: '0.7rem' }} />}
+                        </TableCell>
                         <TableCell align="center">{(batch.credits || 0).toLocaleString()}</TableCell>
                         <TableCell align="center">
                           <Typography fontWeight={600} color={(batch.remainingCredits || 0) > 0 ? 'primary' : 'text.secondary'}>
