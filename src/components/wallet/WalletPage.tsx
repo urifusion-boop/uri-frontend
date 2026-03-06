@@ -404,7 +404,25 @@ export const WalletPage = () => {
                       <HoverRow key={batch.batchId}>
                         <TableCell>
                           {new Date(batch.purchaseDate).toLocaleDateString()}
-                          {isTrial && <Chip size="small" label="Free Trial" color="info" sx={{ ml: 1, fontWeight: 700, fontSize: '0.7rem' }} />}
+                          {isTrial && (
+                            <Chip
+                              size="small"
+                              label="Free Trial"
+                              sx={{
+                                ml: 1,
+                                fontWeight: 800,
+                                fontSize: '0.65rem',
+                                backgroundColor: '#667eea',
+                                color: 'white',
+                                borderRadius: 999,
+                                px: 0.5,
+                                height: 22,
+                                '& .MuiChip-label': {
+                                  px: 1,
+                                },
+                              }}
+                            />
+                          )}
                         </TableCell>
                         <TableCell align="center">{(batch.credits || 0).toLocaleString()}</TableCell>
                         <TableCell align="center">
