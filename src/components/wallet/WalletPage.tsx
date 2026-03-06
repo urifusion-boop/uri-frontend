@@ -164,7 +164,7 @@ export const WalletPage = () => {
                     <Skeleton variant="text" width={60} height={36} sx={{ bgcolor: 'rgba(255,255,255,0.25)' }} />
                   ) : (
                     <Typography variant="h4" fontWeight={900} sx={{ lineHeight: 1.1 }}>
-                      {NumberHelper.formatNumber(creditsAvailable)}
+                      {creditsAvailable.toLocaleString()}
                     </Typography>
                   )}
                 </Box>
@@ -185,7 +185,7 @@ export const WalletPage = () => {
                   USED
                 </Typography>
                 <Typography variant="h6" fontWeight={900}>
-                  {isLoadingBalance ? <Skeleton width={30} sx={{ bgcolor: 'rgba(255,255,255,0.25)', mx: 'auto' }} /> : NumberHelper.formatNumber(creditsUsed)}
+                  {isLoadingBalance ? <Skeleton width={30} sx={{ bgcolor: 'rgba(255,255,255,0.25)', mx: 'auto' }} /> : creditsUsed.toLocaleString()}
                 </Typography>
               </Box>
             </Grid>
@@ -204,7 +204,7 @@ export const WalletPage = () => {
                   TOTAL
                 </Typography>
                 <Typography variant="h6" fontWeight={900}>
-                  {isLoadingBalance ? <Skeleton width={30} sx={{ bgcolor: 'rgba(255,255,255,0.25)', mx: 'auto' }} /> : NumberHelper.formatNumber(totalCredits)}
+                  {isLoadingBalance ? <Skeleton width={30} sx={{ bgcolor: 'rgba(255,255,255,0.25)', mx: 'auto' }} /> : totalCredits.toLocaleString()}
                 </Typography>
               </Box>
             </Grid>

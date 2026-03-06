@@ -1,4 +1,5 @@
 import { TrialStatus } from '@/api/TrialService';
+import { useCreditBundle } from '@/hooks/credits/useCreditBundle';
 import { SubscriptionTypeEnum } from '@/models/enum-models/SubscriptionStatusEnum';
 import { useAuth } from '@/providers/AuthProvider';
 import { Box, Button, LinearProgress, Typography } from '@mui/material';
@@ -13,6 +14,7 @@ interface TrialCountdownBannerProps {
 const TrialCountdownBanner: React.FC<TrialCountdownBannerProps> = ({ trialStatus, hideUpgradeButton = false }) => {
   const router = useRouter();
   const { subscriptionPlanType } = useAuth();
+  const { creditsAvailable, totalCredits } = useCreditBundle();
 
   if (subscriptionPlanType && subscriptionPlanType !== SubscriptionTypeEnum.FreeTrial) {
     return null;
@@ -25,7 +27,8 @@ const TrialCountdownBanner: React.FC<TrialCountdownBannerProps> = ({ trialStatus
   const { daysRemaining, usage } = trialStatus;
   const displayMaxReports = usage.maxReports > 0 ? usage.maxReports : 5;
   const leadsProgress = (usage.leadsGenerated / usage.maxLeads) * 100;
-  const signalsProgress = (usage.signalsUsed / usage.maxSignals) * 100;
+  const creditsUsed = totalCredits - creditsAvailable;
+  const signalsProgress = totalCredits > 0 ? (creditsUsed / totalCredits) * 100 : 0;
   const reportsProgress = (usage.reportsGenerated / displayMaxReports) * 100;
 
   return (
@@ -81,7 +84,7 @@ const TrialCountdownBanner: React.FC<TrialCountdownBannerProps> = ({ trialStatus
                 color: '#8C8C8C',
               }}
             >
-              {usage.leadsGenerated}/{usage.maxLeads} leads • {usage.signalsUsed}/{usage.maxSignals} credits • {usage.reportsGenerated}/{displayMaxReports} reports
+              {usage.leadsGenerated}/{usage.maxLeads} leads • {creditsUsed.toLocaleString()}/{totalCredits.toLocaleString()} credits • {usage.reportsGenerated}/{displayMaxReports} reports
             </Typography>
           </Box>
         </Box>
@@ -139,7 +142,7 @@ const TrialCountdownBanner: React.FC<TrialCountdownBannerProps> = ({ trialStatus
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
             <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#6B6B6B' }}>Credits</Typography>
             <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#CD1B78' }}>
-              {usage.signalsUsed}/{usage.maxSignals}
+              {creditsUsed.toLocaleString()}/{totalCredits.toLocaleString()}
             </Typography>
           </Box>
           <LinearProgress
