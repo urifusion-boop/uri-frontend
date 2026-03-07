@@ -14,9 +14,11 @@ interface TrialCountdownBannerProps {
 const TrialCountdownBanner: React.FC<TrialCountdownBannerProps> = ({ trialStatus, hideUpgradeButton = false }) => {
   const router = useRouter();
   const { subscriptionPlanType } = useAuth();
-  const { creditsAvailable, totalCredits } = useCreditBundle();
+  const { creditsAvailable, totalCredits, purchaseHistory } = useCreditBundle();
 
-  if (subscriptionPlanType && subscriptionPlanType !== SubscriptionTypeEnum.FreeTrial) {
+  // Hide banner if user has paid subscription OR has purchased credits
+  const hasPurchasedCredits = purchaseHistory && purchaseHistory.length > 0;
+  if ((subscriptionPlanType && subscriptionPlanType !== SubscriptionTypeEnum.FreeTrial) || hasPurchasedCredits) {
     return null;
   }
 

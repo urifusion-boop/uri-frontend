@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { BiLogOutCircle, BiMenuAltRight } from 'react-icons/bi';
 
 import { TextHelper } from '@/helpers/TextHelper';
+import { useCreditBundle } from '@/hooks/credits/useCreditBundle';
 import useCustomTheme from '@/hooks/theme.hook';
 import { SubscriptionTypeEnum } from '@/models/enum-models/SubscriptionStatusEnum';
 import styles from '@/styles/Dashboard.module.css';
@@ -23,12 +24,17 @@ interface IProps {
 const PageHeader: React.FC<IProps> = ({ toggleSideNav }) => {
   const { themeColors } = useCustomTheme();
   const { userDetails, userProfile, logoutUser, subscriptionPlanType } = useAuth();
+  const { purchaseHistory } = useCreditBundle();
   const [totalUnreadMessageCount, setTotalUnreadMessageCount] = useState<number>(0);
   const [profileRoute, setProfileRoute] = useState('');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   // const { unreadCount, setUnreadCount } = useContext(NotificationSoundContext);
 
   const userImage = TextHelper.setUrl(userProfile?.headshot?.url ?? userProfile?.logo?.url ?? '');
+
+  // User is subscribed if they have a paid plan OR have purchased credits
+  const hasPurchasedCredits = purchaseHistory && purchaseHistory.length > 0;
+  const isSubscribed = (!!subscriptionPlanType && subscriptionPlanType !== SubscriptionTypeEnum.FreeTrial) || hasPurchasedCredits;
 
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -85,7 +91,7 @@ const PageHeader: React.FC<IProps> = ({ toggleSideNav }) => {
           </Box>
           <Box className="d-flex justify-end">
             <Box className="d-flex items-center justify-end">
-              <CustomSubscriptionHeader subscribed={!!subscriptionPlanType && subscriptionPlanType !== SubscriptionTypeEnum.FreeTrial} />
+              <CustomSubscriptionHeader subscribed={isSubscribed} />
               <MessageIcon count={totalUnreadMessageCount} />
               <NotificationDropDown />
               <button className="d-flex items-center pointer" onClick={handleClick}>
