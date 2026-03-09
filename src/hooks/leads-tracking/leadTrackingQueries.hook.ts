@@ -195,10 +195,12 @@ export const useLeadQueries = (
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads-data'] });
       queryClient.invalidateQueries({ queryKey: ['feature-limit'] });
-      // Invalidate credit-related queries to update wallet page
-      queryClient.invalidateQueries({ queryKey: ['credit-balance'] });
-      queryClient.invalidateQueries({ queryKey: ['credit-batches'] });
-      queryClient.invalidateQueries({ queryKey: ['credit-summary'] });
+      // Invalidate and refetch credit-related queries to update wallet page immediately
+      // These queries include userId in their key, so we invalidate all variants
+      queryClient.invalidateQueries({ queryKey: ['credit-balance'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['credit-batches'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['credit-summary'], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ['credit-history'], refetchType: 'active' });
     },
   });
 
