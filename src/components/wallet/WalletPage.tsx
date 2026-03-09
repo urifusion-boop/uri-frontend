@@ -398,7 +398,7 @@ export const WalletPage = () => {
                     const daysUntilExpiry = Math.ceil((new Date(batch.expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
                     const isExpiringSoon = daysUntilExpiry <= 7 && daysUntilExpiry > 0;
 
-                    const isTrial = batch.purchaseReference === 'TRIAL';
+                    const isTrial = batch.purchaseReference?.startsWith('TRIAL');
 
                     return (
                       <HoverRow key={batch.batchId}>
