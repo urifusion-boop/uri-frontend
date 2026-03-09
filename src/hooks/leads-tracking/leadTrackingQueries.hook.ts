@@ -195,6 +195,10 @@ export const useLeadQueries = (
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads-data'] });
       queryClient.invalidateQueries({ queryKey: ['feature-limit'] });
+      // Invalidate credit-related queries to update wallet page
+      queryClient.invalidateQueries({ queryKey: ['credit-balance'] });
+      queryClient.invalidateQueries({ queryKey: ['credit-batches'] });
+      queryClient.invalidateQueries({ queryKey: ['credit-summary'] });
     },
   });
 
