@@ -5,7 +5,7 @@
 //   TRANSACTIONS: process.env.NEXT_PUBLIC_TRANSACTIONS_URL || '/api/v1',
 //   TASK_MANAGER: process.env.NEXT_PUBLIC_TASK_MANAGER_URL || '/api/v1',
 // } as const;
-//nn
+
 // NOTE:: For Prod
 export const BackendUrlEnum = {
   INSIGHTS: '/uri-insights',
