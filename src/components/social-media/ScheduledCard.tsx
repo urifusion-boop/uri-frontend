@@ -158,7 +158,11 @@ const ScheduledCard = ({ draft, onRefresh }: ScheduledCardProps) => {
         {/* Image thumbnail if present */}
         {draft.image_url && (
           <Box mb={1.5} sx={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid #E5E7EB', maxHeight: 160 }}>
-            <img src={draft.image_url} alt="Scheduled post image" style={{ width: '100%', display: 'block', objectFit: 'cover', maxHeight: 160 }} />
+            <img
+              src={draft.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_URI_API_BASE_URL}${draft.image_url}` : draft.image_url}
+              alt="Scheduled post image"
+              style={{ width: '100%', display: 'block', objectFit: 'cover', maxHeight: 160 }}
+            />
           </Box>
         )}
 

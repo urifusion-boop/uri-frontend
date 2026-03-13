@@ -132,7 +132,8 @@ export class SocialMediaAgentService {
   }
 
   static async generateContent(payload: GenerateContentPayload): Promise<UriResponse<ContentDraft[]>> {
-    const response: Awaited<AxiosResponse<UriResponse<ContentDraft[]>>> = await UriHttpClient.getClient().post(socialMediaAgentRoutes.generateContent, payload);
+    // Image generation can take 60–90 s; use a longer timeout than the global 30 s default.
+    const response: Awaited<AxiosResponse<UriResponse<ContentDraft[]>>> = await UriHttpClient.getClient().post(socialMediaAgentRoutes.generateContent, payload, { timeout: 120000 });
     return response.data;
   }
 

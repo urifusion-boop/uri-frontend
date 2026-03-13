@@ -44,6 +44,7 @@ const DraftCard = ({ draft: initialDraft, onRefresh }: DraftCardProps) => {
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [scheduledAt, setScheduledAt] = useState('');
   const [loading, setLoading] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const pc = platformChip[draft.platform] ?? { icon: null, color: '#6B7280', bg: '#F3F4F6' };
   const sc = statusColors[draft.status ?? 'draft'] ?? statusColors.draft;
@@ -163,10 +164,36 @@ const DraftCard = ({ draft: initialDraft, onRefresh }: DraftCardProps) => {
         </Box>
       )}
 
-      {/* Generated image — or skeleton while image generates in background */}
+      {/* Generated image — skeleton while loading, then the actual image */}
       {!editing && draft.image_url && (
-        <Box mb={1.5} sx={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid #E5E7EB' }}>
-          <img src={draft.image_url} alt={`AI-generated image for ${draft.platform}`} style={{ width: '100%', display: 'block', maxHeight: 320, objectFit: 'cover' }} />
+        <Box mb={1.5} sx={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid #E5E7EB', position: 'relative' }}>
+          {!imageLoaded && (
+            <Box
+              sx={{
+                height: 200,
+                background: 'linear-gradient(90deg, #F7F7FD 25%, #EEECFB 50%, #F7F7FD 75%)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 2s infinite',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                '@keyframes shimmer': {
+                  '0%': { backgroundPosition: '200% 0' },
+                  '100%': { backgroundPosition: '-200% 0' },
+                },
+              }}
+            >
+              <Typography fontSize="12px" color="#9CA3AF">
+                Loading image…
+              </Typography>
+            </Box>
+          )}
+          <img
+            src={draft.image_url.startsWith('/') ? `${process.env.NEXT_PUBLIC_URI_API_BASE_URL}${draft.image_url}` : draft.image_url}
+            alt={`AI-generated image for ${draft.platform}`}
+            onLoad={() => setImageLoaded(true)}
+            style={{ width: '100%', display: imageLoaded ? 'block' : 'none', maxHeight: 320, objectFit: 'cover' }}
+          />
         </Box>
       )}
       {!editing && !draft.image_url && draft.auto_generated && (
