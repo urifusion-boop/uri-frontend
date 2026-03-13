@@ -40,15 +40,19 @@ const nextConfig = withPWA({
     ];
   },
   async rewrites() {
+    const backendUrl = process.env.BACKEND_API_URL;
     return [
-      {
-        source: '/uri-insights/:path*',
-        destination: 'http://localhost:8445/:path*',
-      },
-      {
-        source: '/uri-transactions/:path*',
-        destination: 'http://localhost:9001/:path*',
-      },
+      ...(backendUrl
+        ? [
+            { source: '/uri-backend/:path*', destination: `${backendUrl}/uri-backend/:path*` },
+            { source: '/uri-insights/:path*', destination: `${backendUrl}/uri-insights/:path*` },
+            { source: '/uri-transactions/:path*', destination: `${backendUrl}/uri-transactions/:path*` },
+            { source: '/task-manager/:path*', destination: `${backendUrl}/task-manager/:path*` },
+          ]
+        : [
+            { source: '/uri-insights/:path*', destination: 'http://localhost:8445/:path*' },
+            { source: '/uri-transactions/:path*', destination: 'http://localhost:9001/:path*' },
+          ]),
       {
         source: '/email-verification',
         destination: '/auth/email-verification',

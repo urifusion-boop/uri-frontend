@@ -6,7 +6,7 @@ class UriHttpClient {
 
   static initialize() {
     this.client = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_URI_API_BASE_URL || 'https://api.uricreative.com:8443',
+      baseURL: process.env.NEXT_PUBLIC_URI_API_BASE_URL || '',
       withCredentials: false,
       headers: {
         'Content-Type': 'application/json',
