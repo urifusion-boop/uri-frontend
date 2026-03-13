@@ -23,6 +23,7 @@ const SocialMediaPage = () => {
   const [scheduled, setScheduled] = useState<ContentDraft[]>([]);
   const [autoSettings, setAutoSettings] = useState<AutoGenerateSettings | null>(null);
   const [loadingDrafts, setLoadingDrafts] = useState(false);
+  const [draftsError, setDraftsError] = useState(false);
   const [loadingScheduled, setLoadingScheduled] = useState(false);
   const [loadingAutoSettings, setLoadingAutoSettings] = useState(false);
 
@@ -40,6 +41,7 @@ const SocialMediaPage = () => {
 
   const fetchDrafts = useCallback(async () => {
     setLoadingDrafts(true);
+    setDraftsError(false);
     try {
       const response = await SocialMediaAgentService.getContentCalendar();
       if (response.status && response.responseData) {
@@ -55,9 +57,11 @@ const SocialMediaPage = () => {
             return true; // no status at all — newly generated, show it
           })
         );
+      } else {
+        setDraftsError(true);
       }
     } catch {
-      // no-op
+      setDraftsError(true);
     } finally {
       setLoadingDrafts(false);
     }
@@ -172,6 +176,8 @@ const SocialMediaPage = () => {
                   <Box display="flex" justifyContent="center" py={8}>
                     <CircularProgress sx={{ color: '#CD1B78' }} />
                   </Box>
+                ) : draftsError ? (
+                  <EmptyState message="Could not load drafts. Please try again." retry={fetchDrafts} />
                 ) : drafts.length === 0 ? (
                   <EmptyState message="No drafts yet. Generate content from the Create tab." />
                 ) : (
@@ -220,7 +226,7 @@ const SocialMediaPage = () => {
   );
 };
 
-const EmptyState = ({ message }: { message: string }) => (
+const EmptyState = ({ message, retry }: { message: string; retry?: () => void }) => (
   <Box
     sx={{
       border: '2px dashed #E5E7EB',
@@ -235,6 +241,11 @@ const EmptyState = ({ message }: { message: string }) => (
     <Typography fontSize="14px" color="#6B7280" mt={2}>
       {message}
     </Typography>
+    {retry && (
+      <Typography fontSize="13px" color="#CD1B78" mt={1.5} sx={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={retry}>
+        Retry
+      </Typography>
+    )}
   </Box>
 );
 
