@@ -1,6 +1,7 @@
 import { InfluencerService } from '@/api/InfluencerService';
 import { InstagramService } from '@/api/InstagramService';
 import { SentimentsAnalysisService } from '@/api/SentimentsAnalysisService';
+import { SocialMediaAgentService } from '@/api/SocialMediaAgentService';
 import { queryClient } from '@/configs/query-client.config';
 import { SIX_HOURS } from '@/data/time';
 import { DateHelper } from '@/helpers/DateHelper';
@@ -111,14 +112,25 @@ export const useInstagramAnalytics = ({ username }: UseInstagramAnalyticsProps) 
     isLoading: aiMediaReportLoading,
     error: aiMediaReportError,
   } = useQuery({
-    queryKey: ['instagramMediaAiReport', data?.cache_key, influencer_id], // Unique key for this query
+    queryKey: ['instagramMediaAiReport', data?.cache_key, influencer_id],
     queryFn: async () => {
       if (data?.cache_key) {
         const response = await InstagramService.fetchInstagramAiMediaReport(data?.cache_key ?? '');
         const responseData = response.responseData;
 
-        if (response.status) return responseData;
-        else return null;
+        if (response.status && responseData) {
+          // Silently persist insights so auto-content generation can use them
+          SocialMediaAgentService.connectInsights({
+            influencer_id: influencer_id,
+            platform: 'instagram',
+            social_user_id: data?.id,
+            insights: responseData as unknown as Record<string, unknown>,
+          }).catch(() => {
+            /* non-critical — swallow silently */
+          });
+          return responseData;
+        }
+        return null;
       }
 
       return null;

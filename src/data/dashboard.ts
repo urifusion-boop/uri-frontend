@@ -14,7 +14,7 @@ import { HiMiniUserGroup } from 'react-icons/hi2';
 import { IoMdPricetags } from 'react-icons/io';
 import { IoSettingsOutline } from 'react-icons/io5';
 import { IconType } from 'react-icons/lib';
-import { MdAutorenew, MdRecordVoiceOver, MdSettings, MdViewModule } from 'react-icons/md';
+import { MdAutorenew, MdOutlineCampaign, MdRecordVoiceOver, MdSettings, MdViewModule } from 'react-icons/md';
 import { RiMoneyDollarCircleLine } from 'react-icons/ri';
 import { RxDashboard } from 'react-icons/rx';
 
@@ -145,6 +145,22 @@ export const dashboardLinks: ILink[] = [
     route: '/uri-assistant',
     icon: BiBot,
     tourKey: 'tour-insight-btn',
+  },
+  {
+    label: 'Social Media',
+    icon: MdOutlineCampaign,
+    subLinkers: [
+      {
+        label: 'Content Manager',
+        route: '/social-media',
+        icon: MdOutlineCampaign,
+      },
+      {
+        label: 'Social Accounts',
+        route: '/settings/social-accounts',
+        icon: IoSettingsOutline,
+      },
+    ],
   },
 ];
 

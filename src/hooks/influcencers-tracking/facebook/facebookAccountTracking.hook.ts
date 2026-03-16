@@ -2,6 +2,7 @@ import { FacebookInsightsService } from '@/api/FacebookInsightsService';
 import { InfluencerService } from '@/api/InfluencerService';
 import { InstagramService } from '@/api/InstagramService';
 import { SentimentsAnalysisService } from '@/api/SentimentsAnalysisService';
+import { SocialMediaAgentService } from '@/api/SocialMediaAgentService';
 import { triggerToast } from '@/components/atoms/CustomToast';
 import { queryClient } from '@/configs/query-client.config';
 import { FIVE_MINUTES, THIRTY_MINUTES } from '@/data/time';
@@ -255,8 +256,19 @@ export const useFacebookInfluencerAnalysis = () => {
         const response = await FacebookInsightsService.fetchFacebookAiMediaReport(businessDiscovery?.facebook_cache_key ?? '');
         const responseData = response.responseData;
 
-        if (response.status) return responseData;
-        else throw new Error(response.responseMessage);
+        if (response.status && responseData) {
+          // Silently persist insights so auto-content generation can use them
+          SocialMediaAgentService.connectInsights({
+            influencer_id: influencer_id,
+            platform: 'facebook',
+            social_user_id: influencerData?.social_user_id,
+            insights: responseData as unknown as Record<string, unknown>,
+          }).catch(() => {
+            /* non-critical — swallow silently */
+          });
+          return responseData;
+        }
+        throw new Error(response.responseMessage);
       }
 
       return null;

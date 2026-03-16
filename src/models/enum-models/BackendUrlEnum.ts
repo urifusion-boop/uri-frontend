@@ -1,4 +1,4 @@
-// NOTE:: This communicate directly to local
+// // NOTE:: This communicate directly to local
 // export const BackendUrlEnum = {
 //   INSIGHTS: '/uri-insights',
 //   BACKEND: '/api/v1',
