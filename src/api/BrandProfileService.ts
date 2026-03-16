@@ -82,6 +82,13 @@ export class BrandProfileService {
     return res.data;
   }
 
+  static async uploadLogo(file: File): Promise<UriResponse<{ logo_url: string }>> {
+    const form = new FormData();
+    form.append('file', file);
+    const res: AxiosResponse<UriResponse<{ logo_url: string }>> = await UriHttpClient.getClient().post(`${BASE}/logo`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
+    return res.data;
+  }
+
   static async complete(data: BrandProfileData): Promise<UriResponse<BrandProfileData>> {
     return BrandProfileService.save({ ...data, onboarding_completed: true });
   }
