@@ -2,24 +2,29 @@ import SeoHead from '@/components/atoms/SeoHead';
 import FormTypeSelector from '@/components/lead-tracking/forms/FormTypeSelector';
 import { default as IndividualLeadForm } from '@/components/lead-tracking/forms/IndividualLeadForm';
 import OrganizationLeadForm from '@/components/lead-tracking/forms/OrganizationLeadForm';
+import ConfirmDeleteModal from '@/components/modals/ConfirmDeleteModal';
 import { LeadHelper } from '@/helpers/LeadHelper';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
 import { useAuth } from '@/providers/AuthProvider';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { Box, Button, FormControl, MenuItem, Select, Typography } from '@mui/material';
+import { Box, Button, FormControl, IconButton, MenuItem, Select, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import BusinessLeadForm from './BusinessLeadForm';
 import ConversationLeadForm from './ConversationLeadForm';
+import GoogleMapsLeadForm from './GoogleMapsLeadForm';
 
 const GenerateLeadForm = () => {
   const router = useRouter();
   const [selectedFormType, setSelectedFormType] = useState<string>('individual');
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [formToDelete, setFormToDelete] = useState<{ id: string; title: string } | null>(null);
   const { userDetails } = useAuth();
   const userId = userDetails?.userId;
 
-  const { useGetFormsByUserAndType } = useLeadFormHooks();
+  const { useGetFormsByUserAndType, deleteLeadForm } = useLeadFormHooks();
 
   // Convert selectedFormType to FormTypeEnum for API call
   const formTypeEnum = LeadHelper.getFormTypeFromUrlParam(selectedFormType);
@@ -85,6 +90,42 @@ const GenerateLeadForm = () => {
     );
   };
 
+  const handleDeleteForm = (e: React.MouseEvent, formId: string, formTitle: string) => {
+    e.stopPropagation(); // Prevent dropdown from closing
+    setFormToDelete({ id: formId, title: formTitle });
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (!formToDelete) return;
+
+    deleteLeadForm.mutate(formToDelete.id, {
+      onSuccess: () => {
+        setDeleteModalOpen(false);
+        setFormToDelete(null);
+
+        // If we deleted the currently selected form, redirect to the first remaining form or create mode
+        if (router.query.form_id === formToDelete.id) {
+          const remainingForms = formsForType.filter((f: any) => f.lead_form_id !== formToDelete.id);
+          if (remainingForms.length > 0) {
+            handleFormSelect(remainingForms[0].lead_form_id);
+          } else {
+            handleSwitchToCreateMode();
+          }
+        }
+      },
+      onError: () => {
+        setDeleteModalOpen(false);
+        setFormToDelete(null);
+      },
+    });
+  };
+
+  const cancelDelete = () => {
+    setDeleteModalOpen(false);
+    setFormToDelete(null);
+  };
+
   const isCreateMode = router.query.mode === 'create';
   const isEditMode = !isCreateMode && router.query.type;
   const hasMultipleForms = formsForType.length > 1;
@@ -104,6 +145,9 @@ const GenerateLeadForm = () => {
         return <BusinessLeadForm key="business" />;
       case 'conversational':
         return <ConversationLeadForm key="conversational" />;
+      case 'googlemaps':
+      case 'google-maps':
+        return <GoogleMapsLeadForm key="googlemaps" />;
       default:
         return <IndividualLeadForm key="individual-default" />;
     }
@@ -214,26 +258,42 @@ const GenerateLeadForm = () => {
                   >
                     {formsForType.map((form: any) => (
                       <MenuItem key={form.lead_form_id} value={form.lead_form_id}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {form.form_title}
-                          </Typography>
-                          {form.is_default && (
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                backgroundColor: '#CD1B78',
-                                color: '#fff',
-                                px: 1,
-                                py: 0.25,
-                                borderRadius: '4px',
-                                fontSize: '10px',
-                                fontWeight: 600,
-                              }}
-                            >
-                              DEFAULT
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                              {form.form_title}
                             </Typography>
-                          )}
+                            {form.is_default && (
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  backgroundColor: '#CD1B78',
+                                  color: '#fff',
+                                  px: 1,
+                                  py: 0.25,
+                                  borderRadius: '4px',
+                                  fontSize: '10px',
+                                  fontWeight: 600,
+                                }}
+                              >
+                                DEFAULT
+                              </Typography>
+                            )}
+                          </Box>
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleDeleteForm(e, form.lead_form_id, form.form_title)}
+                            sx={{
+                              ml: 1,
+                              color: '#ef4444',
+                              '&:hover': {
+                                backgroundColor: '#fee2e2',
+                                color: '#dc2626',
+                              },
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
                         </Box>
                       </MenuItem>
                     ))}
@@ -290,6 +350,18 @@ const GenerateLeadForm = () => {
 
         <Box sx={{ mt: 2 }}>{renderForm()}</Box>
       </Box>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDeleteModal
+        open={deleteModalOpen}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        spamTitle={formToDelete?.title}
+        isProcessing={deleteLeadForm.isPending}
+        title="Delete Lead Form"
+        description="Are you sure you want to permanently delete this lead form? This will also delete all associated leads and cannot be undone."
+        itemLabel="Form Name"
+      />
     </>
   );
 };

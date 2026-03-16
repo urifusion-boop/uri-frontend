@@ -16,4 +16,4 @@ image: '/assets/images/card-payment.png'
 - **Can I change my subscription plan?**
   Yes, you can upgrade or downgrade your plan at any time. Changes take effect at the start of your next billing cycle.
 - **Is there a free trial?**
-  Yes, we offer a 7-day free trial with access to Professional features.
+  Yes, we offer a 30-day free trial with access to Professional features.

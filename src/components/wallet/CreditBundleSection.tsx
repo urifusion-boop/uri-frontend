@@ -1,5 +1,4 @@
 import { LightThemeColors } from '@/configs/colors.config';
-import { NumberHelper } from '@/helpers/NumberHelper';
 import { useCreditBundle } from '@/hooks/credits/useCreditBundle';
 import { CreditBundleTierEnum } from '@/models/dtos/CreditBundleDto';
 import { Alert, Box, Button, Card, CardContent, Chip, CircularProgress, Divider, Grid, InputAdornment, Skeleton, Stack, TextField, Typography, alpha } from '@mui/material';
@@ -48,7 +47,7 @@ export const CreditBundleSection = () => {
             Credit Bundles
           </Typography>
           <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-            Purchase pre-configured credit bundles with better value
+            Purchase credits for lead enrichment. 1 credit = 1 email reveal, 7 credits = 1 phone reveal.
           </Typography>
         </Box>
       </Stack>
@@ -86,14 +85,14 @@ export const CreditBundleSection = () => {
                   <Skeleton variant="text" width={100} height={40} sx={{ bgcolor: 'rgba(255,255,255,0.2)' }} />
                 ) : (
                   <Typography variant="h4" fontWeight={900}>
-                    {NumberHelper.formatNumber(creditsAvailable)} credits
+                    {creditsAvailable.toLocaleString()} credits
                   </Typography>
                 )}
               </Box>
             </Stack>
             <Stack direction="row" gap={1}>
               <Chip
-                label={`${NumberHelper.formatNumber(totalCredits - creditsAvailable)} used`}
+                label={`${(totalCredits - creditsAvailable).toLocaleString()} used`}
                 sx={{
                   backgroundColor: 'rgba(255,255,255,0.2)',
                   color: 'white',
@@ -101,7 +100,7 @@ export const CreditBundleSection = () => {
                 }}
               />
               <Chip
-                label={`${NumberHelper.formatNumber(totalCredits)} total`}
+                label={`${totalCredits.toLocaleString()} total`}
                 sx={{
                   backgroundColor: 'rgba(255,255,255,0.3)',
                   color: 'white',

@@ -66,7 +66,7 @@ const LazarusProtocolCard = () => {
               <Box>
                 <Box display="flex" alignItems="center" gap={1}>
                   <Typography fontSize="17px" fontWeight={700} color="#111827" lineHeight={1.3} letterSpacing="-0.01em">
-                    ⚡ Lazarus Protocol
+                    ⚡ The Prospect Pulse
                   </Typography>
                   <Box
                     sx={{
@@ -82,7 +82,7 @@ const LazarusProtocolCard = () => {
                   </Box>
                 </Box>
                 <Typography variant="caption" sx={{ color: '#6366F1', fontSize: '12px', fontWeight: 600, mt: 0.25 }}>
-                  CRM Resurrection Engine
+                  Active Signals for High-Ticket Leads
                 </Typography>
               </Box>
             </Box>

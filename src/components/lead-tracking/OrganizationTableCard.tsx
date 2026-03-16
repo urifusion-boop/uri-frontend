@@ -9,11 +9,11 @@ import { CampaignPlatformEnum } from '@/models/enum-models/PlatformEnum';
 import EmailIcon from '@mui/icons-material/Email';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PhoneIcon from '@mui/icons-material/Phone';
-import { Box, Button, Chip, FormControl, IconButton, Menu, MenuItem, Pagination, Select, Typography } from '@mui/material';
+import { Box, Button, Chip, Dialog, DialogContent, DialogTitle, FormControl, IconButton, Menu, MenuItem, Pagination, Select, Tooltip, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { FaHeartbeat, FaSkull } from 'react-icons/fa';
+import { FaHeartbeat, FaMapMarkerAlt, FaSkull } from 'react-icons/fa';
 import { MdAutorenew } from 'react-icons/md';
 import IdentityBox from '../boxes/IdentityBox';
 import RevealBox from '../boxes/RevealBox';
@@ -47,6 +47,10 @@ const OrganizationTableCard = ({ data, total, page, pageSize, search, setPage, s
   const [markDeadModalOpen, setMarkDeadModalOpen] = useState(false);
   const [selectedLeadForAction, setSelectedLeadForAction] = useState<LeadDto | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  // Address modal state
+  const [addressModalOpen, setAddressModalOpen] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState<{ address: string; lat?: number; lng?: number } | null>(null);
 
   // Clear selection when page/data changes
   useEffect(() => {
@@ -140,12 +144,6 @@ const OrganizationTableCard = ({ data, total, page, pageSize, search, setPage, s
       render: (_, row) => <RevealBox type="email" value={row.lead_email} leadIds={[row.lead_id ?? '']} />,
     },
     {
-      key: 'founded_year',
-      title: 'Founded',
-      render: (_, row) => <Typography className="text-sm text-center font-bold">{row.founded_year ?? '-'}</Typography>,
-    },
-
-    {
       key: 'phone',
       title: 'Phone',
       render: (_, row) => <RevealBox type="phone" value={row.phone} leadIds={[row.lead_id ?? '']} />,
@@ -154,6 +152,23 @@ const OrganizationTableCard = ({ data, total, page, pageSize, search, setPage, s
       key: 'location',
       title: 'Location',
       render: (_, row) => <Typography className="text-sm text-center text-gray-600">{row.location ?? '-'}</Typography>,
+    },
+    {
+      key: 'trust_score',
+      title: 'Trust Score',
+      render: (_, row) => {
+        if (!row.trust_score) return <Typography className="text-sm text-center text-gray-400">-</Typography>;
+        // Color coding: 80-100 = green, 60-79 = yellow, below 60 = red
+        const color = row.trust_score >= 80 ? '#16a34a' : row.trust_score >= 60 ? '#f59e0b' : '#ef4444';
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+            <Typography className="text-sm font-bold" sx={{ color }}>
+              {Math.round(row.trust_score)}
+            </Typography>
+            <Typography className="text-xs text-gray-500">/100</Typography>
+          </Box>
+        );
+      },
     },
     {
       key: 'social_profile_link',
@@ -240,6 +255,33 @@ const OrganizationTableCard = ({ data, total, page, pageSize, search, setPage, s
                 fontSize: '10px',
               }}
             />
+          )}
+
+          {/* View Full Address Button */}
+          {row.formatted_address && (
+            <Tooltip title="View Full Address">
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedAddress({
+                    address: row.formatted_address ?? '',
+                    lat: row.latitude,
+                    lng: row.longitude,
+                  });
+                  setAddressModalOpen(true);
+                }}
+                sx={{
+                  backgroundColor: '#EFF6FF',
+                  color: '#3B82F6',
+                  '&:hover': {
+                    backgroundColor: '#DBEAFE',
+                  },
+                }}
+              >
+                <FaMapMarkerAlt size={14} />
+              </IconButton>
+            </Tooltip>
           )}
 
           {/* Action Menu */}
@@ -376,6 +418,50 @@ const OrganizationTableCard = ({ data, total, page, pageSize, search, setPage, s
           }
         }}
       />
+
+      {/* Address Modal */}
+      <Dialog
+        open={addressModalOpen}
+        onClose={() => {
+          setAddressModalOpen(false);
+          setSelectedAddress(null);
+        }}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: '#141414' }}>Full Address</DialogTitle>
+        <DialogContent>
+          <Box sx={{ py: 2 }}>
+            <Typography variant="body1" sx={{ mb: 3, color: '#4a4a4a', lineHeight: 1.6 }}>
+              {selectedAddress?.address}
+            </Typography>
+
+            {selectedAddress?.lat && selectedAddress?.lng && (
+              <Button
+                variant="contained"
+                startIcon={<FaMapMarkerAlt />}
+                fullWidth
+                onClick={() => {
+                  const url = `https://www.google.com/maps?q=${selectedAddress.lat},${selectedAddress.lng}`;
+                  window.open(url, '_blank', 'noopener,noreferrer');
+                }}
+                sx={{
+                  backgroundColor: '#3B82F6',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  py: 1.5,
+                  borderRadius: 2,
+                  '&:hover': {
+                    backgroundColor: '#2563EB',
+                  },
+                }}
+              >
+                Open in Google Maps
+              </Button>
+            )}
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

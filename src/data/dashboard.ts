@@ -15,6 +15,7 @@ import { IoMdPricetags } from 'react-icons/io';
 import { IoSettingsOutline } from 'react-icons/io5';
 import { IconType } from 'react-icons/lib';
 import { MdAutorenew, MdOutlineCampaign, MdRecordVoiceOver, MdSettings, MdViewModule } from 'react-icons/md';
+import { RiMoneyDollarCircleLine } from 'react-icons/ri';
 import { RxDashboard } from 'react-icons/rx';
 
 interface ILink {
@@ -91,6 +92,12 @@ export const dashboardLinks: ILink[] = [
         route: '/leads-tracking/forms/manage?type=conversational',
         icon: FaComments,
       },
+      // Hidden - Google Maps functionality merged into Organization Lead Form via Location Intelligence
+      // {
+      //   label: 'Google Maps',
+      //   route: '/leads-tracking/forms/manage?type=googlemaps',
+      //   icon: FaMapMarkerAlt,
+      // },
       {
         label: 'History',
         route: '/leads-tracking/history',
@@ -191,6 +198,11 @@ export const dashboardAdminLinks: ILink[] = [
 ];
 
 export const dashboardBottomLinks: ILink[] = [
+  {
+    label: 'Plans & Pricing',
+    route: '/pricing',
+    icon: RiMoneyDollarCircleLine,
+  },
   {
     label: 'Help',
     route: '/help',

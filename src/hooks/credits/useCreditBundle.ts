@@ -42,6 +42,26 @@ export const useCreditBundle = () => {
     select: (res) => res.responseData,
   });
 
+  // Get credit batches
+  const {
+    data: creditBatches,
+    isLoading: isLoadingBatches,
+    isError: isBatchesError,
+  } = useQuery(['credit-batches', userId], () => CreditBundleService.getCreditBatches(userId), {
+    enabled: !!userId,
+    select: (res) => (Array.isArray(res.responseData) ? res.responseData : []),
+  });
+
+  // Get credit summary
+  const {
+    data: creditSummary,
+    isLoading: isLoadingSummary,
+    isError: isSummaryError,
+  } = useQuery(['credit-summary', userId], () => CreditBundleService.getCreditSummary(userId), {
+    enabled: !!userId,
+    select: (res) => res.responseData || null,
+  });
+
   // Verify purchase mutation
   const verifyPurchaseMutation = useMutation((reference: string) => CreditBundleService.verifyPurchase(reference), {
     onSuccess: (response) => {
@@ -50,6 +70,8 @@ export const useCreditBundle = () => {
         toast.success(`${response.responseData?.credits || 0} credits added to your account!`);
         queryClient.invalidateQueries(['credit-balance', userId]);
         queryClient.invalidateQueries(['credit-history', userId]);
+        queryClient.invalidateQueries(['credit-batches', userId]);
+        queryClient.invalidateQueries(['credit-summary', userId]);
         queryClient.invalidateQueries(['feature-limit']);
       } else {
         toast.error(response.responseMessage || 'Failed to verify purchase');
@@ -147,6 +169,16 @@ export const useCreditBundle = () => {
     purchaseHistory: historyData?.purchases || [],
     isLoadingHistory,
     isHistoryError,
+
+    // Credit Batches
+    creditBatches: creditBatches || [],
+    isLoadingBatches,
+    isBatchesError,
+
+    // Credit Summary
+    creditSummary,
+    isLoadingSummary,
+    isSummaryError,
 
     // Actions
     purchaseBundle,

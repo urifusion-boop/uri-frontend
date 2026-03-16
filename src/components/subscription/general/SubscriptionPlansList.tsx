@@ -206,9 +206,9 @@ const SubscriptionPlansList = ({ onSelectPlan, currentPlanType, isLoading, loadi
       icon: <MdTimer size={20} />,
       iconBg: 'linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)',
       title: 'Trial User',
-      subtitle: '7 days free',
+      subtitle: '30 days free',
       description: 'New to Uri? Start with our free trial to explore all premium features before committing.',
-      features: ['7-day full access trial', 'All social listening features', 'Limited lead generation', 'Upgrade prompts when limits hit'],
+      features: ['30-day full access trial', 'All social listening features', 'Limited lead generation', 'Upgrade prompts when limits hit'],
       badge: 'NEW USERS',
     },
     {
@@ -262,9 +262,9 @@ const SubscriptionPlansList = ({ onSelectPlan, currentPlanType, isLoading, loadi
       title: 'Credit Bundles',
       subtitle: 'Best value',
       description: 'Buy credit bundles upfront for the best per-action pricing. Ideal for power users.',
-      features: ['Up to 10% savings vs PAYG', 'Bundles from 10-150 credits', 'Credits never expire', 'Discounted enrichment costs'],
+      features: ['Up to 10% savings vs PAYG', 'Bundles from 10-200 credits', 'Credits never expire', 'Discounted enrichment costs'],
       isHighlighted: true,
-      comingSoon: true,
+      comingSoon: false,
     },
   ];
 

@@ -276,6 +276,23 @@ export class LazarusService {
     return response.data;
   }
 
+  // ============ NOTIFICATION PREFERENCES ============
+  static async getNotificationPreferences(userId: string): Promise<UriResponse<{ email_notifications_enabled: boolean; notification_email?: string }>> {
+    const response: AxiosResponse<UriResponse<{ email_notifications_enabled: boolean; notification_email?: string }>> = await UriHttpClient.getClient().get(
+      `${BASE_PATH}/notification-preferences?user_id=${userId}`
+    );
+    return response.data;
+  }
+
+  static async updateNotificationPreferences(userId: string, emailNotificationsEnabled: boolean, notificationEmail?: string): Promise<UriResponse<any>> {
+    let url = `${BASE_PATH}/notification-preferences?user_id=${userId}&email_notifications_enabled=${emailNotificationsEnabled}`;
+    if (notificationEmail) {
+      url += `&notification_email=${encodeURIComponent(notificationEmail)}`;
+    }
+    const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().put(url);
+    return response.data;
+  }
+
   // ============ ANALYTICS ============
   static async getAnalyticsData(userId: string, days: number = 30): Promise<UriResponse<any>> {
     const response: AxiosResponse<UriResponse<any>> = await UriHttpClient.getClient().get(`${BASE_PATH}/analytics?user_id=${userId}&days=${days}`);

@@ -1,6 +1,14 @@
 import { UriHttpClient } from '@/configs/http.config';
 import { creditRoutes } from '@/constants/routes/creditRoutes';
-import { CreditBalanceResponseDto, CreditBundleDto, CreditPurchaseHistoryResponseDto, PurchaseCreditBundleRequestDto, PurchaseCreditBundleResponseDto } from '@/models/dtos/CreditBundleDto';
+import {
+  CreditBalanceResponseDto,
+  CreditBatchDto,
+  CreditBundleDto,
+  CreditPurchaseHistoryResponseDto,
+  CreditSummaryDto,
+  PurchaseCreditBundleRequestDto,
+  PurchaseCreditBundleResponseDto,
+} from '@/models/dtos/CreditBundleDto';
 import { BackendUrlEnum } from '@/models/enum-models/BackendUrlEnum';
 import { UriResponse } from '@/models/responses/UriResponse';
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
@@ -57,6 +65,18 @@ export class CreditBundleService {
     const response: Awaited<AxiosResponse<UriResponse<CreditPurchaseHistoryResponseDto>>> = await this.getClient().get(this.buildTransactionsUrl(`${creditRoutes.getHistory}/${userId}/history`), {
       params: { limit, page },
     });
+    return response.data;
+  }
+
+  static async getCreditBatches(userId: string): Promise<UriResponse<CreditBatchDto[]>> {
+    const url = this.isLocalDevelopment() ? `/task-manager/api/v1/credit-batch/user/${userId}` : `${BackendUrlEnum.TASK_MANAGER}/credit-batch/user/${userId}`;
+    const response: Awaited<AxiosResponse<UriResponse<CreditBatchDto[]>>> = await this.getClient().get(url);
+    return response.data;
+  }
+
+  static async getCreditSummary(userId: string): Promise<UriResponse<CreditSummaryDto>> {
+    const url = this.isLocalDevelopment() ? `/task-manager/api/v1/credit-batch/summary/${userId}` : `${BackendUrlEnum.TASK_MANAGER}/credit-batch/summary/${userId}`;
+    const response: Awaited<AxiosResponse<UriResponse<CreditSummaryDto>>> = await this.getClient().get(url);
     return response.data;
   }
 }

@@ -63,3 +63,24 @@ export interface CreditPurchaseHistoryResponseDto {
   page: number;
   limit: number;
 }
+
+export interface CreditBatchDto {
+  batchId: string;
+  userId: string;
+  purchaseReference: string;
+  credits: number;
+  remainingCredits: number;
+  purchaseDate: string;
+  expiryDate: string;
+  status: 'active' | 'expired' | 'rolled_over';
+  rolledIntoBatchId?: string;
+}
+
+export interface CreditSummaryDto {
+  userId: string;
+  totalCredits: number;
+  expiringIn7Days: number;
+  expiringIn3Days: number;
+  batchesExpiringIn7Days: CreditBatchDto[];
+  batchesExpiringIn3Days: CreditBatchDto[];
+}

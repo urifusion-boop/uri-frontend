@@ -1,3 +1,4 @@
+import ConfirmDeleteModal from '@/components/modals/ConfirmDeleteModal';
 import { LightThemeColors } from '@/configs/colors.config';
 import { LeadHelper } from '@/helpers/LeadHelper';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
@@ -18,7 +19,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { Box, Button, Card, CardContent, Chip, Container, Grid, IconButton, InputAdornment, Menu, MenuItem, Skeleton, TextField, Tooltip, Typography, useMediaQuery } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
-import { FaBriefcase, FaBuilding, FaComments, FaUser } from 'react-icons/fa';
+import { FaBriefcase, FaBuilding, FaComments, FaMapMarkerAlt, FaUser } from 'react-icons/fa';
 
 const ManageAllFormsView = () => {
   const router = useRouter();
@@ -30,6 +31,8 @@ const ManageAllFormsView = () => {
   const [filterType, setFilterType] = useState<FormTypeEnum | 'all'>('all');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedForm, setSelectedForm] = useState<any>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [formToDelete, setFormToDelete] = useState<{ id: string; title: string } | null>(null);
 
   const { useGetLeadFormsByUserId, deleteLeadForm, setDefaultForm, togglePause, toggleAutoGenerate } = useLeadFormHooks();
   const { data: allForms = [], isLoading } = useGetLeadFormsByUserId(userId);
@@ -48,6 +51,9 @@ const ManageAllFormsView = () => {
         updated: f.last_updated,
       }))
     );
+
+    // Hide Google Maps forms (functionality merged into Organization forms via Location Intelligence)
+    filtered = filtered.filter((form: any) => form.form_type !== FormTypeEnum.GOOGLE_MAPS);
 
     // Deduplicate by lead_form_id (keep the most recently updated one)
     const uniqueFormsMap = new Map();
@@ -108,6 +114,7 @@ const ManageAllFormsView = () => {
       [FormTypeEnum.ORGANIZATION]: 0,
       [FormTypeEnum.BUSINESS]: 0,
       [FormTypeEnum.CONVERSATIONAL]: 0,
+      [FormTypeEnum.GOOGLE_MAPS]: 0,
     };
 
     allForms.forEach((form: any) => {
@@ -136,11 +143,30 @@ const ManageAllFormsView = () => {
     handleMenuClose();
   };
 
-  const handleDeleteForm = async (formId: string) => {
-    if (confirm('Are you sure you want to delete this form? This action cannot be undone.')) {
-      deleteLeadForm.mutate(formId);
-      handleMenuClose();
-    }
+  const handleDeleteForm = async (formId: string, formTitle: string) => {
+    setFormToDelete({ id: formId, title: formTitle });
+    setDeleteModalOpen(true);
+    handleMenuClose();
+  };
+
+  const confirmDelete = () => {
+    if (!formToDelete) return;
+
+    deleteLeadForm.mutate(formToDelete.id, {
+      onSuccess: () => {
+        setDeleteModalOpen(false);
+        setFormToDelete(null);
+      },
+      onError: () => {
+        setDeleteModalOpen(false);
+        setFormToDelete(null);
+      },
+    });
+  };
+
+  const cancelDelete = () => {
+    setDeleteModalOpen(false);
+    setFormToDelete(null);
   };
 
   const handleSetDefault = (form: any) => {
@@ -174,6 +200,7 @@ const ManageAllFormsView = () => {
       [FormTypeEnum.ORGANIZATION]: 'Organization',
       [FormTypeEnum.BUSINESS]: 'Business',
       [FormTypeEnum.CONVERSATIONAL]: 'Sales Signals',
+      [FormTypeEnum.GOOGLE_MAPS]: 'Google Maps',
     };
     return labels[type] || type;
   };
@@ -184,6 +211,7 @@ const ManageAllFormsView = () => {
       [FormTypeEnum.ORGANIZATION]: '#8B5CF6',
       [FormTypeEnum.BUSINESS]: '#10B981',
       [FormTypeEnum.CONVERSATIONAL]: '#F59E0B',
+      [FormTypeEnum.GOOGLE_MAPS]: '#EF4444',
     };
     return colors[type] || '#6B7280';
   };
@@ -194,6 +222,7 @@ const ManageAllFormsView = () => {
       [FormTypeEnum.ORGANIZATION]: <FaBuilding size={20} />,
       [FormTypeEnum.BUSINESS]: <FaBriefcase size={20} />,
       [FormTypeEnum.CONVERSATIONAL]: <FaComments size={20} />,
+      [FormTypeEnum.GOOGLE_MAPS]: <FaMapMarkerAlt size={20} />,
     };
     return icons[type] || <FaUser size={20} />;
   };
@@ -710,11 +739,23 @@ const ManageAllFormsView = () => {
           <AutorenewIcon fontSize="small" sx={{ color: '#3B82F6' }} />
           {selectedForm?.auto_generate ? 'Disable' : 'Enable'} Auto-Gen
         </MenuItem>
-        <MenuItem onClick={() => selectedForm && handleDeleteForm(selectedForm.lead_form_id)} sx={{ fontSize: '14px', fontWeight: 500, gap: 1.5, py: 1.2, color: '#EF4444' }}>
+        <MenuItem onClick={() => selectedForm && handleDeleteForm(selectedForm.lead_form_id, selectedForm.form_title)} sx={{ fontSize: '14px', fontWeight: 500, gap: 1.5, py: 1.2, color: '#EF4444' }}>
           <DeleteIcon fontSize="small" />
           Delete
         </MenuItem>
       </Menu>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDeleteModal
+        open={deleteModalOpen}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        spamTitle={formToDelete?.title}
+        isProcessing={deleteLeadForm.isPending}
+        title="Delete Lead Form"
+        description="Are you sure you want to permanently delete this lead form? This will also delete all associated leads and cannot be undone."
+        itemLabel="Form Name"
+      />
     </Container>
   );
 };

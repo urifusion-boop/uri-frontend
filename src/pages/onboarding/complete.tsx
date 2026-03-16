@@ -1,18 +1,22 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Box, Typography, CircularProgress } from '@mui/material';
-import { useRouter } from 'next/router';
-import { toast } from 'react-hot-toast';
-import SeoHead from '@/components/atoms/SeoHead';
-import useCustomTheme from '@/hooks/theme.hook';
-import { WORKFLOWS, getWorkflowModules, getModuleRoute } from '@/constants/workflows';
 import { OnboardingService } from '@/api/OnboardingService';
+import { TrialService } from '@/api/TrialService';
+import SeoHead from '@/components/atoms/SeoHead';
+import TrialActivationModal from '@/components/trial/TrialActivationModal';
+import { WORKFLOWS, getModuleRoute, getWorkflowModules } from '@/constants/workflows';
+import useCustomTheme from '@/hooks/theme.hook';
 import { useAuth } from '@/providers/AuthProvider';
+import { Box, CircularProgress, Typography } from '@mui/material';
+import { useRouter } from 'next/router';
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'react-hot-toast';
 
 const CompletePage = () => {
   const router = useRouter();
   const { themeColors } = useCustomTheme();
   const { userDetails, saveUserDetails } = useAuth();
   const [isProcessing, setIsProcessing] = useState(true);
+  const [showTrialModal, setShowTrialModal] = useState(false);
+  const [redirectPath, setRedirectPath] = useState<string>('');
   const { workflow, module } = router.query;
   const hasCompletedRef = useRef(false);
 
@@ -90,28 +94,62 @@ const CompletePage = () => {
             duration: 3000,
           });
 
-          // Wait a moment for toast to show
-          setTimeout(() => {
-            // For lead modules, always redirect to form page on first onboarding
-            const moduleId = module as string;
-            if (moduleId.includes('-leads')) {
-              const formRoutes: Record<string, string> = {
-                'individual-leads': '/leads-tracking/forms/manage?type=individual',
-                'organization-leads': '/leads-tracking/forms/manage?type=organization',
-                'conversational-leads': '/leads-tracking/forms/manage?type=conversational',
-              };
-              router.push(formRoutes[moduleId] || redirectTo || getModuleRoute(moduleId));
+          // Determine redirect path
+          const moduleId = module as string;
+          let targetPath = '';
+          if (moduleId.includes('-leads')) {
+            const formRoutes: Record<string, string> = {
+              'individual-leads': '/leads-tracking/forms/manage?type=individual',
+              'organization-leads': '/leads-tracking/forms/manage?type=organization',
+              'conversational-leads': '/leads-tracking/forms/manage?type=conversational',
+            };
+            targetPath = formRoutes[moduleId] || redirectTo || getModuleRoute(moduleId);
+          } else {
+            targetPath = redirectTo || getModuleRoute(moduleId);
+          }
+          setRedirectPath(targetPath);
+
+          // Check trial eligibility and show modal BEFORE redirecting
+          try {
+            const trialStatusResponse = await TrialService.getTrialStatus(userId);
+            if (trialStatusResponse.status && trialStatusResponse.responseData) {
+              const { hasUsedFreeTrial, status } = trialStatusResponse.responseData;
+              // User is eligible if they haven't used trial and it's not started
+              const isEligible = !hasUsedFreeTrial && status === 'not_started';
+
+              if (isEligible) {
+                // Stop processing spinner and show trial modal
+                setIsProcessing(false);
+                setShowTrialModal(true);
+              } else {
+                // Not eligible, redirect directly
+                setTimeout(() => {
+                  router.push(targetPath);
+                }, 500);
+              }
             } else {
-              // Redirect to the module page
-              router.push(redirectTo || getModuleRoute(moduleId));
+              // If status check fails, show trial modal anyway (new users should see trial offer)
+              setIsProcessing(false);
+              setShowTrialModal(true);
             }
-          }, 500);
+          } catch (error) {
+            console.error('Error checking trial eligibility:', error);
+            // On error, show trial modal for new users
+            setIsProcessing(false);
+            setShowTrialModal(true);
+          }
         } else {
           throw new Error('Failed to complete onboarding');
         }
-      } catch (error) {
-        console.error('Onboarding completion error:', error);
-        toast.error('Failed to complete onboarding. Please try again.');
+      } catch (error: any) {
+        console.error('❌ Onboarding completion error:', error);
+        console.error('❌ Error details:', {
+          message: error?.message,
+          response: error?.response,
+          status: error?.response?.status,
+          data: error?.response?.data,
+        });
+        toast.error(`Failed to complete onboarding: ${error?.response?.data?.responseMessage || error?.message || 'Unknown error'}`);
 
         // Redirect back to workflow selection on error
         setTimeout(() => {
@@ -127,6 +165,21 @@ const CompletePage = () => {
       completeOnboarding();
     }
   }, [router.isReady, workflow, module, router, themeColors]);
+
+  const handleTrialSuccess = () => {
+    setShowTrialModal(false);
+    toast.success('🎉 Your free trial has been activated!');
+    setTimeout(() => {
+      router.push(redirectPath);
+    }, 500);
+  };
+
+  const handleTrialSkip = () => {
+    setShowTrialModal(false);
+    setTimeout(() => {
+      router.push(redirectPath);
+    }, 500);
+  };
 
   return (
     <>
@@ -153,40 +206,45 @@ const CompletePage = () => {
             textAlign: 'center',
           }}
         >
-          {/* Loading Spinner */}
-          <CircularProgress
-            size={60}
-            sx={{
-              color: themeColors.primary,
-              mb: 3,
-            }}
-          />
+          {/* Loading Spinner - Only show while processing */}
+          {isProcessing && (
+            <>
+              <CircularProgress
+                size={60}
+                sx={{
+                  color: themeColors.primary,
+                  mb: 3,
+                }}
+              />
 
-          {/* Processing Text */}
-          <Typography
-            sx={{
-              fontSize: { xs: 20, md: 24 },
-              fontWeight: 700,
-              color: '#0d0e0f',
-              mb: 2,
-            }}
-          >
-            Setting up your workspace...
-          </Typography>
+              {/* Processing Text */}
+              <Typography
+                sx={{
+                  fontSize: { xs: 20, md: 24 },
+                  fontWeight: 700,
+                  color: '#0d0e0f',
+                  mb: 2,
+                }}
+              >
+                Setting up your workspace...
+              </Typography>
 
-          <Typography
-            sx={{
-              fontSize: { xs: 14, md: 16 },
-              fontWeight: 400,
-              color: '#6C727F',
-            }}
-          >
-            {workflow && module
-              ? `Preparing ${WORKFLOWS[workflow as string]?.name || workflow}...`
-              : 'Loading...'}
-          </Typography>
+              <Typography
+                sx={{
+                  fontSize: { xs: 14, md: 16 },
+                  fontWeight: 400,
+                  color: '#6C727F',
+                }}
+              >
+                {workflow && module ? `Preparing ${WORKFLOWS[workflow as string]?.name || workflow}...` : 'Loading...'}
+              </Typography>
+            </>
+          )}
         </Box>
       </Box>
+
+      {/* Trial Activation Modal - Shows immediately after onboarding */}
+      {userDetails?.userId && <TrialActivationModal open={showTrialModal} onClose={handleTrialSkip} onSuccess={handleTrialSuccess} userId={userDetails.userId} />}
     </>
   );
 };

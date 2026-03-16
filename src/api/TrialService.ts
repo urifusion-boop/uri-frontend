@@ -37,7 +37,7 @@ export interface TrialActivationResponse {
 
 export class TrialService {
   /**
-   * Activate 7-day free trial for user
+   * Activate 30-day free trial for user
    */
   static async activateTrial(userId: string): Promise<UriResponse<TrialActivationResponse>> {
     const response: Awaited<AxiosResponse<UriResponse<TrialActivationResponse>>> = await UriHttpClient.getClient().post(`${BackendUrlEnum.BACKEND}/trial/activate/${userId}`);

@@ -15,8 +15,14 @@ const useFeatureLimit = (userId: string) => {
   } = useQuery({
     queryKey: ['feature-limit'],
     queryFn: async () => {
+      console.log('🔄 [Feature Limit] Fetching feature limits for user:', userId);
       const result = await FeatureLimitService.getUserFeatureLimit(userId ?? '');
       if (result.status && result.responseData) {
+        console.log('✅ [Feature Limit] Successfully fetched:', {
+          leads: result.responseData?.lead?.noOfLeads,
+          credits: result.responseData?.lead?.credits,
+          plan: result.responseData?.subscriptionPlan,
+        });
         setIsInitialState(false);
         setFeatureLimit(result.responseData);
         if (result.responseData?.subscriptionPlan && authContext?.saveSubscriptionPlanType) {
@@ -24,6 +30,7 @@ const useFeatureLimit = (userId: string) => {
         }
         return result.responseData;
       } else {
+        console.warn('⚠️ [Feature Limit] No feature limit data returned');
         // Feature limit not found is normal for new users without subscription/trial
         // Return null instead of throwing error
         setIsInitialState(false);

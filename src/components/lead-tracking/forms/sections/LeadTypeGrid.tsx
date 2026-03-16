@@ -10,6 +10,7 @@ const LeadTypeGrid = () => {
           organization: '#f7f7f7', // gray-100
           business: '#f9f7f7', // gray-150
           conversational: '#f9fafb', // gray-150
+          googlemaps: '#fef3f2', // red-50
         }}
       />
     </Grid>

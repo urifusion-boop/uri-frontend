@@ -1,3 +1,4 @@
+import { TrialService } from '@/api/TrialService';
 import { triggerToast } from '@/components/atoms/CustomToast';
 import LoadingButton from '@/components/buttons/LoadingButton';
 import AnimatedSendInput from '@/components/input/AnimatedSendInput';
@@ -7,6 +8,7 @@ import MultiSelectDropdown, { MultiSelectOption } from '@/components/input/Multi
 import SingleFieldInput from '@/components/input/SingleFieldInput';
 import { LimitExceededModal } from '@/components/modals/LimitExceededModal';
 import SmartModal from '@/components/modals/SmartModal';
+import TrialActivationModal from '@/components/trial/TrialActivationModal';
 import { useLeadFormHooks } from '@/hooks/lead-form/leadForm.hook';
 import { IndividualLeadFormDto } from '@/models/dtos/LeadFormDto';
 import { ContactEmailStatusEnum } from '@/models/enum-models/ContactEmailStatusEnum';
@@ -46,6 +48,7 @@ const IndividualLeadForm = () => {
   const [existingFormId, setExistingFormId] = useState<string | null>(null);
   const [openSuccessModal, setOpenSuccessModal] = useState(false);
   const [showLimitExceededModal, setShowLimitExceededModal] = useState(false);
+  const [showTrialActivationModal, setShowTrialActivationModal] = useState(false);
   const [showLeadGoalModal, setShowLeadGoalModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [savingProgress, setSavingProgress] = useState(0);
@@ -294,12 +297,35 @@ const IndividualLeadForm = () => {
               setOpenSuccessModal(true);
             }, 500);
           },
-          onError: (error: any) => {
+          onError: async (error: any) => {
             clearInterval(tipInterval);
             clearInterval(statusInterval);
             setIsSaving(false);
-            if (error?.response?.status === 403 || error?.response?.data?.limit_exceeded) {
-              setShowLimitExceededModal(true);
+
+            // Check if error is due to no active subscription/trial
+            if (error?.response?.status === 402 || error?.response?.status === 403) {
+              // Check trial status to determine which modal to show
+              try {
+                const trialStatusResponse = await TrialService.getTrialStatus(userId || '');
+                if (trialStatusResponse.status && trialStatusResponse.responseData) {
+                  const { status, hasUsedFreeTrial } = trialStatusResponse.responseData;
+
+                  // If trial not started and user hasn't used it, show trial activation modal
+                  if (status === 'not_started' && !hasUsedFreeTrial) {
+                    setShowTrialActivationModal(true);
+                    return;
+                  }
+                }
+              } catch (trialError) {
+                console.error('Error checking trial status:', trialError);
+              }
+
+              // Otherwise show limit exceeded modal (trial exhausted or limit reached)
+              if (error?.response?.data?.limit_exceeded) {
+                setShowLimitExceededModal(true);
+              } else {
+                triggerToast('error', error?.response?.data?.message || 'Update failed. Please try again.');
+              }
             } else {
               triggerToast('error', error?.response?.data?.message || 'Update failed. Please try again.');
             }
@@ -318,12 +344,35 @@ const IndividualLeadForm = () => {
             setOpenSuccessModal(true);
           }, 500);
         },
-        onError: (error: any) => {
+        onError: async (error: any) => {
           clearInterval(tipInterval);
           clearInterval(statusInterval);
           setIsSaving(false);
-          if (error?.response?.status === 403 || error?.response?.data?.limit_exceeded) {
-            setShowLimitExceededModal(true);
+
+          // Check if error is due to no active subscription/trial
+          if (error?.response?.status === 402 || error?.response?.status === 403) {
+            // Check trial status to determine which modal to show
+            try {
+              const trialStatusResponse = await TrialService.getTrialStatus(userId || '');
+              if (trialStatusResponse.status && trialStatusResponse.responseData) {
+                const { status, hasUsedFreeTrial } = trialStatusResponse.responseData;
+
+                // If trial not started and user hasn't used it, show trial activation modal
+                if (status === 'not_started' && !hasUsedFreeTrial) {
+                  setShowTrialActivationModal(true);
+                  return;
+                }
+              }
+            } catch (trialError) {
+              console.error('Error checking trial status:', trialError);
+            }
+
+            // Otherwise show limit exceeded modal (trial exhausted or limit reached)
+            if (error?.response?.data?.limit_exceeded) {
+              setShowLimitExceededModal(true);
+            } else {
+              triggerToast('error', error?.response?.data?.message || 'Creation failed. Please try again.');
+            }
           } else {
             triggerToast('error', error?.response?.data?.message || 'Creation failed. Please try again.');
           }
@@ -754,12 +803,25 @@ const IndividualLeadForm = () => {
         planName={subscriptionPlanType ?? 'your current plan'}
       />
 
+      {/* Trial Activation Modal - Shows when user tries to generate leads without active trial */}
+      {userId && (
+        <TrialActivationModal
+          open={showTrialActivationModal}
+          onClose={() => setShowTrialActivationModal(false)}
+          onSuccess={() => {
+            setShowTrialActivationModal(false);
+            triggerToast('success', '🎉 Trial activated! You can now generate leads.');
+            window.location.reload(); // Reload to fetch updated trial status
+          }}
+          userId={userId}
+        />
+      )}
+
       {/* Lead Goal Reminder Modal */}
       <SmartModal
         open={showLeadGoalModal}
         onClose={() => {
           setShowLeadGoalModal(false);
-          proceedWithSave();
         }}
         image={<Box sx={{ fontSize: 48 }}>🎯</Box>}
         mainText="Add Your Lead Goal?"

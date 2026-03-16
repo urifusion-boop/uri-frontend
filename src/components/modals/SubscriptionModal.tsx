@@ -76,7 +76,7 @@ const SubscriptionModal: React.FC = () => {
       const response = await TrialService.activateTrial(userDetails.userId);
 
       if (response.status) {
-        toast.success('🎉 Your 7-day free trial has started!');
+        toast.success('🎉 Your 30-day free trial has started!');
 
         // Save new JWT token with updated trialStatus claim
         if (response.responseData?.accessToken) {
@@ -108,7 +108,7 @@ const SubscriptionModal: React.FC = () => {
   };
 
   // Trial features
-  const trialFeatures = ['100 Lead Credits', '150 Intent Signals', '1 Account Tracker', '1 Hashtag Tracker', '1 Keyword Tracker', '5 AI-Powered Reports'];
+  const trialFeatures = ['500 Lead Credits', '1500 Intent Signals', '1 Account Tracker', '1 Hashtag Tracker', '1 Keyword Tracker', '5 AI-Powered Reports'];
 
   // Paid subscription features
   const paidFeatures = ['Monitor Keyword Trends', 'Setup Alerts', 'Track Sentiment', 'Generate Leads'];
@@ -223,7 +223,7 @@ const SubscriptionModal: React.FC = () => {
                   fontSize: '22px',
                 }}
               >
-                Start Your 7-Day Free Trial
+                Start Your 30-Day Free Trial
               </Typography>
 
               <Typography
@@ -278,7 +278,7 @@ const SubscriptionModal: React.FC = () => {
                     textAlign: 'center',
                   }}
                 >
-                  ⏰ Trial expires in 7 days • No credit card required
+                  ⏰ Trial expires in 30 days • No credit card required
                 </Typography>
               </Box>
 

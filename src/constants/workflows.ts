@@ -88,6 +88,14 @@ export const WORKFLOWS: Record<string, Workflow> = {
         route: '/leads-tracking/forms/leads?type=conversational',
         icon: FaComments,
       },
+      // Hidden - Google Maps functionality merged into Organization Lead Form via Location Intelligence
+      // {
+      //   id: 'googlemaps-leads',
+      //   name: 'Google Maps',
+      //   description: 'Discover local businesses through Google Maps based on location and criteria',
+      //   route: '/leads-tracking/forms/leads?type=google-maps',
+      //   icon: FaMapMarkerAlt,
+      // },
     ],
   },
   crm: {
@@ -120,6 +128,7 @@ export const getModuleRoute = (moduleId: string): string => {
     'individual-leads': '/leads-tracking/forms/leads?type=individual',
     'organization-leads': '/leads-tracking/forms/leads?type=organization',
     'conversational-leads': '/leads-tracking/forms/leads?type=conversational',
+    'googlemaps-leads': '/leads-tracking/forms/leads?type=google-maps',
     'lazarus-protocol': '/lazarus',
   };
   return routes[moduleId] || '/dashboard';

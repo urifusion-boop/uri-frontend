@@ -4,6 +4,7 @@ import {
   AutoPopulateDto,
   BusinessSearchFormDto,
   ConversationalSearchFormDto,
+  GoogleMapsLeadFormDto,
   IndividualLeadFormDto,
   LeadFormDto,
   LeadFormGetByFiltersDto,
@@ -99,6 +100,29 @@ export const useLeadFormHooks = () => {
       const res = await LeadFormService.updateConversationalSearchLeadForm(lead_form_id, data);
       if (!res.status) {
         throw new Error(res.responseMessage || 'Failed to update Sales Signals lead form');
+      }
+      return res;
+    },
+  });
+
+  const createGoogleMapsLeadForm = useMutation({
+    mutationFn: async (data: GoogleMapsLeadFormDto): Promise<UriResponse<any>> => {
+      const res = await LeadFormService.createGoogleMapsLeadForm(data);
+      if (!res.status) {
+        throw new Error(res.responseMessage || 'Failed to create Google Maps lead form');
+      }
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lead-forms'] });
+    },
+  });
+
+  const updateGoogleMapsLeadForm = useMutation({
+    mutationFn: async ({ lead_form_id, data }: { lead_form_id: string; data: GoogleMapsLeadFormDto }): Promise<UriResponse<LeadFormResponseDto>> => {
+      const res = await LeadFormService.updateGoogleMapsLeadForm(lead_form_id, data);
+      if (!res.status) {
+        throw new Error(res.responseMessage || 'Failed to update Google Maps lead form');
       }
       return res;
     },
@@ -258,6 +282,8 @@ export const useLeadFormHooks = () => {
     updateBusinessSearchLeadForm,
     createConversationalSearchLeadForm,
     updateConversationalSearchLeadForm,
+    createGoogleMapsLeadForm,
+    updateGoogleMapsLeadForm,
     useGetLeadFormsByFilters,
     useGetLeadFormById,
     useGetExistingFormType,

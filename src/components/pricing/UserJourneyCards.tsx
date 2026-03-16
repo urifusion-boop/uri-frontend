@@ -1,7 +1,7 @@
 import { LightThemeColors } from '@/configs/colors.config';
 import { alpha, Box, Button, Card, CardContent, Chip, Grid, List, ListItem, ListItemIcon, ListItemText, Stack, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
-import { FaBuilding, FaCheck, FaCoins, FaHandshake, FaHeadphones, FaWallet } from 'react-icons/fa';
+import { FaCheck, FaCoins, FaHandshake, FaHeadphones } from 'react-icons/fa';
 import { MdTimer } from 'react-icons/md';
 
 interface UserTypeCardProps {
@@ -224,9 +224,9 @@ export const UserJourneyCards = ({
       icon: <MdTimer size={22} />,
       iconBg: 'linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)',
       title: 'Trial User',
-      subtitle: '7 days free',
+      subtitle: '30 days free',
       description: 'New to Uri? Start with our free trial to explore all premium features before committing.',
-      features: ['7-day full access trial', 'All social listening features', 'Limited lead generation', 'Upgrade prompts when limits hit'],
+      features: ['30-day full access trial', 'All social listening features', 'Limited lead generation', 'Upgrade prompts when limits hit'],
       badge: 'NEW USERS',
       actionLabel: trialButtonText,
       onAction: isTrialDisabled ? undefined : onStartTrial,
@@ -237,7 +237,7 @@ export const UserJourneyCards = ({
       title: 'Free Social Listening',
       subtitle: 'Basic monitoring',
       description: 'Perfect for individuals who want to monitor social presence with optional lead gen access.',
-      features: ['1 social account tracking', '1 report per month', 'Access to Dera AI assistant', 'PAYG or credits for leads'],
+      features: ['1 social account tracking', '1 report per month', 'Access to Dera AI assistant', 'Credits for leads'],
       actionLabel: freeSocialListeningActionLabel,
       onAction: freeSocialListeningOnAction,
       isActive: isFreeSocialListeningActive,
@@ -254,38 +254,16 @@ export const UserJourneyCards = ({
       comingSoon: false,
     },
     {
-      icon: <FaBuilding size={20} />,
-      iconBg: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
-      title: 'Enterprise',
-      subtitle: 'Unlimited access',
-      description: 'The ultimate solution for large organizations requiring unlimited capabilities.',
-      features: ['Unlimited social accounts', 'Unlimited reports', 'Full AI capabilities', 'Priority support & collaboration'],
-      actionLabel: 'Activate Plan',
-      onAction: undefined,
-      comingSoon: true,
-    },
-    {
-      icon: <FaWallet size={20} />,
-      iconBg: 'linear-gradient(135deg, #27ae60 0%, #219a52 100%)',
-      title: 'PAYG Lead Gen',
-      subtitle: 'Pay as you go',
-      description: 'Flexible payment for lead generation. Fund your wallet and pay only for what you use.',
-      features: ['Fund wallet (min ₦5,000)', 'Pay per scan & lead action', 'No commitment required', 'Instant deductions'],
-      actionLabel: paygActionLabel,
-      onAction: paygOnAction,
-      isActive: isPaygActive,
-    },
-    {
       icon: <FaCoins size={20} />,
       iconBg: `linear-gradient(135deg, ${LightThemeColors.uriColor} 0%, #B8186A 100%)`,
       title: 'Credit Bundles',
       subtitle: 'Best value',
       description: 'Buy credit bundles upfront for the best per-action pricing. Ideal for power users.',
-      features: ['Up to 10% savings vs PAYG', 'Bundles from 10-150 credits', 'Credits never expire', 'Discounted enrichment costs'],
+      features: ['35-200 credit bundles', '₦5,000 - ₦30,000', 'Valid for 30 days', 'Rolls over on top-up'],
       isHighlighted: true,
       actionLabel: 'Buy Credits',
-      onAction: undefined,
-      comingSoon: true,
+      onAction: () => router.push('/buy-credits'),
+      comingSoon: false,
     },
   ];
 
@@ -354,10 +332,10 @@ export const UserJourneyCards = ({
               </Box>
               <Box>
                 <Typography fontWeight={700} sx={{ color: '#141414', mb: 0.5 }}>
-                  Choose Payment Method
+                  Buy Credit Bundles
                 </Typography>
                 <Typography variant="body2" sx={{ color: '#6B6B6B' }}>
-                  Select wallet (PAYG) for flexibility or buy credit bundles for savings.
+                  Purchase credit bundles for the best value on lead generation actions.
                 </Typography>
               </Box>
             </Stack>

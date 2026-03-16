@@ -58,6 +58,8 @@ const LazarusSettingsPage = () => {
   const [signalTypes, setSignalTypes] = useState<string[]>(['pain', 'switch', 'hiring', 'funding']);
   const [scanHistory, setScanHistory] = useState<any[]>([]);
   const [nextScanDate, setNextScanDate] = useState<string | null>(null);
+  const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true);
+  const [notificationEmail, setNotificationEmail] = useState('');
 
   useEffect(() => {
     loadSettings();
@@ -81,6 +83,13 @@ const LazarusSettingsPage = () => {
         setNextScanDate(settings.next_scan_date);
       }
 
+      // Load notification preferences
+      const notificationResponse = await LazarusService.getNotificationPreferences(userDetails.userId);
+      if (notificationResponse.status && notificationResponse.responseData) {
+        setEmailNotificationsEnabled(notificationResponse.responseData.email_notifications_enabled ?? true);
+        setNotificationEmail(notificationResponse.responseData.notification_email || '');
+      }
+
       // Load scan history
       const historyResponse = await LazarusService.getAutoDetectionHistory(userDetails.userId, 0, 10);
       if (historyResponse.status && historyResponse.responseData) {
@@ -99,6 +108,7 @@ const LazarusSettingsPage = () => {
 
     setSaving(true);
     try {
+      // Save auto-detection rules
       const response = await LazarusService.updateAutoDetectionRules(userDetails.userId, {
         enabled,
         detection_rules: {
@@ -112,11 +122,14 @@ const LazarusSettingsPage = () => {
         schedule,
       });
 
-      if (response.status) {
+      // Save notification preferences
+      const notificationResponse = await LazarusService.updateNotificationPreferences(userDetails.userId, emailNotificationsEnabled, notificationEmail || undefined);
+
+      if (response.status && notificationResponse.status) {
         toast.success('Settings saved successfully!');
         loadSettings(); // Reload to get updated next_scan_date
       } else {
-        toast.error(response.responseMessage || 'Failed to save settings');
+        toast.error(response.responseMessage || notificationResponse.responseMessage || 'Failed to save settings');
       }
     } catch (error: any) {
       console.error('Error saving settings:', error);
@@ -306,6 +319,90 @@ const LazarusSettingsPage = () => {
                 </Box>
               );
             })}
+          </Box>
+        </Card>
+
+        {/* Email Notifications Card */}
+        <Card sx={{ mb: 3, p: 3, borderRadius: '16px', border: '1px solid #F3F4F6' }}>
+          <Typography variant="h6" fontWeight={600} mb={1} color={LightThemeColors.blackWhite}>
+            📧 Email Notifications
+          </Typography>
+          <Typography variant="body2" color={LightThemeColors.secondary} mb={3}>
+            Get instant email alerts when high-ticket signals are detected
+          </Typography>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            <Box
+              sx={{
+                p: 2.5,
+                borderRadius: '12px',
+                background: emailNotificationsEnabled ? `${LightThemeColors.primary}08` : '#FAFBFC',
+                border: `2px solid ${emailNotificationsEnabled ? LightThemeColors.primary : '#E5E7EB'}`,
+              }}
+            >
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={emailNotificationsEnabled}
+                    onChange={(e) => setEmailNotificationsEnabled(e.target.checked)}
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': {
+                        color: LightThemeColors.primary,
+                      },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                        backgroundColor: LightThemeColors.primary,
+                      },
+                    }}
+                  />
+                }
+                label={
+                  <Box>
+                    <Typography variant="body1" fontWeight={600} color={LightThemeColors.blackWhite}>
+                      Enable Email Alerts
+                    </Typography>
+                    <Typography variant="caption" color={LightThemeColors.secondary}>
+                      Receive notifications when prospects show buying signals
+                    </Typography>
+                  </Box>
+                }
+              />
+            </Box>
+
+            {emailNotificationsEnabled && (
+              <TextField
+                label="Custom Notification Email (Optional)"
+                type="email"
+                value={notificationEmail}
+                onChange={(e) => setNotificationEmail(e.target.value)}
+                placeholder={userDetails?.email || 'your@email.com'}
+                helperText="Leave empty to use your account email"
+                fullWidth
+                sx={{
+                  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: LightThemeColors.primary,
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: LightThemeColors.primary,
+                  },
+                }}
+              />
+            )}
+
+            {emailNotificationsEnabled && (
+              <Alert
+                severity="success"
+                sx={{
+                  borderRadius: '10px',
+                  backgroundColor: `${LightThemeColors.primary}08`,
+                  color: LightThemeColors.blackWhite,
+                  '& .MuiAlert-icon': {
+                    color: LightThemeColors.primary,
+                  },
+                }}
+              >
+                <strong>Format:</strong> 🔥 High-Ticket Pulse: [Lead Name] from [Company] just posted about [Topic]. View signal and contact: [Link]
+              </Alert>
+            )}
           </Box>
         </Card>
 

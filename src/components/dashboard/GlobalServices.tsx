@@ -113,18 +113,26 @@ const workflowData = [
         icon: <FaComments size={40} color={LightThemeColors.uriColor} />,
         href: '/leads-tracking/forms/leads?type=conversational',
       },
+      // Hidden - Google Maps functionality merged into Organization Lead Form via Location Intelligence
+      // {
+      //   id: 'googlemaps-leads',
+      //   title: 'Google Maps',
+      //   description: 'Discover local businesses through Google Maps based on location and criteria.',
+      //   icon: <FaMapMarkerAlt size={40} color={LightThemeColors.uriColor} />,
+      //   href: '/leads-tracking/forms/leads?type=googlemaps',
+      // },
     ],
   },
   {
     id: 'crm',
     name: 'CRM',
-    description: 'Monitor dead leads & resurrect opportunities',
+    description: 'The Prospect Pulse. Active Signals for High-Ticket Leads',
     icon: <MdAutorenew size={40} color={LightThemeColors.uriColor} />,
     comingSoon: false,
     modules: [
       {
         id: 'lazarus-protocol',
-        title: 'Lazarus Protocol',
+        title: 'The Prospect Pulse',
         description: 'Who do you want us to monitor for buying signals? Connect your CRM or upload contacts manually.',
         icon: <FaHeartbeat size={40} color={LightThemeColors.uriColor} />,
         href: '/lazarus',

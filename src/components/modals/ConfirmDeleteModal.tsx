@@ -12,9 +12,21 @@ interface ConfirmDeleteModalProps {
   onConfirm: () => void;
   spamTitle?: string;
   isProcessing?: boolean;
+  title?: string;
+  description?: string;
+  itemLabel?: string;
 }
 
-const ConfirmDeleteModal = ({ open, onClose, onConfirm, spamTitle, isProcessing = false }: ConfirmDeleteModalProps) => {
+const ConfirmDeleteModal = ({
+  open,
+  onClose,
+  onConfirm,
+  spamTitle,
+  isProcessing = false,
+  title = 'Confirm Delete',
+  description = 'Are you sure you want to permanently delete this spam lead? This action cannot be undone.',
+  itemLabel = 'Lead Title',
+}: ConfirmDeleteModalProps) => {
   return (
     <Dialog open={open} onClose={isProcessing ? undefined : onClose} maxWidth="sm" fullWidth>
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pb: 2 }}>
@@ -32,7 +44,7 @@ const ConfirmDeleteModal = ({ open, onClose, onConfirm, spamTitle, isProcessing 
           <DeleteOutlineIcon sx={{ color: '#EF4444', fontSize: 22 }} />
         </Box>
         <Typography variant="h6" fontWeight={600} color="#374151">
-          Confirm Delete
+          {title}
         </Typography>
       </DialogTitle>
 
@@ -40,7 +52,7 @@ const ConfirmDeleteModal = ({ open, onClose, onConfirm, spamTitle, isProcessing 
 
       <DialogContent sx={{ pt: 3, pb: 2 }}>
         <Typography fontSize="14px" color="#374151" mb={2}>
-          Are you sure you want to permanently delete this spam lead? This action cannot be undone.
+          {description}
         </Typography>
 
         {spamTitle && (
@@ -53,7 +65,7 @@ const ConfirmDeleteModal = ({ open, onClose, onConfirm, spamTitle, isProcessing 
             }}
           >
             <Typography fontSize="12px" color="#991B1B" mb={0.5} fontWeight={600}>
-              Lead Title:
+              {itemLabel}:
             </Typography>
             <Typography fontSize="14px" color="#7F1D1D" fontWeight={500}>
               {spamTitle}

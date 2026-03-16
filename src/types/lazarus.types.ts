@@ -45,7 +45,9 @@ export enum LazarusAlertType {
 
 export enum LazarusAlertStatus {
   NEW = 'NEW',
-  CONTACTED = 'CONTACTED',
+  VIEWED = 'VIEWED',
+  ACTED = 'ACTED', // User took action (contacted)
+  CONTACTED = 'CONTACTED', // Alias for ACTED (legacy)
   DISMISSED = 'DISMISSED',
 }
 

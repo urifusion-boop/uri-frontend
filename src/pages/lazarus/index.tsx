@@ -84,6 +84,7 @@ const LazarusProtocolPage = () => {
   const [tabValue, setTabValue] = useState(0);
   const [metrics, setMetrics] = useState<LazarusMetrics | null>(null);
   const [alerts, setAlerts] = useState<LazarusAlert[]>([]);
+  const [contactedAlerts, setContactedAlerts] = useState<LazarusAlert[]>([]);
   const [focusContacts, setFocusContacts] = useState<FocusContact[]>([]);
   const [companyMonitors, setCompanyMonitors] = useState<CompanyMonitor[]>([]);
   const [analyticsData, setAnalyticsData] = useState<any>(null);
@@ -152,6 +153,11 @@ const LazarusProtocolPage = () => {
         setAlerts(alertsResponse.responseData);
       }
 
+      const contactedAlertsResponse = await LazarusService.getAlerts(userId!, LazarusAlertStatus.ACTED, 0, 50);
+      if (contactedAlertsResponse.responseData) {
+        setContactedAlerts(contactedAlertsResponse.responseData);
+      }
+
       const contactsResponse = await LazarusService.getFocusContacts(userId!, LazarusMonitoringStatus.ACTIVE, 0, 50);
       if (contactsResponse.responseData) {
         setFocusContacts(contactsResponse.responseData);
@@ -196,6 +202,11 @@ const LazarusProtocolPage = () => {
       const alertsResponse = await LazarusService.getAlerts(userId!, LazarusAlertStatus.NEW, 0, 50);
       if (alertsResponse.responseData) {
         setAlerts(alertsResponse.responseData);
+      }
+
+      const contactedAlertsResponse = await LazarusService.getAlerts(userId!, LazarusAlertStatus.ACTED, 0, 50);
+      if (contactedAlertsResponse.responseData) {
+        setContactedAlerts(contactedAlertsResponse.responseData);
       }
 
       const contactsResponse = await LazarusService.getFocusContacts(userId!, LazarusMonitoringStatus.ACTIVE, 0, 50);
@@ -762,10 +773,10 @@ const LazarusProtocolPage = () => {
               </Box>
               <Box>
                 <Typography variant="h4" fontWeight={700} color="#111827" letterSpacing="-0.02em">
-                  Lazarus Protocol
+                  The Prospect Pulse
                 </Typography>
                 <Typography variant="body2" color="#6B7280" fontSize="13px" fontWeight={500}>
-                  Automated CRM Resurrection Engine
+                  Active Signals for High-Ticket Leads
                 </Typography>
               </Box>
             </Box>
@@ -1123,6 +1134,7 @@ const LazarusProtocolPage = () => {
             }}
           >
             <Tab label={`Alerts (${alerts.length})`} />
+            <Tab label={`Contacted (${contactedAlerts.length})`} />
             <Tab label={`Focus Contacts (${focusContacts.length})`} />
             <Tab label={`Company Monitors (${companyMonitors.length})`} />
             <Tab label="Scanned Content" />
@@ -1132,7 +1144,7 @@ const LazarusProtocolPage = () => {
 
           {/* Tab Action Buttons */}
           <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', pb: 1 }}>
-            {tabValue === 1 && (
+            {tabValue === 2 && (
               <Button
                 variant="contained"
                 size="small"
@@ -1156,7 +1168,7 @@ const LazarusProtocolPage = () => {
                 + Add Focus Contact
               </Button>
             )}
-            {tabValue === 2 && (
+            {tabValue === 3 && (
               <Button
                 variant="contained"
                 size="small"
@@ -1541,7 +1553,7 @@ const LazarusProtocolPage = () => {
                                   },
                                 }}
                               >
-                                Resurrect Lead
+                                Contact Lead
                               </Button>
                               <Button
                                 variant="outlined"
@@ -1596,8 +1608,112 @@ const LazarusProtocolPage = () => {
             </Grid>
           </TabPanel>
 
-          {/* Focus Contacts Tab */}
+          {/* Contacted Alerts Tab */}
           <TabPanel value={tabValue} index={1}>
+            <Grid container spacing={2.5}>
+              {contactedAlerts.length === 0 ? (
+                <Grid item xs={12}>
+                  <Box
+                    sx={{
+                      py: 8,
+                      textAlign: 'center',
+                      borderRadius: '12px',
+                      background: '#FAFBFC',
+                      border: '2px dashed #E5E7EB',
+                    }}
+                  >
+                    <CheckCircleIcon sx={{ fontSize: 48, color: '#D1D5DB', mb: 2 }} />
+                    <Typography variant="h6" fontWeight={600} color="#374151" mb={1}>
+                      No Contacted Alerts
+                    </Typography>
+                    <Typography variant="body2" color="#6B7280">
+                      When you mark alerts as contacted, they'll appear here for your records.
+                    </Typography>
+                  </Box>
+                </Grid>
+              ) : (
+                contactedAlerts.map((alert) => (
+                  <Grid item xs={12} key={alert.alert_id}>
+                    <Box
+                      sx={{
+                        p: 2.5,
+                        borderRadius: '12px',
+                        border: '1px solid #E5E7EB',
+                        background: '#F9FAFB',
+                        opacity: 0.8,
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                        <Box sx={{ flex: 1 }}>
+                          <Typography variant="h6" fontWeight={700} fontSize="16px" color="#111827" mb={0.5}>
+                            {alert.source_name}
+                          </Typography>
+                          <Typography variant="body2" color="#10B981" fontSize="13px" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <CheckCircleIcon sx={{ fontSize: 16 }} /> Contacted
+                          </Typography>
+                        </Box>
+                        <Chip
+                          label={alert.evidence?.signal_type || alert.alert_type}
+                          size="small"
+                          sx={{
+                            bgcolor: '#10B98120',
+                            color: '#10B981',
+                            fontWeight: 600,
+                            fontSize: '11px',
+                          }}
+                        />
+                      </Box>
+
+                      <Typography variant="body2" color="#374151" mb={2} fontSize="14px">
+                        {alert.alert_message}
+                      </Typography>
+
+                      {alert.evidence?.post_text && (
+                        <Box
+                          sx={{
+                            p: 1.5,
+                            bgcolor: '#fff',
+                            borderRadius: '8px',
+                            border: '1px solid #E5E7EB',
+                            fontSize: '13px',
+                            color: '#6B7280',
+                            fontStyle: 'italic',
+                            mb: 2,
+                          }}
+                        >
+                          "{alert.evidence.post_text.substring(0, 200)}..."
+                        </Box>
+                      )}
+
+                      <Box sx={{ display: 'flex', gap: 1.5, mt: 2 }}>
+                        {alert.evidence?.post_url && (
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={() => window.open(alert.evidence?.post_url, '_blank')}
+                            sx={{
+                              fontSize: '12px',
+                              textTransform: 'none',
+                              borderColor: '#D1D5DB',
+                              color: '#6B7280',
+                            }}
+                          >
+                            View Post
+                          </Button>
+                        )}
+                        <Typography variant="caption" color="#9CA3AF" sx={{ ml: 'auto', alignSelf: 'center' }}>
+                          Contacted on {new Date(alert.acted_at || alert.created_at).toLocaleDateString()}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Grid>
+                ))
+              )}
+            </Grid>
+          </TabPanel>
+
+          {/* Focus Contacts Tab */}
+          <TabPanel value={tabValue} index={2}>
             <Grid container spacing={2.5}>
               {focusContacts.length === 0 ? (
                 <Grid item xs={12}>
@@ -2090,7 +2206,7 @@ const LazarusProtocolPage = () => {
           </TabPanel>
 
           {/* Company Monitors Tab */}
-          <TabPanel value={tabValue} index={2}>
+          <TabPanel value={tabValue} index={3}>
             <Grid container spacing={2.5}>
               {companyMonitors.length === 0 ? (
                 <Grid item xs={12}>
@@ -2298,17 +2414,17 @@ const LazarusProtocolPage = () => {
           </TabPanel>
 
           {/* Scanned Content Tab */}
-          <TabPanel value={tabValue} index={3}>
+          <TabPanel value={tabValue} index={4}>
             <ScannedContentTab userId={userId || ''} />
           </TabPanel>
 
           {/* Rejected Posts Tab */}
-          <TabPanel value={tabValue} index={4}>
+          <TabPanel value={tabValue} index={5}>
             {userId && <RejectedPostsTab userId={userId} />}
           </TabPanel>
 
           {/* Analytics Tab */}
-          <TabPanel value={tabValue} index={5}>
+          <TabPanel value={tabValue} index={6}>
             {!analyticsData ? (
               <Box sx={{ textAlign: 'center', py: 8 }}>
                 <Typography variant="body1" color="text.secondary" mb={2}>

@@ -21,6 +21,7 @@ import LeadKanban from '../features/alert/LeadKanban';
 import SingleFieldInput from '../input/SingleFieldInput';
 import BusinessTableCard from './BusinessTableCard';
 import ConversationalTableCard from './ConversationalTableCard';
+import GoogleMapsTableCard from './GoogleMapsTableCard';
 import IndividualTableCard from './IndividualTableCard';
 import OrganizationTableCard from './OrganizationTableCard';
 import RealtimeLeadsDashboard from './RealtimeLeadsDashboard';
@@ -59,6 +60,7 @@ const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, 
     [LeadTypeEnum.ORGANIZATION]: FormTypeEnum.ORGANIZATION,
     [LeadTypeEnum.CONVERSATIONAL]: FormTypeEnum.CONVERSATIONAL,
     [LeadTypeEnum.BUSINESS]: FormTypeEnum.BUSINESS,
+    [LeadTypeEnum.GOOGLE_MAPS]: FormTypeEnum.GOOGLE_MAPS,
   };
 
   const formType = leadType ? formTypeMap[leadType] : undefined;
@@ -297,6 +299,17 @@ const LeadsTab = ({ allLeads, leadsData, isGettingLeads, getPaginationFunction, 
               setSearch={setSearch}
               total={leadsData?.data?.total ?? 0}
               twitterData={isTwitterSource ? twitterData : null}
+            />
+          ) : leadType === LeadTypeEnum.GOOGLE_MAPS ? (
+            <GoogleMapsTableCard
+              data={leadsData?.data?.data ?? []}
+              page={page}
+              pageSize={pageSize}
+              setPage={setPage}
+              setPageSize={setPageSize}
+              search={search}
+              setSearch={setSearch}
+              total={leadsData?.data?.total ?? 0}
             />
           ) : null}
         </Box>

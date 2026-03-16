@@ -48,6 +48,17 @@ export interface LeadFormDto {
   lead_id: string;
   username: string;
   first_name: any;
+  // Google Maps fields
+  maps_search_mode?: string;
+  maps_search_query?: string;
+  maps_location?: string;
+  maps_latitude?: number;
+  maps_longitude?: number;
+  maps_radius_km?: number;
+  maps_business_types?: string[];
+  maps_min_rating?: number;
+  maps_exclude_closed?: boolean;
+  maps_max_results?: number;
   last_name: any;
   phone: any;
   company_name: any;
@@ -137,6 +148,14 @@ export class OrganizationLeadFormDto {
   per_page?: number;
   lead_generation_goal?: string; // AI Next Steps - User's business goal
   monitoring_interval_hours?: number; // How often to check for new leads (0 = one-time, >0 = recurring)
+
+  // Location Intelligence fields
+  enable_location_intelligence?: boolean;
+  location_zone_center_lat?: number;
+  location_zone_center_lng?: number;
+  location_zone_radius_km?: number;
+  location_zone_name?: string;
+  min_trust_score?: number;
 }
 
 export interface LeadFormResponseDto {
@@ -238,6 +257,24 @@ export interface PlatformConfigFormDto {
   exclude_retweets?: boolean;
   verified_only?: boolean;
   content_types?: string[];
+}
+
+export class GoogleMapsLeadFormDto {
+  user_id?: string;
+  form_title?: string;
+  maps_search_mode?: string; // "auto", "text", "nearby"
+  maps_search_query?: string; // Natural language query for Text Search
+  maps_location?: string; // Location name for Text Search
+  maps_latitude?: number; // Latitude for Nearby Search
+  maps_longitude?: number; // Longitude for Nearby Search
+  maps_radius_km?: number; // Search radius in kilometers
+  maps_business_types?: string[]; // Filter by business types
+  maps_min_rating?: number; // Minimum Google rating (0-5)
+  maps_exclude_closed?: boolean; // Exclude closed businesses
+  maps_max_results?: number; // Maximum results to return
+  add_to_history?: boolean;
+  lead_generation_goal?: string; // AI Next Steps - User's business goal
+  monitoring_interval_hours?: number; // How often to check for new businesses (0 = one-time, >0 = recurring)
 }
 
 export interface Settings {

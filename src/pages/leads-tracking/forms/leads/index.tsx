@@ -6,10 +6,10 @@ import { LeadTypeEnum } from '@/models/enum-models/LeadTypeEnum';
 import { useAuth } from '@/providers/AuthProvider';
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
 import { useEffect } from 'react';
-import { FaBuilding, FaComments, FaUser } from 'react-icons/fa';
+import { FaBuilding, FaComments, FaMapMarkerAlt, FaUser } from 'react-icons/fa';
 
 const FormLeads = () => {
-  const [leadType] = useQueryState('type', parseAsStringLiteral(['individual', 'organization', 'business', 'conversational']).withDefault('individual'));
+  const [leadType] = useQueryState('type', parseAsStringLiteral(['individual', 'organization', 'business', 'conversational', 'google-maps']).withDefault('individual'));
   const { userDetails } = useAuth();
 
   // Track module access when page loads
@@ -21,6 +21,7 @@ const FormLeads = () => {
         individual: 'individual-leads',
         organization: 'organization-leads',
         conversational: 'conversational-leads',
+        'google-maps': 'googlemaps-leads',
       };
 
       const moduleId = moduleIdMap[leadType];
@@ -37,9 +38,29 @@ const FormLeads = () => {
   }, [userDetails?.userId, leadType]);
 
   const selectedEnum =
-    leadType === 'organization' ? LeadTypeEnum.ORGANIZATION : leadType === 'conversational' ? LeadTypeEnum.CONVERSATIONAL : leadType === 'business' ? LeadTypeEnum.BUSINESS : LeadTypeEnum.PERSON;
-  const label = leadType === 'organization' ? 'Organization' : leadType === 'conversational' ? 'Sales Signals' : leadType === 'business' ? 'Business' : 'Individual';
-  const icon = leadType === 'organization' ? <FaBuilding /> : leadType === 'conversational' ? <FaComments /> : leadType === 'business' ? <FaBuilding /> : <FaUser />;
+    leadType === 'organization'
+      ? LeadTypeEnum.ORGANIZATION
+      : leadType === 'conversational'
+        ? LeadTypeEnum.CONVERSATIONAL
+        : leadType === 'business'
+          ? LeadTypeEnum.BUSINESS
+          : leadType === 'google-maps'
+            ? LeadTypeEnum.GOOGLE_MAPS
+            : LeadTypeEnum.PERSON;
+  const label =
+    leadType === 'organization' ? 'Organization' : leadType === 'conversational' ? 'Sales Signals' : leadType === 'business' ? 'Business' : leadType === 'google-maps' ? 'Google Maps' : 'Individual';
+  const icon =
+    leadType === 'organization' ? (
+      <FaBuilding />
+    ) : leadType === 'conversational' ? (
+      <FaComments />
+    ) : leadType === 'business' ? (
+      <FaBuilding />
+    ) : leadType === 'google-maps' ? (
+      <FaMapMarkerAlt />
+    ) : (
+      <FaUser />
+    );
 
   return (
     <DashboardLayout excludeHeader bgColor="#fff">

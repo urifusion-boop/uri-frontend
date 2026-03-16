@@ -44,6 +44,13 @@ const LeadsManagePage = () => {
     tourKey: `leads-form-${type || 'default'}-tour`,
   });
 
+  // Redirect old 'googlemaps' URL to new 'google-maps' URL for consistency
+  useEffect(() => {
+    if (type === 'googlemaps') {
+      router.replace('/leads-tracking/forms/manage?type=google-maps', undefined, { shallow: true });
+    }
+  }, [type, router]);
+
   // Track module access when page loads
   useEffect(() => {
     const trackAccess = async () => {
@@ -53,6 +60,8 @@ const LeadsManagePage = () => {
         individual: 'individual-leads',
         organization: 'organization-leads',
         conversational: 'conversational-leads',
+        'google-maps': 'googlemaps-leads',
+        googlemaps: 'googlemaps-leads', // Legacy support for old URLs
       };
 
       const moduleId = moduleIdMap[type as string];
