@@ -368,6 +368,8 @@ export default function BrandSetupPage() {
 
   // ── Identity ──────────────────────────────────────────────────
   const [logoUrl, setLogoUrl] = useState('');
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoError, setLogoError] = useState('');
   const [colors, setColors] = useState<string[]>([]);
 
   // ── Personality ───────────────────────────────────────────────
@@ -961,16 +963,87 @@ export default function BrandSetupPage() {
       case 'identity':
         return (
           <Box>
-            <AgentBubble primary={primary}>Upload your logo URL and pick your brand colors — I'll use these in every post I create.</AgentBubble>
+            <AgentBubble primary={primary}>Upload your logo and pick your brand colors — I'll use these in every post I create.</AgentBubble>
             <Grid container spacing={2.5} mt={0}>
               <Grid item xs={12}>
-                <FieldLabel sub="(paste a direct image link)">Logo URL</FieldLabel>
-                <UriInput value={logoUrl} onChange={setLogoUrl} placeholder="https://yourbrand.com/logo.png" />
-                {logoUrl && (
-                  <Box mt={1}>
-                    <img src={logoUrl} alt="logo preview" style={{ maxHeight: 44, maxWidth: 160, borderRadius: 8, objectFit: 'contain', border: '1px solid #E0DEF7' }} onError={() => setLogoUrl('')} />
-                  </Box>
-                )}
+                <FieldLabel sub="(PNG, JPG, WEBP or SVG · max 5 MB)">Brand Logo</FieldLabel>
+
+                {/* Upload area */}
+                <Box
+                  component="label"
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 1,
+                    border: `2px dashed ${logoUrl ? primary : '#E0DEF7'}`,
+                    borderRadius: '12px',
+                    p: 3,
+                    cursor: logoUploading ? 'not-allowed' : 'pointer',
+                    background: logoUrl ? `${primary}08` : '#FAFAFA',
+                    transition: 'border-color 0.2s, background 0.2s',
+                    '&:hover': { borderColor: primary, background: `${primary}08` },
+                    position: 'relative',
+                    minHeight: 110,
+                  }}
+                >
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                    style={{ display: 'none' }}
+                    disabled={logoUploading}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setLogoError('');
+                      setLogoUploading(true);
+                      try {
+                        const res = await BrandProfileService.uploadLogo(file);
+                        if (res.status && res.responseData?.logo_url) {
+                          setLogoUrl(res.responseData.logo_url);
+                        } else {
+                          setLogoError('Upload failed. Please try again.');
+                        }
+                      } catch {
+                        setLogoError('Upload failed. Please try again.');
+                      } finally {
+                        setLogoUploading(false);
+                        e.target.value = '';
+                      }
+                    }}
+                  />
+
+                  {logoUploading ? (
+                    <CircularProgress size={28} sx={{ color: primary }} />
+                  ) : logoUrl ? (
+                    <>
+                      <img src={logoUrl} alt="brand logo" style={{ maxHeight: 60, maxWidth: 180, objectFit: 'contain', borderRadius: 8 }} onError={() => setLogoUrl('')} />
+                      <Typography sx={{ fontSize: 11.5, color: primary, fontWeight: 600 }}>Click to replace</Typography>
+                    </>
+                  ) : (
+                    <>
+                      <Typography sx={{ fontSize: 22 }}>🖼️</Typography>
+                      <Typography sx={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>Click to upload your logo</Typography>
+                      <Typography sx={{ fontSize: 11.5, color: '#9CA3AF' }}>PNG, JPG, WEBP, SVG · max 5 MB</Typography>
+                    </>
+                  )}
+                </Box>
+
+                {logoError && <Typography sx={{ fontSize: 12, color: '#EF4444', mt: 0.75 }}>{logoError}</Typography>}
+
+                {/* Optional URL fallback */}
+                <Box mt={1.5}>
+                  <FieldLabel sub="(or paste a direct image link instead)">Logo URL</FieldLabel>
+                  <UriInput
+                    value={logoUrl}
+                    onChange={(v) => {
+                      setLogoUrl(v);
+                      setLogoError('');
+                    }}
+                    placeholder="https://yourbrand.com/logo.png"
+                  />
+                </Box>
               </Grid>
               <Grid item xs={12}>
                 <FieldLabel>Brand Colors</FieldLabel>
