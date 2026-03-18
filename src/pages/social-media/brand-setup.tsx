@@ -650,53 +650,7 @@ export default function BrandSetupPage() {
             if (res.status && res.responseData?.auth_urls) {
               const url = res.responseData.auth_urls[selectedConnectPlatform];
               if (url) {
-                // Open OAuth in popup to avoid CSP issues
-                const width = 600;
-                const height = 700;
-                const left = window.screenX + (window.outerWidth - width) / 2;
-                const top = window.screenY + (window.outerHeight - height) / 2;
-                const popup = window.open(url, 'social_oauth', `width=${width},height=${height},left=${left},top=${top},toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes`);
-
-                // Listen for postMessage from OAuth callback
-                const handleMessage = (event: MessageEvent) => {
-                  if (event.origin !== window.location.origin) return;
-                  if (event.data?.type === 'oauth_callback' && event.data?.sessionToken) {
-                    clearInterval(pollInterval);
-                    clearTimeout(timeout);
-                    window.removeEventListener('message', handleMessage);
-                    if (popup && !popup.closed) popup.close();
-
-                    setConnectSessionToken(event.data.sessionToken);
-                    setConnectPhase('pending');
-                    // Fetch available pages
-                    SocialAccountService.getPendingConnection(event.data.sessionToken).then((res) => {
-                      if (res.status && res.responseData?.available_pages) {
-                        setAvailablePages(res.responseData.available_pages);
-                      }
-                    });
-                  }
-                };
-                window.addEventListener('message', handleMessage);
-
-                // Poll for callback as fallback (check if popup closed)
-                const pollInterval = setInterval(() => {
-                  if (popup && popup.closed) {
-                    clearInterval(pollInterval);
-                    clearTimeout(timeout);
-                    window.removeEventListener('message', handleMessage);
-                    setConnectPhase('selecting');
-                  }
-                }, 500);
-
-                // Timeout after 5 minutes
-                const timeout = setTimeout(() => {
-                  clearInterval(pollInterval);
-                  window.removeEventListener('message', handleMessage);
-                  if (popup && !popup.closed) {
-                    popup.close();
-                  }
-                  setConnectPhase('selecting');
-                }, 300000);
+                window.location.href = url;
                 return;
               }
             }
