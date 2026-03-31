@@ -9,7 +9,7 @@ import { Box, Button, Chip, Collapse, Grid, Typography, styled } from '@mui/mate
 import { useRouter } from 'next/router';
 import React from 'react';
 import { BsGraphUp } from 'react-icons/bs';
-import { FaBuilding, FaComments, FaFolder, FaHeartbeat, FaUser } from 'react-icons/fa';
+import { FaBuilding, FaComments, FaFolder, FaHeartbeat, FaMapMarkerAlt, FaUser } from 'react-icons/fa';
 import { HiHashtag } from 'react-icons/hi';
 import { MdAutorenew, MdRecordVoiceOver } from 'react-icons/md';
 
@@ -113,14 +113,13 @@ const workflowData = [
         icon: <FaComments size={40} color={LightThemeColors.uriColor} />,
         href: '/leads-tracking/forms/leads?type=conversational',
       },
-      // Hidden - Google Maps functionality merged into Organization Lead Form via Location Intelligence
-      // {
-      //   id: 'googlemaps-leads',
-      //   title: 'Google Maps',
-      //   description: 'Discover local businesses through Google Maps based on location and criteria.',
-      //   icon: <FaMapMarkerAlt size={40} color={LightThemeColors.uriColor} />,
-      //   href: '/leads-tracking/forms/leads?type=googlemaps',
-      // },
+      {
+        id: 'googlemaps-leads',
+        title: 'Google Maps',
+        description: 'Discover local businesses through Google Maps based on location and criteria.',
+        icon: <FaMapMarkerAlt size={40} color={LightThemeColors.uriColor} />,
+        href: '/leads-tracking/forms/leads?type=google-maps',
+      },
     ],
   },
   {
