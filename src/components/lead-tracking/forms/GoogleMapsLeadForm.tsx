@@ -38,6 +38,8 @@ const GoogleMapsLeadForm = () => {
     maps_min_rating: undefined,
     maps_exclude_closed: true,
     maps_max_results: 20,
+    business_context: '',
+    excluded_terms: [],
     add_to_history: false,
     monitoring_interval_hours: 0,
   });
@@ -110,6 +112,8 @@ const GoogleMapsLeadForm = () => {
         maps_min_rating,
         maps_exclude_closed,
         maps_max_results,
+        business_context,
+        excluded_terms,
         lead_form_id,
         add_to_history,
         lead_generation_goal,
@@ -129,6 +133,8 @@ const GoogleMapsLeadForm = () => {
         maps_min_rating,
         maps_exclude_closed: maps_exclude_closed ?? true,
         maps_max_results: maps_max_results || 20,
+        business_context: business_context || '',
+        excluded_terms: excluded_terms || [],
         add_to_history,
         lead_generation_goal,
         monitoring_interval_hours: monitoring_interval_hours || 0,
@@ -166,6 +172,8 @@ const GoogleMapsLeadForm = () => {
         maps_min_rating: undefined,
         maps_exclude_closed: true,
         maps_max_results: 20,
+        business_context: '',
+        excluded_terms: [],
         add_to_history: false,
         lead_generation_goal: '',
         monitoring_interval_hours: 0,
@@ -188,6 +196,8 @@ const GoogleMapsLeadForm = () => {
         maps_min_rating: data.maps_min_rating || prev.maps_min_rating,
         maps_radius_km: data.maps_radius_km || prev.maps_radius_km,
         maps_max_results: data.maps_max_results || prev.maps_max_results,
+        business_context: data.business_context || prev.business_context,
+        excluded_terms: data.excluded_terms || prev.excluded_terms,
       }));
 
       triggerToast('success', 'Fields updated using AI-generated suggestions');
@@ -306,6 +316,8 @@ const GoogleMapsLeadForm = () => {
         maps_min_rating: payload.maps_min_rating,
         maps_exclude_closed: payload.maps_exclude_closed ?? true,
         maps_max_results: payload.maps_max_results || 20,
+        business_context: payload.business_context || '',
+        excluded_terms: payload.excluded_terms || [],
         add_to_history: payload.add_to_history || false,
         lead_generation_goal: payload.lead_generation_goal || '',
       };
@@ -691,6 +703,28 @@ const GoogleMapsLeadForm = () => {
                 setValue={(val) => handleChange('maps_min_rating', parseFloat(val) || undefined)}
                 required={false}
               />
+            </Box>
+
+            {/* AI Context Fields */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
+              <SingleFieldInput
+                label="Business Context (AI Enhancement)"
+                tooltip="Describe the business type or industry you're looking for. This helps AI understand ambiguous queries. Example: 'financial services' for POS agents, 'healthcare' for clinics."
+                placeholder="e.g. financial services, retail, healthcare"
+                value={form.business_context || ''}
+                setValue={(val) => handleChange('business_context', val)}
+                required={false}
+              />
+
+              <Box>
+                <ListValuesInput
+                  label="Excluded Terms (AI Filter)"
+                  tooltip="Terms to exclude from search results. Useful for ambiguous queries. Example: exclude 'post office' when searching for 'POS' (Point of Sale)."
+                  keywords={form.excluded_terms || []}
+                  setKeywords={(val) => handleChange('excluded_terms', val)}
+                  placeholder="e.g. post office"
+                />
+              </Box>
             </Box>
 
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>

@@ -59,6 +59,8 @@ export interface LeadFormDto {
   maps_min_rating?: number;
   maps_exclude_closed?: boolean;
   maps_max_results?: number;
+  business_context?: string; // AI context: describe business type/industry
+  excluded_terms?: string[]; // Terms to exclude from search results
   last_name: any;
   phone: any;
   company_name: any;
@@ -272,6 +274,8 @@ export class GoogleMapsLeadFormDto {
   maps_min_rating?: number; // Minimum Google rating (0-5)
   maps_exclude_closed?: boolean; // Exclude closed businesses
   maps_max_results?: number; // Maximum results to return
+  business_context?: string; // AI context: describe business type/industry
+  excluded_terms?: string[]; // Terms to exclude from search results
   add_to_history?: boolean;
   lead_generation_goal?: string; // AI Next Steps - User's business goal
   monitoring_interval_hours?: number; // How often to check for new businesses (0 = one-time, >0 = recurring)
