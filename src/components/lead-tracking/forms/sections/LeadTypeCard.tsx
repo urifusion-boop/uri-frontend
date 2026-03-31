@@ -86,15 +86,14 @@ const LeadTypeCard = ({ colorMap }: LeadTypeCardProps) => {
       total_leads: 0,
       total_new_leads: 0,
     },
-    // Hidden - Google Maps functionality merged into Organization Lead Form via Location Intelligence
-    // {
-    //   form_type: 'Google Maps',
-    //   typeKey: 'googlemaps',
-    //   description: 'Local businesses discovered through Google Maps based on location and criteria.',
-    //   created_date: '',
-    //   total_leads: 0,
-    //   total_new_leads: 0,
-    // },
+    {
+      form_type: 'Google Maps',
+      typeKey: 'googlemaps',
+      description: 'Local businesses discovered through Google Maps based on location and criteria.',
+      created_date: '',
+      total_leads: 0,
+      total_new_leads: 0,
+    },
   ];
 
   const finalForms = defaultForms.map((df) => {
