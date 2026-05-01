@@ -90,8 +90,8 @@ export const WORKFLOWS: Record<string, Workflow> = {
       },
       {
         id: 'googlemaps-leads',
-        name: 'Google Maps',
-        description: 'Discover local businesses through Google Maps based on location and criteria',
+        name: 'Geo Discovery',
+        description: 'Find businesses and opportunities in any location',
         route: '/leads-tracking/forms/leads?type=google-maps',
         icon: FaMapMarkerAlt,
       },
@@ -115,7 +115,41 @@ export const WORKFLOWS: Record<string, Workflow> = {
   },
 };
 
-export const WORKFLOW_LIST = Object.values(WORKFLOWS);
+// Feature flags - set to false to hide features from UI
+const FEATURE_FLAGS = {
+  SOCIAL_LISTENING: false, // Hidden per PRD - can be re-enabled later
+  SALES_SIGNALS: false, // Hidden per PRD - can be re-enabled later
+  JOB_BOARD: false, // Hidden per PRD - can be re-enabled later
+};
+
+// Filter workflows based on feature flags
+const getEnabledWorkflows = (): Record<string, Workflow> => {
+  const enabled: Record<string, Workflow> = {};
+
+  Object.entries(WORKFLOWS).forEach(([key, workflow]) => {
+    // Check if workflow is enabled
+    if (key === 'social-listening' && !FEATURE_FLAGS.SOCIAL_LISTENING) {
+      return; // Skip social listening if disabled
+    }
+
+    // Filter modules based on feature flags
+    const filteredModules = workflow.modules.filter((module) => {
+      if (module.id === 'conversational-leads' && !FEATURE_FLAGS.SALES_SIGNALS) {
+        return false; // Hide sales signals if disabled
+      }
+      return true;
+    });
+
+    enabled[key] = {
+      ...workflow,
+      modules: filteredModules,
+    };
+  });
+
+  return enabled;
+};
+
+export const WORKFLOW_LIST = Object.values(getEnabledWorkflows());
 
 // Helper to get module route
 export const getModuleRoute = (moduleId: string): string => {

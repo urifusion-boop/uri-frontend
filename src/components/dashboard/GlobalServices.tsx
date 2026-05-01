@@ -22,6 +22,13 @@ const Container = styled(Box)({
   padding: '0 40px',
 });
 
+// Feature flags - set to false to hide features from UI
+const FEATURE_FLAGS = {
+  SOCIAL_LISTENING: false, // Hidden per PRD - can be re-enabled later
+  SALES_SIGNALS: false, // Hidden per PRD - can be re-enabled later
+  JOB_BOARD: false, // Hidden per PRD - can be re-enabled later
+};
+
 // Workflow definitions with their modules
 const workflowData = [
   {
@@ -30,6 +37,7 @@ const workflowData = [
     description: 'Track conversations & monitor brand performance',
     icon: <BsGraphUp size={40} color={LightThemeColors.uriColor} />,
     comingSoon: false,
+    hidden: !FEATURE_FLAGS.SOCIAL_LISTENING, // Hidden via feature flag
     modules: [
       {
         id: 'account-tracking',
@@ -91,6 +99,7 @@ const workflowData = [
     description: 'Find potential customers & leads',
     icon: <MdRecordVoiceOver size={40} color={LightThemeColors.uriColor} />,
     comingSoon: false,
+    hidden: false,
     modules: [
       {
         id: 'individual-leads',
@@ -112,11 +121,12 @@ const workflowData = [
         description: 'Public online conversations indicating buying intent, pain, or opportunity.',
         icon: <FaComments size={40} color={LightThemeColors.uriColor} />,
         href: '/leads-tracking/forms/leads?type=conversational',
+        hidden: !FEATURE_FLAGS.SALES_SIGNALS, // Hidden via feature flag
       },
       {
         id: 'googlemaps-leads',
-        title: 'Google Maps',
-        description: 'Discover local businesses through Google Maps based on location and criteria.',
+        title: 'Geo Discovery',
+        description: 'Find businesses and opportunities in any location',
         icon: <FaMapMarkerAlt size={40} color={LightThemeColors.uriColor} />,
         href: '/leads-tracking/forms/leads?type=google-maps',
       },
@@ -181,12 +191,19 @@ const GlobalServices: React.FC = () => {
     router.push(href);
   };
 
-  // Filter workflows based on user's enabled modules
+  // Filter workflows based on user's enabled modules AND feature flags
   // Show all workflows but filter modules, and always show coming soon workflows
   const filteredWorkflows = workflowData
+    .filter((workflow) => !workflow.hidden) // Filter hidden workflows via feature flags
     .map((workflow) => ({
       ...workflow,
-      modules: workflow.comingSoon ? [] : workflow.modules.filter((module) => selectedModules.length === 0 || selectedModules.includes(module.id)),
+      modules: workflow.comingSoon
+        ? []
+        : workflow.modules.filter(
+            (module: any) =>
+              !module.hidden && // Filter hidden modules via feature flags
+              (selectedModules.length === 0 || selectedModules.includes(module.id))
+          ),
     }))
     .filter((workflow) => workflow.comingSoon || workflow.modules.length > 0);
 

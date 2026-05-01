@@ -34,13 +34,22 @@ const Navigation = () => {
   type MenuSection = { title: string; items: MenuItem[] };
   type MenuData = { title: string; sections: MenuSection[] };
 
+  // Feature flags - set to false to hide features from UI
+  const FEATURE_FLAGS = {
+    SOCIAL_LISTENING: false, // Hidden per PRD - can be re-enabled later
+    SALES_SIGNALS: false, // Hidden per PRD - can be re-enabled later
+    ALERTS_NOTIFICATIONS: false, // Hidden per PRD - can be re-enabled later
+    REPORTING_EXPORTS: false, // Hidden per PRD - can be re-enabled later
+  };
+
   // Core Features with glassmorphism dropdowns
-  const coreFeatures = [
+  const allCoreFeatures = [
     {
       id: 'social-media',
       title: 'Social Media Tracking',
       href: '/features/social-media-tracking',
       icon: Hash,
+      hidden: !FEATURE_FLAGS.SOCIAL_LISTENING, // Hidden via feature flag
       subFeatures: [
         { name: 'Keyword tracking', href: '/features/social-media-tracking' },
         { name: 'Hashtag tracking', href: '/features/social-media-tracking' },
@@ -53,10 +62,11 @@ const Navigation = () => {
       title: 'Lead Generation',
       href: '/features/lead-generation',
       icon: TrendingUp,
+      hidden: false,
       subFeatures: [
         { name: 'Individual leads', href: '/features/lead-generation' },
-        { name: 'Sales signals', href: '/features/lead-generation' },
         { name: 'Organizational leads', href: '/features/lead-generation' },
+        { name: 'Geo Discovery', href: '/features/lead-generation' },
       ],
     },
     {
@@ -64,6 +74,7 @@ const Navigation = () => {
       title: 'CRM & Data Enrichment',
       href: '/features/crm-enrichment',
       icon: Database,
+      hidden: false,
       subFeatures: [
         { name: 'Integration with existing CRMs', href: '/features/crm-enrichment' },
         { name: 'Dead lead tracking', href: '/features/crm-enrichment' },
@@ -77,6 +88,7 @@ const Navigation = () => {
       title: 'Alerts & Notifications',
       href: '/features/alerts-notifications',
       icon: Bell,
+      hidden: !FEATURE_FLAGS.ALERTS_NOTIFICATIONS, // Hidden via feature flag
       subFeatures: [
         { name: 'Real-time lead alerts', href: '/features/alerts-notifications' },
         { name: 'Sales signal alerts', href: '/features/alerts-notifications' },
@@ -88,12 +100,16 @@ const Navigation = () => {
       title: 'Reporting & Exports',
       href: '/features/reporting-exports',
       icon: BarChart3,
+      hidden: !FEATURE_FLAGS.REPORTING_EXPORTS, // Hidden via feature flag
       subFeatures: [
         { name: 'Automated reports', href: '/features/reporting-exports' },
         { name: 'Lead and data export', href: '/features/reporting-exports' },
       ],
     },
   ];
+
+  // Filter out hidden features
+  const coreFeatures = allCoreFeatures.filter((feature) => !feature.hidden);
 
   const featuresMenu: MenuData = {
     title: 'Features',
